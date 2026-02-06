@@ -1,0 +1,25 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Nowo\PdfSignableBundle\Controller\SignatureController:
+        arguments:
+            $proxyEnabled: '%nowo_pdf_signable.proxy_enabled%'
+            $examplePdfUrl: '%nowo_pdf_signable.example_pdf_url%'
+        tags: ['controller.service_arguments']
+
+    Nowo\PdfSignableBundle\Controller\:
+        resource: '../../Controller/*'
+        exclude: '../../Controller/SignatureController.php'
+        tags: ['controller.service_arguments']
+
+    Nowo\PdfSignableBundle\Form\:
+        resource: '../../Form/*'
+        tags: ['form.type']
+
+    Nowo\PdfSignableBundle\Form\SignatureCoordinatesType:
+        arguments:
+            $examplePdfUrl: '%nowo_pdf_signable.example_pdf_url%'
+        tags: ['form.type']

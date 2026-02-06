@@ -1,0 +1,3 @@
+nowo_pdf_signable:
+    proxy_enabled: true
+    example_pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'

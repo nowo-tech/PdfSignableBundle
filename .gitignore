@@ -1,0 +1,11 @@
+/vendor/
+/node_modules/
+/.pnpm-store/
+/.phpunit.cache/
+/coverage/
+coverage.xml
+.php-cs-fixer.cache
+.env
+.env.local
+package-lock.json
+yarn.lock

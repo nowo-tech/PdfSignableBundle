@@ -1,0 +1,17 @@
+{#
+  Default layout for SignatureBoxType (name, page, width, height, x, y).
+  DOM structure expected by pdf-signable.js:
+  - .signature-box-name, .signature-box-page
+  - .signature-box-width, .signature-box-height, .signature-box-x, .signature-box-y
+  Override: {% block signature_box_widget %} ... {% endblock %} in form theme.
+#}
+<div class="row g-2 align-items-end mb-2">
+  {{ form_row(form.name) }}
+  {{ form_row(form.page) }}
+</div>
+<div class="row g-2 align-items-end">
+  {{ form_row(form.width) }}
+  {{ form_row(form.height) }}
+  {{ form_row(form.x) }}
+  {{ form_row(form.y) }}
+</div>

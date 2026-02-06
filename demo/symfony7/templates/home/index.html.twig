@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Home - PdfSignable Demo{% endblock %}
+
+{% block body %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">PdfSignable Bundle Demo (Symfony 7)</h5>
+        <p class="card-text">This demo shows different configurations of <code>SignatureCoordinatesType</code> and <code>SignatureBoxType</code>.</p>
+    </div>
+</div>
+<div class="row g-3">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Default</h6>
+                <p class="card-text small">Preset URL (if configured), restricted units (mm, cm, pt), default origin.</p>
+                <a href="{{ path('app_signature') }}" class="btn btn-sm btn-primary">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Fixed URL</h6>
+                <p class="card-text small">Single PDF, URL field hidden. Good for one-document flows.</p>
+                <a href="{{ path('app_signature_fixed_url') }}" class="btn btn-sm btn-primary">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">URL as dropdown</h6>
+                <p class="card-text small">Choose document from a list (<code>url_mode: choice</code>).</p>
+                <a href="{{ path('app_signature_url_choice') }}" class="btn btn-sm btn-primary">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Limited boxes + name selector</h6>
+                <p class="card-text small">Max 4 boxes, name as dropdown (Signer 1, Signer 2, Witness).</p>
+                <a href="{{ path('app_signature_limited_boxes') }}" class="btn btn-sm btn-primary">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Predefined boxes</h6>
+                <p class="card-text small">Model with 2 boxes already set; max 5. Edit positions and add more.</p>
+                <a href="{{ path('app_signature_predefined') }}" class="btn btn-sm btn-primary">Open</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

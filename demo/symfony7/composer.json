@@ -1,0 +1,61 @@
+{
+  "name": "nowo-tech/pdf-signable-demo-symfony7",
+  "description": "Demo for PdfSignable Bundle - Symfony 7",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.2",
+    "nowo-tech/pdf-signable-bundle": "*@dev",
+    "symfony/asset": "^7.0",
+    "symfony/console": "^7.0",
+    "symfony/dotenv": "^7.0",
+    "symfony/flex": "^2.0",
+    "symfony/framework-bundle": "^7.0",
+    "symfony/http-client": "^7.0",
+    "symfony/form": "^7.0",
+    "symfony/runtime": "^7.0",
+    "symfony/translation": "^7.0",
+    "symfony/twig-bundle": "^7.0",
+    "symfony/validator": "^7.0",
+    "symfony/yaml": "^7.0"
+  },
+  "require-dev": {
+    "nowo-tech/twig-inspector-bundle": "^1.0",
+    "symfony/debug-bundle": "^7.0",
+    "symfony/web-profiler-bundle": "^7.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "symfony/flex": true,
+      "symfony/runtime": true
+    },
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../.."
+    }
+  ],
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "scripts": {
+    "auto-scripts": {
+      "cache:clear": "symfony-cmd",
+      "assets:install %PUBLIC_DIR%": "symfony-cmd"
+    },
+    "post-install-cmd": ["@auto-scripts"],
+    "post-update-cmd": ["@auto-scripts"]
+  },
+  "extra": {
+    "symfony": {
+      "allow-contrib": false,
+      "require": "7.0.*"
+    }
+  }
+}

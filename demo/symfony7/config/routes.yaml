@@ -1,0 +1,13 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+nowo_pdf_signable:
+    resource: '@NowoPdfSignableBundle/Resources/config/routes.yaml'
+    prefix: /
+
+# Web Profiler (dev)
+_web_profiler:
+    resource: routes/web_profiler.yaml

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PdfSignable Bundle Demo{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar .dropdown-menu { min-width: 16rem; }
+        .navbar .dropdown-item small { opacity: 0.85; }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ path('home') }}">PdfSignable Demo</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarDemo" aria-controls="navbarDemo" aria-expanded="false" aria-label="Toggle menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarDemo">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('home') }}">Home</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="demoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Demo pages &amp; config
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="demoDropdown">
+                            <li><h6 class="dropdown-header">By configuration</h6></li>
+                            <li><a class="dropdown-item" href="{{ path('app_signature') }}">
+                                <span class="d-block">Default</span>
+                                <small class="text-body-secondary">Preset URL, units mm/cm/pt</small>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_signature_fixed_url') }}">
+                                <span class="d-block">Fixed URL</span>
+                                <small class="text-body-secondary">Single PDF, no URL field</small>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_signature_url_choice') }}">
+                                <span class="d-block">URL as dropdown</span>
+                                <small class="text-body-secondary">Choose document from list</small>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_signature_limited_boxes') }}">
+                                <span class="d-block">Limited boxes + name selector</span>
+                                <small class="text-body-secondary">Max 4, name = Signer/Witness</small>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_signature_predefined') }}">
+                                <span class="d-block">Predefined boxes</span>
+                                <small class="text-body-secondary">2 boxes pre-filled, max 5</small>
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ path('nowo_pdf_signable_index') }}">Bundle route</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="container flex-grow-1 mt-4 pb-4">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+        {% block body %}{% endblock %}
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

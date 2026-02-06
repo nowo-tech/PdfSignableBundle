@@ -1,0 +1,68 @@
+page:
+  title: 'Coordenadas de firma en PDF'
+  pdf_viewer: 'Visor PDF'
+  url_label: 'URL del PDF'
+  load: 'Cargar PDF'
+  placeholder_intro: 'Introduce una URL de PDF arriba y pulsa Cargar para ver el documento. Haz clic en el PDF para añadir cajas de firma.'
+  signature_boxes: 'Cajas de firma'
+  add: 'Añadir caja'
+  units_label: 'Unidades'
+  origin_label: 'Origen'
+  help_text: 'Haz clic en el PDF para colocar una nueva caja de firma. Arrastra las cajas para mover, las esquinas para redimensionar.'
+  delete: 'Eliminar'
+  empty_state: 'Aún no hay cajas de firma. Haz clic en el PDF o en "Añadir caja" para crear una.'
+  save_coordinates: 'Guardar coordenadas'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'URL del PDF'
+    placeholder: 'https://ejemplo.com/documento.pdf'
+  unit:
+    label: 'Unidades'
+    option:
+      pt: 'Puntos (pt)'
+      mm: 'Milímetros (mm)'
+      cm: 'Centímetros (cm)'
+      px: 'Píxeles (px)'
+      in: 'Pulgadas (in)'
+  origin:
+    label: 'Origen'
+    option:
+      top_left: 'Arriba izquierda'
+      bottom_left: 'Abajo izquierda'
+      top_right: 'Arriba derecha'
+      bottom_right: 'Abajo derecha'
+  signature_boxes:
+    label: 'Cajas de firma'
+    min_message: 'Se requiere al menos {{ limit }} caja(s) de firma.'
+    max_message: 'Se permite como máximo {{ limit }} caja(s) de firma.'
+
+signature_box_type:
+  name:
+    placeholder: 'Nombre (ej. firmante_1)'
+  page:
+    label: 'Página'
+  width:
+    label: 'Ancho'
+  height:
+    label: 'Alto'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Coordenadas guardadas correctamente.'
+
+proxy:
+  invalid_url: 'URL no válida o faltante.'
+  error_load: 'Error al cargar el PDF:'
+
+js:
+  error_load_pdf: 'Error al cargar el PDF: '
+  alert_submit_error: 'Error al enviar las coordenadas.'
+  alert_url_required: 'Introduce una URL de PDF.'
+  loading_state: 'Cargando...'
+  load_pdf_btn: 'Cargar PDF'
+  default_box_name: 'firma'

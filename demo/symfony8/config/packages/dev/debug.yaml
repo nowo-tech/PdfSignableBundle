@@ -1,0 +1,3 @@
+when@dev:
+    debug:
+        # VarDumper data is shown in the Web Debug Toolbar / profiler

@@ -1,0 +1,4 @@
+nowo_pdf_signable:
+    resource: '@NowoPdfSignableBundle/Controller/'
+    type: attribute
+    prefix: /pdf-signable

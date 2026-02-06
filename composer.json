@@ -1,0 +1,68 @@
+{
+  "name": "nowo-tech/pdf-signable-bundle",
+  "description": "Symfony bundle for PDF signable form field: render PDF from URL, define signature coordinates by click.",
+  "type": "symfony-bundle",
+  "license": "MIT",
+  "keywords": [
+    "symfony",
+    "symfony-bundle",
+    "pdf",
+    "signature",
+    "form",
+    "coordinates"
+  ],
+  "homepage": "https://github.com/nowo-tech/pdf-signable-bundle",
+  "support": {
+    "issues": "https://github.com/nowo-tech/pdf-signable-bundle/issues",
+    "source": "https://github.com/nowo-tech/pdf-signable-bundle"
+  },
+  "authors": [
+    {
+      "name": "Héctor Franco Aceituno",
+      "email": "hectorfranco@nowo.tech",
+      "homepage": "https://github.com/HecFranco",
+      "role": "Developer"
+    },
+    {
+      "name": "Nowo.tech",
+      "homepage": "https://nowo.tech"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "symfony/framework-bundle": "^6.1 || ^7.0 || ^8.0",
+    "symfony/form": "^6.1 || ^7.0 || ^8.0",
+    "symfony/http-client": "^6.1 || ^7.0 || ^8.0",
+    "symfony/twig-bundle": "^6.1 || ^7.0 || ^8.0",
+    "symfony/translation": "^6.1 || ^7.0 || ^8.0",
+    "symfony/yaml": "^6.1 || ^7.0 || ^8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0",
+    "friendsofphp/php-cs-fixer": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Nowo\\PdfSignableBundle\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Nowo\\PdfSignableBundle\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "scripts": {
+    "test": "phpunit",
+    "cs-check": "php-cs-fixer fix --dry-run --diff",
+    "cs-fix": "php-cs-fixer fix",
+    "qa": [
+      "@cs-check",
+      "@test"
+    ]
+  }
+}

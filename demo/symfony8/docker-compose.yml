@@ -1,0 +1,39 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdf-signable-demo-symfony8-php
+    working_dir: /workspace/demo/symfony8
+    volumes:
+      - ../../:/workspace
+      - composer-cache:/root/.composer/cache
+    environment:
+      - COMPOSER_ALLOW_SUPERUSER=1
+      - XDEBUG_MODE=debug
+      - XDEBUG_CONFIG=client_host=host.docker.internal client_port=9003
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: ["php-fpm", "-F"]
+    networks:
+      - pdf-signable-demo-s8-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: pdf-signable-demo-symfony8-nginx
+    volumes:
+      - ../../:/workspace:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8001:80"
+    depends_on:
+      - php
+    networks:
+      - pdf-signable-demo-s8-network
+
+volumes:
+  composer-cache:
+
+networks:
+  pdf-signable-demo-s8-network:
+    driver: bridge

@@ -1,0 +1,68 @@
+page:
+  title: 'PDF signature coordinates'
+  pdf_viewer: 'PDF viewer'
+  url_label: 'PDF URL'
+  load: 'Load PDF'
+  placeholder_intro: 'Enter a PDF URL above and click Load to display the document. Click on the PDF to add signature boxes.'
+  signature_boxes: 'Signature boxes'
+  add: 'Add box'
+  units_label: 'Units'
+  origin_label: 'Origin'
+  help_text: 'Click on the PDF to place a new signature box. Drag boxes to move, drag corners to resize.'
+  delete: 'Delete'
+  empty_state: 'No signature boxes yet. Click on the PDF or "Add box" to create one.'
+  save_coordinates: 'Save coordinates'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'PDF URL'
+    placeholder: 'https://example.com/document.pdf'
+  unit:
+    label: 'Units'
+    option:
+      pt: 'Points (pt)'
+      mm: 'Millimeters (mm)'
+      cm: 'Centimeters (cm)'
+      px: 'Pixels (px)'
+      in: 'Inches (in)'
+  origin:
+    label: 'Origin'
+    option:
+      top_left: 'Top left'
+      bottom_left: 'Bottom left'
+      top_right: 'Top right'
+      bottom_right: 'Bottom right'
+  signature_boxes:
+    label: 'Signature boxes'
+    min_message: 'At least {{ limit }} signature box(es) required.'
+    max_message: 'At most {{ limit }} signature box(es) allowed.'
+
+signature_box_type:
+  name:
+    placeholder: 'Box name (e.g. signer_1)'
+  page:
+    label: 'Page'
+  width:
+    label: 'Width'
+  height:
+    label: 'Height'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Coordinates saved successfully.'
+
+proxy:
+  invalid_url: 'Invalid or missing URL.'
+  error_load: 'Error loading PDF:'
+
+js:
+  error_load_pdf: 'Error loading PDF: '
+  alert_url_required: 'Please enter a PDF URL.'
+  loading_state: 'Loading...'
+  load_pdf_btn: 'Load PDF'
+  default_box_name: 'signature'
+  alert_submit_error: 'Error submitting coordinates.'

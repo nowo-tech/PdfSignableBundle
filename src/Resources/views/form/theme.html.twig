@@ -1,0 +1,149 @@
+{#
+  Form theme: SignatureCoordinatesType (PDF + boxes) and SignatureBoxType.
+  Registers blocks: signature_box_widget, signature_box_row, signature_coordinates_widget.
+  Requires: form_div_layout.html.twig, PDF.js (CDN), pdf-signable.js.
+#}
+{% use "form_div_layout.html.twig" %}
+
+{#
+  Block: signature_box_widget
+  Renders a single signature box (name, page, width, height, x, y).
+  Override in app: {% block signature_box_widget %} ... {% endblock %}
+#}
+{% block signature_box_widget %}
+  {% include "@NowoPdfSignable/form/_signature_box_type_widget.html.twig" with { form: form } %}
+{% endblock %}
+
+{% block signature_box_row %}
+  {{ form_widget(form) }}
+{% endblock %}
+
+{#
+  Block: signature_coordinates_widget
+  Full widget: PDF viewer card (left) + signature boxes card (right).
+  Structure:
+  - .nowo-pdf-signable-widget: root
+  - #pdf-viewer-container: scrollable area, contains #pdf-placeholder and #pdf-canvas-wrapper
+  - #loadPdfBtn, .pdf-url-input: URL load controls
+  - #signature-boxes-list: collection container, data-prototype for JS add
+  - .unit-selector, .origin-selector: coordinate system
+  - #addBoxBtn, .remove-box: add/remove boxes
+  - PDF.js and pdf-signable.js loaded at end
+#}
+{% block signature_coordinates_widget %}
+  {% set opts = form.vars.signature_coordinates_options|default({}) %}
+  {# Inline styles: scoped to .nowo-pdf-signable-widget to avoid conflicts #}
+  <style>
+    .nowo-pdf-signable-widget #pdf-viewer-container { position: relative; overflow: auto; max-height: 75vh; min-height: 400px; border: 1px solid #dee2e6; border-radius: 0.375rem; background: #f8f9fa; padding: 0.5rem; scrollbar-gutter: stable; }
+    .nowo-pdf-signable-widget #pdf-canvas-wrapper { position: relative; display: block; width: 100%; }
+    .nowo-pdf-signable-widget #pdf-canvas-wrapper canvas { display: block; cursor: crosshair; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .nowo-pdf-signable-widget .pdf-page-wrapper { position: relative; display: inline-block; margin-bottom: 10px; }
+    .nowo-pdf-signable-widget .signature-overlays { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .nowo-pdf-signable-widget .signature-overlays .signature-box-overlay { pointer-events: auto; }
+    .nowo-pdf-signable-widget .signature-box-overlay { position: absolute; border: 2px solid rgba(13, 110, 253, 0.8); background: rgba(13, 110, 253, 0.12); box-sizing: border-box; font-size: 10px; color: #0d6efd; overflow: hidden; cursor: move; user-select: none; }
+    .nowo-pdf-signable-widget .signature-box-overlay.dragging { z-index: 10; opacity: 0.9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .nowo-pdf-signable-widget .signature-box-overlay .overlay-label { padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nowo-pdf-signable-widget .signature-box-overlay .resize-handle { position: absolute; width: 8px; height: 8px; background: rgba(13, 110, 253, 0.9); border: 1px solid #fff; border-radius: 2px; pointer-events: auto; z-index: 1; }
+    .nowo-pdf-signable-widget .signature-box-overlay .resize-handle.nw { top: -4px; left: -4px; cursor: nwse-resize; }
+    .nowo-pdf-signable-widget .signature-box-overlay .resize-handle.ne { top: -4px; right: -4px; cursor: nesw-resize; }
+    .nowo-pdf-signable-widget .signature-box-overlay .resize-handle.sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
+    .nowo-pdf-signable-widget .signature-box-overlay .resize-handle.se { bottom: -4px; right: -4px; cursor: nwse-resize; }
+    .nowo-pdf-signable-widget .signature-box-item { border: 1px solid #dee2e6; padding: 1rem; margin-bottom: 0.75rem; border-radius: 0.375rem; background: #fff; }
+    .nowo-pdf-signable-widget #signature-boxes-list { max-height: 50vh; overflow-y: auto; }
+  </style>
+  {# Main layout: 7/12 PDF viewer, 5/12 boxes list #}
+  <div class="row g-4 nowo-pdf-signable-widget">
+    {# PDF viewer card #}
+    <div class="col-lg-7">
+      <div class="card h-100">
+        <div class="card-header py-3">
+          <h6 class="card-title mb-0">{{ 'page.pdf_viewer'|trans({}, 'nowo_pdf_signable') }}</h6>
+        </div>
+        <div class="card-body">
+          {% if opts.url_field|default(true) %}
+            <label class="form-label small text-uppercase fw-semibold text-muted mb-2">{{ form.pdfUrl.vars.label is defined ? form.pdfUrl.vars.label : ('page.url_label'|trans({}, 'nowo_pdf_signable')) }}</label>
+            <div class="input-group input-group-lg mb-3">
+              {{ form_widget(form.pdfUrl) }}
+              <button type="button" class="btn btn-primary px-4" id="loadPdfBtn">{{ 'page.load'|trans({}, 'nowo_pdf_signable') }}</button>
+            </div>
+            {{ form_errors(form.pdfUrl) }}
+          {% else %}
+            {{ form_widget(form.pdfUrl) }}
+          {% endif %}
+          <div id="pdf-viewer-container">
+            <div id="pdf-placeholder" class="text-center text-muted py-5">
+              <p class="mb-0">{{ 'page.placeholder_intro'|trans({}, 'nowo_pdf_signable') }}</p>
+            </div>
+            <div id="pdf-canvas-wrapper" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {# Signature boxes card: unit/origin selectors, list, add/remove #}
+    <div class="col-lg-5 ps-lg-4">
+      <div class="card">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+          <h6 class="card-title mb-0">{{ 'page.signature_boxes'|trans({}, 'nowo_pdf_signable') }}</h6>
+          <button type="button" class="btn btn-outline-primary btn-sm" id="addBoxBtn" data-max-entries="{{ opts.max_entries is defined and opts.max_entries is not null ? opts.max_entries : '' }}">{{ 'page.add'|trans({}, 'nowo_pdf_signable') }}</button>
+        </div>
+        <div class="card-body">
+          <div class="row align-items-center mb-3 g-2">
+            <div class="col-auto">
+              <label class="form-label small text-muted mb-0 me-2">{{ 'page.units_label'|trans({}, 'nowo_pdf_signable') }}</label>
+            </div>
+            <div class="col-auto">{{ form_widget(form.unit, { attr: { class: 'unit-selector form-select form-select-sm w-auto' } }) }}</div>
+            <div class="col-auto"><span class="badge bg-secondary" id="unitBadge">mm</span></div>
+            <div class="col-auto ms-md-3">
+              <label class="form-label small text-muted mb-0 me-2">{{ 'page.origin_label'|trans({}, 'nowo_pdf_signable') }}</label>
+            </div>
+            <div class="col-auto">{{ form_widget(form.origin, { attr: { class: 'origin-selector form-select form-select-sm w-auto' } }) }}</div>
+          </div>
+          <p class="small text-muted mb-3">{{ 'page.help_text'|trans({}, 'nowo_pdf_signable') }}</p>
+          {# Prototype for JS: used when adding new boxes via #addBoxBtn #}
+          {% set boxPrototype %}
+            <div class="signature-box-item" data-index="__name__">
+              {{ form_row(form.signatureBoxes.vars.prototype) }}
+              <div class="mt-2 pt-2 border-top">
+                <button type="button" class="btn btn-sm btn-outline-danger remove-box">{{ 'page.delete'|trans({}, 'nowo_pdf_signable') }}</button>
+              </div>
+            </div>
+          {% endset %}
+          <div id="signature-boxes-list" data-prototype="{{ boxPrototype|e('html_attr') }}" data-min-entries="{{ opts.min_entries|default(0) }}" data-max-entries="{{ opts.max_entries is defined and opts.max_entries is not null ? opts.max_entries : '' }}">
+            {% for box in form.signatureBoxes %}
+              <div class="signature-box-item" data-index="{{ loop.index0 }}">
+                {{ form_row(box) }}
+                <div class="mt-2 pt-2 border-top">
+                  <button type="button" class="btn btn-sm btn-outline-danger remove-box">{{ 'page.delete'|trans({}, 'nowo_pdf_signable') }}</button>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <div id="signature-boxes-empty" class="text-center text-muted py-4 {% if form.signatureBoxes|length > 0 %}d-none{% endif %}">
+            <p class="small mb-0">{{ 'page.empty_state'|trans({}, 'nowo_pdf_signable') }}</p>
+          </div>
+          <hr class="my-4">
+          <div class="d-grid">
+            <button type="submit" class="btn btn-success btn-lg">{{ 'page.save_coordinates'|trans({}, 'nowo_pdf_signable') }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {# PDF.js from CDN; config and pdf-signable.js must load after #}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+  <script>
+    window.NowoPdfSignableConfig = {
+      proxyUrl: {{ path('nowo_pdf_signable_proxy')|json_encode|raw }},
+      strings: {
+        error_load_pdf: {{ 'js.error_load_pdf'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
+        alert_url_required: {{ 'js.alert_url_required'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
+        alert_submit_error: {{ 'js.alert_submit_error'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
+        loading_state: {{ 'js.loading_state'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
+        load_pdf_btn: {{ 'js.load_pdf_btn'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
+        default_box_name: {{ 'js.default_box_name'|trans({}, 'nowo_pdf_signable')|json_encode|raw }}
+      }
+    };
+  </script>
+  <script src="{{ asset('bundles/nowopdfsignable/js/pdf-signable.js') }}"></script>
+{% endblock %}
