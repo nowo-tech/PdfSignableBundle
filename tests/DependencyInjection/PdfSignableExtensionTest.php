@@ -54,20 +54,22 @@ final class PdfSignableExtensionTest extends TestCase
     public function testPrependAddsTwigAndFrameworkConfig(): void
     {
         $container = new ContainerBuilder();
-        $container->registerExtension(new class () extends Extension {
+        $container->registerExtension(new class extends Extension {
             public function getAlias(): string
             {
                 return 'twig';
             }
+
             public function load(array $configs, ContainerBuilder $container): void
             {
             }
         });
-        $container->registerExtension(new class () extends Extension {
+        $container->registerExtension(new class extends Extension {
             public function getAlias(): string
             {
                 return 'framework';
             }
+
             public function load(array $configs, ContainerBuilder $container): void
             {
             }

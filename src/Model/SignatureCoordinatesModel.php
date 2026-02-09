@@ -55,6 +55,7 @@ class SignatureCoordinatesModel
     public function setPdfUrl(?string $pdfUrl): self
     {
         $this->pdfUrl = $pdfUrl;
+
         return $this;
     }
 
@@ -74,6 +75,7 @@ class SignatureCoordinatesModel
     public function setUnit(string $unit): self
     {
         $this->unit = $unit;
+
         return $this;
     }
 
@@ -93,6 +95,7 @@ class SignatureCoordinatesModel
     public function setOrigin(string $origin): self
     {
         $this->origin = $origin;
+
         return $this;
     }
 
@@ -116,6 +119,7 @@ class SignatureCoordinatesModel
     public function setSignatureBoxes(array $signatureBoxes): self
     {
         $this->signatureBoxes = $signatureBoxes;
+
         return $this;
     }
 
@@ -127,6 +131,7 @@ class SignatureCoordinatesModel
     public function addSignatureBox(SignatureBoxModel $box): self
     {
         $this->signatureBoxes[] = $box;
+
         return $this;
     }
 
@@ -162,6 +167,7 @@ class SignatureCoordinatesModel
                 $model->addSignatureBox(SignatureBoxModel::fromArray($boxData));
             }
         }
+
         return $model;
     }
 }

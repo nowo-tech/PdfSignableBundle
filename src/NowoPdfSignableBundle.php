@@ -20,8 +20,6 @@ final class NowoPdfSignableBundle extends Bundle
 {
     /**
      * Returns the container extension (PdfSignableExtension).
-     *
-     * @return ExtensionInterface|null
      */
     public function getContainerExtension(): ?ExtensionInterface
     {

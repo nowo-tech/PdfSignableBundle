@@ -10,7 +10,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 /**
  * Defines the bundle configuration tree (proxy_enabled, proxy_url_allowlist, example_pdf_url, configs).
  *
- * @see \Nowo\PdfSignableBundle\DependencyInjection\PdfSignableExtension
+ * @see PdfSignableExtension
  */
 final class Configuration implements ConfigurationInterface
 {

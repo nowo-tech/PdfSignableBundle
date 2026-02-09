@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Nowo\PdfSignableBundle\Tests\Controller;
 
 use Nowo\PdfSignableBundle\Controller\SignatureController;
-use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
 use Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -76,6 +75,7 @@ final class SignatureControllerTest extends TestCase
             if ($event instanceof PdfProxyRequestEvent) {
                 $event->setResponse($customResponse);
             }
+
             return $event;
         });
         $translator = $this->createMock(TranslatorInterface::class);
@@ -163,6 +163,7 @@ final class SignatureControllerTest extends TestCase
             if ($event instanceof PdfProxyRequestEvent) {
                 $event->setResponse($customResponse);
             }
+
             return $event;
         });
         $translator = $this->createMock(TranslatorInterface::class);
@@ -185,6 +186,7 @@ final class SignatureControllerTest extends TestCase
             if ($event instanceof PdfProxyRequestEvent) {
                 $event->setResponse($customResponse);
             }
+
             return $event;
         });
         $translator = $this->createMock(TranslatorInterface::class);
