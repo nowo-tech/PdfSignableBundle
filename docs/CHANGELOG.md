@@ -19,6 +19,10 @@ _Nothing yet._
 - **Default values per box name** (`box_defaults_by_name`): form option to pre-fill width, height, x, y, angle when the user selects a name (dropdown or input). See [USAGE](USAGE.md) and [ROADMAP](ROADMAP.md).
 - **Demos**: added rotation, defaults-by-name, and allow-overlap demo pages (16 demo pages in total for Symfony 7 and 8).
 
+### Fixed
+
+- **CI**: translation validation step now runs after `composer install` so `vendor/autoload.php` exists (fixes failure in GitHub Actions).
+
 For upgrade steps from 1.1.x, see [UPGRADING](UPGRADING.md).
 
 ---
