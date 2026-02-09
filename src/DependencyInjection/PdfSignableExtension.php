@@ -6,15 +6,18 @@ namespace Nowo\PdfSignableBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
  * Loads bundle configuration and services, and prepends Twig and Framework translator paths.
  *
  * Registers the bundle's services (SignatureController, form types) and sets parameters
  * (proxy_enabled, proxy_url_allowlist, example_pdf_url, configs) from config.
+ *
+ * Extends DependencyInjection\Extension\Extension (Symfony 6.4+); the previous
+ * HttpKernel\DependencyInjection\Extension was just extending this class and is deprecated.
  */
 final class PdfSignableExtension extends Extension implements PrependExtensionInterface
 {
