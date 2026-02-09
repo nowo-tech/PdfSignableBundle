@@ -6,14 +6,31 @@ namespace Nowo\PdfSignableBundle\Tests\Controller;
 
 use Nowo\PdfSignableBundle\Controller\SignatureController;
 use Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent;
+use Nowo\PdfSignableBundle\Event\SignatureCoordinatesSubmittedEvent;
+use Nowo\PdfSignableBundle\Form\SignatureBoxType;
+use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
+use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
+use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
+use Symfony\Component\Form\FormFactoryBuilder;
+use Symfony\Component\Form\PreloadedExtension;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Validator\Validation;
+use Twig\Environment;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Unit tests for SignatureController: proxy disabled, invalid URL, JSON detection.
+ * Unit tests for SignatureController: index (GET/POST, JSON/redirect), proxy disabled, invalid URL, SSRF.
  */
 final class SignatureControllerTest extends TestCase
 {
@@ -34,6 +51,145 @@ final class SignatureControllerTest extends TestCase
         $translator->method('trans')->willReturnArgument(0);
 
         return new SignatureController($dispatcher, $translator, $proxyEnabled, $proxyUrlAllowlist, $examplePdfUrl);
+    }
+
+    /**
+     * Builds a minimal container with form.factory, twig, router and request_stack for index() tests.
+     *
+     * @param Request|null $request Request to use as current (for request_stack)
+     * @param Session|null $session Session to return from request_stack->getSession() (if null, uses $request->getSession() when available)
+     */
+    private function createContainerForIndex(?Request $request = null, ?Session $session = null): ContainerInterface
+    {
+        $formFactory = (new FormFactoryBuilder())
+            ->addExtension(new HttpFoundationExtension())
+            ->addExtension(new PreloadedExtension(
+                [new SignatureBoxType(), new SignatureCoordinatesType('', [])],
+                []
+            ))
+            ->addExtension(new ValidatorExtension(Validation::createValidator()))
+            ->getFormFactory();
+
+        $twig = $this->createMock(Environment::class);
+        $twig->method('render')->willReturn('<html>form</html>');
+
+        $router = $this->createMock(RouterInterface::class);
+        $router->method('generate')->with('nowo_pdf_signable_index', [], UrlGeneratorInterface::ABSOLUTE_PATH)->willReturn('/pdf-signable');
+
+        $sessionToUse = $session ?? ($request?->hasSession() ? $request->getSession() : null);
+        $requestStack = $this->createMock(RequestStack::class);
+        $requestStack->method('getCurrentRequest')->willReturn($request);
+        if ($sessionToUse !== null) {
+            $requestStack->method('getSession')->willReturn($sessionToUse);
+        }
+
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('has')->willReturnMap([
+            ['form.factory', true],
+            ['twig', true],
+            ['router', true],
+            ['request_stack', true],
+        ]);
+        $container->method('get')->willReturnCallback(static function (string $id) use ($formFactory, $twig, $router, $requestStack) {
+            return match ($id) {
+                'form.factory' => $formFactory,
+                'twig' => $twig,
+                'router' => $router,
+                'request_stack' => $requestStack,
+                default => throw new \InvalidArgumentException("Unknown service: {$id}"),
+            };
+        });
+
+        return $container;
+    }
+
+    public function testIndexGetRendersForm(): void
+    {
+        $controller = $this->createController(proxyEnabled: true, proxyUrlAllowlist: [], examplePdfUrl: '');
+        $request = Request::create('/pdf-signable', 'GET');
+        $controller->setContainer($this->createContainerForIndex($request));
+
+        $response = $controller->index($request);
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertStringContainsString('<html>form</html>', $response->getContent());
+    }
+
+    public function testIndexPostValidRedirectsWithFlash(): void
+    {
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(function (object $event): object {
+            if ($event instanceof SignatureCoordinatesSubmittedEvent) {
+                // ensure the event was dispatched with model and request
+                self::assertInstanceOf(SignatureCoordinatesModel::class, $event->getCoordinates());
+                self::assertCount(1, $event->getCoordinates()->getSignatureBoxes());
+            }
+
+            return $event;
+        });
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $controller = new SignatureController($dispatcher, $translator, true, [], '');
+        $session = new Session(new MockArraySessionStorage());
+        $request = Request::create('/pdf-signable', 'POST', [
+            'signature_coordinates' => [
+                'pdfUrl' => 'https://example.com/doc.pdf',
+                'unit' => SignatureCoordinatesModel::UNIT_MM,
+                'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'signatureBoxes' => [
+                    0 => ['name' => 'signer_1', 'page' => 1, 'width' => 150.0, 'height' => 40.0, 'x' => 50.0, 'y' => 100.0],
+                ],
+            ],
+        ]);
+        $request->setSession($session);
+        $controller->setContainer($this->createContainerForIndex($request, $session));
+
+        $response = $controller->index($request);
+
+        self::assertInstanceOf(RedirectResponse::class, $response);
+        self::assertSame(302, $response->getStatusCode());
+        self::assertSame('/pdf-signable', $response->headers->get('Location'));
+        $flashes = $session->getFlashBag()->get('success');
+        self::assertCount(1, $flashes, 'Flash bag should contain one success message');
+        self::assertSame('flash.save.success', $flashes[0]);
+    }
+
+    public function testIndexPostValidReturnsJsonWhenWantsJson(): void
+    {
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnArgument(0);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $controller = new SignatureController($dispatcher, $translator, true, [], '');
+        $request = Request::create('/pdf-signable', 'POST', [
+            'signature_coordinates' => [
+                'pdfUrl' => 'https://example.com/doc.pdf',
+                'unit' => SignatureCoordinatesModel::UNIT_PT,
+                'origin' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+                'signatureBoxes' => [
+                    0 => ['name' => 'witness', 'page' => 2, 'width' => 120.0, 'height' => 35.0, 'x' => 10.0, 'y' => 200.0],
+                ],
+            ],
+        ]);
+        $request->headers->set('Accept', 'application/json');
+        $controller->setContainer($this->createContainerForIndex($request));
+
+        $response = $controller->index($request);
+
+        self::assertInstanceOf(\Symfony\Component\HttpFoundation\JsonResponse::class, $response);
+        self::assertSame(200, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertTrue($data['success']);
+        self::assertSame(SignatureCoordinatesModel::UNIT_PT, $data['unit']);
+        self::assertSame(SignatureCoordinatesModel::ORIGIN_TOP_LEFT, $data['origin']);
+        self::assertIsArray($data['coordinates']);
+        self::assertCount(1, $data['coordinates']);
+        self::assertSame('witness', $data['coordinates'][0]['name']);
+        self::assertSame(2, $data['coordinates'][0]['page']);
+        self::assertEqualsWithDelta(10.0, $data['coordinates'][0]['x'], 0.01);
+        self::assertEqualsWithDelta(200.0, $data['coordinates'][0]['y'], 0.01);
+        self::assertEqualsWithDelta(120.0, $data['coordinates'][0]['width'], 0.01);
+        self::assertEqualsWithDelta(35.0, $data['coordinates'][0]['height'], 0.01);
     }
 
     public function testProxyDisabledReturns403(): void

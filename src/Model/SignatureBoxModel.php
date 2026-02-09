@@ -8,21 +8,35 @@ namespace Nowo\PdfSignableBundle\Model;
  * Single signature box: page number, name, coordinates (x, y, width, height) and optional rotation angle.
  *
  * Used as data_class for SignatureBoxType and as collection items in SignatureCoordinatesModel.
+ * All coordinates and dimensions use the unit/origin defined on the parent SignatureCoordinatesModel.
  */
 class SignatureBoxModel
 {
+    /** @var int 1-based PDF page number. */
     private int $page = 1;
+
+    /** @var string Box label or role (e.g. signer_1, witness). */
     private string $name = '';
+
+    /** @var float Horizontal position in the configured unit. */
     private float $x = 0.0;
+
+    /** @var float Vertical position in the configured unit. */
     private float $y = 0.0;
+
+    /** @var float Box width in the configured unit. */
     private float $width = 150.0;
+
+    /** @var float Box height in the configured unit. */
     private float $height = 40.0;
 
-    /** Rotation angle in degrees (0 = no rotation). */
+    /** @var float Rotation angle in degrees (0 = no rotation). */
     private float $angle = 0.0;
 
     /**
      * Gets the PDF page number (1-based).
+     *
+     * @return int Page number (1 or greater)
      */
     public function getPage(): int
     {
@@ -31,6 +45,8 @@ class SignatureBoxModel
 
     /**
      * Sets the PDF page number (1-based).
+     *
+     * @param int $page Page number (1 or greater)
      *
      * @return $this
      */
@@ -43,6 +59,8 @@ class SignatureBoxModel
 
     /**
      * Gets the box label/identifier (e.g. signer role).
+     *
+     * @return string Box name
      */
     public function getName(): string
     {
@@ -51,6 +69,8 @@ class SignatureBoxModel
 
     /**
      * Sets the box label/identifier.
+     *
+     * @param string $name Box name (e.g. signer_1, witness)
      *
      * @return $this
      */
@@ -63,6 +83,8 @@ class SignatureBoxModel
 
     /**
      * Gets the horizontal position (x) in the configured unit.
+     *
+     * @return float X coordinate
      */
     public function getX(): float
     {
@@ -71,6 +93,8 @@ class SignatureBoxModel
 
     /**
      * Sets the horizontal position (x).
+     *
+     * @param float $x X coordinate in the configured unit
      *
      * @return $this
      */
@@ -83,6 +107,8 @@ class SignatureBoxModel
 
     /**
      * Gets the vertical position (y) in the configured unit.
+     *
+     * @return float Y coordinate
      */
     public function getY(): float
     {
@@ -91,6 +117,8 @@ class SignatureBoxModel
 
     /**
      * Sets the vertical position (y).
+     *
+     * @param float $y Y coordinate in the configured unit
      *
      * @return $this
      */
@@ -103,6 +131,8 @@ class SignatureBoxModel
 
     /**
      * Gets the box width in the configured unit.
+     *
+     * @return float Width
      */
     public function getWidth(): float
     {
@@ -111,6 +141,8 @@ class SignatureBoxModel
 
     /**
      * Sets the box width.
+     *
+     * @param float $width Width in the configured unit
      *
      * @return $this
      */
@@ -123,6 +155,8 @@ class SignatureBoxModel
 
     /**
      * Gets the box height in the configured unit.
+     *
+     * @return float Height
      */
     public function getHeight(): float
     {
@@ -131,6 +165,8 @@ class SignatureBoxModel
 
     /**
      * Sets the box height.
+     *
+     * @param float $height Height in the configured unit
      *
      * @return $this
      */
@@ -143,6 +179,8 @@ class SignatureBoxModel
 
     /**
      * Gets the rotation angle in degrees (0 = no rotation).
+     *
+     * @return float Angle in degrees
      */
     public function getAngle(): float
     {
@@ -151,6 +189,8 @@ class SignatureBoxModel
 
     /**
      * Sets the rotation angle in degrees.
+     *
+     * @param float $angle Angle in degrees (e.g. -180 to 180)
      *
      * @return $this
      */
@@ -182,7 +222,9 @@ class SignatureBoxModel
     /**
      * Creates a box from an array (e.g. from JSON/YAML import).
      *
-     * @param array{name?: string, page?: int, x?: float, y?: float, width?: float, height?: float, angle?: float} $data
+     * @param array{name?: string, page?: int, x?: float, y?: float, width?: float, height?: float, angle?: float} $data Raw data with optional keys; defaults applied for missing values
+     *
+     * @return self New instance with data applied
      */
     public static function fromArray(array $data): self
     {

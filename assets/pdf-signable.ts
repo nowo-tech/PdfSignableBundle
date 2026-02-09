@@ -117,14 +117,18 @@ function escapeHtml(s: string): string {
 const BOX_COLOR_BASE_HUE = 220;
 /** Hue step per signer index so colors stay distinct and never repeat (no fixed palette size). */
 const BOX_COLOR_HUE_STEP = 37;
+/** Saturation (0–100) for box border/background. */
 const BOX_COLOR_S = 65;
+/** Lightness (0–100) for box border/background. */
 const BOX_COLOR_L = 48;
 
 /**
  * Converts HSL to hex (#rrggbb).
+ *
  * @param h - Hue 0–360
  * @param s - Saturation 0–100
  * @param l - Lightness 0–100
+ * @returns Hex color string (e.g. '#0d6efd')
  */
 function hslToHex(h: number, s: number, l: number): string {
   h = h % 360;
@@ -247,6 +251,87 @@ function run(): void {
   let touchTranslate = { x: 0, y: 0 };
   let touchWrapper: HTMLElement | null = null;
 
+  /** Maximum width in pixels for each thumbnail in the strip. */
+  const THUMB_MAX_WIDTH = 80;
+
+  /**
+   * Fills the thumbnail strip with page thumbnails and wires scroll sync.
+   * Layout (strip + scroll) must already exist (see ensureThumbnailsLayout).
+   *
+   * @returns void
+   */
+  function buildThumbnailsAndLayout(): void {
+    if (!pdfDoc || !pdfViewerContainer) return;
+    const thumbStrip = pdfViewerContainer.querySelector('#pdf-thumbnails-strip');
+    const scrollWrapper = pdfViewerContainer.querySelector('.pdf-viewer-scroll');
+    if (!thumbStrip || !scrollWrapper) return;
+
+    (async () => {
+      for (let num = 1; num <= pdfDoc!.numPages; num++) {
+        const page = await pdfDoc!.getPage(num);
+        const vp1 = page.getViewport({ scale: 1 });
+        const thumbScale = THUMB_MAX_WIDTH / vp1.width;
+        const thumbVp = page.getViewport({ scale: thumbScale });
+        const canvas = document.createElement('canvas');
+        canvas.width = thumbVp.width;
+        canvas.height = thumbVp.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) continue;
+        await page.render({ canvasContext: ctx, viewport: thumbVp }).promise;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pdf-thumb';
+        btn.dataset.page = String(num);
+        btn.setAttribute('aria-label', 'Page ' + num);
+        btn.appendChild(canvas);
+        btn.addEventListener('click', () => {
+          const wrapper = canvasWrapper.querySelector(
+            '.pdf-page-wrapper[data-page="' + num + '"]'
+          ) as HTMLElement | null;
+          if (wrapper) {
+            wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            thumbStrip.querySelectorAll('.pdf-thumb.current').forEach((el) => el.classList.remove('current'));
+            btn.classList.add('current');
+          }
+        });
+        thumbStrip.appendChild(btn);
+      }
+
+      const updateCurrentThumb = (): void => {
+        const strip = thumbStrip;
+        const wrappers = canvasWrapper.querySelectorAll('.pdf-page-wrapper');
+        if (wrappers.length === 0) return;
+        const scrollRect = (scrollWrapper as HTMLElement).getBoundingClientRect();
+        const viewCenter = scrollRect.top + scrollRect.height / 2;
+        let best = 1;
+        let bestDist = Infinity;
+        wrappers.forEach((el) => {
+          const pageNum = parseInt((el as HTMLElement).dataset.page ?? '1', 10);
+          const rect = el.getBoundingClientRect();
+          const elCenter = rect.top + rect.height / 2;
+          const dist = Math.abs(elCenter - viewCenter);
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = pageNum;
+          }
+        });
+        strip.querySelectorAll('.pdf-thumb.current').forEach((el) => el.classList.remove('current'));
+        const currentBtn = strip.querySelector('.pdf-thumb[data-page="' + best + '"]');
+        if (currentBtn) currentBtn.classList.add('current');
+      };
+
+      scrollWrapper.addEventListener('scroll', updateCurrentThumb);
+      requestAnimationFrame(updateCurrentThumb);
+      if (thumbStrip.firstElementChild) (thumbStrip.firstElementChild as HTMLElement).classList.add('current');
+    })();
+  }
+
+  /**
+   * Creates the touch wrapper element and moves the canvas wrapper inside it for pinch-zoom/pan.
+   * Idempotent: does nothing if the wrapper already exists.
+   *
+   * @returns void
+   */
   function ensureTouchWrapper(): void {
     if (touchWrapper || !pdfViewerContainer) return;
     touchWrapper = document.createElement('div');
@@ -258,6 +343,11 @@ function run(): void {
     setupTouchListeners();
   }
 
+  /**
+   * Attaches touch listeners for two-finger pinch zoom and pan on the PDF viewer.
+   *
+   * @returns void
+   */
   function setupTouchListeners(): void {
     if (!touchWrapper) return;
     let initialDistance = 0;
@@ -437,20 +527,49 @@ function run(): void {
   }
 
   /**
-   * Computes a scale so that the first page fits the viewer container width (minus padding).
-   * @returns Scale factor for getViewport({ scale })
+   * Ensures the thumbnail strip and scroll wrapper exist so the PDF area has a defined width.
+   * When present, getScaleForContainer() uses the scroll area width so the PDF fits without horizontal scroll.
+   * Idempotent: does nothing if the layout already exists.
+   *
+   * @returns void
+   */
+  function ensureThumbnailsLayout(): void {
+    if (!pdfViewerContainer || !touchWrapper) return;
+    const existingScroll = pdfViewerContainer.querySelector('.pdf-viewer-scroll');
+    if (existingScroll) return;
+    const thumbStrip = document.createElement('div');
+    thumbStrip.id = 'pdf-thumbnails-strip';
+    thumbStrip.setAttribute('aria-label', 'Page thumbnails');
+    const scrollWrapper = document.createElement('div');
+    scrollWrapper.className = 'pdf-viewer-scroll';
+    scrollWrapper.appendChild(touchWrapper);
+    pdfViewerContainer.appendChild(scrollWrapper);
+    pdfViewerContainer.insertBefore(thumbStrip, scrollWrapper);
+  }
+
+  /**
+   * Computes a scale so that the first page fits the viewer width (minus padding).
+   * When the thumbnails layout exists, uses the scroll area width so the PDF has no horizontal scroll.
+   *
+   * @returns {Promise<number>} Scale factor for getViewport({ scale })
    */
   async function getScaleForContainer(): Promise<number> {
     if (!pdfDoc || !pdfViewerContainer) return 1.5;
     const page = await pdfDoc.getPage(1);
     const vp1 = page.getViewport({ scale: 1 });
-    const w = pdfViewerContainer.clientWidth - 24;
+    const scrollEl = pdfViewerContainer.querySelector('.pdf-viewer-scroll');
+    const contentWidth = scrollEl
+      ? (scrollEl as HTMLElement).clientWidth - 24
+      : pdfViewerContainer.clientWidth - 24;
+    const w = Math.max(0, contentWidth);
     return w <= 0 ? 1.5 : Math.max(0.5, w / vp1.width);
   }
 
   /**
    * Loads the PDF from the URL input (or proxy), renders all pages and builds overlay containers.
-   * Shows loading state and errors via config strings.
+   * Shows loading state and errors via config strings. Establishes thumbnails layout before scaling.
+   *
+   * @returns {Promise<void>}
    */
   async function loadPdf(): Promise<void> {
     const url = pdfUrlInput?.value?.trim() ?? '';
@@ -469,6 +588,14 @@ function run(): void {
     if (pdfPlaceholder) pdfPlaceholder.style.display = 'block';
     canvasWrapper.style.display = 'none';
     canvasWrapper.innerHTML = '';
+    const strip = pdfViewerContainer?.querySelector('#pdf-thumbnails-strip');
+    const scroll = pdfViewerContainer?.querySelector('.pdf-viewer-scroll');
+    if (scroll && touchWrapper && touchWrapper.parentElement === scroll) {
+      scroll.removeChild(touchWrapper);
+      pdfViewerContainer?.appendChild(touchWrapper);
+    }
+    strip?.remove();
+    scroll?.remove();
     touchScale = 1;
     touchTranslate = { x: 0, y: 0 };
     if (touchWrapper) {
@@ -490,6 +617,8 @@ function run(): void {
     try {
       pdfDoc = await pdfjsLib.getDocument(loadUrl).promise;
       Object.keys(pageViewports).forEach((k) => delete pageViewports[Number(k)]);
+      ensureTouchWrapper();
+      ensureThumbnailsLayout();
       const scale = await getScaleForContainer();
 
       for (let num = 1; num <= pdfDoc.numPages; num++) {
@@ -521,7 +650,7 @@ function run(): void {
 
       if (pdfPlaceholder) pdfPlaceholder.style.display = 'none';
       canvasWrapper.style.display = 'block';
-      ensureTouchWrapper();
+      buildThumbnailsAndLayout();
       // Draw overlays when landing with data: run after paint and with retries so boxes always show
       const scheduleOverlayUpdates = (): void => {
         updateOverlays();
@@ -547,6 +676,8 @@ function run(): void {
    * Rebuilds all signature box overlays from the form inputs (page, x, y, width, height, unit, origin).
    * Clears existing overlays and creates one overlay per signature-box-item.
    * Skips when isDragging to avoid removing the overlay being dragged.
+   *
+   * @returns void
    */
   function updateOverlays(): void {
     if (isDragging || Object.keys(pageViewports).length === 0) return;
@@ -640,7 +771,8 @@ function run(): void {
 
   /**
    * Reads the max signature boxes allowed from data attributes (boxes list or add button).
-   * @returns Max entries or null if unlimited
+   *
+   * @returns {number|null} Max entries or null if unlimited
    */
   function getMaxEntries(): number | null {
     const raw = boxesList.dataset.maxEntries ?? addBoxBtn?.dataset.maxEntries ?? '';
@@ -649,7 +781,11 @@ function run(): void {
     return Number.isNaN(n) ? null : n;
   }
 
-  /** Hides the "Add box" button when the current box count has reached max_entries. */
+  /**
+   * Hides the "Add box" button when the current box count has reached max_entries.
+   *
+   * @returns void
+   */
   function updateAddButtonVisibility(): void {
     if (!addBoxBtn) return;
     const max = getMaxEntries();

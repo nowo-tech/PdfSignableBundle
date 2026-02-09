@@ -31,7 +31,7 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Named configurations** — Define presets in `nowo_pdf_signable.configs` and use `config: 'name'` when adding the form type
 - ✅ **URL modes** — Free-text URL input or dropdown choice (`url_mode: choice`, `url_choices`)
 - ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation; **page restriction** (`allowed_pages`); **sort order** on submit (`sort_boxes`); **no overlapping boxes** (`prevent_box_overlap`, default true); **optional rotation** (`enable_rotation`); **default values per name** (`box_defaults_by_name`); **snap to grid** (`snap_to_grid`) and **snap to other boxes** (`snap_to_boxes`, default true)
-- ✅ **Viewer** — **Touch**: pinch to zoom, two-finger pan on tablets
+- ✅ **Viewer** — **Thumbnails**: page strip to jump to a page; **Touch**: pinch to zoom, two-finger pan on tablets
 - ✅ **Validation** — Required box name (NotBlank); `unique_box_names` global (`true`/`false`) or per-name (array) to enforce unique box names
 - ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent` for integration
 - ✅ **Compatibility** — Symfony 6.1+, 7.x, 8.x and PHP 8.1+
@@ -154,9 +154,11 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 - [Configuration](docs/CONFIGURATION.md) — Proxy, example URL, named configs
 - [Usage](docs/USAGE.md) — Form options, named configs, customization
 - [Events](docs/EVENTS.md) — Proxy and submission events
+- [Testing](docs/TESTING.md) — Test structure and code coverage
 - [Changelog](docs/CHANGELOG.md) — Version history
 - [Upgrading](docs/UPGRADING.md) — Upgrade instructions
 - [Roadmap](docs/ROADMAP.md) — Possible improvements and future ideas
+- [Accessibility](docs/ACCESSIBILITY.md) — Keyboard, screen readers, contrast
 - [Release process](docs/RELEASE.md) — How to create a release and tag
 - [Contributing](docs/CONTRIBUTING.md) — How to contribute
 - [Security](docs/SECURITY.md) — Reporting vulnerabilities

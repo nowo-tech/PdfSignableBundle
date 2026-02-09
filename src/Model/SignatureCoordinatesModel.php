@@ -32,15 +32,22 @@ class SignatureCoordinatesModel
     /** Origin at bottom-right corner. */
     public const ORIGIN_BOTTOM_RIGHT = 'bottom_right';
 
+    /** @var string|null PDF document URL (null if not set). */
     private ?string $pdfUrl = null;
+
+    /** @var string Measurement unit (one of UNIT_* constants). */
     private string $unit = self::UNIT_MM;
+
+    /** @var string Coordinate origin (one of ORIGIN_* constants). */
     private string $origin = self::ORIGIN_BOTTOM_LEFT;
 
-    /** @var SignatureBoxModel[] */
+    /** @var SignatureBoxModel[] List of signature boxes. */
     private array $signatureBoxes = [];
 
     /**
      * Gets the PDF document URL.
+     *
+     * @return string|null PDF URL or null if not set
      */
     public function getPdfUrl(): ?string
     {
@@ -49,6 +56,8 @@ class SignatureCoordinatesModel
 
     /**
      * Sets the PDF document URL.
+     *
+     * @param string|null $pdfUrl PDF URL or null to clear
      *
      * @return $this
      */
@@ -61,6 +70,8 @@ class SignatureCoordinatesModel
 
     /**
      * Gets the measurement unit (e.g. mm, pt).
+     *
+     * @return string One of UNIT_* constants
      */
     public function getUnit(): string
     {
@@ -69,6 +80,8 @@ class SignatureCoordinatesModel
 
     /**
      * Sets the measurement unit.
+     *
+     * @param string $unit One of UNIT_* constants (pt, mm, cm, px, in)
      *
      * @return $this
      */
@@ -81,6 +94,8 @@ class SignatureCoordinatesModel
 
     /**
      * Gets the coordinate origin (e.g. bottom_left).
+     *
+     * @return string One of ORIGIN_* constants
      */
     public function getOrigin(): string
     {
@@ -89,6 +104,8 @@ class SignatureCoordinatesModel
 
     /**
      * Sets the coordinate origin.
+     *
+     * @param string $origin One of ORIGIN_* constants (top_left, bottom_left, top_right, bottom_right)
      *
      * @return $this
      */
@@ -112,7 +129,7 @@ class SignatureCoordinatesModel
     /**
      * Sets the list of signature boxes.
      *
-     * @param SignatureBoxModel[] $signatureBoxes
+     * @param SignatureBoxModel[] $signatureBoxes Array of box models
      *
      * @return $this
      */
@@ -125,6 +142,8 @@ class SignatureCoordinatesModel
 
     /**
      * Appends a signature box to the collection.
+     *
+     * @param SignatureBoxModel $box Box to add
      *
      * @return $this
      */
@@ -153,7 +172,9 @@ class SignatureCoordinatesModel
     /**
      * Creates a coordinates model from an array (e.g. from JSON/YAML import).
      *
-     * @param array{pdf_url?: string|null, unit?: string, origin?: string, signature_boxes?: array<int, array>} $data
+     * @param array{pdf_url?: string|null, unit?: string, origin?: string, signature_boxes?: array<int, array>} $data Raw data; defaults applied for missing values
+     *
+     * @return self New instance with data applied
      */
     public static function fromArray(array $data): self
     {

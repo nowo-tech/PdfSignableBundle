@@ -27,16 +27,18 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * Exposes:
  * - GET/POST /pdf-signable: form page with SignatureCoordinatesType
  * - GET /pdf-signable/proxy?url=...: fetches external PDF to avoid CORS
+ *
+ * @internal This class is part of the bundle API; instantiation is handled by the container.
  */
 #[AsController]
 final class SignatureController extends AbstractController
 {
     /**
-     * @param EventDispatcherInterface $eventDispatcher   To dispatch signature and proxy events
-     * @param TranslatorInterface      $translator        For flash and error messages
+     * @param EventDispatcherInterface $eventDispatcher   Dispatches signature and proxy events
+     * @param TranslatorInterface      $translator         Used for flash and error messages
      * @param bool                     $proxyEnabled      Whether the proxy route is enabled
      * @param list<string>             $proxyUrlAllowlist When non-empty, proxy only allows these URL patterns
-     * @param string                   $examplePdfUrl     Default PDF URL for form preload
+     * @param string                   $examplePdfUrl     Default PDF URL for form preload when not POST
      */
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,

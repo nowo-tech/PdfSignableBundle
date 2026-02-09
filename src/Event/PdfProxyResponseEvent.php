@@ -29,6 +29,8 @@ final class PdfProxyResponseEvent extends Event
 
     /**
      * Returns the URL that was fetched.
+     *
+     * @return string The fetched URL
      */
     public function getUrl(): string
     {
@@ -37,6 +39,8 @@ final class PdfProxyResponseEvent extends Event
 
     /**
      * Returns the HTTP request to the proxy endpoint.
+     *
+     * @return Request The request to the proxy route
      */
     public function getRequest(): Request
     {
@@ -45,6 +49,8 @@ final class PdfProxyResponseEvent extends Event
 
     /**
      * Returns the response (PDF content). Listeners may replace it.
+     *
+     * @return Response The PDF response (may have been modified by listeners)
      */
     public function getResponse(): Response
     {

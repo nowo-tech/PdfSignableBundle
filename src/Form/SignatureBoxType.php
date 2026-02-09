@@ -22,6 +22,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
  *
  * Used as entry type in SignatureCoordinatesType's collection. Name can be
  * free text (input) or a choice list via name_mode and name_choices.
+ * Optional rotation angle when angle_enabled is true; page can be restricted via allowed_pages.
  */
 final class SignatureBoxType extends AbstractType
 {
@@ -32,9 +33,12 @@ final class SignatureBoxType extends AbstractType
     public const NAME_MODE_CHOICE = 'choice';
 
     /**
-     * Builds the form: name, page, width, height, x, y.
+     * Builds the form: name, page, width, height, x, y (and optionally angle).
      *
-     * @param array<string, mixed> $options Resolved options (name_mode, name_choices, etc.)
+     * @param FormBuilderInterface $builder Form builder
+     * @param array<string, mixed> $options Resolved options (name_mode, name_choices, allowed_pages, angle_enabled, etc.)
+     *
+     * @return void
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -133,6 +137,8 @@ final class SignatureBoxType extends AbstractType
      * Configures default options and allowed types for name, page and box fields.
      *
      * @param OptionsResolver $resolver The options resolver
+     *
+     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {

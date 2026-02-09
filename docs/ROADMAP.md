@@ -77,8 +77,8 @@ Key idea: **Multiple views (thumbnails)** — thumbnail panel for pages to jump 
 - **Text search in PDF**  
   Option to search text inside the document (highlight and optionally “go to page”).
 
-- **Multiple views (thumbnails)**  
-  Thumbnail panel for pages to jump quickly and see which page each box is on.
+- **Multiple views (thumbnails)** *(implemented)*  
+  Thumbnail strip on the left of the viewer: one thumbnail per page, click to scroll to that page. The current page is highlighted. See [USAGE](USAGE.md).
 
 - **Themes (light/dark)**  
   CSS variable or option so the overlay and UI follow the application theme.
@@ -115,8 +115,8 @@ Key idea: **Multiple views (thumbnails)** — thumbnail panel for pages to jump 
 - **Form type options reference**  
   Table or reference of all options for `SignatureCoordinatesType` and `SignatureBoxType` (in USAGE or a separate doc).
 
-- **Accessibility guide**  
-  Recommendations for keyboard, screen readers, and contrast in the viewer and form controls.
+- **Accessibility guide** *(implemented)*  
+  [ACCESSIBILITY.md](ACCESSIBILITY.md): keyboard shortcuts, focus order, screen readers (ARIA, loading overlay), contrast and visibility recommendations for the viewer and form controls.
 
 ---
 

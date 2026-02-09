@@ -27,7 +27,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * Form type for signature coordinates: PDF URL, unit, origin and a collection of signature boxes.
  *
  * Renders a full widget (PDF viewer + boxes). Options control URL field visibility/mode,
- * unit and origin choices, and min/max entries for the boxes collection.
+ * unit and origin choices, min/max entries, overlap validation, sort order and snap options.
  */
 final class SignatureCoordinatesType extends AbstractType
 {
@@ -93,7 +93,10 @@ final class SignatureCoordinatesType extends AbstractType
     /**
      * Builds the form: pdfUrl, unit, origin and signatureBoxes collection.
      *
+     * @param FormBuilderInterface $builder Form builder
      * @param array<string, mixed> $options Resolved options (pdf_url, url_field, units, etc.). Merged with named config when option "config" is set.
+     *
+     * @return void
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -316,6 +319,8 @@ final class SignatureCoordinatesType extends AbstractType
      * @param FormView             $view    The form view
      * @param FormInterface        $form    The form
      * @param array<string, mixed> $options Resolved form options
+     *
+     * @return void
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
@@ -345,6 +350,8 @@ final class SignatureCoordinatesType extends AbstractType
      * Configures default options and allowed types/values for URL, unit, origin and boxes.
      *
      * @param OptionsResolver $resolver The options resolver
+     *
+     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {

@@ -21,6 +21,7 @@ The bundle exposes a page at the configured route (default `/pdf-signable`) with
 ## Viewer interaction
 
 - **Load PDF**: enter the URL and click "Load PDF". A full-area loading overlay with spinner is shown while the document (or proxy) loads.
+- **Thumbnails**: a strip of page thumbnails appears on the left; click a thumbnail to scroll to that page. The current page is highlighted. See [ACCESSIBILITY](ACCESSIBILITY.md) for keyboard and screen reader use.
 - **Add box**: click on the PDF (the box top-left corner is placed where you click) or "Add box".
 - **Move**: drag an existing box.
 - **Resize**: drag the box corner handles.

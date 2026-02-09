@@ -28,6 +28,8 @@ final class SignatureCoordinatesSubmittedEvent extends Event
 
     /**
      * Returns the submitted signature coordinates model.
+     *
+     * @return SignatureCoordinatesModel The validated form data (PDF URL, unit, origin, boxes)
      */
     public function getCoordinates(): SignatureCoordinatesModel
     {
@@ -36,6 +38,8 @@ final class SignatureCoordinatesSubmittedEvent extends Event
 
     /**
      * Returns the HTTP request that submitted the form.
+     *
+     * @return Request The POST request with form data
      */
     public function getRequest(): Request
     {
