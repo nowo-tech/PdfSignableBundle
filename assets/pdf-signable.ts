@@ -32,6 +32,9 @@ export interface NowoPdfSignableConfig {
     loading_state: string;
     load_pdf_btn: string;
     default_box_name: string;
+    zoom_in?: string;
+    zoom_out?: string;
+    zoom_fit?: string;
     /** Message shown when overlap is prevented (drag/resize would overlap another box). */
     no_overlap_message?: string;
   };
@@ -528,6 +531,8 @@ function run(): void {
   let renderTask: Promise<void> | null = null;
   /** When true, updateOverlays skips to avoid clearing the overlay being dragged. */
   let isDragging = false;
+  /** Current PDF scale (updated on load, resize and zoom). */
+  let currentPdfScale = 1.5;
 
   /**
    * Returns the URL to use for loading the PDF: same-origin as-is, cross-origin via proxy.
@@ -567,21 +572,100 @@ function run(): void {
   }
 
   /**
-   * Computes a scale so that the first page fits the viewer width (minus padding).
-   * When the thumbnails layout exists, uses the scroll area width so the PDF has no horizontal scroll.
+   * Computes a scale so that the first page fits the viewer width (no horizontal scroll).
+   * When the thumbnails layout exists, uses the scroll area width; waits one frame so layout is applied.
    *
    * @returns {Promise<number>} Scale factor for getViewport({ scale })
    */
   async function getScaleForContainer(): Promise<number> {
     if (!pdfDoc || !pdfViewerContainer) return 1.5;
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
     const page = await pdfDoc.getPage(1);
     const vp1 = page.getViewport({ scale: 1 });
     const scrollEl = pdfViewerContainer.querySelector('.pdf-viewer-scroll');
-    const contentWidth = scrollEl
-      ? (scrollEl as HTMLElement).clientWidth - 24
-      : pdfViewerContainer.clientWidth - 24;
-    const w = Math.max(0, contentWidth);
-    return w <= 0 ? 1.5 : Math.max(0.5, w / vp1.width);
+    const el = scrollEl ? (scrollEl as HTMLElement) : pdfViewerContainer;
+    const scrollbarGutter = 8;
+    const contentWidth = Math.max(0, el.clientWidth - scrollbarGutter);
+    return contentWidth <= 0 ? 1.5 : Math.max(0.5, contentWidth / vp1.width);
+  }
+
+
+  /**
+   * Renders all PDF pages at the given scale into canvasWrapper and updates overlays.
+   * Requires pdfDoc to be loaded. Clears existing page viewports and canvas wrapper content.
+   */
+  async function renderPdfAtScale(scale: number): Promise<void> {
+    if (!pdfDoc) return;
+    Object.keys(pageViewports).forEach((k) => delete pageViewports[Number(k)]);
+    canvasWrapper.innerHTML = '';
+    for (let num = 1; num <= pdfDoc.numPages; num++) {
+      if (renderTask) await renderTask;
+      const page = await pdfDoc.getPage(num);
+      const viewport = page.getViewport({ scale });
+      pageViewports[num] = viewport;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'pdf-page-wrapper';
+      wrapper.dataset.page = String(num);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      canvas.dataset.page = String(num);
+      const overlaysDiv = document.createElement('div');
+      overlaysDiv.className = 'signature-overlays';
+      wrapper.appendChild(canvas);
+      wrapper.appendChild(overlaysDiv);
+      renderTask = page.render({ canvasContext: ctx, viewport }).promise;
+      await renderTask;
+      canvasWrapper.appendChild(wrapper);
+    }
+    updateOverlays();
+  }
+
+  function addZoomToolbar(): void {
+    pdfViewerContainer?.querySelector('#pdf-zoom-toolbar')?.remove();
+    if (!pdfViewerContainer) return;
+    const t = document.createElement('div');
+    t.id = 'pdf-zoom-toolbar';
+    t.className = 'pdf-zoom-toolbar';
+    t.setAttribute('role', 'toolbar');
+    t.setAttribute('aria-label', strings.zoom_fit ?? 'Zoom');
+    const zoomOut = document.createElement('button');
+    zoomOut.type = 'button';
+    zoomOut.className = 'pdf-zoom-btn';
+    zoomOut.title = strings.zoom_out ?? 'Zoom out';
+    zoomOut.textContent = '-';
+    zoomOut.setAttribute('aria-label', strings.zoom_out ?? 'Zoom out');
+    const zoomIn = document.createElement('button');
+    zoomIn.type = 'button';
+    zoomIn.className = 'pdf-zoom-btn';
+    zoomIn.title = strings.zoom_in ?? 'Zoom in';
+    zoomIn.textContent = '+';
+    zoomIn.setAttribute('aria-label', strings.zoom_in ?? 'Zoom in');
+    const fitWidth = document.createElement('button');
+    fitWidth.type = 'button';
+    fitWidth.className = 'pdf-zoom-btn';
+    fitWidth.title = strings.zoom_fit ?? 'Fit width';
+    fitWidth.textContent = strings.zoom_fit ?? 'Fit';
+    fitWidth.setAttribute('aria-label', strings.zoom_fit ?? 'Fit width');
+    zoomOut.addEventListener('click', () => {
+      currentPdfScale = Math.max(0.5, currentPdfScale / 1.25);
+      renderPdfAtScale(currentPdfScale);
+    });
+    zoomIn.addEventListener('click', () => {
+      currentPdfScale = Math.min(3, currentPdfScale * 1.25);
+      renderPdfAtScale(currentPdfScale);
+    });
+    fitWidth.addEventListener('click', async () => {
+      const scale = await getScaleForContainer();
+      currentPdfScale = scale;
+      await renderPdfAtScale(currentPdfScale);
+    });
+    t.appendChild(zoomOut);
+    t.appendChild(zoomIn);
+    t.appendChild(fitWidth);
+    pdfViewerContainer.insertBefore(t, pdfViewerContainer.firstChild);
   }
 
   /**
@@ -615,6 +699,7 @@ function run(): void {
     }
     strip?.remove();
     scroll?.remove();
+    pdfViewerContainer?.querySelector('#pdf-zoom-toolbar')?.remove();
     touchScale = 1;
     touchTranslate = { x: 0, y: 0 };
     if (touchWrapper) {
@@ -639,37 +724,13 @@ function run(): void {
       ensureTouchWrapper();
       ensureThumbnailsLayout();
       const scale = await getScaleForContainer();
-
-      for (let num = 1; num <= pdfDoc.numPages; num++) {
-        if (renderTask) await renderTask;
-        const page = await pdfDoc.getPage(num);
-        const viewport = page.getViewport({ scale });
-        pageViewports[num] = viewport;
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'pdf-page-wrapper';
-        wrapper.dataset.page = String(num);
-
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) continue;
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        canvas.dataset.page = String(num);
-
-        const overlaysDiv = document.createElement('div');
-        overlaysDiv.className = 'signature-overlays';
-        wrapper.appendChild(canvas);
-        wrapper.appendChild(overlaysDiv);
-
-        renderTask = page.render({ canvasContext: ctx, viewport }).promise;
-        await renderTask;
-        canvasWrapper.appendChild(wrapper);
-      }
+      currentPdfScale = scale;
+      await renderPdfAtScale(scale);
 
       if (pdfPlaceholder) pdfPlaceholder.style.display = 'none';
       canvasWrapper.style.display = 'block';
       buildThumbnailsAndLayout();
+      addZoomToolbar();
       // Draw overlays when landing with data: run after paint and with retries so boxes always show
       const scheduleOverlayUpdates = (): void => {
         updateOverlays();
@@ -1011,33 +1072,8 @@ function run(): void {
         isReRendering = true;
         try {
           const scale = await getScaleForContainer();
-          canvasWrapper.innerHTML = '';
-          Object.keys(pageViewports).forEach((k) => delete pageViewports[Number(k)]);
-
-          for (let num = 1; num <= pdfDoc.numPages; num++) {
-            if (renderTask) await renderTask;
-            const page = await pdfDoc.getPage(num);
-            const viewport = page.getViewport({ scale });
-            pageViewports[num] = viewport;
-
-            const wrapper = document.createElement('div');
-            wrapper.className = 'pdf-page-wrapper';
-            wrapper.dataset.page = String(num);
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            if (!ctx) continue;
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            canvas.dataset.page = String(num);
-            const overlaysDiv = document.createElement('div');
-            overlaysDiv.className = 'signature-overlays';
-            wrapper.appendChild(canvas);
-            wrapper.appendChild(overlaysDiv);
-            renderTask = page.render({ canvasContext: ctx, viewport }).promise;
-            await renderTask;
-            canvasWrapper.appendChild(wrapper);
-          }
-          updateOverlays();
+          currentPdfScale = scale;
+          await renderPdfAtScale(scale);
           if (pdfViewerContainer) lastObservedWidth = pdfViewerContainer.clientWidth;
         } finally {
           isReRendering = false;
