@@ -35,6 +35,16 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent` for integration
 - ✅ **Compatibility** — Symfony 6.1+, 7.x, 8.x and PHP 8.1+
 
+## Screenshots
+
+**Demo index** — Each card shows a different way to configure `SignatureCoordinatesType` (named configs, URL options, box validation, model prefill):
+
+![Demo home — configuration overview](docs/img/demo-home.png)
+
+**Signature coordinates form** — PDF viewer with draggable signature boxes; unit/origin selector and box list on the right:
+
+![Signature coordinates form — PDF viewer and boxes](docs/img/demo-signature-form.png)
+
 ## Installation
 
 Install the bundle with Composer:
@@ -92,7 +102,7 @@ See [CONFIGURATION.md](docs/CONFIGURATION.md) for detailed options and named con
 
 ## Demos
 
-Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples:
+Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. The [screenshots above](#screenshots) show the demo home (nine configuration cards) and the signature coordinates form (PDF viewer + boxes).
 
 ```bash
 cd demo

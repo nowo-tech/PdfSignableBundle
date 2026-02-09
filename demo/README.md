@@ -2,6 +2,8 @@
 
 Dockerized demos (Symfony 7 and Symfony 8) to try the bundle. Nine demo pages cover no config, default/fixed_url/overridden config, URL as dropdown, limited boxes, same signer multiple locations, unique per name (array), and predefined boxes. Demos include **Web Profiler**, **Xdebug**, and **pnpm** for building the bundle assets.
 
+Screenshots (demo home and signature coordinates form) are in the [main README](../README.md#screenshots) and in [docs/img/](../docs/img/) (`demo-home.png`, `demo-signature-form.png`).
+
 ## Start
 
 ```bash
