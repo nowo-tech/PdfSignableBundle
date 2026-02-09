@@ -26,6 +26,7 @@ The bundle exposes a page at the configured route (default `/pdf-signable`) with
 - **Resize**: drag the box corner handles.
 - **Delete**: "Delete" button on each box row in the list, or select a box (click its overlay) and press **Delete** / **Backspace**.
 - **Keyboard shortcuts** (when focus is not in an input): **Ctrl+Shift+A** add a box (centred on page 1); **Ctrl+Z** undo last box; **Delete** / **Backspace** delete the selected box. Click an overlay to select it; click on the canvas to clear selection.
+- **Touch**: on touch devices, **pinch** to zoom and **two-finger drag** to pan the viewer. Mouse/trackpad drag and click-to-add work as usual.
 
 Coordinates stay in sync between the form and the PDF overlays. On submit the form is sent as a normal POST. On success the server redirects and can show a flash message with the saved coordinates (e.g. unit, origin, and a list of boxes); on validation errors the form is re-rendered with the submitted data and error messages. You receive the model with `pdfUrl`, `unit`, `origin` and the list of `signatureBoxes` (each with `name`, `page`, `x`, `y`, `width`, `height`, `angle`).
 
@@ -139,6 +140,8 @@ If `config` is set, the named config is merged first; any option you pass when c
 | `box_constraints`        | array  | `[]`    | Additional constraints on each **SignatureBoxModel** (e.g. `Callback` receiving the box). Passed to each entry via `signature_box_options`. |
 | `box_defaults_by_name`   | array  | `[]`    | Map of box name to default dimensions: `['signer_1' => ['width' => 150, 'height' => 40, 'x' => 0, 'y' => 0, 'angle' => 0], ...]`. When the user selects a name, the frontend fills in those fields. |
 | `enable_rotation`        | bool   | `false` | When `true`, each box has an **angle** field (rotation in degrees) and the viewer shows a **rotate handle** above each overlay. When `false`, the angle field is not rendered and boxes are not rotatable (angle is treated as 0). |
+| `snap_to_grid`           | float  | `0`     | Grid step in the current form unit (e.g. `5` for 5 mm). When dragging, box position and size snap to this grid. Use `0` to disable. |
+| `snap_to_boxes`          | bool   | `true`  | When `true`, dragging snaps box edges to other boxes’ edges (within ~10 px) on the same page. Set to `false` to disable. |
 
 Predefined elements: set the model’s `signatureBoxes` (e.g. with existing `SignatureBoxModel` instances) before creating the form; the collection will render those entries. The same `SignatureCoordinatesModel` / array structure is returned on submit.
 

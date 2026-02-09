@@ -34,14 +34,14 @@ This document lists **possible improvements** and ideas for future versions of t
 - **Guides and grid**  
   Option to show guides or grid on the canvas (e.g. every 10 mm) to align boxes.
 
-- **Snap to grid / snap between boxes**  
-  When dragging, snap boxes to a grid or align with other boxes’ edges.
+- **Snap to grid / snap between boxes** *(implemented)*  
+  Form options `snap_to_grid` (grid step in form unit, 0 = off) and `snap_to_boxes` (default true). When dragging, position/size snap to the grid and box edges snap to other boxes’ edges within ~10 px. See [USAGE](USAGE.md).
 
 - **Print preview**  
   Option to see how boxes would look on a rendered PDF (no interaction).
 
-- **Touch support**  
-  Improve gestures on tablets (pinch zoom, two-finger drag) in the viewer.
+- **Touch support** *(implemented)*  
+  Pinch to zoom and two-finger drag to pan the PDF viewer on touch devices. The viewer is wrapped in a transform layer; mouse and touch work together.
 
 - **PDF loading indicator** *(implemented)*  
   Full-area overlay with spinner and "Loading..." text in the viewer container while the PDF or proxy is loading. Accessible (aria-live, aria-busy).

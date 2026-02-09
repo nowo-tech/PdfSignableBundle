@@ -222,6 +222,9 @@ function run(): void {
   } catch {
     boxDefaultsByName = {};
   }
+  const snapGrid = Math.max(0, parseFloat(widget?.dataset.snapGrid ?? '0') || 0);
+  const snapToBoxes = widget?.dataset.snapToBoxes === '1';
+  const SNAP_THRESHOLD_PX = 10;
 
   console.log('[PdfSignable] Initialized');
 
@@ -238,6 +241,68 @@ function run(): void {
   if (!pdfCanvasWrapper || !signatureBoxesList) return;
   const canvasWrapper = pdfCanvasWrapper;
   const boxesList = signatureBoxesList;
+
+  /** Touch/pinch state: scale and translate applied to the viewer. Used for click/drag coordinate conversion. */
+  let touchScale = 1;
+  let touchTranslate = { x: 0, y: 0 };
+  let touchWrapper: HTMLElement | null = null;
+
+  function ensureTouchWrapper(): void {
+    if (touchWrapper || !pdfViewerContainer) return;
+    touchWrapper = document.createElement('div');
+    touchWrapper.id = 'pdf-touch-wrapper';
+    touchWrapper.style.transformOrigin = '0 0';
+    touchWrapper.style.transform = `translate(${touchTranslate.x}px, ${touchTranslate.y}px) scale(${touchScale})`;
+    pdfViewerContainer.insertBefore(touchWrapper, canvasWrapper);
+    touchWrapper.appendChild(canvasWrapper);
+    setupTouchListeners();
+  }
+
+  function setupTouchListeners(): void {
+    if (!touchWrapper) return;
+    let initialDistance = 0;
+    let initialScale = 1;
+    let initialTranslate = { x: 0, y: 0 };
+    let centerX = 0;
+    let centerY = 0;
+
+    touchWrapper.addEventListener(
+      'touchstart',
+      (e: TouchEvent) => {
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          const a = e.touches[0];
+          const b = e.touches[1];
+          initialDistance = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+          initialScale = touchScale;
+          initialTranslate = { ...touchTranslate };
+          centerX = (a.clientX + b.clientX) / 2;
+          centerY = (a.clientY + b.clientY) / 2;
+        }
+      },
+      { passive: false }
+    );
+
+    touchWrapper.addEventListener(
+      'touchmove',
+      (e: TouchEvent) => {
+        if (e.touches.length === 2 && touchWrapper) {
+          e.preventDefault();
+          const a = e.touches[0];
+          const b = e.touches[1];
+          const distance = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+          const newScale = Math.max(0.25, Math.min(4, (initialScale * distance) / initialDistance));
+          const newCenterX = (a.clientX + b.clientX) / 2;
+          const newCenterY = (a.clientY + b.clientY) / 2;
+          touchTranslate.x = initialTranslate.x + (newCenterX - centerX);
+          touchTranslate.y = initialTranslate.y + (newCenterY - centerY);
+          touchScale = newScale;
+          touchWrapper!.style.transform = `translate(${touchTranslate.x}px, ${touchTranslate.y}px) scale(${touchScale})`;
+        }
+      },
+      { passive: false }
+    );
+  }
 
   /**
    * Returns the currently selected unit from the form (e.g. mm, pt).
@@ -404,6 +469,11 @@ function run(): void {
     if (pdfPlaceholder) pdfPlaceholder.style.display = 'block';
     canvasWrapper.style.display = 'none';
     canvasWrapper.innerHTML = '';
+    touchScale = 1;
+    touchTranslate = { x: 0, y: 0 };
+    if (touchWrapper) {
+      touchWrapper.style.transform = `translate(0px, 0px) scale(1)`;
+    }
 
     const loadingOverlay = document.createElement('div');
     loadingOverlay.className = 'pdf-signable-loading-overlay';
@@ -451,6 +521,7 @@ function run(): void {
 
       if (pdfPlaceholder) pdfPlaceholder.style.display = 'none';
       canvasWrapper.style.display = 'block';
+      ensureTouchWrapper();
       // Draw overlays when landing with data: run after paint and with retries so boxes always show
       const scheduleOverlayUpdates = (): void => {
         updateOverlays();
@@ -894,6 +965,32 @@ function run(): void {
     return result;
   }
 
+  /** Viewport bounds (left, top, right, bottom in pixels) for snap-to-boxes. */
+  function getOtherBoxesViewportBounds(pageNum: number, excludeIndex: number): { left: number; top: number; right: number; bottom: number }[] {
+    const vp = pageViewports[pageNum];
+    if (!vp) return [];
+    const unit = getSelectedUnit();
+    const origin = getSelectedOrigin();
+    const s = vp.scale || 1.5;
+    const boxes = getBoxesFromForm();
+    const out: { left: number; top: number; right: number; bottom: number }[] = [];
+    boxes.forEach((b, i) => {
+      if (i === excludeIndex || b.page !== pageNum) return;
+      const xPt = unitToPt(b.x, unit);
+      const yPt = unitToPt(b.y, unit);
+      const wPt = unitToPt(b.w, unit);
+      const hPt = unitToPt(b.h, unit);
+      const { vpX, vpY } = formToViewport(vp, xPt, yPt, wPt, hPt, origin);
+      out.push({
+        left: vpX,
+        top: vpY,
+        right: vpX + wPt * s,
+        bottom: vpY + hPt * s,
+      });
+    });
+    return out;
+  }
+
   /**
    * State held while the user is dragging an overlay (move or resize).
    *
@@ -1044,8 +1141,8 @@ function run(): void {
   function onDragMove(e: MouseEvent): void {
     if (!dragState) return;
     const { overlay: o, viewport: vp, startLeft: sl, startTop: st, startRight: sr, startBottom: sb } = dragState;
-    const dx = e.clientX - dragState.startX;
-    const dy = e.clientY - dragState.startY;
+    const dx = (e.clientX - dragState.startX) / touchScale;
+    const dy = (e.clientY - dragState.startY) / touchScale;
     const minSize = 20;
     let newLeft: number, newTop: number, newW: number, newH: number;
 
@@ -1079,12 +1176,69 @@ function run(): void {
       newH = bottom - top;
     }
 
+    const s = vp.scale || 1.5;
+    const pageNum = parseInt(
+      (o.closest('.pdf-page-wrapper') as HTMLElement)?.dataset?.page ?? '1',
+      10
+    );
+
+    if (snapGrid > 0) {
+      const wPt = newW / s;
+      const hPt = newH / s;
+      const coord = viewportToForm(vp, newLeft, newTop, wPt, hPt, getSelectedOrigin());
+      const unit = getSelectedUnit();
+      let xForm = ptToUnit(coord.xPt, unit);
+      let yForm = ptToUnit(coord.yPt, unit);
+      let wForm = ptToUnit(wPt, unit);
+      let hForm = ptToUnit(hPt, unit);
+      xForm = Math.round(xForm / snapGrid) * snapGrid;
+      yForm = Math.round(yForm / snapGrid) * snapGrid;
+      wForm = Math.round(wForm / snapGrid) * snapGrid;
+      hForm = Math.max(snapGrid, Math.round(hForm / snapGrid) * snapGrid);
+      const xPt = unitToPt(xForm, unit);
+      const yPt = unitToPt(yForm, unit);
+      const nwPt = unitToPt(wForm, unit);
+      const nhPt = unitToPt(hForm, unit);
+      const snapped = formToViewport(vp, xPt, yPt, nwPt, nhPt, getSelectedOrigin());
+      newLeft = snapped.vpX;
+      newTop = snapped.vpY;
+      newW = nwPt * s;
+      newH = nhPt * s;
+    }
+
+    if (snapToBoxes) {
+      const other = getOtherBoxesViewportBounds(pageNum, dragState.boxIndex);
+      const newRight = newLeft + newW;
+      const newBottom = newTop + newH;
+      const allX = other.flatMap((b) => [b.left, b.right]);
+      const allY = other.flatMap((b) => [b.top, b.bottom]);
+      const snapEdge = (val: number, targets: number[]): number => {
+        let best = val;
+        let bestDist = SNAP_THRESHOLD_PX;
+        for (const t of targets) {
+          const d = Math.abs(val - t);
+          if (d < bestDist) {
+            bestDist = d;
+            best = t;
+          }
+        }
+        return best;
+      };
+      const snappedLeft = snapEdge(newLeft, allX);
+      const snappedRight = snapEdge(newRight, allX);
+      const snappedTop = snapEdge(newTop, allY);
+      const snappedBottom = snapEdge(newBottom, allY);
+      newLeft = snappedLeft;
+      newTop = snappedTop;
+      newW = Math.max(minSize, snappedRight - snappedLeft);
+      newH = Math.max(minSize, snappedBottom - snappedTop);
+    }
+
     o.style.left = newLeft + 'px';
     o.style.top = newTop + 'px';
     o.style.width = newW + 'px';
     o.style.height = newH + 'px';
 
-    const s = vp.scale || 1.5;
     const wPt = newW / s;
     const hPt = newH / s;
     const coord = viewportToForm(vp, newLeft, newTop, wPt, hPt, getSelectedOrigin());

@@ -30,7 +30,8 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Optional proxy** — Load external PDFs without CORS; configurable via `nowo_pdf_signable.proxy_enabled`
 - ✅ **Named configurations** — Define presets in `nowo_pdf_signable.configs` and use `config: 'name'` when adding the form type
 - ✅ **URL modes** — Free-text URL input or dropdown choice (`url_mode: choice`, `url_choices`)
-- ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation; **page restriction** (`allowed_pages`); **sort order** on submit (`sort_boxes`); **no overlapping boxes** (`prevent_box_overlap`, default true); **optional rotation** (`enable_rotation`) with angle field and rotate handle; **default values per name** (`box_defaults_by_name`)
+- ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation; **page restriction** (`allowed_pages`); **sort order** on submit (`sort_boxes`); **no overlapping boxes** (`prevent_box_overlap`, default true); **optional rotation** (`enable_rotation`); **default values per name** (`box_defaults_by_name`); **snap to grid** (`snap_to_grid`) and **snap to other boxes** (`snap_to_boxes`, default true)
+- ✅ **Viewer** — **Touch**: pinch to zoom, two-finger pan on tablets
 - ✅ **Validation** — Required box name (NotBlank); `unique_box_names` global (`true`/`false`) or per-name (array) to enforce unique box names
 - ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent` for integration
 - ✅ **Compatibility** — Symfony 6.1+, 7.x, 8.x and PHP 8.1+
@@ -110,7 +111,7 @@ make run-symfony7   # → http://localhost:8000
 make run-symfony8   # → http://localhost:8001
 ```
 
-Sixteen demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, rotation, defaults-by-name, latest features (combined), predefined boxes. See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
+Seventeen demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, rotation, defaults-by-name, snap-to-grid, latest features (combined), predefined boxes. See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
 
 ### Xdebug
 

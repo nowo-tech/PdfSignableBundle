@@ -336,6 +336,8 @@ final class SignatureCoordinatesType extends AbstractType
             'prevent_box_overlap' => $options['prevent_box_overlap'],
             'box_defaults_by_name' => $options['box_defaults_by_name'] ?? [],
             'enable_rotation' => $options['enable_rotation'],
+            'snap_to_grid' => $options['snap_to_grid'],
+            'snap_to_boxes' => $options['snap_to_boxes'],
         ];
     }
 
@@ -392,6 +394,10 @@ final class SignatureCoordinatesType extends AbstractType
             'box_defaults_by_name' => [],
             /* When true, each box has a rotation angle field and the viewer shows a rotate handle. When false, angle is not shown and defaults to 0. */
             'enable_rotation' => false,
+            /* Grid step in form unit for snapping when dragging (0 = off). E.g. 5 for 5 mm. */
+            'snap_to_grid' => 0,
+            /* When true, dragging snaps box edges to other boxes’ edges (within threshold). */
+            'snap_to_boxes' => true,
         ]);
 
         $resolver->setAllowedTypes('pdf_url', ['string', 'null']);
@@ -437,6 +443,8 @@ final class SignatureCoordinatesType extends AbstractType
         $resolver->setAllowedTypes('box_constraints', 'array');
         $resolver->setAllowedTypes('box_defaults_by_name', 'array');
         $resolver->setAllowedTypes('enable_rotation', 'bool');
+        $resolver->setAllowedTypes('snap_to_grid', ['int', 'float']);
+        $resolver->setAllowedTypes('snap_to_boxes', 'bool');
     }
 
     /**

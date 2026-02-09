@@ -192,14 +192,27 @@
             </div>
         </div>
     </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Snap to grid + snap to boxes</h6>
+                <ul class="card-text small mb-0">
+                    <li>Two boxes pre-placed; drag one near the other to see edges snap</li>
+                    <li><code>snap_to_grid: 10</code> (10 mm) — move any box to see it jump to the grid</li>
+                    <li>Fixed PDF loads automatically</li>
+                </ul>
+                <a href="{{ path('app_signature_snap_to_grid') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
     <div class="col-12 mt-2"><h6 class="text-muted">Latest features (combined)</h6></div>
     <div class="col-md-6 col-lg-4">
         <div class="card h-100 border-primary">
             <div class="card-body">
-                <h6 class="card-title">Page restriction + sort + no overlap</h6>
+                <h6 class="card-title">Page restriction + sort + no overlap + snap</h6>
                 <ul class="card-text small mb-0">
                     <li><code>allowed_pages: [1]</code>, <code>sort_boxes: true</code>, <code>prevent_box_overlap: true</code></li>
-                    <li>Single demo combining the latest form options</li>
+                    <li><code>snap_to_grid: 5</code>, <code>snap_to_boxes: true</code> — snap while dragging</li>
                 </ul>
                 <a href="{{ path('app_signature_latest_features') }}" class="btn btn-sm btn-primary mt-2">Open</a>
             </div>

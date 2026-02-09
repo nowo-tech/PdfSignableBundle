@@ -85,7 +85,7 @@
     .nowo-pdf-signable-widget #signature-boxes-list { max-height: 50vh; overflow-y: auto; }
   </style>
   {# Main layout: 7/12 PDF viewer, 5/12 boxes list #}
-  <div class="row g-4 nowo-pdf-signable-widget" data-prevent-box-overlap="{{ opts.prevent_box_overlap|default(true) ? '1' : '0' }}" data-box-defaults-by-name="{{ (opts.box_defaults_by_name|default({}))|json_encode|e('html_attr') }}" data-enable-rotation="{{ opts.enable_rotation|default(false) ? '1' : '0' }}">
+  <div class="row g-4 nowo-pdf-signable-widget" data-prevent-box-overlap="{{ opts.prevent_box_overlap|default(true) ? '1' : '0' }}" data-box-defaults-by-name="{{ (opts.box_defaults_by_name|default({}))|json_encode|e('html_attr') }}" data-enable-rotation="{{ opts.enable_rotation|default(false) ? '1' : '0' }}" data-snap-grid="{{ opts.snap_to_grid|default(0) }}" data-snap-to-boxes="{{ opts.snap_to_boxes|default(true) ? '1' : '0' }}">
     {# PDF viewer card #}
     <div class="col-lg-7">
       <div class="card h-100">

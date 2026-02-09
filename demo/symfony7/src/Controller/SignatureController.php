@@ -261,16 +261,79 @@ class SignatureController extends AbstractController
     }
 
     /**
-     * Latest features combined: page restriction, sorted boxes, no overlap (single demo for all).
+     * Snap to grid + snap to boxes: coarse grid (10 mm), two pre-placed boxes so snap is obvious.
+     */
+    #[Route('/demo-signature/snap-to-grid', name: 'app_signature_snap_to_grid', methods: ['GET', 'POST'])]
+    public function snapToGrid(Request $request): Response
+    {
+        $model = new SignaturePageModel();
+        $defaultPdfUrl = $this->examplePdfUrl ?? 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf';
+
+        if (!$request->isMethod('POST')) {
+            $coords = $model->getSignatureCoordinates();
+            $coords->setPdfUrl($defaultPdfUrl);
+            $coords->setUnit(SignatureCoordinatesModel::UNIT_MM);
+            $coords->addSignatureBox(
+                (new SignatureBoxModel())->setName('signer_1')->setPage(1)->setWidth(60)->setHeight(25)->setX(20)->setY(250)
+            );
+            $coords->addSignatureBox(
+                (new SignatureBoxModel())->setName('signer_2')->setPage(1)->setWidth(60)->setHeight(25)->setX(20)->setY(200)
+            );
+        }
+
+        $form = $this->createForm(SignaturePageType::class, $model, [
+            'signature_options' => [
+                'pdf_url' => $defaultPdfUrl,
+                'url_field' => false,
+                'snap_to_grid' => 10,
+                'snap_to_boxes' => true,
+                'min_entries' => 0,
+                'max_entries' => 6,
+                'unit_default' => SignatureCoordinatesModel::UNIT_MM,
+            ],
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $model = $form->getData();
+                if ($this->wantsJson($request)) {
+                    $coords = $model->getSignatureCoordinates();
+                    return new JsonResponse([
+                        'success' => true,
+                        'coordinates' => $this->formatCoordinates($coords),
+                        'unit' => $coords->getUnit(),
+                        'origin' => $coords->getOrigin(),
+                    ]);
+                }
+                $coords = $model->getSignatureCoordinates();
+                $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($coords));
+            } else {
+                $this->addFlash('error', 'Please correct the errors in the form below.');
+            }
+        }
+
+        $explanation = '<ul class="mb-0"><li><strong>Two boxes are pre-placed.</strong> Drag one near the other — edges snap to align (snap to boxes).</li><li><code>snap_to_grid: 10</code> — position and size snap to a <strong>10 mm</strong> grid; move any box to see it jump to the grid.</li><li><code>snap_to_boxes: true</code> — when within ~10 px of another box edge, the box snaps to it.</li><li>Fixed PDF URL so the document loads automatically.</li></ul>';
+        return $this->render('signature/index.html.twig', [
+            'form' => $form,
+            'page_title' => 'Snap to grid + snap to boxes',
+            'config_explanation' => $explanation,
+        ]);
+    }
+
+    /**
+     * Latest features combined: page restriction, sorted boxes, no overlap, snap options.
      */
     #[Route('/demo-signature/latest-features', name: 'app_signature_latest_features', methods: ['GET', 'POST'])]
     public function latestFeatures(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li><code>allowed_pages: [1]</code> — boxes only on page 1</li><li><code>sort_boxes: true</code> — saved order by page, Y, X</li><li><code>prevent_box_overlap: true</code> — no overlapping; frontend reverts invalid drag/resize</li><li>Combined demo for the latest form options</li></ul>';
-        return $this->signaturePage($request, 'Latest features (page restriction + sort + no overlap)', [
+        $explanation = '<ul class="mb-0"><li><code>allowed_pages: [1]</code> — boxes only on page 1</li><li><code>sort_boxes: true</code> — saved order by page, Y, X</li><li><code>prevent_box_overlap: true</code> — no overlapping; frontend reverts invalid drag/resize</li><li><code>snap_to_grid: 5</code>, <code>snap_to_boxes: true</code> — snap while dragging</li><li>Combined demo for the latest form options</li></ul>';
+        return $this->signaturePage($request, 'Latest features (page restriction + sort + no overlap + snap)', [
             'allowed_pages' => [1],
             'sort_boxes' => true,
             'prevent_box_overlap' => true,
+            'snap_to_grid' => 5,
+            'snap_to_boxes' => true,
             'min_entries' => 0,
             'max_entries' => 5,
         ], $explanation);
