@@ -11,6 +11,7 @@ use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -111,37 +112,50 @@ class SignatureController extends AbstractController
     public function predefinedBoxes(Request $request): Response
     {
         $model = new SignaturePageModel();
-        $model->getSignatureCoordinates()->setPdfUrl(
-            $this->examplePdfUrl ?? 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
-        );
-        $model->getSignatureCoordinates()->addSignatureBox(
-            (new SignatureBoxModel())->setName('signer_1')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(700)
-        );
-        $model->getSignatureCoordinates()->addSignatureBox(
-            (new SignatureBoxModel())->setName('signer_2')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(650)
-        );
+
+        if (!$request->isMethod('POST')) {
+            // GET: pre-rellenar URL y 2 cajas para la demo
+            $coords = $model->getSignatureCoordinates();
+            $defaultPdfUrl = $this->examplePdfUrl ?? 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf';
+            $coords->setPdfUrl($defaultPdfUrl);
+            $coords->setUnit(SignatureCoordinatesModel::UNIT_PT);
+            $coords->addSignatureBox(
+                (new SignatureBoxModel())->setName('signer_1')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(700)
+            );
+            $coords->addSignatureBox(
+                (new SignatureBoxModel())->setName('signer_2')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(650)
+            );
+        }
 
         $form = $this->createForm(SignaturePageType::class, $model, [
             'signature_options' => [
                 'url_field' => false,
                 'max_entries' => 5,
+                'unit_default' => SignatureCoordinatesModel::UNIT_PT,
             ],
         ]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $model = $form->getData();
-            if ($this->wantsJson($request)) {
+        if ($form->isSubmitted()){
+            if($form->isValid()) {
+                $model = $form->getData();
+                if ($this->wantsJson($request)) {
+                    $coords = $model->getSignatureCoordinates();
+                    return new JsonResponse([
+                        'success' => true,
+                        'coordinates' => $this->formatCoordinates($coords),
+                        'unit' => $coords->getUnit(),
+                        'origin' => $coords->getOrigin(),
+                    ]);
+                }
                 $coords = $model->getSignatureCoordinates();
-                return new JsonResponse([
-                    'success' => true,
-                    'coordinates' => $this->formatCoordinates($coords),
-                    'unit' => $coords->getUnit(),
-                    'origin' => $coords->getOrigin(),
-                ]);
+                $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($coords));
+                // return $this->redirectToRoute('app_signature_predefined');
             }
-            $this->addFlash('success', 'Coordinates saved (demo).');
-            return $this->redirectToRoute('app_signature_predefined');
+
+            if (!$form->isValid()) {
+                $this->addFlash('error', 'Please correct the errors in the form below.');
+            }
         }
 
         $explanation = 'The model is pre-filled with two signature boxes (<code>signer_1</code> and <code>signer_2</code> on page 1). '
@@ -170,19 +184,26 @@ class SignatureController extends AbstractController
         ]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $model = $form->getData();
-            if ($this->wantsJson($request)) {
+        if ($form->isSubmitted()){
+            if($form->isValid()) {
+                $model = $form->getData();
+                if ($this->wantsJson($request)) {
+                    $coords = $model->getSignatureCoordinates();
+                    return new JsonResponse([
+                        'success' => true,
+                        'coordinates' => $this->formatCoordinates($coords),
+                        'unit' => $coords->getUnit(),
+                        'origin' => $coords->getOrigin(),
+                    ]);
+                }
                 $coords = $model->getSignatureCoordinates();
-                return new JsonResponse([
-                    'success' => true,
-                    'coordinates' => $this->formatCoordinates($coords),
-                    'unit' => $coords->getUnit(),
-                    'origin' => $coords->getOrigin(),
-                ]);
+                $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($coords));
+                return $this->redirectToRoute($request->attributes->get('_route'));
             }
-            $this->addFlash('success', 'Coordinates saved (demo).');
-            return $this->redirectToRoute($request->attributes->get('_route'));
+
+            if (!$form->isValid()) {
+                $this->addFlash('error', 'Please correct the errors in the form below.');
+            }
         }
 
         return $this->render('signature/index.html.twig', [
@@ -215,5 +236,26 @@ class SignatureController extends AbstractController
             ];
         }
         return $out;
+    }
+
+    private function formatCoordinatesForFlash(SignatureCoordinatesModel $model): string
+    {
+        $boxes = $this->formatCoordinates($model);
+        if ($boxes === []) {
+            return 'No boxes.';
+        }
+        $unit = $model->getUnit();
+        $origin = $model->getOrigin();
+        $lines = array_map(static fn (array $b): string => sprintf(
+            '%s: page %d, x=%s, y=%s, width=%s, height=%s (%s)',
+            $b['name'],
+            $b['page'],
+            (string) $b['x'],
+            (string) $b['y'],
+            (string) $b['width'],
+            (string) $b['height'],
+            $unit
+        ), $boxes);
+        return 'Unit: ' . $unit . ', origin: ' . $origin . '. Boxes: ' . implode('; ', $lines);
     }
 }

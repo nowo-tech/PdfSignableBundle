@@ -12,6 +12,7 @@ page:
   delete: 'Eliminar'
   empty_state: 'Aún no hay cajas de firma. Haz clic en el PDF o en "Añadir caja" para crear una.'
   save_coordinates: 'Guardar coordenadas'
+  errors_collection: 'Errores en las cajas de firma:'
 
 signature_coordinates_type:
   pdf_url:

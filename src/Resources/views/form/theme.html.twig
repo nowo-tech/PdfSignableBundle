@@ -1,9 +1,38 @@
 {#
   Form theme: SignatureCoordinatesType (PDF + boxes) and SignatureBoxType.
-  Registers blocks: signature_box_widget, signature_box_row, signature_coordinates_widget.
+  Registers blocks: signature_box_widget, signature_box_row, signature_coordinates_widget, form_errors.
   Requires: form_div_layout.html.twig, PDF.js (CDN), pdf-signable.js.
 #}
 {% use "form_div_layout.html.twig" %}
+
+{#
+  Block: form_errors
+  Renders validation errors in red so they are visible (Bootstrap-friendly).
+#}
+{% block form_errors %}
+  {% if errors|length > 0 %}
+    <div class="invalid-feedback d-block text-danger small">
+      <ul class="list-unstyled mb-0">
+        {% for error in errors %}
+          <li>{{ error.message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{#
+  Block: form_row
+  Adds is-invalid to the widget when the field has errors (Bootstrap red border).
+#}
+{% block form_row %}
+  {% set row_attr = row_attr|default({}) %}
+  <div{% if row_attr.class is defined %} class="{{ row_attr.class }}"{% endif %}>
+    {{ form_label(form) }}
+    {{ form_widget(form, { attr: (form.vars.attr|default({}))|merge({ class: ((form.vars.attr.class|default('')) ~ (form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim }) }) }}
+    {{ form_errors(form) }}
+  </div>
+{% endblock %}
 
 {#
   Block: signature_box_widget
@@ -63,12 +92,13 @@
           {% if opts.url_field|default(true) %}
             <label class="form-label small text-uppercase fw-semibold text-muted mb-2">{{ form.pdfUrl.vars.label is defined ? form.pdfUrl.vars.label : ('page.url_label'|trans({}, 'nowo_pdf_signable')) }}</label>
             <div class="input-group input-group-lg mb-3">
-              {{ form_widget(form.pdfUrl) }}
+              {{ form_widget(form.pdfUrl, { attr: { class: (form.pdfUrl.vars.attr.class|default('') ~ (form.pdfUrl.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
               <button type="button" class="btn btn-primary px-4" id="loadPdfBtn">{{ 'page.load'|trans({}, 'nowo_pdf_signable') }}</button>
             </div>
             {{ form_errors(form.pdfUrl) }}
           {% else %}
-            {{ form_widget(form.pdfUrl) }}
+            {{ form_widget(form.pdfUrl, { attr: { class: (form.pdfUrl.vars.attr.class|default('') ~ (form.pdfUrl.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
+            {{ form_errors(form.pdfUrl) }}
           {% endif %}
           <div id="pdf-viewer-container">
             <div id="pdf-placeholder" class="text-center text-muted py-5">
@@ -91,12 +121,18 @@
             <div class="col-auto">
               <label class="form-label small text-muted mb-0 me-2">{{ 'page.units_label'|trans({}, 'nowo_pdf_signable') }}</label>
             </div>
-            <div class="col-auto">{{ form_widget(form.unit, { attr: { class: 'unit-selector form-select form-select-sm w-auto' } }) }}</div>
+            <div class="col-auto">
+              {{ form_widget(form.unit, { attr: { class: 'unit-selector form-select form-select-sm w-auto' ~ (form.unit.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+              {{ form_errors(form.unit) }}
+            </div>
             <div class="col-auto"><span class="badge bg-secondary" id="unitBadge">mm</span></div>
             <div class="col-auto ms-md-3">
               <label class="form-label small text-muted mb-0 me-2">{{ 'page.origin_label'|trans({}, 'nowo_pdf_signable') }}</label>
             </div>
-            <div class="col-auto">{{ form_widget(form.origin, { attr: { class: 'origin-selector form-select form-select-sm w-auto' } }) }}</div>
+            <div class="col-auto">
+              {{ form_widget(form.origin, { attr: { class: 'origin-selector form-select form-select-sm w-auto' ~ (form.origin.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+              {{ form_errors(form.origin) }}
+            </div>
           </div>
           <p class="small text-muted mb-3">{{ 'page.help_text'|trans({}, 'nowo_pdf_signable') }}</p>
           {# Prototype for JS: used when adding new boxes via #addBoxBtn #}
@@ -108,9 +144,15 @@
               </div>
             </div>
           {% endset %}
+          {% if form.signatureBoxes.vars.errors|length > 0 %}
+            <div class="alert alert-danger py-2 mb-3" role="alert">
+              <strong>{{ 'page.errors_collection'|trans({}, 'nowo_pdf_signable') }}</strong>
+              {{ form_errors(form.signatureBoxes) }}
+            </div>
+          {% endif %}
           <div id="signature-boxes-list" data-prototype="{{ boxPrototype|e('html_attr') }}" data-min-entries="{{ opts.min_entries|default(0) }}" data-max-entries="{{ opts.max_entries is defined and opts.max_entries is not null ? opts.max_entries : '' }}">
             {% for box in form.signatureBoxes %}
-              <div class="signature-box-item" data-index="{{ loop.index0 }}">
+              <div class="signature-box-item {% if box.vars.errors|length > 0 %}border-danger{% endif %}" data-index="{{ loop.index0 }}">
                 {{ form_row(box) }}
                 <div class="mt-2 pt-2 border-top">
                   <button type="button" class="btn btn-sm btn-outline-danger remove-box">{{ 'page.delete'|trans({}, 'nowo_pdf_signable') }}</button>

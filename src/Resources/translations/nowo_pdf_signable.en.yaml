@@ -12,6 +12,7 @@ page:
   delete: 'Delete'
   empty_state: 'No signature boxes yet. Click on the PDF or "Add box" to create one.'
   save_coordinates: 'Save coordinates'
+  errors_collection: 'Errors in signature boxes:'
 
 signature_coordinates_type:
   pdf_url:

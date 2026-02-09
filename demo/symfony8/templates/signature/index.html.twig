@@ -41,6 +41,18 @@
   <div class="container-fluid">
     {% form_theme form '@NowoPdfSignable/form/theme.html.twig' %}
     {{ form_start(form, { attr: { id: 'signatureForm' } }) }}
+    {% if form.vars.submitted and not form.vars.valid %}
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>{% if app.request.locale starts with 'es' %}Hay errores en el formulario. Corrija los campos marcados abajo.{% else %}There are errors in the form. Please correct the fields marked below.{% endif %}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        {% if form.vars.errors|length > 0 %}
+          <div class="mt-2">{{ form_errors(form) }}</div>
+        {% endif %}
+        {% if form.signatureCoordinates is defined and form.signatureCoordinates.vars.errors|length > 0 %}
+          <div class="mt-2">{{ form_errors(form.signatureCoordinates) }}</div>
+        {% endif %}
+      </div>
+    {% endif %}
     {{ form_widget(form) }}
     {{ form_end(form) }}
   </div>

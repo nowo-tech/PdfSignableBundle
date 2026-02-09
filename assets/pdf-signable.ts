@@ -337,7 +337,14 @@ function run(): void {
 
       if (pdfPlaceholder) pdfPlaceholder.style.display = 'none';
       canvasWrapper.style.display = 'block';
-      updateOverlays();
+      // Draw overlays when landing with data: run after paint and with retries so boxes always show
+      const scheduleOverlayUpdates = (): void => {
+        updateOverlays();
+        setTimeout(updateOverlays, 100);
+        setTimeout(updateOverlays, 350);
+        setTimeout(updateOverlays, 700);
+      };
+      requestAnimationFrame(scheduleOverlayUpdates);
       console.log('[PdfSignable] PDF loaded', { pages: pdfDoc.numPages, scale });
     } catch (err) {
       console.error('[PdfSignable] PDF load failed', err);
@@ -363,7 +370,7 @@ function run(): void {
       el.innerHTML = '';
     });
 
-    const items = boxesList.querySelectorAll<HTMLElement>('.signature-box-item');
+    const items = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item');
     items.forEach((item, boxIndex) => {
       const pageNum = parseInt(
         item.querySelector<HTMLInputElement>('.signature-box-page')?.value ?? '1',
@@ -431,7 +438,7 @@ function run(): void {
   function updateAddButtonVisibility(): void {
     if (!addBoxBtn) return;
     const max = getMaxEntries();
-    const count = boxesList.querySelectorAll('.signature-box-item').length;
+    const count = boxesList.querySelectorAll(':scope > .signature-box-item').length;
     if (max !== null && count >= max) {
       addBoxBtn.style.display = 'none';
     } else {
@@ -455,7 +462,7 @@ function run(): void {
     height?: number
   ): void {
     const max = getMaxEntries();
-    const currentCount = boxesList.querySelectorAll('.signature-box-item').length;
+    const currentCount = boxesList.querySelectorAll(':scope > .signature-box-item').length;
     if (max !== null && currentCount >= max) {
       console.log('[PdfSignable] Box add skipped: max_entries reached', { max, currentCount });
       return;
@@ -467,13 +474,17 @@ function run(): void {
     if (emptyEl) emptyEl.classList.add('d-none');
 
     const prototype = boxesList.dataset.prototype ?? '';
-    const index = boxesList.querySelectorAll('.signature-box-item').length;
+    const index = boxesList.querySelectorAll(':scope > .signature-box-item').length;
     const html = prototype.replace(/__name__/g, String(index));
 
-    const div = document.createElement('div');
-    div.className = 'signature-box-item';
+    // Append the prototype root element only (it already has .signature-box-item).
+    // Do not wrap in another div, otherwise we get two .signature-box-item per box
+    // and on remove only the inner one is removed, leaving an empty shell that draws a box at (0,0).
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    const div = temp.firstElementChild as HTMLElement;
+    if (!div) return;
     div.dataset.index = String(index);
-    div.innerHTML = html;
 
     const pageInput = div.querySelector<HTMLInputElement>('.signature-box-page');
     if (pageInput) pageInput.value = String(page);
@@ -549,7 +560,7 @@ function run(): void {
       const oldUnit = currentDisplayUnit;
       const newUnit = getSelectedUnit();
       updateUnitBadge();
-      boxesList.querySelectorAll('.signature-box-item').forEach((item) => {
+      boxesList.querySelectorAll(':scope > .signature-box-item').forEach((item) => {
         for (const f of ['x', 'y', 'width', 'height']) {
           const inp = item.querySelector<HTMLInputElement>('.signature-box-' + f);
           if (inp?.value) {
@@ -571,13 +582,21 @@ function run(): void {
 
   boxesList.addEventListener('click', (e) => {
     if (!(e.target as HTMLElement).closest('.remove-box')) return;
-    const item = (e.target as HTMLElement).closest('.signature-box-item');
+    const item = (e.target as HTMLElement).closest('.signature-box-item') as HTMLElement | null;
     if (item) {
-      const idx = Array.from(boxesList.querySelectorAll('.signature-box-item')).indexOf(item);
-      item.remove();
-      console.log('[PdfSignable] Box removed', { index: idx });
+      // Remove the top-level .signature-box-item (direct child of list) so we don't leave
+      // an empty wrapper that would be drawn as a box at (0,0).
+      let topLevel: HTMLElement | null = item;
+      while (topLevel?.parentElement && topLevel.parentElement !== boxesList) {
+        topLevel = topLevel.parentElement as HTMLElement;
+      }
+      if (topLevel) {
+        const idx = Array.from(boxesList.querySelectorAll(':scope > .signature-box-item')).indexOf(topLevel);
+        topLevel.remove();
+        console.log('[PdfSignable] Box removed', { index: idx });
+      }
     }
-    if (boxesList.querySelectorAll('.signature-box-item').length === 0) {
+    if (boxesList.querySelectorAll(':scope > .signature-box-item').length === 0) {
       const emptyEl = document.getElementById('signature-boxes-empty');
       if (emptyEl) emptyEl.classList.remove('d-none');
     }
@@ -637,9 +656,16 @@ function run(): void {
     ro.observe(pdfViewerContainer);
   }
 
-  if (pdfUrlInput?.value?.trim()) {
+  // Auto-load PDF when DOM is ready so #signature-boxes-list and form values are available for overlays
+  function startAutoLoad(): void {
+    if (!pdfUrlInput?.value?.trim()) return;
     console.log('[PdfSignable] Auto-loading PDF (preset URL)');
     loadPdf();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startAutoLoad);
+  } else {
+    startAutoLoad();
   }
 
   canvasWrapper.addEventListener('click', (e) => {
@@ -688,7 +714,7 @@ function run(): void {
     e.preventDefault();
     e.stopPropagation();
     const boxIndex = parseInt(overlay.dataset.boxIndex, 10);
-    const item = boxesList.querySelectorAll<HTMLElement>('.signature-box-item')[
+    const item = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item')[
       boxIndex
     ];
     if (!item) return;
@@ -801,44 +827,15 @@ function run(): void {
   if (addBoxBtn) addBoxBtn.addEventListener('click', () => addSignatureBox(1, 0, 0));
   updateAddButtonVisibility();
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const count = boxesList.querySelectorAll('.signature-box-item').length;
-    console.log('[PdfSignable] Form submit', { boxes: count });
-    boxesList.querySelectorAll('.signature-box-item').forEach((item, i) => {
+    const items = boxesList.querySelectorAll(':scope > .signature-box-item');
+    items.forEach((item, i) => {
       item.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input, select, textarea').forEach((input) => {
-        input.name = input.name.replace(/(\])\[\d+\](\[)/, `$1${i}$2`);
+        input.name = input.name.replace(/(\])\[\d+\](\[)/, `$1[${i}]$2`);
       });
     });
-    const formData = new FormData(form);
-    const url = form.action || window.location.href;
-    try {
-      const res = await fetch(url, {
-        method: form.method || 'POST',
-        body: formData,
-        headers: { Accept: 'application/json' },
-      });
-      const contentType = res.headers.get('content-type') ?? '';
-      if (!contentType.includes('application/json')) {
-        alert(strings.alert_submit_error);
-        return;
-      }
-      const data = await res.json();
-      if (data.success && data.coordinates) {
-        const msg = 'Coordinates submitted:\n\n' + JSON.stringify(
-          { coordinates: data.coordinates, unit: data.unit, origin: data.origin },
-          null,
-          2
-        );
-        alert(msg);
-        console.log('[PdfSignable] Coordinates saved', data);
-      } else {
-        alert(strings.alert_submit_error);
-      }
-    } catch (err) {
-      console.error('[PdfSignable] Submit failed', err);
-      alert(strings.alert_submit_error);
-    }
+    form.submit();
   });
 }
 
