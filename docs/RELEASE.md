@@ -37,7 +37,7 @@
 ## Ready for v1.4.1 (2026-02-09)
 
 - [x] CHANGELOG: [1.4.1] with translation fixes (consent in all locales, YAML escaping), test fix (no double submit).
-- [x] UPGRADING: “Upgrading to 1.4.0” and version table.
+- [x] UPGRADING: “Upgrading to 1.4.1” and version table.
 - [x] RELEASE: checklist updated for v1.4.1; validate-translations in steps.
 - [x] `make validate-translations` passes (12 files).
 - [ ] Run `make test` and `make cs-check`.
