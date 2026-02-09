@@ -11,6 +11,15 @@ _Nothing yet._
 
 ---
 
+## [1.4.1] - 2026-02-09
+
+### Fixed
+
+- **Translations**: Added `signing.consent_label` and `signing.consent_required` to all locales (CA, CS, DE, FR, IT, NL, PL, PT, RU, TR). Fixed YAML escaping in Catalan, French and Italian (single quotes in single-quoted strings).
+- **Tests**: `SignatureCoordinatesTypeTest::testEnableSignatureCaptureAndDisclaimerPassedToView` no longer submits the same form twice; uses a separate form instance for the null-consent assertion to avoid `AlreadySubmittedException`.
+
+---
+
 ## [1.4.0] - 2026-02-09
 
 ### Added
@@ -154,7 +163,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.1
 [1.4.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.0
 [1.3.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.3.0
 [1.2.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.2.0

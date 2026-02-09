@@ -65,6 +65,14 @@ None.
 
 ---
 
+### Upgrading to 1.4.1
+
+**Release date**: 2026-02-09
+
+Patch release: consent translations (`signing.consent_label`, `signing.consent_required`) added to all locales (CA, CS, DE, FR, IT, NL, PL, PT, RU, TR). No breaking changes. Run `composer update nowo-tech/pdf-signable-bundle` and clear cache as usual.
+
+---
+
 ### Upgrading to 1.3.0
 
 **Release date**: 2026-02-09
@@ -207,7 +215,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad improvements, demo sidebar. |
+| 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |
 | 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |
 | 1.2.x          | 6.1+, 7.x, 8.x | 8.1+ | Optional rotation (enable_rotation), box_defaults_by_name, 16 demos. |
 | 1.1.x          | 6.1+, 7.x, 8.x | 8.1+ | Page restriction, proxy allowlist, sort_boxes, prevent_box_overlap default true, 12 languages. |
