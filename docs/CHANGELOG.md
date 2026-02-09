@@ -11,6 +11,30 @@ _Nothing yet._
 
 ---
 
+## [1.3.0] - 2026-02-09
+
+### Added
+
+- **PDF viewer zoom**: Toolbar with **zoom out** (−), **zoom in** (+) and **fit width** (translated). PDF loads by default at fit-to-width; zoom range 0.5×–3×. Toolbar appears in the top-right of the viewer when a PDF is loaded. See [USAGE](USAGE.md).
+- **Debug option** (`nowo_pdf_signable.debug`): When `true`, the frontend emits `console.log` / `console.warn` in the browser (e.g. PDF load, add/remove box). Default `false`. See [CONFIGURATION](CONFIGURATION.md).
+- **Translations**: Zoom toolbar labels (`js.zoom_in`, `js.zoom_out`, `js.zoom_fit`) in all supported languages (EN, ES, FR, DE, IT, PT, TR, CA, CS, NL, PL, RU).
+
+### Changed
+
+- **Viewer**: Initial PDF scale is always fit-to-width (unchanged behaviour; ResizeObserver also uses fit-to-width on resize).
+
+### Fixed
+
+- (None in this release.)
+
+### Developer
+
+- **Tests**: `ConfigurationTest` now covers `debug` default and override.
+
+For upgrade steps from 1.2.x, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [1.2.0] - 2026-02-10
 
 ### Added
@@ -100,7 +124,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdf-signable-bundle/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdf-signable-bundle/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.3.0
 [1.2.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.2.0
 [1.1.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.1.0
 [1.0.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.0.0

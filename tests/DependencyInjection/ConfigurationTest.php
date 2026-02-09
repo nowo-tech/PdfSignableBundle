@@ -99,4 +99,24 @@ final class ConfigurationTest extends TestCase
             $config['proxy_url_allowlist']
         );
     }
+
+    public function testDebugDefaultFalse(): void
+    {
+        $configuration = new Configuration();
+        $processor = new Processor();
+        $config = $processor->processConfiguration($configuration, []);
+
+        self::assertFalse($config['debug']);
+    }
+
+    public function testDebugOverride(): void
+    {
+        $configuration = new Configuration();
+        $processor = new Processor();
+        $config = $processor->processConfiguration($configuration, [
+            ['debug' => true],
+        ]);
+
+        self::assertTrue($config['debug']);
+    }
 }

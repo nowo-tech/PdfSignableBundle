@@ -37,6 +37,29 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 1.3.0
+
+**Release date**: 2026-02-09
+
+#### What’s new
+
+- **PDF viewer zoom**: Toolbar with zoom out (−), zoom in (+) and fit width (translated). PDF loads at fit-to-width; zoom range 0.5×–3×. Toolbar in the top-right of the viewer when a PDF is loaded. See [USAGE](USAGE.md).
+- **Debug option** (`nowo_pdf_signable.debug`): When `true`, the frontend emits console logs in the browser (PDF load, add/remove box, errors). Default `false`. See [CONFIGURATION](CONFIGURATION.md).
+- **Translations**: Zoom labels (`js.zoom_in`, `js.zoom_out`, `js.zoom_fit`) in all supported languages.
+
+#### Breaking changes
+
+None.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. If you use the bundle’s assets, run `pnpm run build` (or `make assets`) and `php bin/console assets:install`.
+3. Clear cache: `php bin/console cache:clear`.
+4. Optional: set `debug: true` in `nowo_pdf_signable` for development console logging.
+
+---
+
 ### Upgrading to 1.1.0
 
 **Release date**: 2026-02-10
@@ -120,7 +143,7 @@ None.
 
 ---
 
-### Upgrading to a future version (e.g. 1.3.0)
+### Upgrading to a future version (e.g. 1.4.0)
 
 When a new version is released, a new subsection will be added here with:
 
@@ -156,6 +179,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
+| 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |
 | 1.2.x          | 6.1+, 7.x, 8.x | 8.1+ | Optional rotation (enable_rotation), box_defaults_by_name, 16 demos. |
 | 1.1.x          | 6.1+, 7.x, 8.x | 8.1+ | Page restriction, proxy allowlist, sort_boxes, prevent_box_overlap default true, 12 languages. |
 | 1.0.x          | 6.1+, 7.x, 8.x | 8.1+ | First stable release. |

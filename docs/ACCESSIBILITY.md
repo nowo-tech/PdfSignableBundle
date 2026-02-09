@@ -44,6 +44,7 @@ To select a box: click its overlay on the PDF. To clear selection: click on the 
 
 - The viewer container does not have an explicit `role` or `aria-label`. You can wrap it or add an `aria-label` in your theme, for example:
   - `aria-label="PDF document viewer for placing signature areas"`.
+- The **zoom toolbar** has `role="toolbar"` and each button (zoom out, zoom in, fit width) has an `aria-label` from the translation catalogue (`js.zoom_out`, `js.zoom_in`, `js.zoom_fit`).
 - The canvas and overlays are not exposed as a structured “document” to assistive tech; the primary way to work with boxes is via the **form list** (name, page, X, Y, width, height). Screen reader users can edit positions in the list and hear updates.
 
 ### Recommendations
