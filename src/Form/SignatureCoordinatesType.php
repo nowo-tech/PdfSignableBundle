@@ -97,8 +97,6 @@ final class SignatureCoordinatesType extends AbstractType
      *
      * @param FormBuilderInterface $builder Form builder
      * @param array<string, mixed> $options Resolved options (pdf_url, url_field, units, etc.). Merged with named config when option "config" is set.
-     *
-     * @return void
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -321,8 +319,6 @@ final class SignatureCoordinatesType extends AbstractType
      * @param FormView             $view    The form view
      * @param FormInterface        $form    The form
      * @param array<string, mixed> $options Resolved form options
-     *
-     * @return void
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
@@ -353,8 +349,6 @@ final class SignatureCoordinatesType extends AbstractType
      * Configures default options and allowed types/values for URL, unit, origin and boxes.
      *
      * @param OptionsResolver $resolver The options resolver
-     *
-     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {

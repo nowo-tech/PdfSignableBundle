@@ -37,8 +37,6 @@ final class SignatureBoxType extends AbstractType
      *
      * @param FormBuilderInterface $builder Form builder
      * @param array<string, mixed> $options Resolved options (name_mode, name_choices, allowed_pages, angle_enabled, etc.)
-     *
-     * @return void
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -137,8 +135,6 @@ final class SignatureBoxType extends AbstractType
      * Configures default options and allowed types for name, page and box fields.
      *
      * @param OptionsResolver $resolver The options resolver
-     *
-     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {

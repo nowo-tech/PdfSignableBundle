@@ -23,8 +23,6 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
      *
      * @param array<string, mixed> $configs   Raw configuration arrays (e.g. from config files)
      * @param ContainerBuilder     $container The container builder
-     *
-     * @return void
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -54,8 +52,6 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
      * Prepends Twig paths and form theme, and Framework translator paths for the bundle.
      *
      * @param ContainerBuilder $container The container builder
-     *
-     * @return void
      */
     public function prepend(ContainerBuilder $container): void
     {

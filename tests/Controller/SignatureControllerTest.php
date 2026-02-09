@@ -26,8 +26,8 @@ use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\Validation;
-use Twig\Environment;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 
 /**
  * Unit tests for SignatureController: index (GET/POST, JSON/redirect), proxy disabled, invalid URL, SSRF.
@@ -79,7 +79,7 @@ final class SignatureControllerTest extends TestCase
         $sessionToUse = $session ?? ($request?->hasSession() ? $request->getSession() : null);
         $requestStack = $this->createMock(RequestStack::class);
         $requestStack->method('getCurrentRequest')->willReturn($request);
-        if ($sessionToUse !== null) {
+        if (null !== $sessionToUse) {
             $requestStack->method('getSession')->willReturn($sessionToUse);
         }
 
