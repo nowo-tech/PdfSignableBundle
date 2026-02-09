@@ -73,4 +73,8 @@ js:
   loading_state: 'Laden...'
   load_pdf_btn: 'PDF laden'
   default_box_name: 'handtekening'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Verwijderen'
+  shortcuts_help: 'Sneltoetsen: Ctrl+Shift+A Vak toevoegen, Ctrl+Z Ongedaan maken, Verwijderen Geselecteerde verwijderen'
   alert_submit_error: 'Fout bij het verzenden van de coördinaten.'

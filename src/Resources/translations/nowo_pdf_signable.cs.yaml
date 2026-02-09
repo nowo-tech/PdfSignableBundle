@@ -73,4 +73,8 @@ js:
   loading_state: 'Načítání...'
   load_pdf_btn: 'Načíst PDF'
   default_box_name: 'podpis'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Delete'
+  shortcuts_help: 'Zkratky: Ctrl+Shift+A Přidat pole, Ctrl+Z Zpět, Delete Smazat vybrané'
   alert_submit_error: 'Chyba při odesílání souřadnic.'

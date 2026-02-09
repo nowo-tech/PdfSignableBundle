@@ -73,4 +73,8 @@ js:
   loading_state: 'Ładowanie...'
   load_pdf_btn: 'Załaduj PDF'
   default_box_name: 'podpis'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Usuń'
+  shortcuts_help: 'Skróty: Ctrl+Shift+A Dodaj pole, Ctrl+Z Cofnij, Usuń Usuń zaznaczone'
   alert_submit_error: 'Błąd wysyłania współrzędnych.'

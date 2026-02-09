@@ -79,6 +79,8 @@
     .nowo-pdf-signable-widget .signature-box-overlay .resize-handle.se { bottom: -4px; right: -4px; cursor: nwse-resize; }
     .nowo-pdf-signable-widget .signature-box-overlay .rotate-handle { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: var(--box-color, rgba(13, 110, 253, 0.9)); border: 1px solid #fff; border-radius: 50%; pointer-events: auto; cursor: grab; z-index: 2; }
     .nowo-pdf-signable-widget .signature-box-overlay .rotate-handle:active { cursor: grabbing; }
+    .nowo-pdf-signable-widget .signature-box-overlay.selected { box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.6); z-index: 5; }
+    .nowo-pdf-signable-widget .pdf-signable-loading-overlay { position: absolute; inset: 0; background: rgba(248, 249, 250, 0.9); display: flex; align-items: center; justify-content: center; z-index: 100; border-radius: 0.375rem; }
     .nowo-pdf-signable-widget .signature-box-item { border: 1px solid #dee2e6; padding: 1rem; margin-bottom: 0.75rem; border-radius: 0.375rem; background: #fff; }
     .nowo-pdf-signable-widget #signature-boxes-list { max-height: 50vh; overflow-y: auto; }
   </style>

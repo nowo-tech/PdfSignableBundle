@@ -74,3 +74,7 @@ js:
   load_pdf_btn: 'Load PDF'
   default_box_name: 'signature'
   alert_submit_error: 'Error submitting coordinates.'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Delete'
+  shortcuts_help: 'Shortcuts: Ctrl+Shift+A Add box, Ctrl+Z Undo, Del Delete selected'

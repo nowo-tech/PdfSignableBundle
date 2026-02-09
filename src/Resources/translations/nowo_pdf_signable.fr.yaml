@@ -73,4 +73,8 @@ js:
   loading_state: 'Chargement...'
   load_pdf_btn: 'Charger le PDF'
   default_box_name: 'signature'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Suppr'
+  shortcuts_help: 'Raccourcis : Ctrl+Shift+A Ajouter une zone, Ctrl+Z Annuler, Suppr Supprimer la sélection'
   alert_submit_error: "Erreur lors de l'envoi des coordonnées."

@@ -405,6 +405,18 @@ function run(): void {
     canvasWrapper.style.display = 'none';
     canvasWrapper.innerHTML = '';
 
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'pdf-signable-loading-overlay';
+    loadingOverlay.setAttribute('aria-live', 'polite');
+    loadingOverlay.setAttribute('aria-busy', 'true');
+    loadingOverlay.innerHTML =
+      '<div class="text-center"><div class="spinner-border text-primary mb-2" role="status"><span class="visually-hidden">' +
+      strings.loading_state +
+      '</span></div><p class="text-muted small mb-0">' +
+      strings.loading_state +
+      '</p></div>';
+    if (pdfViewerContainer) pdfViewerContainer.appendChild(loadingOverlay);
+
     try {
       pdfDoc = await pdfjsLib.getDocument(loadUrl).promise;
       Object.keys(pageViewports).forEach((k) => delete pageViewports[Number(k)]);
@@ -452,6 +464,7 @@ function run(): void {
       console.error('[PdfSignable] PDF load failed', err);
       alert(strings.error_load_pdf + (err instanceof Error ? err.message : String(err)));
     } finally {
+      loadingOverlay.remove();
       if (loadPdfBtn) {
         loadPdfBtn.removeAttribute('disabled');
         loadPdfBtn.innerHTML = strings.load_pdf_btn;
@@ -548,6 +561,10 @@ function run(): void {
         '<span class="resize-handle se" data-handle="se"></span>';
       overlaysDiv.appendChild(overlay);
     });
+    if (selectedBoxIndex !== null) {
+      const sel = canvasWrapper.querySelector(`.signature-box-overlay[data-box-index="${selectedBoxIndex}"]`);
+      if (sel) sel.classList.add('selected');
+    }
   }
 
   /**
@@ -818,6 +835,7 @@ function run(): void {
 
   canvasWrapper.addEventListener('click', (e) => {
     if ((e.target as HTMLElement).closest('.signature-box-overlay')) return;
+    setSelectedBoxIndex(null);
     const wrapper = (e.target as HTMLElement).closest('.pdf-page-wrapper');
     const canvas = wrapper?.querySelector<HTMLCanvasElement>('canvas');
     if (!canvas || !pdfDoc) return;
@@ -901,6 +919,18 @@ function run(): void {
     startFormH: number;
   }
   let dragState: DragState | null = null;
+
+  /** Index of the currently selected box (for keyboard Delete). -1 or null = none selected. */
+  let selectedBoxIndex: number | null = null;
+
+  function setSelectedBoxIndex(idx: number | null): void {
+    selectedBoxIndex = idx;
+    canvasWrapper.querySelectorAll('.signature-box-overlay.selected').forEach((el) => el.classList.remove('selected'));
+    if (idx !== null) {
+      const overlay = canvasWrapper.querySelector(`.signature-box-overlay[data-box-index="${idx}"]`);
+      if (overlay) overlay.classList.add('selected');
+    }
+  }
 
   interface RotateState {
     overlay: HTMLElement;
@@ -1002,6 +1032,7 @@ function run(): void {
     };
     overlay.classList.add('dragging');
     isDragging = true;
+    if (dragState.mode === 'move') setSelectedBoxIndex(boxIndex);
     document.addEventListener('mousemove', onDragMove);
     document.addEventListener('mouseup', onDragEnd);
   }
@@ -1107,6 +1138,67 @@ function run(): void {
 
   if (addBoxBtn) addBoxBtn.addEventListener('click', () => addSignatureBox(1, 0, 0));
   updateAddButtonVisibility();
+
+  /**
+   * Keyboard shortcuts: Ctrl+Shift+A Add box, Ctrl+Z Undo last box, Delete/Backspace Delete selected.
+   * Ignored when focus is inside an input, select or textarea.
+   */
+  form.addEventListener('keydown', (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (target?.closest('input, select, textarea')) return;
+
+    if (e.ctrlKey && e.key === 'z') {
+      e.preventDefault();
+      const items = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item');
+      if (items.length > 0) {
+        const last = items[items.length - 1];
+        const idx = Array.from(boxesList.querySelectorAll(':scope > .signature-box-item')).indexOf(last);
+        last.remove();
+        if (selectedBoxIndex === idx) setSelectedBoxIndex(null);
+        else if (selectedBoxIndex !== null && selectedBoxIndex > idx) setSelectedBoxIndex(selectedBoxIndex - 1);
+        if (boxesList.querySelectorAll(':scope > .signature-box-item').length === 0) {
+          const emptyEl = document.getElementById('signature-boxes-empty');
+          if (emptyEl) emptyEl.classList.remove('d-none');
+        }
+        updateOverlays();
+        updateAddButtonVisibility();
+      }
+      return;
+    }
+
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (selectedBoxIndex === null) return;
+      const items = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item');
+      const toRemove = items[selectedBoxIndex];
+      if (toRemove) {
+        e.preventDefault();
+        toRemove.remove();
+        setSelectedBoxIndex(null);
+        if (boxesList.querySelectorAll(':scope > .signature-box-item').length === 0) {
+          const emptyEl = document.getElementById('signature-boxes-empty');
+          if (emptyEl) emptyEl.classList.remove('d-none');
+        }
+        updateOverlays();
+        updateAddButtonVisibility();
+      }
+      return;
+    }
+
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      if (!pdfDoc) return;
+      const pageNum = 1;
+      const viewport = pageViewports[pageNum];
+      if (viewport) {
+        const s = viewport.scale || 1.5;
+        const pageW = viewport.width / s;
+        const pageH = viewport.height / s;
+        addSignatureBox(pageNum, (pageW - 150) / 2, (pageH - 40) / 2, 150, 40);
+      } else {
+        addSignatureBox(1, 0, 0);
+      }
+    }
+  });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();

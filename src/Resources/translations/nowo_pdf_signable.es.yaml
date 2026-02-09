@@ -74,3 +74,7 @@ js:
   loading_state: 'Cargando...'
   load_pdf_btn: 'Cargar PDF'
   default_box_name: 'firma'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Supr'
+  shortcuts_help: 'Atajos: Ctrl+Shift+A Añadir caja, Ctrl+Z Deshacer, Supr Eliminar seleccionada'

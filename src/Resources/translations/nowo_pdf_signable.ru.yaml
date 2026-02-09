@@ -73,4 +73,8 @@ js:
   loading_state: 'Загрузка...'
   load_pdf_btn: 'Загрузить PDF'
   default_box_name: 'подпись'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Удалить'
+  shortcuts_help: 'Горячие клавиши: Ctrl+Shift+A Добавить поле, Ctrl+Z Отменить, Удалить Удалить выбранное'
   alert_submit_error: 'Ошибка отправки координат.'

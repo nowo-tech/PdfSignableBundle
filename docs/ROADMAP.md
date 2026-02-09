@@ -28,8 +28,8 @@ This document lists **possible improvements** and ideas for future versions of t
 
 ## User experience (PDF viewer)
 
-- **Keyboard shortcuts**  
-  Keys for “Add box”, “Undo last box”, “Delete selected”, “Zoom in/out”.
+- **Keyboard shortcuts** *(implemented)*  
+  **Ctrl+Shift+A** Add box (centred on page 1), **Ctrl+Z** Undo last box, **Delete** / **Backspace** Delete selected box. Click an overlay to select it; click on the canvas to clear selection. See [USAGE](USAGE.md). Zoom in/out is not yet implemented.
 
 - **Guides and grid**  
   Option to show guides or grid on the canvas (e.g. every 10 mm) to align boxes.
@@ -43,8 +43,8 @@ This document lists **possible improvements** and ideas for future versions of t
 - **Touch support**  
   Improve gestures on tablets (pinch zoom, two-finger drag) in the viewer.
 
-- **PDF loading indicator**  
-  Clear spinner or progress bar while the document loads or the proxy is used.
+- **PDF loading indicator** *(implemented)*  
+  Full-area overlay with spinner and "Loading..." text in the viewer container while the PDF or proxy is loading. Accessible (aria-live, aria-busy).
 
 ---
 

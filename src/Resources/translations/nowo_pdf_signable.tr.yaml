@@ -73,4 +73,8 @@ js:
   loading_state: 'Yükleniyor...'
   load_pdf_btn: 'PDF yükle'
   default_box_name: 'imza'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Sil'
+  shortcuts_help: 'Kısayollar: Ctrl+Shift+A Kutu ekle, Ctrl+Z Geri al, Sil Seçileni sil'
   alert_submit_error: 'Koordinatlar gönderilirken hata.'

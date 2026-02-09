@@ -20,11 +20,12 @@ The bundle exposes a page at the configured route (default `/pdf-signable`) with
 
 ## Viewer interaction
 
-- **Load PDF**: enter the URL and click "Load PDF".
+- **Load PDF**: enter the URL and click "Load PDF". A full-area loading overlay with spinner is shown while the document (or proxy) loads.
 - **Add box**: click on the PDF (the box top-left corner is placed where you click) or "Add box".
 - **Move**: drag an existing box.
 - **Resize**: drag the box corner handles.
-- **Delete**: "Delete" button on each box row in the list.
+- **Delete**: "Delete" button on each box row in the list, or select a box (click its overlay) and press **Delete** / **Backspace**.
+- **Keyboard shortcuts** (when focus is not in an input): **Ctrl+Shift+A** add a box (centred on page 1); **Ctrl+Z** undo last box; **Delete** / **Backspace** delete the selected box. Click an overlay to select it; click on the canvas to clear selection.
 
 Coordinates stay in sync between the form and the PDF overlays. On submit the form is sent as a normal POST. On success the server redirects and can show a flash message with the saved coordinates (e.g. unit, origin, and a list of boxes); on validation errors the form is re-rendered with the submitted data and error messages. You receive the model with `pdfUrl`, `unit`, `origin` and the list of `signatureBoxes` (each with `name`, `page`, `x`, `y`, `width`, `height`, `angle`).
 

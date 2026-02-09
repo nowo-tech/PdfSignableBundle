@@ -73,4 +73,8 @@ js:
   loading_state: 'Caricamento...'
   load_pdf_btn: 'Carica PDF'
   default_box_name: 'firma'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Canc'
+  shortcuts_help: 'Scorciatoie: Ctrl+Shift+A Aggiungi riquadro, Ctrl+Z Annulla, Canc Elimina selezionata'
   alert_submit_error: "Errore nell'invio delle coordinate."

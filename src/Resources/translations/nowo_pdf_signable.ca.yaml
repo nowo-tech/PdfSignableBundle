@@ -73,4 +73,8 @@ js:
   loading_state: 'Carregant...'
   load_pdf_btn: 'Carregar PDF'
   default_box_name: 'signatura'
+  shortcut_add_box: 'Ctrl+Shift+A'
+  shortcut_undo: 'Ctrl+Z'
+  shortcut_delete_selected: 'Supr'
+  shortcuts_help: 'Dreceres: Ctrl+Shift+A Afegir caixa, Ctrl+Z Desfer, Supr Eliminar seleccionada'
   alert_submit_error: 'Error en enviar les coordenades.'
