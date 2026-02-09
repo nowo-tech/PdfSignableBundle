@@ -1,0 +1,74 @@
+page:
+  title: 'Координаты подписи в PDF'
+  pdf_viewer: 'Просмотр PDF'
+  url_label: 'URL PDF'
+  load: 'Загрузить PDF'
+  placeholder_intro: 'Введите URL PDF выше и нажмите «Загрузить», чтобы отобразить документ. Щёлкните по PDF, чтобы добавить поля подписи.'
+  signature_boxes: 'Поля подписи'
+  add: 'Добавить поле'
+  units_label: 'Единицы'
+  origin_label: 'Начало координат'
+  help_text: 'Щёлкните по PDF, чтобы разместить новое поле подписи. Перетаскивайте поля для перемещения, углы — для изменения размера.'
+  delete: 'Удалить'
+  empty_state: 'Поля подписи пока нет. Щёлкните по PDF или «Добавить поле», чтобы создать.'
+  save_coordinates: 'Сохранить координаты'
+  errors_collection: 'Ошибки в полях подписи:'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'URL PDF'
+    placeholder: 'https://example.com/document.pdf'
+  unit:
+    label: 'Единицы'
+    option:
+      pt: 'Пункты (pt)'
+      mm: 'Миллиметры (мм)'
+      cm: 'Сантиметры (см)'
+      px: 'Пиксели (px)'
+      in: 'Дюймы (in)'
+  origin:
+    label: 'Начало координат'
+    option:
+      top_left: 'Верхний левый'
+      bottom_left: 'Нижний левый'
+      top_right: 'Верхний правый'
+      bottom_right: 'Нижний правый'
+  signature_boxes:
+    label: 'Поля подписи'
+    min_message: 'Требуется не менее {{ limit }} поля(ей) подписи.'
+    max_message: 'Допускается не более {{ limit }} поля(ей) подписи.'
+    unique_names_message: 'Дублирующееся имя поля. Каждое поле подписи должно иметь уникальное имя.'
+    no_overlap_message: 'Поля подписи на одной странице не должны пересекаться. Переместите или измените размер этого поля.'
+
+signature_box_type:
+  name:
+    placeholder: 'Имя поля (напр. signer_1)'
+    required: 'Имя поля обязательно.'
+  page:
+    label: 'Страница'
+    not_allowed: 'Эта страница не разрешена. Выберите одну из разрешённых страниц.'
+  width:
+    label: 'Ширина'
+  height:
+    label: 'Высота'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Координаты успешно сохранены.'
+
+proxy:
+  invalid_url: 'Недопустимый или отсутствующий URL.'
+  url_not_allowed: 'Этот URL не разрешён списком прокси.'
+  error_load: 'Ошибка загрузки PDF:'
+
+js:
+  error_load_pdf: 'Ошибка загрузки PDF: '
+  alert_url_required: 'Введите URL PDF.'
+  loading_state: 'Загрузка...'
+  load_pdf_btn: 'Загрузить PDF'
+  default_box_name: 'подпись'
+  alert_submit_error: 'Ошибка отправки координат.'

@@ -732,6 +732,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * }
  * @psalm-type NowoPdfSignableConfig = array{
  *     proxy_enabled?: bool|Param, // Enable proxy endpoint to fetch external PDFs (avoids CORS) // Default: true
+ *     proxy_url_allowlist?: list<scalar|Param|null>,
  *     example_pdf_url?: scalar|Param|null, // Default PDF URL for demo/preload // Default: "https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf"
  *     configs?: array<string, mixed>,
  * }

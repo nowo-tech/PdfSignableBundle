@@ -6,9 +6,11 @@ namespace Nowo\PdfSignableBundle\Tests\Form;
 
 use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
+use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validation;
 
@@ -17,6 +19,11 @@ use Symfony\Component\Validator\Validation;
  */
 final class SignatureBoxTypeTest extends TypeTestCase
 {
+    /**
+     * Registers SignatureBoxType and the validator extension for form tests.
+     *
+     * @return array<int, \Symfony\Component\Form\FormExtensionInterface>
+     */
     protected function getExtensions(): array
     {
         $type = new SignatureBoxType();
@@ -84,5 +91,46 @@ final class SignatureBoxTypeTest extends TypeTestCase
         $constraints = $form->get('name')->getConfig()->getOption('constraints');
         $notBlanks = array_filter($constraints ?? [], static fn ($c) => $c instanceof NotBlank);
         self::assertCount(1, $notBlanks);
+    }
+
+    public function testAllowedPagesRendersPageAsChoice(): void
+    {
+        $model = new SignatureBoxModel();
+        $form = $this->factory->create(SignatureBoxType::class, $model, [
+            'allowed_pages' => [1, 2, 3],
+        ]);
+        $pageField = $form->get('page');
+        self::assertInstanceOf(ChoiceType::class, $pageField->getConfig()->getType()->getInnerType());
+        $choices = $pageField->getConfig()->getOption('choices');
+        self::assertSame([1 => 1, 2 => 2, 3 => 3], $choices);
+    }
+
+    public function testSubmitWithAllowedPages(): void
+    {
+        $model = new SignatureBoxModel();
+        $form = $this->factory->create(SignatureBoxType::class, $model, [
+            'allowed_pages' => [1, 2],
+        ]);
+        $form->submit([
+            'name' => 'signer_1',
+            'page' => '2',
+            'width' => 120.0,
+            'height' => 35.0,
+            'x' => 10.0,
+            'y' => 20.0,
+        ]);
+
+        self::assertTrue($form->isSynchronized());
+        self::assertSame(2, $model->getPage());
+    }
+
+    public function testAllowedPagesFieldHasChoiceConstraint(): void
+    {
+        $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
+            'allowed_pages' => [1, 2],
+        ]);
+        $constraints = $form->get('page')->getConfig()->getOption('constraints');
+        $choices = array_filter($constraints ?? [], static fn ($c) => $c instanceof Choice);
+        self::assertCount(1, $choices);
     }
 }

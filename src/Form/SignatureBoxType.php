@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nowo\PdfSignableBundle\Form;
 
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -13,7 +14,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
@@ -71,13 +72,29 @@ final class SignatureBoxType extends AbstractType
             ]);
         }
 
-        $builder
-            ->add('page', IntegerType::class, [
+        $allowedPages = $options['allowed_pages'];
+        if ($allowedPages !== null && $allowedPages !== []) {
+            $allowedPages = array_map('intval', array_values($allowedPages));
+            $allowedPages = array_values(array_unique(array_filter($allowedPages, fn (int $p) => $p >= 1)));
+            $pageChoices = array_combine($allowedPages, $allowedPages);
+            $builder->add('page', ChoiceType::class, [
+                'label' => 'signature_box_type.page.label',
+                'choices' => $pageChoices,
+                'required' => true,
+                'attr' => ['class' => 'signature-box-page form-control form-control-sm form-select'],
+                'constraints' => [new Choice(['choices' => $allowedPages, 'message' => 'signature_box_type.page.not_allowed'])],
+                'row_attr' => ['class' => 'col-4 col-md-3 col-lg-2 mb-2'],
+            ]);
+        } else {
+            $builder->add('page', IntegerType::class, [
                 'label' => 'signature_box_type.page.label',
                 'attr' => ['min' => 1, 'step' => 1, 'class' => 'signature-box-page form-control form-control-sm'],
                 'required' => true,
                 'row_attr' => ['class' => 'col-4 col-md-3 col-lg-2 mb-2'],
-            ])
+            ]);
+        }
+
+        $builder
             ->add('width', NumberType::class, [
                 'label' => 'signature_box_type.width.label',
                 'attr' => ['min' => 10, 'step' => '0.01', 'class' => 'signature-box-width form-control form-control-sm'],
@@ -101,7 +118,11 @@ final class SignatureBoxType extends AbstractType
     }
 
     /**
-     * Configures data_class, translation_domain and name field options.
+     * Configures default options and allowed types for name, page and box fields.
+     *
+     * @param OptionsResolver $resolver The options resolver
+     *
+     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
@@ -114,10 +135,29 @@ final class SignatureBoxType extends AbstractType
             'name_label' => false,
             'name_placeholder' => 'signature_box_type.name.placeholder',
             'choice_placeholder' => false,
+
+            /** @see ROADMAP.md "Page restriction" — limit which pages boxes can be placed on */
+            'allowed_pages' => null,
         ]);
 
         $resolver->setAllowedValues('name_mode', [self::NAME_MODE_INPUT, self::NAME_MODE_CHOICE]);
         $resolver->setAllowedTypes('name_choices', 'array');
         $resolver->setAllowedTypes('choice_placeholder', ['bool', 'string']);
+        $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);
+        $resolver->setAllowedValues('allowed_pages', static function ($value): bool {
+            if ($value === null) {
+                return true;
+            }
+            if (!is_array($value)) {
+                return false;
+            }
+            foreach ($value as $v) {
+                $p = is_int($v) ? $v : (is_string($v) && is_numeric($v) ? (int) $v : -1);
+                if ($p < 1) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }
 }

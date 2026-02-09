@@ -38,6 +38,7 @@ signature_coordinates_type:
     min_message: 'Mindestens {{ limit }} Signaturfeld(er) erforderlich.'
     max_message: 'Maximal {{ limit }} Signaturfeld(er) erlaubt.'
     unique_names_message: 'Doppelter Feldname. Jedes Signaturfeld muss einen eindeutigen Namen haben.'
+    no_overlap_message: 'Signaturfelder auf derselben Seite dürfen sich nicht überlappen. Verschieben oder vergrößern Sie dieses Feld.'
 
 signature_box_type:
   name:
@@ -45,6 +46,7 @@ signature_box_type:
     required: 'Der Feldname ist erforderlich.'
   page:
     label: 'Seite'
+    not_allowed: 'Diese Seite ist nicht erlaubt. Bitte wählen Sie eine der erlaubten Seiten.'
   width:
     label: 'Breite'
   height:
@@ -60,6 +62,7 @@ flash:
 
 proxy:
   invalid_url: 'Ungültige oder fehlende URL.'
+  url_not_allowed: 'Diese URL ist laut Proxy-Allowlist nicht erlaubt.'
   error_load: 'Fehler beim Laden des PDFs:'
 
 js:

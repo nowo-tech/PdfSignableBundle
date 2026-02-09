@@ -33,6 +33,9 @@ final class PdfSignableEvents
      */
     public const PDF_PROXY_RESPONSE = 'nowo_pdf_signable.pdf_proxy_response';
 
+    /**
+     * Non-instantiable: only event name constants are used.
+     */
     private function __construct()
     {
     }

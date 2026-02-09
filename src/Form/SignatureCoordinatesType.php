@@ -6,18 +6,18 @@ namespace Nowo\PdfSignableBundle\Form;
 
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Count;
@@ -31,8 +31,6 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  */
 final class SignatureCoordinatesType extends AbstractType
 {
-    private const PREFIX_TRANS = 'signature_coordinates_type';
-
     /**
      * @param string                $examplePdfUrl Fallback PDF URL when pdf_url option is not set
      * @param array<string, array>  $namedConfigs   Named configs from nowo_pdf_signable.configs (option keys => values)
@@ -191,6 +189,35 @@ final class SignatureCoordinatesType extends AbstractType
             ['label' => false],
             $options['signature_box_options'] ?? []
         );
+        if (isset($options['allowed_pages'])) {
+            $entryOptions['allowed_pages'] = $options['allowed_pages'];
+        }
+        if ($options['sort_boxes']) {
+            $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event): void {
+                $data = $event->getData();
+                if (!is_array($data) || !isset($data['signatureBoxes']) || !is_array($data['signatureBoxes'])) {
+                    return;
+                }
+                $boxes = $data['signatureBoxes'];
+                usort($boxes, static function (mixed $a, mixed $b): int {
+                    $pageA = is_array($a) ? (int) ($a['page'] ?? 0) : ($a instanceof SignatureBoxModel ? $a->getPage() : 0);
+                    $pageB = is_array($b) ? (int) ($b['page'] ?? 0) : ($b instanceof SignatureBoxModel ? $b->getPage() : 0);
+                    if ($pageA !== $pageB) {
+                        return $pageA <=> $pageB;
+                    }
+                    $yA = is_array($a) ? (float) ($a['y'] ?? 0) : ($a instanceof SignatureBoxModel ? $a->getY() : 0.0);
+                    $yB = is_array($b) ? (float) ($b['y'] ?? 0) : ($b instanceof SignatureBoxModel ? $b->getY() : 0.0);
+                    if (abs($yA - $yB) > 0.0001) {
+                        return $yA <=> $yB;
+                    }
+                    $xA = is_array($a) ? (float) ($a['x'] ?? 0) : ($a instanceof SignatureBoxModel ? $a->getX() : 0.0);
+                    $xB = is_array($b) ? (float) ($b['x'] ?? 0) : ($b instanceof SignatureBoxModel ? $b->getX() : 0.0);
+                    return $xA <=> $xB;
+                });
+                $data['signatureBoxes'] = array_values($boxes);
+                $event->setData($data);
+            });
+        }
         $collectionOptions = [
             'entry_type' => SignatureBoxType::class,
             'entry_options' => $entryOptions,
@@ -239,6 +266,34 @@ final class SignatureCoordinatesType extends AbstractType
                 }
             });
         }
+        if ($options['prevent_box_overlap']) {
+            $collectionConstraints[] = new Callback(function (mixed $boxes, ExecutionContextInterface $context): void {
+                if (!is_array($boxes)) {
+                    return;
+                }
+                $list = [];
+                foreach ($boxes as $index => $box) {
+                    if (!$box instanceof SignatureBoxModel) {
+                        continue;
+                    }
+                    $list[] = ['index' => $index, 'box' => $box];
+                }
+                for ($i = 0; $i < count($list); $i++) {
+                    for ($j = $i + 1; $j < count($list); $j++) {
+                        $a = $list[$i]['box'];
+                        $b = $list[$j]['box'];
+                        if ($a->getPage() !== $b->getPage()) {
+                            continue;
+                        }
+                        if (self::boxesOverlap($a, $b)) {
+                            $context->buildViolation('signature_coordinates_type.signature_boxes.no_overlap_message')
+                                ->atPath('[' . $list[$j]['index'] . ']')
+                                ->addViolation();
+                        }
+                    }
+                }
+            });
+        }
         if ($collectionConstraints !== []) {
             $collectionOptions['constraints'] = $collectionConstraints;
         }
@@ -248,7 +303,11 @@ final class SignatureCoordinatesType extends AbstractType
     /**
      * Passes signature_coordinates_options to the view for the PDF viewer and box logic.
      *
+     * @param FormView       $view    The form view
+     * @param FormInterface  $form    The form
      * @param array<string, mixed> $options Resolved form options
+     *
+     * @return void
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
@@ -265,11 +324,17 @@ final class SignatureCoordinatesType extends AbstractType
             'origin_default' => $options['origin_default'],
             'min_entries' => $options['min_entries'],
             'max_entries' => $options['max_entries'],
+            'allowed_pages' => $options['allowed_pages'] ?? null,
+            'prevent_box_overlap' => $options['prevent_box_overlap'],
         ];
     }
 
     /**
      * Configures default options and allowed types/values for URL, unit, origin and boxes.
+     *
+     * @param OptionsResolver $resolver The options resolver
+     *
+     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
@@ -305,6 +370,12 @@ final class SignatureCoordinatesType extends AbstractType
             'max_entries' => null,
             'unique_box_names' => false,
             'signature_box_options' => [],
+            /** @see ROADMAP.md "Page restriction" — limit which pages boxes can be placed on */
+            'allowed_pages' => null,
+            /** @see ROADMAP.md "Box order" — sort boxes by page, then Y, then X on submit */
+            'sort_boxes' => false,
+            /** Prevent overlapping boxes on the same page (validated on submit and enforced in frontend) */
+            'prevent_box_overlap' => true,
         ]);
 
         $resolver->setAllowedTypes('pdf_url', ['string', 'null']);
@@ -326,6 +397,44 @@ final class SignatureCoordinatesType extends AbstractType
         });
         $resolver->setAllowedTypes('signature_box_options', 'array');
         $resolver->setAllowedTypes('config', ['string', 'null']);
+        $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);
+        $resolver->setAllowedValues('allowed_pages', static function ($value): bool {
+            if ($value === null) {
+                return true;
+            }
+            if (!is_array($value)) {
+                return false;
+            }
+            foreach ($value as $v) {
+                $p = is_int($v) ? $v : (is_string($v) && is_numeric($v) ? (int) $v : -1);
+                if ($p < 1) {
+                    return false;
+                }
+            }
+            return true;
+        });
+        $resolver->setAllowedTypes('sort_boxes', 'bool');
+        $resolver->setAllowedTypes('prevent_box_overlap', 'bool');
+    }
+
+    /**
+     * Returns true if two boxes on the same page have overlapping rectangles (in coordinate space).
+     *
+     * @param SignatureBoxModel $a First box
+     * @param SignatureBoxModel $b Second box
+     *
+     * @return bool True if on the same page and rectangles intersect
+     */
+    public static function boxesOverlap(SignatureBoxModel $a, SignatureBoxModel $b): bool
+    {
+        if ($a->getPage() !== $b->getPage()) {
+            return false;
+        }
+        $ax2 = $a->getX() + $a->getWidth();
+        $bx2 = $b->getX() + $b->getWidth();
+        $ay2 = $a->getY() + $a->getHeight();
+        $by2 = $b->getY() + $b->getHeight();
+        return $a->getX() < $bx2 && $b->getX() < $ax2 && $a->getY() < $by2 && $b->getY() < $ay2;
     }
 
     /**

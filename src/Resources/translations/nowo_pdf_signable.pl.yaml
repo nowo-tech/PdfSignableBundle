@@ -1,0 +1,74 @@
+page:
+  title: 'Współrzędne podpisu PDF'
+  pdf_viewer: 'Przeglądarka PDF'
+  url_label: 'URL PDF'
+  load: 'Załaduj PDF'
+  placeholder_intro: 'Wprowadź powyżej adres URL PDF i kliknij Załaduj, aby wyświetlić dokument. Kliknij w PDF, aby dodać pola podpisu.'
+  signature_boxes: 'Pola podpisu'
+  add: 'Dodaj pole'
+  units_label: 'Jednostki'
+  origin_label: 'Początek'
+  help_text: 'Kliknij w PDF, aby umieścić nowe pole podpisu. Przeciągaj pola, aby je przesunąć, rogi, aby zmienić rozmiar.'
+  delete: 'Usuń'
+  empty_state: 'Brak pól podpisu. Kliknij w PDF lub „Dodaj pole”, aby utworzyć.'
+  save_coordinates: 'Zapisz współrzędne'
+  errors_collection: 'Błędy w polach podpisu:'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'URL PDF'
+    placeholder: 'https://example.com/document.pdf'
+  unit:
+    label: 'Jednostki'
+    option:
+      pt: 'Punkty (pt)'
+      mm: 'Milimetry (mm)'
+      cm: 'Centymetry (cm)'
+      px: 'Piksele (px)'
+      in: 'Cale (in)'
+  origin:
+    label: 'Początek'
+    option:
+      top_left: 'Lewy górny'
+      bottom_left: 'Lewy dolny'
+      top_right: 'Prawy górny'
+      bottom_right: 'Prawy dolny'
+  signature_boxes:
+    label: 'Pola podpisu'
+    min_message: 'Wymagane co najmniej {{ limit }} pole(a) podpisu.'
+    max_message: 'Dozwolone co najwyżej {{ limit }} pole(a) podpisu.'
+    unique_names_message: 'Zduplikowana nazwa pola. Każde pole podpisu musi mieć unikalną nazwę.'
+    no_overlap_message: 'Pola podpisu na tej samej stronie nie mogą się nakładać. Przesuń lub zmień rozmiar tego pola.'
+
+signature_box_type:
+  name:
+    placeholder: 'Nazwa pola (np. signer_1)'
+    required: 'Nazwa pola jest wymagana.'
+  page:
+    label: 'Strona'
+    not_allowed: 'Ta strona nie jest dozwolona. Wybierz jedną z dozwolonych stron.'
+  width:
+    label: 'Szerokość'
+  height:
+    label: 'Wysokość'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Współrzędne zapisane pomyślnie.'
+
+proxy:
+  invalid_url: 'Nieprawidłowy lub brakujący adres URL.'
+  url_not_allowed: 'Ten adres URL nie jest dozwolony na liście proxy.'
+  error_load: 'Błąd ładowania PDF:'
+
+js:
+  error_load_pdf: 'Błąd ładowania PDF: '
+  alert_url_required: 'Wprowadź adres URL PDF.'
+  loading_state: 'Ładowanie...'
+  load_pdf_btn: 'Załaduj PDF'
+  default_box_name: 'podpis'
+  alert_submit_error: 'Błąd wysyłania współrzędnych.'

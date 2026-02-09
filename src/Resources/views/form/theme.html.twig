@@ -81,7 +81,7 @@
     .nowo-pdf-signable-widget #signature-boxes-list { max-height: 50vh; overflow-y: auto; }
   </style>
   {# Main layout: 7/12 PDF viewer, 5/12 boxes list #}
-  <div class="row g-4 nowo-pdf-signable-widget">
+  <div class="row g-4 nowo-pdf-signable-widget" data-prevent-box-overlap="{{ opts.prevent_box_overlap|default(true) ? '1' : '0' }}">
     {# PDF viewer card #}
     <div class="col-lg-7">
       <div class="card h-100">
@@ -183,7 +183,8 @@
         alert_submit_error: {{ 'js.alert_submit_error'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
         loading_state: {{ 'js.loading_state'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
         load_pdf_btn: {{ 'js.load_pdf_btn'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        default_box_name: {{ 'js.default_box_name'|trans({}, 'nowo_pdf_signable')|json_encode|raw }}
+        default_box_name: {{ 'js.default_box_name'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
+        no_overlap_message: {{ 'signature_coordinates_type.signature_boxes.no_overlap_message'|trans({}, 'nowo_pdf_signable')|json_encode|raw }}
       }
     };
   </script>

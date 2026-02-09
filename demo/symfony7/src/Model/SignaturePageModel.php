@@ -20,6 +20,8 @@ class SignaturePageModel
 
     /**
      * Gets the signature coordinates model (PDF URL, unit, origin, boxes).
+     *
+     * @return SignatureCoordinatesModel The coordinates model (never null)
      */
     public function getSignatureCoordinates(): SignatureCoordinatesModel
     {
@@ -28,6 +30,8 @@ class SignaturePageModel
 
     /**
      * Sets the signature coordinates model.
+     *
+     * @param SignatureCoordinatesModel|null $signatureCoordinates The coordinates model or null to reset
      *
      * @return $this
      */

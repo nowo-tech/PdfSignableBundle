@@ -12,13 +12,19 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 
 /**
  * Loads bundle configuration and services, and prepends Twig and Framework translator paths.
+ *
+ * Registers the bundle's services (SignatureController, form types) and sets parameters
+ * (proxy_enabled, proxy_url_allowlist, example_pdf_url, configs) from config.
  */
 final class PdfSignableExtension extends Extension implements PrependExtensionInterface
 {
     /**
-     * Loads services and sets container parameters from the bundle configuration.
+     * Loads services from Resources/config/services.yaml and sets container parameters.
      *
-     * @param array<string, mixed> $configs
+     * @param array<string, mixed> $configs   Raw configuration arrays (e.g. from config files)
+     * @param ContainerBuilder     $container The container builder
+     *
+     * @return void
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -28,12 +34,15 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
 
         $container->setParameter(Configuration::ALIAS . '.proxy_enabled', $config['proxy_enabled'] ?? true);
+        $container->setParameter(Configuration::ALIAS . '.proxy_url_allowlist', $config['proxy_url_allowlist'] ?? []);
         $container->setParameter(Configuration::ALIAS . '.example_pdf_url', $config['example_pdf_url'] ?? '');
         $container->setParameter(Configuration::ALIAS . '.configs', $config['configs'] ?? []);
     }
 
     /**
-     * Returns the configuration alias (nowo_pdf_signable).
+     * Returns the configuration alias used in config files (nowo_pdf_signable).
+     *
+     * @return string The alias
      */
     public function getAlias(): string
     {
@@ -41,9 +50,11 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
     }
 
     /**
-     * Prepends Twig paths/form_themes and Framework translator paths.
+     * Prepends Twig paths and form theme, and Framework translator paths for the bundle.
      *
-     * @param ContainerBuilder $container
+     * @param ContainerBuilder $container The container builder
+     *
+     * @return void
      */
     public function prepend(ContainerBuilder $container): void
     {

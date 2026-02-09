@@ -38,6 +38,7 @@ signature_coordinates_type:
     min_message: 'Se requiere al menos {{ limit }} caja(s) de firma.'
     max_message: 'Se permite como máximo {{ limit }} caja(s) de firma.'
     unique_names_message: 'Nombre de caja duplicado. Cada caja de firma debe tener un nombre único.'
+    no_overlap_message: 'Las cajas de firma en la misma página no pueden solaparse. Mueva o redimensione esta caja.'
 
 signature_box_type:
   name:
@@ -45,6 +46,7 @@ signature_box_type:
     required: 'El nombre de la caja es obligatorio.'
   page:
     label: 'Página'
+    not_allowed: 'Esta página no está permitida. Elija una de las páginas permitidas.'
   width:
     label: 'Ancho'
   height:
@@ -60,6 +62,7 @@ flash:
 
 proxy:
   invalid_url: 'URL no válida o faltante.'
+  url_not_allowed: 'Esta URL no está permitida por la lista del proxy.'
   error_load: 'Error al cargar el PDF:'
 
 js:

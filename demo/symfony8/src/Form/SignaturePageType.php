@@ -46,7 +46,11 @@ final class SignaturePageType extends AbstractType
     }
 
     /**
-     * Sets data_class and signature_options default.
+     * Sets data_class (SignaturePageModel) and signature_options default.
+     *
+     * @param OptionsResolver $resolver The options resolver
+     *
+     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {

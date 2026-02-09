@@ -117,6 +117,44 @@
             </div>
         </div>
     </div>
+    <div class="col-12 mt-2"><h6 class="text-muted">Roadmap: page restriction &amp; box order</h6></div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Page restriction</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>allowed_pages: [1]</code> — page field is a dropdown (e.g. page 1 only)</li>
+                    <li>Use case: single-page contract; restrict boxes to first page</li>
+                </ul>
+                <a href="{{ path('app_signature_page_restriction') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Sorted boxes</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>sort_boxes: true</code> — on submit, boxes sorted by page, then Y, then X</li>
+                    <li>Deterministic order for export/downstream signing</li>
+                </ul>
+                <a href="{{ path('app_signature_sorted_boxes') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">No overlapping boxes</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>prevent_box_overlap: true</code> (default) — boxes on the same page cannot overlap</li>
+                    <li>Frontend: drag/resize that would overlap is reverted and a message is shown</li>
+                    <li>Validation error on submit if two boxes intersect</li>
+                </ul>
+                <a href="{{ path('app_signature_no_overlap') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
     <div class="col-12 mt-2"><h6 class="text-muted">Model prefill</h6></div>
     <div class="col-md-6 col-lg-4">
         <div class="card h-100">

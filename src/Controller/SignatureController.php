@@ -32,15 +32,17 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class SignatureController extends AbstractController
 {
     /**
-     * @param EventDispatcherInterface $eventDispatcher To dispatch signature and proxy events
-     * @param TranslatorInterface      $translator      For flash and error messages
-     * @param bool                     $proxyEnabled   Whether the proxy route is enabled
-     * @param string                   $examplePdfUrl  Default PDF URL for form preload
+     * @param EventDispatcherInterface $eventDispatcher   To dispatch signature and proxy events
+     * @param TranslatorInterface      $translator        For flash and error messages
+     * @param bool                     $proxyEnabled      Whether the proxy route is enabled
+     * @param list<string>             $proxyUrlAllowlist When non-empty, proxy only allows these URL patterns
+     * @param string                   $examplePdfUrl     Default PDF URL for form preload
      */
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly TranslatorInterface $translator,
         private readonly bool $proxyEnabled = true,
+        private readonly array $proxyUrlAllowlist = [],
         private readonly string $examplePdfUrl = '',
     ) {
     }
@@ -48,7 +50,9 @@ final class SignatureController extends AbstractController
     /**
      * Renders the signature coordinates form (and handles submit).
      *
-     * @return Response Redirect on success, or the form page
+     * @param Request $request The HTTP request (GET for display, POST for submit)
+     *
+     * @return Response Redirect on success, or the form page with optional JSON body for AJAX
      */
     #[Route('', name: 'nowo_pdf_signable_index', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
@@ -85,6 +89,10 @@ final class SignatureController extends AbstractController
 
     /**
      * Returns true if the request prefers JSON (Accept: application/json or X-Requested-With: XMLHttpRequest).
+     *
+     * @param Request $request The HTTP request
+     *
+     * @return bool True if the client expects a JSON response
      */
     private function wantsJson(Request $request): bool
     {
@@ -94,6 +102,8 @@ final class SignatureController extends AbstractController
 
     /**
      * Formats SignatureCoordinatesModel boxes as array for JSON.
+     *
+     * @param SignatureCoordinatesModel $model The coordinates model
      *
      * @return array<int, array{name: string, page: int, x: float, y: float, width: float, height: float}>
      */
@@ -116,6 +126,8 @@ final class SignatureController extends AbstractController
     /**
      * Proxies an external PDF URL to avoid CORS when loading in the viewer.
      *
+     * @param Request $request The HTTP request (query param: url)
+     *
      * @return Response PDF content (200), or error (400, 403, 502)
      */
     #[Route('/proxy', name: 'nowo_pdf_signable_proxy', methods: ['GET'])]
@@ -129,6 +141,18 @@ final class SignatureController extends AbstractController
             return new Response(
                 $this->translator->trans('proxy.invalid_url', [], 'nowo_pdf_signable'),
                 Response::HTTP_BAD_REQUEST
+            );
+        }
+        if ($this->proxyUrlAllowlist !== [] && !$this->isUrlAllowedByAllowlist($url)) {
+            return new Response(
+                $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable'),
+                Response::HTTP_FORBIDDEN
+            );
+        }
+        if ($this->isUrlBlockedForSsrf($url)) {
+            return new Response(
+                $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable'),
+                Response::HTTP_FORBIDDEN
             );
         }
 
@@ -167,10 +191,81 @@ final class SignatureController extends AbstractController
             $this->eventDispatcher->dispatch($responseEvent, PdfSignableEvents::PDF_PROXY_RESPONSE);
             return $responseEvent->getResponse();
         } catch (ExceptionInterface|\Throwable $e) {
+            // Do not expose exception message to the client (information disclosure)
             return new Response(
-                $this->translator->trans('proxy.error_load', [], 'nowo_pdf_signable') . ' ' . $e->getMessage(),
+                $this->translator->trans('proxy.error_load', [], 'nowo_pdf_signable'),
                 Response::HTTP_BAD_GATEWAY
             );
         }
+    }
+
+    /**
+     * Returns true if the URL targets a private or local host (SSRF mitigation).
+     * Blocks 127.0.0.0/8, ::1, 10.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16 and hostname "localhost".
+     *
+     * @param string $url The URL to check
+     *
+     * @return bool True if the URL should be blocked
+     */
+    private function isUrlBlockedForSsrf(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        if ($host === null || $host === '') {
+            return true;
+        }
+        $hostLower = strtolower($host);
+        if ($hostLower === 'localhost' || $hostLower === '::1') {
+            return true;
+        }
+        $ip = $host;
+        if (!filter_var($host, FILTER_VALIDATE_IP)) {
+            $resolved = gethostbyname($host);
+            if ($resolved === $host) {
+                return false; // Could not resolve; let the fetch fail
+            }
+            $ip = $resolved;
+        }
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $long = ip2long($ip);
+            if ($long === false) {
+                return true;
+            }
+            $u = (float) sprintf('%u', $long);
+            // 127.0.0.0/8, 10.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16
+            return ($u >= 2130706432 && $u <= 2147483647)
+                || ($u >= 167772160 && $u <= 184549375)
+                || ($u >= 3232235520 && $u <= 3232301055)
+                || ($u >= 2851995648 && $u <= 2852061183);
+        }
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            return str_starts_with($ip, '::1') || str_starts_with($ip, 'fe80:');
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if the URL is allowed by proxy_url_allowlist (substring or regex).
+     *
+     * @param string $url The URL to check
+     *
+     * @return bool True if the URL matches at least one allowlist entry
+     */
+    private function isUrlAllowedByAllowlist(string $url): bool
+    {
+        foreach ($this->proxyUrlAllowlist as $pattern) {
+            if ($pattern === '') {
+                continue;
+            }
+            if (str_starts_with($pattern, '#')) {
+                if (@preg_match($pattern, $url) === 1) {
+                    return true;
+                }
+                continue;
+            }
+            if (str_contains($url, $pattern)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

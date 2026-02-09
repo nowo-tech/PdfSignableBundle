@@ -38,6 +38,7 @@ signature_coordinates_type:
     min_message: 'Au moins {{ limit }} zone(s) de signature requise(s).'
     max_message: 'Au maximum {{ limit }} zone(s) de signature autorisée(s).'
     unique_names_message: 'Nom de zone en double. Chaque zone de signature doit avoir un nom unique.'
+    no_overlap_message: 'Les zones de signature sur la même page ne peuvent pas se chevaucher. Déplacez ou redimensionnez cette zone.'
 
 signature_box_type:
   name:
@@ -45,6 +46,7 @@ signature_box_type:
     required: 'Le nom de la zone est obligatoire.'
   page:
     label: 'Page'
+    not_allowed: 'Cette page n’est pas autorisée. Choisissez l’une des pages autorisées.'
   width:
     label: 'Largeur'
   height:
@@ -60,6 +62,7 @@ flash:
 
 proxy:
   invalid_url: 'URL invalide ou manquante.'
+  url_not_allowed: 'Cette URL n’est pas autorisée par la liste du proxy.'
   error_load: 'Erreur lors du chargement du PDF :'
 
 js:

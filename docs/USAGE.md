@@ -131,6 +131,9 @@ If `config` is set, the named config is merged first; any option you pass when c
 | `max_entries`            | int \| null | `null` | Maximum number of boxes; `null` = unlimited. "Add box" is hidden when at max. |
 | `unique_box_names`       | bool \| string[] | `false` | **Global:** `true` = all names must be unique; `false` = no check. **Per name:** array of names (e.g. `['signer_1', 'witness']`) = only those names must be unique; other names may repeat. |
 | `signature_box_options`  | array  | `[]`    | Options passed to each **SignatureBoxType** entry (e.g. `name_mode`, `name_choices`). |
+| `allowed_pages`          | int[] \| null | `null` | When set, the page field becomes a dropdown and boxes can only be placed on these pages (e.g. `[1]` for first page only). Passed to each box entry. |
+| `sort_boxes`             | bool   | `false` | When `true`, on submit the boxes collection is sorted by page, then Y, then X before binding. Useful for deterministic export order. |
+| `prevent_box_overlap`    | bool   | `true`  | When `true`, overlapping boxes on the **same page** are rejected: validation fails on submit and the frontend blocks drag/resize that would cause overlap (reverts and shows a message). Set to `false` to allow overlap. |
 
 Predefined elements: set the model’s `signatureBoxes` (e.g. with existing `SignatureBoxModel` instances) before creating the form; the collection will render those entries. The same `SignatureCoordinatesModel` / array structure is returned on submit.
 
@@ -169,6 +172,7 @@ When used as the collection entry type, **SignatureBoxType** accepts options (vi
 | `name_label`      | mixed  | `false` | Label for the name field. |
 | `name_placeholder`   | string | (trans) | Placeholder for the **text input** when `name_mode: 'input'` (ignored in choice mode). |
 | `choice_placeholder`| `false` \| string | `false` | When `name_mode: 'choice'`, empty option label. Use `false` (default) for **no empty option** (no "Select role"); use a string to show an explicit "Choose…" option. |
+| `allowed_pages`     | int[] \| null | `null` | When set (e.g. `[1, 2, 3]`), the page field is rendered as a dropdown with only these pages; validation ensures the submitted page is in the list. Use for single-page or limited-page contracts. Can be set on **SignatureCoordinatesType** (and passed to all boxes) or per box via `signature_box_options`. |
 
 The submitted data is still the same: each box has `name`, `page`, `x`, `y`, `width`, `height` in the returned array.
 
@@ -209,6 +213,40 @@ $builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
     'origin_mode' => SignatureCoordinatesType::ORIGIN_MODE_INPUT,
     'origin_default' => 'bottom_left',
     'origins' => ['top_left', 'bottom_left'],
+]);
+```
+
+### Example: page restriction (allowed pages)
+
+Restrict signature boxes to specific pages (e.g. first page only):
+
+```php
+$builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
+    'allowed_pages' => [1],
+    'min_entries' => 0,
+    'max_entries' => 4,
+]);
+```
+
+For a range of pages use e.g. `'allowed_pages' => [1, 2, 3]`. The page field is rendered as a dropdown; validation rejects any other page.
+
+### Example: sorted boxes on submit
+
+Ensure boxes are stored in a deterministic order (page, then Y, then X):
+
+```php
+$builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
+    'sort_boxes' => true,
+]);
+```
+
+### Example: no overlapping boxes
+
+By default, overlapping boxes on the same page are **prevented**: the frontend blocks drag/resize that would cause overlap (reverts and shows a message), and validation on submit also rejects overlapping boxes. To **allow** overlap (e.g. for testing), set the option to `false`:
+
+```php
+$builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
+    'prevent_box_overlap' => false,  // allow overlapping boxes
 ]);
 ```
 
@@ -316,3 +354,5 @@ The bundle’s JavaScript runs on submit to re-index the collection field names 
 ## PDF proxy
 
 The route `GET /pdf-signable/proxy?url=<encoded_url>` returns the PDF content at the given URL. Useful to avoid CORS when the PDF is on another domain. If you disable the proxy (`proxy_enabled: false`), that route returns 403.
+
+When **proxy_url_allowlist** is set in the bundle configuration, the proxy only fetches URLs that match one of the entries (substring or regex). See [Configuration](CONFIGURATION.md).

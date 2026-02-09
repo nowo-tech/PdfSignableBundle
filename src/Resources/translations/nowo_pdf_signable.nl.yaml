@@ -1,0 +1,74 @@
+page:
+  title: 'PDF-handtekeningcoördinaten'
+  pdf_viewer: 'PDF-viewer'
+  url_label: 'PDF-URL'
+  load: 'PDF laden'
+  placeholder_intro: 'Voer hierboven een PDF-URL in en klik op Laden om het document te tonen. Klik op de PDF om handtekeningvakken toe te voegen.'
+  signature_boxes: 'Handtekeningvakken'
+  add: 'Vak toevoegen'
+  units_label: 'Eenheden'
+  origin_label: 'Oorsprong'
+  help_text: 'Klik op de PDF om een nieuw handtekeningvak te plaatsen. Sleep vakken om te verplaatsen, hoeken om te vergroten of verkleinen.'
+  delete: 'Verwijderen'
+  empty_state: 'Nog geen handtekeningvakken. Klik op de PDF of op "Vak toevoegen" om er een te maken.'
+  save_coordinates: 'Coördinaten opslaan'
+  errors_collection: 'Fouten in handtekeningvakken:'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'PDF-URL'
+    placeholder: 'https://example.com/document.pdf'
+  unit:
+    label: 'Eenheden'
+    option:
+      pt: 'Punten (pt)'
+      mm: 'Millimeters (mm)'
+      cm: 'Centimeters (cm)'
+      px: 'Pixels (px)'
+      in: 'Inches (in)'
+  origin:
+    label: 'Oorsprong'
+    option:
+      top_left: 'Linksboven'
+      bottom_left: 'Linksonder'
+      top_right: 'Rechtsboven'
+      bottom_right: 'Rechtsonder'
+  signature_boxes:
+    label: 'Handtekeningvakken'
+    min_message: 'Minimaal {{ limit }} handtekeningvak(ken) vereist.'
+    max_message: 'Maximaal {{ limit }} handtekeningvak(ken) toegestaan.'
+    unique_names_message: 'Dubbele vaknaam. Elk handtekeningvak moet een unieke naam hebben.'
+    no_overlap_message: 'Handtekeningvakken op dezelfde pagina mogen niet overlappen. Verplaats of vergroot/verklein dit vak.'
+
+signature_box_type:
+  name:
+    placeholder: 'Vaknaam (bijv. signer_1)'
+    required: 'De vaknaam is verplicht.'
+  page:
+    label: 'Pagina'
+    not_allowed: 'Deze pagina is niet toegestaan. Kies een van de toegestane pagina''s.'
+  width:
+    label: 'Breedte'
+  height:
+    label: 'Hoogte'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Coördinaten succesvol opgeslagen.'
+
+proxy:
+  invalid_url: 'Ongeldige of ontbrekende URL.'
+  url_not_allowed: 'Deze URL is niet toegestaan volgens de proxylijst.'
+  error_load: 'Fout bij het laden van de PDF:'
+
+js:
+  error_load_pdf: 'Fout bij het laden van de PDF: '
+  alert_url_required: 'Voer een PDF-URL in.'
+  loading_state: 'Laden...'
+  load_pdf_btn: 'PDF laden'
+  default_box_name: 'handtekening'
+  alert_submit_error: 'Fout bij het verzenden van de coördinaten.'

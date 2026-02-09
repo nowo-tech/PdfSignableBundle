@@ -20,6 +20,7 @@ final class ConfigurationTest extends TestCase
         $config = $processor->processConfiguration($configuration, []);
 
         self::assertTrue($config['proxy_enabled']);
+        self::assertSame([], $config['proxy_url_allowlist']);
         self::assertIsString($config['example_pdf_url']);
         self::assertNotEmpty($config['example_pdf_url']);
     }
@@ -78,5 +79,24 @@ final class ConfigurationTest extends TestCase
         self::assertArrayHasKey('fixed_url', $config['configs']);
         self::assertSame('https://example.com/template.pdf', $config['configs']['fixed_url']['pdf_url']);
         self::assertFalse($config['configs']['fixed_url']['url_field']);
+    }
+
+    public function testProxyUrlAllowlistOverride(): void
+    {
+        $configuration = new Configuration();
+        $processor = new Processor();
+        $config = $processor->processConfiguration($configuration, [
+            [
+                'proxy_url_allowlist' => [
+                    'https://cdn.example.com/',
+                    '#^https://internal\.corp/#',
+                ],
+            ],
+        ]);
+
+        self::assertSame(
+            ['https://cdn.example.com/', '#^https://internal\.corp/#'],
+            $config['proxy_url_allowlist']
+        );
     }
 }

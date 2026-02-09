@@ -37,6 +37,36 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 1.1.0
+
+**Release date**: 2026-02-10
+
+#### What’s new
+
+- **Page restriction** (`allowed_pages`): limit which pages boxes can be placed on; page field becomes a dropdown.
+- **Proxy URL allowlist** (`proxy_url_allowlist`): restrict which URLs the proxy can fetch (see [CONFIGURATION](CONFIGURATION.md)).
+- **Box order** (`sort_boxes`): sort boxes by page, then Y, then X on submit.
+- **Non-overlapping boxes** (`prevent_box_overlap`): now **default `true`** with frontend enforcement (drag/resize that would overlap is reverted). Five new translations (CA, CS, NL, PL, RU). Translation validation script checks key parity. Security: proxy no longer leaks exception messages; SSRF mitigation for private/local URLs.
+
+#### Breaking changes / behavior changes
+
+- **`prevent_box_overlap`** default changed from `false` to `true`. If your app allowed overlapping boxes and relied on the previous default, set it explicitly when creating the form:
+  ```php
+  $builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
+      'prevent_box_overlap' => false,
+  ]);
+  ```
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. If you use the bundle’s assets, run `pnpm run build` (or `make assets`) and `php bin/console assets:install`.
+3. Optional: add `proxy_url_allowlist` to your config if you want to restrict proxy URLs (see [CONFIGURATION](CONFIGURATION.md)).
+4. If you need to allow overlapping boxes, add `'prevent_box_overlap' => false` to your form options.
+5. Clear cache: `php bin/console cache:clear`.
+
+---
+
 ### Upgrading to 1.0.0
 
 **Release date**: 2026-02-09
@@ -44,8 +74,8 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 #### What’s in this version
 
 - First stable release. Form types `SignatureCoordinatesType` and `SignatureBoxType`, models `SignatureCoordinatesModel` and `SignatureBoxModel`, PDF viewer (PDF.js + overlays), optional proxy, Twig form theme, Vite/TypeScript assets.
-- Named configs, events, validation (`unique_box_names` global or per-name), translations (EN, ES, FR, DE, IT, PT).
-- Demos for Symfony 7 and 8 with nine configuration variants (no config, default, fixed URL, overridden, URL as dropdown, limited boxes, same signer multiple, unique per name, predefined boxes).
+- Named configs, events, validation (`unique_box_names` global or per-name), translations (EN, ES, FR, DE, IT, PT, TR).
+- Demos for Symfony 7 and 8 with multiple configuration variants (no config, default, fixed URL, overridden, URL as dropdown, limited boxes, same signer multiple, unique per name, page restriction, sorted boxes, no-overlap, predefined boxes).
 
 #### Breaking changes
 
@@ -67,7 +97,7 @@ If you were using `dev-main` or `dev-master`:
 
 ---
 
-### Upgrading to a future version
+### Upgrading to a future version (e.g. 1.2.0)
 
 When a new version is released, a new subsection will be added here with:
 
@@ -103,7 +133,8 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 1.0.x          | 6.1+, 7.x, 8.x | 8.1+ | First stable release. Install with `composer require nowo-tech/pdf-signable-bundle`. |
+| 1.1.x          | 6.1+, 7.x, 8.x | 8.1+ | Page restriction, proxy allowlist, sort_boxes, prevent_box_overlap default true, 12 languages. |
+| 1.0.x          | 6.1+, 7.x, 8.x | 8.1+ | First stable release. |
 | dev-main       | 6.1+, 7.x, 8.x | 8.1+ | Development; use only if you need unreleased changes. See [INSTALLATION.md](INSTALLATION.md). |
 
 ---

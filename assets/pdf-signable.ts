@@ -30,6 +30,8 @@ export interface NowoPdfSignableConfig {
     loading_state: string;
     load_pdf_btn: string;
     default_box_name: string;
+    /** Message shown when overlap is prevented (drag/resize would overlap another box). */
+    no_overlap_message?: string;
   };
 }
 
@@ -97,15 +99,18 @@ function unitToPt(val: number, unit: string): number {
 }
 
 /**
- * Escapes HTML special characters in a string.
- * @param s - Raw string
- * @returns HTML-escaped string
+ * Escapes HTML special characters in a string for safe use in HTML content and attributes.
+ *
+ * @param s - Raw string (e.g. user-controlled box name)
+ * @returns HTML-escaped string safe for innerHTML text content
  */
 function escapeHtml(s: string): string {
   return String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 /** Base hue (0–360) for the first signer; rest are derived by adding HUE_STEP per index. */
@@ -189,6 +194,8 @@ function getColorForBoxIndex(index: number): {
  *
  * Binds: Load PDF button, unit/origin change, add/remove box, overlay drag (move/resize),
  * form submit (re-index collection then native submit).
+ *
+ * @returns void
  */
 function run(): void {
   console.log('[PdfSignable] Script loaded');
@@ -206,6 +213,7 @@ function run(): void {
     console.warn('[PdfSignable] .nowo-pdf-signable-widget or form not found, skipping init');
     return;
   }
+  const preventBoxOverlap = widget?.dataset.preventBoxOverlap === '1';
 
   console.log('[PdfSignable] Initialized');
 
@@ -223,12 +231,20 @@ function run(): void {
   const canvasWrapper = pdfCanvasWrapper;
   const boxesList = signatureBoxesList;
 
-  /** Returns the currently selected unit from the form (e.g. mm, pt). */
+  /**
+   * Returns the currently selected unit from the form (e.g. mm, pt).
+   *
+   * @returns The selected unit string (default 'mm')
+   */
   function getSelectedUnit(): string {
     return unitSelector?.value ?? 'mm';
   }
 
-  /** Returns the currently selected coordinate origin (e.g. bottom_left). */
+  /**
+   * Returns the currently selected coordinate origin (e.g. bottom_left).
+   *
+   * @returns The selected origin string (default 'bottom_left')
+   */
   function getSelectedOrigin(): string {
     return originSelector?.value ?? 'bottom_left';
   }
@@ -782,12 +798,58 @@ function run(): void {
     addSignatureBox(pageNum, pdfCoords[0], pdfCoords[1], 150, defaultHeight);
   });
 
-  /** State held while the user is dragging an overlay (move or resize). */
+  /**
+   * Box bounds in form units (for overlap check). Same unit for all boxes (current selector).
+   */
+  interface BoxBounds {
+    page: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  }
+
+  /**
+   * Returns true if two boxes on the same page have overlapping rectangles (in form units).
+   */
+  function boxesOverlap(a: BoxBounds, b: BoxBounds): boolean {
+    if (a.page !== b.page) return false;
+    const ax2 = a.x + a.w;
+    const bx2 = b.x + b.w;
+    const ay2 = a.y + a.h;
+    const by2 = b.y + b.h;
+    return a.x < bx2 && b.x < ax2 && a.y < by2 && b.y < ay2;
+  }
+
+  /**
+   * Reads all signature box bounds from the form (page, x, y, width, height in current unit).
+   */
+  function getBoxesFromForm(): BoxBounds[] {
+    const items = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item');
+    const result: BoxBounds[] = [];
+    items.forEach((item) => {
+      const pageEl = item.querySelector<HTMLSelectElement>('.signature-box-page');
+      const page = parseInt(pageEl?.value ?? '1', 10);
+      const x = parseFloat(item.querySelector<HTMLInputElement>('.signature-box-x')?.value ?? '0');
+      const y = parseFloat(item.querySelector<HTMLInputElement>('.signature-box-y')?.value ?? '0');
+      const w = parseFloat(item.querySelector<HTMLInputElement>('.signature-box-width')?.value ?? '150');
+      const h = parseFloat(item.querySelector<HTMLInputElement>('.signature-box-height')?.value ?? '40');
+      result.push({ page, x, y, w, h });
+    });
+    return result;
+  }
+
+  /**
+   * State held while the user is dragging an overlay (move or resize).
+   *
+   * @interface DragState
+   */
   interface DragState {
     mode: 'move' | 'resize';
     handle: string | null;
     overlay: HTMLElement;
     item: HTMLElement;
+    boxIndex: number;
     viewport: PDFViewport;
     startX: number;
     startY: number;
@@ -795,6 +857,11 @@ function run(): void {
     startTop: number;
     startRight: number;
     startBottom: number;
+    /** Form input values at drag start (for revert when overlap is prevented). */
+    startFormX: number;
+    startFormY: number;
+    startFormW: number;
+    startFormH: number;
   }
   let dragState: DragState | null = null;
 
@@ -824,11 +891,16 @@ function run(): void {
     const overlayH = parseFloat(overlay.style.height) || 14;
     const left = parseFloat(overlay.style.left) || 0;
     const top = parseFloat(overlay.style.top) || 0;
+    const xIn = item.querySelector<HTMLInputElement>('.signature-box-x');
+    const yIn = item.querySelector<HTMLInputElement>('.signature-box-y');
+    const wIn = item.querySelector<HTMLInputElement>('.signature-box-width');
+    const hIn = item.querySelector<HTMLInputElement>('.signature-box-height');
     dragState = {
       mode: handleEl ? 'resize' : 'move',
       handle: handleEl ? (handleEl as HTMLElement).dataset.handle ?? null : null,
       overlay,
       item,
+      boxIndex,
       viewport,
       startX: e.clientX,
       startY: e.clientY,
@@ -836,6 +908,10 @@ function run(): void {
       startTop: top,
       startRight: left + overlayW,
       startBottom: top + overlayH,
+      startFormX: xIn ? parseFloat(xIn.value) || 0 : 0,
+      startFormY: yIn ? parseFloat(yIn.value) || 0 : 0,
+      startFormW: wIn ? parseFloat(wIn.value) || 150 : 150,
+      startFormH: hIn ? parseFloat(hIn.value) || 40 : 40,
     };
     overlay.classList.add('dragging');
     isDragging = true;
@@ -906,13 +982,36 @@ function run(): void {
     if (hIn) hIn.value = String(round(ptToUnit(hPt, unit)));
   }
 
-  /** Cleans up drag state, rebuilds overlays from form (already updated in onDragMove), removes listeners. */
+  /** Cleans up drag state; if prevent_box_overlap and new position overlaps another box, reverts and shows message. Then rebuilds overlays. */
   function onDragEnd(): void {
     if (!dragState) return;
+    const state = dragState;
     dragState.overlay.classList.remove('dragging');
     isDragging = false;
     document.removeEventListener('mousemove', onDragMove);
     document.removeEventListener('mouseup', onDragEnd);
+
+    if (preventBoxOverlap) {
+      const boxes = getBoxesFromForm();
+      const current = boxes[state.boxIndex];
+      if (current) {
+        const overlapsOther = boxes.some((b, i) => i !== state.boxIndex && boxesOverlap(current, b));
+        if (overlapsOther) {
+          const round = (v: number): number => Math.round(v * 100) / 100;
+          const xIn = state.item.querySelector<HTMLInputElement>('.signature-box-x');
+          const yIn = state.item.querySelector<HTMLInputElement>('.signature-box-y');
+          const wIn = state.item.querySelector<HTMLInputElement>('.signature-box-width');
+          const hIn = state.item.querySelector<HTMLInputElement>('.signature-box-height');
+          if (xIn) xIn.value = String(round(state.startFormX));
+          if (yIn) yIn.value = String(round(state.startFormY));
+          if (wIn) wIn.value = String(round(state.startFormW));
+          if (hIn) hIn.value = String(round(state.startFormH));
+          const msg = strings.no_overlap_message ?? 'Signature boxes on the same page cannot overlap.';
+          alert(msg);
+        }
+      }
+    }
+
     dragState = null;
     updateOverlays();
   }

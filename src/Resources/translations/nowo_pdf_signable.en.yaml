@@ -38,6 +38,7 @@ signature_coordinates_type:
     min_message: 'At least {{ limit }} signature box(es) required.'
     max_message: 'At most {{ limit }} signature box(es) allowed.'
     unique_names_message: 'Duplicate box name. Each signature box must have a unique name.'
+    no_overlap_message: 'Signature boxes on the same page cannot overlap. Move or resize this box.'
 
 signature_box_type:
   name:
@@ -45,6 +46,7 @@ signature_box_type:
     required: 'Box name is required.'
   page:
     label: 'Page'
+    not_allowed: 'This page is not allowed. Choose one of the allowed pages.'
   width:
     label: 'Width'
   height:
@@ -60,6 +62,7 @@ flash:
 
 proxy:
   invalid_url: 'Invalid or missing URL.'
+  url_not_allowed: 'This URL is not allowed by the proxy allowlist.'
   error_load: 'Error loading PDF:'
 
 js:

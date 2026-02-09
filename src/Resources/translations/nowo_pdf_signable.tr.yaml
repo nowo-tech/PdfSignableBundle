@@ -1,0 +1,74 @@
+page:
+  title: 'PDF imza koordinatları'
+  pdf_viewer: 'PDF görüntüleyici'
+  url_label: 'PDF URL'
+  load: 'PDF yükle'
+  placeholder_intro: 'Belgeyi göstermek için yukarıya bir PDF URL''si girin ve Yükle''ye tıklayın. İmza kutuları eklemek için PDF''e tıklayın.'
+  signature_boxes: 'İmza kutuları'
+  add: 'Kutu ekle'
+  units_label: 'Birimler'
+  origin_label: 'Başlangıç'
+  help_text: 'Yeni bir imza kutusu yerleştirmek için PDF''e tıklayın. Taşımak için kutuları, yeniden boyutlandırmak için köşeleri sürükleyin.'
+  delete: 'Sil'
+  empty_state: 'Henüz imza kutusu yok. Oluşturmak için PDF''e veya "Kutu ekle"ye tıklayın.'
+  save_coordinates: 'Koordinatları kaydet'
+  errors_collection: 'İmza kutularında hatalar:'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'PDF URL'
+    placeholder: 'https://ornek.com/belge.pdf'
+  unit:
+    label: 'Birimler'
+    option:
+      pt: 'Puan (pt)'
+      mm: 'Milimetre (mm)'
+      cm: 'Santimetre (cm)'
+      px: 'Piksel (px)'
+      in: 'İnç (in)'
+  origin:
+    label: 'Başlangıç'
+    option:
+      top_left: 'Sol üst'
+      bottom_left: 'Sol alt'
+      top_right: 'Sağ üst'
+      bottom_right: 'Sağ alt'
+  signature_boxes:
+    label: 'İmza kutuları'
+    min_message: 'En az {{ limit }} imza kutusu gerekli.'
+    max_message: 'En fazla {{ limit }} imza kutusuna izin verilir.'
+    unique_names_message: 'Yinelenen kutu adı. Her imza kutusunun benzersiz bir adı olmalıdır.'
+    no_overlap_message: 'Aynı sayfadaki imza kutuları çakışamaz. Bu kutuyu taşıyın veya yeniden boyutlandırın.'
+
+signature_box_type:
+  name:
+    placeholder: 'Kutu adı (örn. imzalayan_1)'
+    required: 'Kutu adı zorunludur.'
+  page:
+    label: 'Sayfa'
+    not_allowed: 'Bu sayfa izin verilenler arasında değil. İzin verilen sayfalardan birini seçin.'
+  width:
+    label: 'Genişlik'
+  height:
+    label: 'Yükseklik'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Koordinatlar başarıyla kaydedildi.'
+
+proxy:
+  invalid_url: 'Geçersiz veya eksik URL.'
+  url_not_allowed: 'Bu URL proxy izin listesinde yok.'
+  error_load: 'PDF yüklenirken hata:'
+
+js:
+  error_load_pdf: 'PDF yüklenirken hata: '
+  alert_url_required: 'Lütfen bir PDF URL''si girin.'
+  loading_state: 'Yükleniyor...'
+  load_pdf_btn: 'PDF yükle'
+  default_box_name: 'imza'
+  alert_submit_error: 'Koordinatlar gönderilirken hata.'

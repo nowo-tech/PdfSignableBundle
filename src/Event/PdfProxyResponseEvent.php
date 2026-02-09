@@ -15,6 +15,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class PdfProxyResponseEvent extends Event
 {
+    /**
+     * @param string   $url      The URL that was fetched
+     * @param Request  $request  The HTTP request to the proxy endpoint
+     * @param Response $response The PDF response (can be modified by listeners)
+     */
     public function __construct(
         private readonly string $url,
         private readonly Request $request,
@@ -22,21 +27,35 @@ final class PdfProxyResponseEvent extends Event
     ) {
     }
 
+    /**
+     * Returns the URL that was fetched.
+     */
     public function getUrl(): string
     {
         return $this->url;
     }
 
+    /**
+     * Returns the HTTP request to the proxy endpoint.
+     */
     public function getRequest(): Request
     {
         return $this->request;
     }
 
+    /**
+     * Returns the response (PDF content). Listeners may replace it.
+     */
     public function getResponse(): Response
     {
         return $this->response;
     }
 
+    /**
+     * Replaces the response (e.g. add headers or transform content).
+     *
+     * @param Response $response The new response to return
+     */
     public function setResponse(Response $response): void
     {
         $this->response = $response;

@@ -164,6 +164,48 @@ class SignatureController extends AbstractController
     }
 
     /**
+     * Page restriction: boxes can only be placed on allowed pages (e.g. page 1 only).
+     */
+    #[Route('/demo-signature/page-restriction', name: 'app_signature_page_restriction', methods: ['GET', 'POST'])]
+    public function pageRestriction(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>allowed_pages: [1]</code> — page field is a dropdown with only page 1</li><li>Use case: single-page contract; restrict boxes to first page</li><li>Validation rejects any other page</li></ul>';
+        return $this->signaturePage($request, 'Page restriction (allowed_pages)', [
+            'allowed_pages' => [1],
+            'min_entries' => 0,
+            'max_entries' => 4,
+        ], $explanation);
+    }
+
+    /**
+     * Sorted boxes: on submit, boxes are ordered by page, then Y, then X.
+     */
+    #[Route('/demo-signature/sorted-boxes', name: 'app_signature_sorted_boxes', methods: ['GET', 'POST'])]
+    public function sortedBoxes(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>sort_boxes: true</code> — on submit, boxes are sorted by page, then Y, then X</li><li>Saved/exported order is deterministic (e.g. for downstream signing)</li></ul>';
+        return $this->signaturePage($request, 'Sorted boxes (sort_boxes)', [
+            'sort_boxes' => true,
+            'min_entries' => 0,
+            'max_entries' => 6,
+        ], $explanation);
+    }
+
+    /**
+     * No overlapping boxes: validation rejects when two boxes on the same page overlap.
+     */
+    #[Route('/demo-signature/no-overlap', name: 'app_signature_no_overlap', methods: ['GET', 'POST'])]
+    public function noOverlap(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>prevent_box_overlap: true</code> (default) — boxes on the same page cannot overlap</li><li>Frontend: drag/resize that would overlap is reverted and a message is shown</li><li>On submit, overlapping boxes trigger a validation error</li></ul>';
+        return $this->signaturePage($request, 'No overlapping boxes (prevent_box_overlap)', [
+            'prevent_box_overlap' => true,
+            'min_entries' => 0,
+            'max_entries' => 6,
+        ], $explanation);
+    }
+
+    /**
      * Predefined boxes demo: model pre-filled with two boxes, fixed URL, max 5 boxes.
      */
     #[Route('/demo-signature/predefined', name: 'app_signature_predefined', methods: ['GET', 'POST'])]
@@ -199,7 +241,8 @@ class SignatureController extends AbstractController
                     'origin' => $coords->getOrigin(),
                 ]);
             }
-            $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($model->getSignatureCoordinates()));
+            $count = count($model->getSignatureCoordinates()->getSignatureBoxes());
+            $this->addFlash('success', sprintf('Coordinates saved (demo). %d box(es).', $count));
             // return $this->redirectToRoute('app_signature_predefined');
         }
 
@@ -215,9 +258,12 @@ class SignatureController extends AbstractController
     /**
      * Renders a signature demo page with the given options and configuration explanation.
      *
-     * @param array<string, mixed> $signatureOptions Options passed to SignatureCoordinatesType
+     * @param Request               $request           The HTTP request (GET or POST)
+     * @param string                $pageTitle         Title for the page
+     * @param array<string, mixed>  $signatureOptions  Options passed to SignatureCoordinatesType
+     * @param string                $configExplanation HTML explanation of the demo config
      *
-     * @return Response
+     * @return Response The rendered page or redirect/JSON on success
      */
     private function signaturePage(Request $request, string $pageTitle, array $signatureOptions, string $configExplanation): Response
     {
@@ -238,7 +284,8 @@ class SignatureController extends AbstractController
                     'origin' => $coords->getOrigin(),
                 ]);
             }
-            $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($model->getSignatureCoordinates()));
+            $count = count($model->getSignatureCoordinates()->getSignatureBoxes());
+            $this->addFlash('success', sprintf('Coordinates saved (demo). %d box(es).', $count));
             // return $this->redirectToRoute($request->attributes->get('_route'));
         }
 
@@ -251,6 +298,10 @@ class SignatureController extends AbstractController
 
     /**
      * Returns whether the request prefers a JSON response (Accept: application/json or X-Requested-With: XMLHttpRequest).
+     *
+     * @param Request $request The HTTP request
+     *
+     * @return bool True if the client expects JSON
      */
     private function wantsJson(Request $request): bool
     {
@@ -259,6 +310,10 @@ class SignatureController extends AbstractController
     }
 
     /**
+     * Formats the coordinates model as an array of box data for JSON output.
+     *
+     * @param SignatureCoordinatesModel $model The coordinates model
+     *
      * @return array<int, array{name: string, page: int, x: float, y: float, width: float, height: float}>
      */
     private function formatCoordinates(SignatureCoordinatesModel $model): array
@@ -279,6 +334,10 @@ class SignatureController extends AbstractController
 
     /**
      * Formats the signature coordinates model as HTML for flash messages (bullets, name first).
+     *
+     * @param SignatureCoordinatesModel $model The coordinates model
+     *
+     * @return string HTML fragment (unit, origin and list of boxes)
      */
     private function formatCoordinatesForFlash(SignatureCoordinatesModel $model): string
     {

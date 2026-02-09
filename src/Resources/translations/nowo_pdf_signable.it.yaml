@@ -38,6 +38,7 @@ signature_coordinates_type:
     min_message: 'Almeno {{ limit }} campo/i firma richiesto/i.'
     max_message: 'Al massimo {{ limit }} campo/i firma consentito/i.'
     unique_names_message: 'Nome campo duplicato. Ogni campo firma deve avere un nome univoco.'
+    no_overlap_message: 'I campi firma sulla stessa pagina non possono sovrapporsi. Spostare o ridimensionare questo campo.'
 
 signature_box_type:
   name:
@@ -45,6 +46,7 @@ signature_box_type:
     required: 'Il nome del campo è obbligatorio.'
   page:
     label: 'Pagina'
+    not_allowed: 'Questa pagina non è consentita. Scegli una delle pagine consentite.'
   width:
     label: 'Larghezza'
   height:
@@ -60,6 +62,7 @@ flash:
 
 proxy:
   invalid_url: 'URL non valida o mancante.'
+  url_not_allowed: 'Questo URL non è consentito dalla lista del proxy.'
   error_load: 'Errore nel caricamento del PDF:'
 
 js:

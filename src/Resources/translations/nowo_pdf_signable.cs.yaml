@@ -1,0 +1,74 @@
+page:
+  title: 'Souřadnice podpisu PDF'
+  pdf_viewer: 'Prohlížeč PDF'
+  url_label: 'URL PDF'
+  load: 'Načíst PDF'
+  placeholder_intro: 'Zadejte výše URL PDF a klikněte na Načíst pro zobrazení dokumentu. Kliknutím na PDF přidáte pole pro podpisy.'
+  signature_boxes: 'Pole pro podpisy'
+  add: 'Přidat pole'
+  units_label: 'Jednotky'
+  origin_label: 'Počátek'
+  help_text: 'Klikněte na PDF pro umístění nového pole podpisu. Tažením přesouvejte pole, za rohy měňte velikost.'
+  delete: 'Smazat'
+  empty_state: 'Zatím žádná pole pro podpisy. Klikněte na PDF nebo na "Přidat pole" pro vytvoření.'
+  save_coordinates: 'Uložit souřadnice'
+  errors_collection: 'Chyby v polích pro podpisy:'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'URL PDF'
+    placeholder: 'https://example.com/document.pdf'
+  unit:
+    label: 'Jednotky'
+    option:
+      pt: 'Body (pt)'
+      mm: 'Milimetry (mm)'
+      cm: 'Centimetry (cm)'
+      px: 'Pixely (px)'
+      in: 'Palce (in)'
+  origin:
+    label: 'Počátek'
+    option:
+      top_left: 'Vlevo nahoře'
+      bottom_left: 'Vlevo dole'
+      top_right: 'Vpravo nahoře'
+      bottom_right: 'Vpravo dole'
+  signature_boxes:
+    label: 'Pole pro podpisy'
+    min_message: 'Je vyžadováno alespoň {{ limit }} pole(í) pro podpis.'
+    max_message: 'Povoleno nejvýše {{ limit }} pole(í) pro podpis.'
+    unique_names_message: 'Duplicitní název pole. Každé pole podpisu musí mít jedinečný název.'
+    no_overlap_message: 'Pole podpisů na stejné stránce se nesmí překrývat. Přesuňte nebo změňte velikost tohoto pole.'
+
+signature_box_type:
+  name:
+    placeholder: 'Název pole (např. signer_1)'
+    required: 'Název pole je povinný.'
+  page:
+    label: 'Stránka'
+    not_allowed: 'Tato stránka není povolena. Zvolte jednu z povolených stránek.'
+  width:
+    label: 'Šířka'
+  height:
+    label: 'Výška'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Souřadnice byly úspěšně uloženy.'
+
+proxy:
+  invalid_url: 'Neplatná nebo chybějící URL.'
+  url_not_allowed: 'Tato URL není povolena v seznamu proxy.'
+  error_load: 'Chyba při načítání PDF:'
+
+js:
+  error_load_pdf: 'Chyba při načítání PDF: '
+  alert_url_required: 'Zadejte prosím URL PDF.'
+  loading_state: 'Načítání...'
+  load_pdf_btn: 'Načíst PDF'
+  default_box_name: 'podpis'
+  alert_submit_error: 'Chyba při odesílání souřadnic.'

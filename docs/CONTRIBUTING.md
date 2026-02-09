@@ -23,6 +23,7 @@ Thank you for considering contributing.
    ```bash
    make up && make install
    make test && make cs-check
+   make validate-translations   # ensure all translation YAML files have the same keys
    ```
 
 ## Code style

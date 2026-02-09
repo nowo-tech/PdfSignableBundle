@@ -38,6 +38,7 @@ signature_coordinates_type:
     min_message: 'Pelo menos {{ limit }} caixa(s) de assinatura necessária(s).'
     max_message: 'No máximo {{ limit }} caixa(s) de assinatura permitida(s).'
     unique_names_message: 'Nome de caixa duplicado. Cada caixa de assinatura deve ter um nome único.'
+    no_overlap_message: 'As caixas de assinatura na mesma página não podem sobrepor-se. Mova ou redimensione esta caixa.'
 
 signature_box_type:
   name:
@@ -45,6 +46,7 @@ signature_box_type:
     required: 'O nome da caixa é obrigatório.'
   page:
     label: 'Página'
+    not_allowed: 'Esta página não é permitida. Escolha uma das páginas permitidas.'
   width:
     label: 'Largura'
   height:
@@ -60,6 +62,7 @@ flash:
 
 proxy:
   invalid_url: 'URL inválida ou em falta.'
+  url_not_allowed: 'Este URL não é permitido pela lista do proxy.'
   error_load: 'Erro ao carregar o PDF:'
 
 js:

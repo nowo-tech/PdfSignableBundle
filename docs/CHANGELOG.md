@@ -11,6 +11,30 @@ _Nothing yet._
 
 ---
 
+## [1.1.0] - 2026-02-10
+
+### Added
+
+- **Page restriction** (`allowed_pages`): form option to limit which pages boxes can be placed on; page field becomes a dropdown. See [USAGE](USAGE.md).
+- **Proxy URL allowlist** (`proxy_url_allowlist`): bundle config to restrict which URLs the proxy can fetch (substring or regex). See [CONFIGURATION](CONFIGURATION.md) and [SECURITY](SECURITY.md).
+- **Box order** (`sort_boxes`): form option to sort boxes by page, then Y, then X on submit.
+- **Non-overlapping boxes** (`prevent_box_overlap`): default is now `true`; validation on submit and **frontend enforcement** (drag/resize that would overlap is reverted and a translated message is shown). Set to `false` to allow overlapping boxes.
+- **Translations**: added CA, CS, NL, PL, RU (12 languages total: EN, ES, FR, DE, IT, PT, TR, CA, CS, NL, PL, RU).
+- **Translation validation**: `scripts/validate-translations-yaml.php` now checks that all translation files have the same keys as the reference (English) file; `composer validate-translations` runs it.
+- **Demos**: added page restriction, sorted boxes, and no-overlap demos (12 demo pages in total for Symfony 7 and 8).
+
+### Changed
+
+- **SECURITY**: Proxy no longer leaks exception messages to the client on 502/errors; SSRF mitigation blocks private/local URLs before fetch. Flash messages in demos use plain text (no `|raw`). See [SECURITY](SECURITY.md).
+- **`prevent_box_overlap`** default changed from `false` to `true`. If you relied on overlapping boxes being allowed by default, set `'prevent_box_overlap' => false` when adding the form type. See [UPGRADING](UPGRADING.md).
+
+### Compatibility
+
+- PHP 8.1+
+- Symfony 6.1+, 7.x, 8.x.
+
+---
+
 ## [1.0.0] - 2026-02-09
 
 First stable release.
@@ -42,9 +66,9 @@ First stable release.
 - **Events**
   - `SignatureCoordinatesSubmittedEvent` (after valid form submit), `PdfProxyRequestEvent` (before proxy fetch), `PdfProxyResponseEvent` (after proxy fetch). See [EVENTS.md](EVENTS.md).
 - **Translation**
-  - EN, ES, FR, DE, IT, PT (e.g. `signature_box_type.name.required`, `signature_boxes.unique_names_message`, `js.alert_submit_error`). Script `scripts/validate-translations-yaml.php` for CI.
+  - EN, ES, FR, DE, IT, PT, TR (e.g. `signature_box_type.name.required`, `signature_boxes.unique_names_message`, `js.alert_submit_error`). Script `scripts/validate-translations-yaml.php` for CI.
 - **Demos**
-  - Dockerized demos for Symfony 7 and 8 (Bootstrap, Vite, TypeScript). Nine demo pages: no config, default, fixed_url, overridden, URL as dropdown, limited boxes, same signer multiple, unique per name, predefined boxes. Home and burger menu list all; each page shows configuration in bullets. Flash message with coordinates in bullets (name first).
+  - Dockerized demos for Symfony 7 and 8 (Bootstrap, Vite, TypeScript). Twelve demo pages: no config, default, fixed_url, overridden, URL as dropdown, limited boxes, same signer multiple, unique per name, page restriction, sorted boxes, no-overlap, predefined boxes. Home and burger menu list all; each page shows configuration in bullets. Flash message with coordinates (plain text).
 - **Documentation**
   - README, [INSTALLATION.md](INSTALLATION.md), [CONFIGURATION.md](CONFIGURATION.md), [USAGE.md](USAGE.md), [EVENTS.md](EVENTS.md), [UPGRADING.md](UPGRADING.md), [ROADMAP.md](ROADMAP.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md) (all in `docs/`, English). “Same signer, multiple locations” and backend grouping example in USAGE.
 
@@ -60,5 +84,6 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdf-signable-bundle/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdf-signable-bundle/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.1.0
 [1.0.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.0.0

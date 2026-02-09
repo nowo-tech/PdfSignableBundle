@@ -1,0 +1,74 @@
+page:
+  title: 'Coordenades de signatura en PDF'
+  pdf_viewer: 'Visor PDF'
+  url_label: 'URL del PDF'
+  load: 'Carregar PDF'
+  placeholder_intro: 'Introduïu una URL de PDF a dalt i feu clic a Carregar per mostrar el document. Feu clic al PDF per afegir caixes de signatura.'
+  signature_boxes: 'Caixes de signatura'
+  add: 'Afegir caixa'
+  units_label: 'Unitats'
+  origin_label: 'Origen'
+  help_text: 'Feu clic al PDF per col·locar una nova caixa de signatura. Arrossegueu les caixes per moure, les cantonades per redimensionar.'
+  delete: 'Eliminar'
+  empty_state: 'Encara no hi ha caixes de signatura. Feu clic al PDF o a "Afegir caixa" per crear-ne una.'
+  save_coordinates: 'Desar coordenades'
+  errors_collection: 'Errors a les caixes de signatura:'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'URL del PDF'
+    placeholder: 'https://exemple.com/document.pdf'
+  unit:
+    label: 'Unitats'
+    option:
+      pt: 'Punts (pt)'
+      mm: 'Mil·límetres (mm)'
+      cm: 'Centímetres (cm)'
+      px: 'Píxels (px)'
+      in: 'Polzades (in)'
+  origin:
+    label: 'Origen'
+    option:
+      top_left: 'Superior esquerra'
+      bottom_left: 'Inferior esquerra'
+      top_right: 'Superior dreta'
+      bottom_right: 'Inferior dreta'
+  signature_boxes:
+    label: 'Caixes de signatura'
+    min_message: 'Es requereix almenys {{ limit }} caixa(es) de signatura.'
+    max_message: 'Es permet com a màxim {{ limit }} caixa(es) de signatura.'
+    unique_names_message: 'Nom de caixa duplicat. Cada caixa de signatura ha de tenir un nom únic.'
+    no_overlap_message: 'Les caixes de signatura a la mateixa pàgina no poden solapar-se. Moveu o redimensionau aquesta caixa.'
+
+signature_box_type:
+  name:
+    placeholder: 'Nom de la caixa (p. ex. signant_1)'
+    required: 'El nom de la caixa és obligatori.'
+  page:
+    label: 'Pàgina'
+    not_allowed: 'Aquesta pàgina no està permitida. Trieu una de les pàgines permitides.'
+  width:
+    label: 'Amplada'
+  height:
+    label: 'Alçada'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Coordenades desades correctament.'
+
+proxy:
+  invalid_url: 'URL no vàlida o faltant.'
+  url_not_allowed: 'Aquesta URL no està permitida per la llista del proxy.'
+  error_load: 'Error en carregar el PDF:'
+
+js:
+  error_load_pdf: 'Error en carregar el PDF: '
+  alert_url_required: 'Introduïu una URL de PDF.'
+  loading_state: 'Carregant...'
+  load_pdf_btn: 'Carregar PDF'
+  default_box_name: 'signatura'
+  alert_submit_error: 'Error en enviar les coordenades.'
