@@ -187,6 +187,7 @@
   <script>
     window.NowoPdfSignableConfig = {
       proxyUrl: {{ path('nowo_pdf_signable_proxy')|json_encode|raw }},
+      debug: {{ (opts.debug|default(false)) ? 'true' : 'false' }},
       strings: {
         error_load_pdf: {{ 'js.error_load_pdf'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
         alert_url_required: {{ 'js.alert_url_required'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},

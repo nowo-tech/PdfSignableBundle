@@ -8,6 +8,9 @@ nowo_pdf_signable:
     # Example PDF URL for form preload (leave empty to not preload)
     example_pdf_url: ''
 
+    # Enable console logging in the browser dev tools (PDF viewer and signature boxes)
+    # debug: false
+
     # Optional: named configs for SignatureCoordinatesType (use form option config: "name" to apply)
     # configs:
     #     default:

@@ -34,10 +34,12 @@ final class SignatureCoordinatesType extends AbstractType
     /**
      * @param string               $examplePdfUrl Fallback PDF URL when pdf_url option is not set
      * @param array<string, array> $namedConfigs  Named configs from nowo_pdf_signable.configs (option keys => values)
+     * @param bool                 $debug         When true, the frontend emits console logs (browser dev tools)
      */
     public function __construct(
         private readonly string $examplePdfUrl = '',
         private readonly array $namedConfigs = [],
+        private readonly bool $debug = false,
     ) {
     }
 
@@ -343,6 +345,7 @@ final class SignatureCoordinatesType extends AbstractType
             'enable_rotation' => $options['enable_rotation'],
             'snap_to_grid' => $options['snap_to_grid'],
             'snap_to_boxes' => $options['snap_to_boxes'],
+            'debug' => $this->debug,
         ];
     }
 

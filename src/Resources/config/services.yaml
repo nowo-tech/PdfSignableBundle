@@ -24,4 +24,5 @@ services:
         arguments:
             $examplePdfUrl: '%nowo_pdf_signable.example_pdf_url%'
             $namedConfigs: '%nowo_pdf_signable.configs%'
+            $debug: '%nowo_pdf_signable.debug%'
         tags: ['form.type']

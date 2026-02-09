@@ -22,6 +22,8 @@
 export interface NowoPdfSignableConfig {
   /** Base URL for the PDF proxy endpoint (e.g. /pdf-signable/proxy). */
   proxyUrl: string;
+  /** When true, emit console.log/console.warn in the browser dev tools (see nowo_pdf_signable.debug). */
+  debug?: boolean;
   /** Translated strings for UI messages. */
   strings: {
     error_load_pdf: string;
@@ -202,19 +204,36 @@ function getColorForBoxIndex(index: number): {
  * @returns void
  */
 function run(): void {
-  console.log('[PdfSignable] Script loaded');
   const config = (window as Window & { NowoPdfSignableConfig?: NowoPdfSignableConfig })
     .NowoPdfSignableConfig;
   if (!config) {
     console.warn('[PdfSignable] NowoPdfSignableConfig not found, skipping init');
     return;
   }
+  const { proxyUrl, strings, debug: debugMode = false } = config;
 
-  const { proxyUrl, strings } = config;
+  /**
+   * Logs to console only when debug mode is enabled (nowo_pdf_signable.debug: true).
+   *
+   * @param args - Same as console.log (message and optional objects)
+   */
+  const debugLog = (...args: unknown[]): void => {
+    if (debugMode) console.log('[PdfSignable]', ...args);
+  };
+
+  /**
+   * Warns to console only when debug mode is enabled.
+   *
+   * @param args - Same as console.warn
+   */
+  const debugWarn = (...args: unknown[]): void => {
+    if (debugMode) console.warn('[PdfSignable]', ...args);
+  };
+
   const widget = document.querySelector<HTMLElement>('.nowo-pdf-signable-widget');
   const form = widget?.closest('form');
   if (!form) {
-    console.warn('[PdfSignable] .nowo-pdf-signable-widget or form not found, skipping init');
+    debugWarn('.nowo-pdf-signable-widget or form not found, skipping init');
     return;
   }
   const preventBoxOverlap = widget?.dataset.preventBoxOverlap === '1';
@@ -230,7 +249,7 @@ function run(): void {
   const snapToBoxes = widget?.dataset.snapToBoxes === '1';
   const SNAP_THRESHOLD_PX = 10;
 
-  console.log('[PdfSignable] Initialized');
+  debugLog('Initialized');
 
   const pdfUrlInput = form.querySelector<HTMLInputElement>('.pdf-url-input');
   const loadPdfBtn = document.getElementById('loadPdfBtn');
@@ -574,12 +593,12 @@ function run(): void {
   async function loadPdf(): Promise<void> {
     const url = pdfUrlInput?.value?.trim() ?? '';
     if (!url) {
-      console.warn('[PdfSignable] Load PDF: URL required');
+      debugWarn('Load PDF: URL required');
       alert(strings.alert_url_required);
       return;
     }
     const loadUrl = getLoadUrl(url);
-    console.log('[PdfSignable] Loading PDF', { url, viaProxy: loadUrl !== url });
+    debugLog('Loading PDF', { url, viaProxy: loadUrl !== url });
     if (loadPdfBtn) {
       loadPdfBtn.setAttribute('disabled', '');
       loadPdfBtn.innerHTML =
@@ -659,9 +678,9 @@ function run(): void {
         setTimeout(updateOverlays, 700);
       };
       requestAnimationFrame(scheduleOverlayUpdates);
-      console.log('[PdfSignable] PDF loaded', { pages: pdfDoc.numPages, scale });
+      debugLog('PDF loaded', { pages: pdfDoc.numPages, scale });
     } catch (err) {
-      console.error('[PdfSignable] PDF load failed', err);
+      debugLog('PDF load failed', err);
       alert(strings.error_load_pdf + (err instanceof Error ? err.message : String(err)));
     } finally {
       loadingOverlay.remove();
@@ -815,7 +834,7 @@ function run(): void {
     const max = getMaxEntries();
     const currentCount = boxesList.querySelectorAll(':scope > .signature-box-item').length;
     if (max !== null && currentCount >= max) {
-      console.log('[PdfSignable] Box add skipped: max_entries reached', { max, currentCount });
+      debugLog('Box add skipped: max_entries reached', { max, currentCount });
       return;
     }
 
@@ -886,7 +905,7 @@ function run(): void {
     div.scrollIntoView({ behavior: 'smooth' });
     updateOverlays();
     updateAddButtonVisibility();
-    console.log('[PdfSignable] Box added', { page, x: xForm, y: yForm, width: w, height: h, unit });
+    debugLog('Box added', { page, x: xForm, y: yForm, width: w, height: h, unit });
   }
 
   if (loadPdfBtn) loadPdfBtn.addEventListener('click', () => loadPdf());
@@ -965,7 +984,7 @@ function run(): void {
       if (topLevel) {
         const idx = Array.from(boxesList.querySelectorAll(':scope > .signature-box-item')).indexOf(topLevel);
         topLevel.remove();
-        console.log('[PdfSignable] Box removed', { index: idx });
+        debugLog('Box removed', { index: idx });
       }
     }
     if (boxesList.querySelectorAll(':scope > .signature-box-item').length === 0) {
@@ -1031,7 +1050,7 @@ function run(): void {
   // Auto-load PDF when DOM is ready so #signature-boxes-list and form values are available for overlays
   function startAutoLoad(): void {
     if (!pdfUrlInput?.value?.trim()) return;
-    console.log('[PdfSignable] Auto-loading PDF (preset URL)');
+    debugLog('Auto-loading PDF (preset URL)');
     loadPdf();
   }
   if (document.readyState === 'loading') {

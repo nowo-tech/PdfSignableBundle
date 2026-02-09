@@ -13,6 +13,9 @@ nowo_pdf_signable:
     # Example PDF URL for form preload (leave empty to not preload)
     example_pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
 
+    # Enable console logging in the browser dev tools (PDF viewer, load, add/remove box)
+    # debug: false
+
     # Optional: named configs for SignatureCoordinatesType (use form option config: "name" to apply)
     configs:
         default:
@@ -38,6 +41,7 @@ nowo_pdf_signable:
 | `proxy_enabled`         | bool   | `true`  | Enables the `/pdf-signable/proxy` route to fetch PDFs by URL and avoid CORS. |
 | `proxy_url_allowlist`   | string[] | `[]` | When non-empty, the proxy only fetches URLs that match at least one entry. Each entry: a **substring** of the URL (e.g. `transportes.gob.es`), or a **regex** if prefixed with `#` (e.g. `#^https://example\.com/.*#`). Empty list = no restriction. |
 | `example_pdf_url`       | string | `''` (empty) | If set, the coordinates form is preloaded with this URL. Empty string to disable. |
+| `debug`                 | bool   | `false` | When `true`, the PDF viewer script emits `console.log` and `console.warn` in the browser dev tools (e.g. load PDF, add/remove box, errors). Useful for development. |
 | `configs`               | array  | `[]`    | Named configurations for the form type. Keys are option names; use the form option `config: "name"` to apply a config. Options passed when creating the form override the named config. |
 
 ### Proxy URL allowlist
