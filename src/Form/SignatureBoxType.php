@@ -38,12 +38,12 @@ final class SignatureBoxType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        if ($options['name_mode'] === self::NAME_MODE_CHOICE && $options['name_choices'] !== []) {
+        if (self::NAME_MODE_CHOICE === $options['name_mode'] && [] !== $options['name_choices']) {
             // Pre-select first choice when name is empty (new box) so the dropdown shows a selected value
             $firstChoiceValue = array_values($options['name_choices'])[0] ?? null;
             $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($firstChoiceValue): void {
                 $data = $event->getData();
-                if ($data instanceof SignatureBoxModel && ($data->getName() === null || $data->getName() === '') && $firstChoiceValue !== null) {
+                if ($data instanceof SignatureBoxModel && (null === $data->getName() || '' === $data->getName()) && null !== $firstChoiceValue) {
                     $data->setName($firstChoiceValue);
                 }
             });
@@ -77,7 +77,7 @@ final class SignatureBoxType extends AbstractType
         }
 
         $allowedPages = $options['allowed_pages'];
-        if ($allowedPages !== null && $allowedPages !== []) {
+        if (null !== $allowedPages && [] !== $allowedPages) {
             $allowedPages = array_map('intval', array_values($allowedPages));
             $allowedPages = array_values(array_unique(array_filter($allowedPages, fn (int $p) => $p >= 1)));
             $pageChoices = array_combine($allowedPages, $allowedPages);
@@ -133,8 +133,6 @@ final class SignatureBoxType extends AbstractType
      * Configures default options and allowed types for name, page and box fields.
      *
      * @param OptionsResolver $resolver The options resolver
-     *
-     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
@@ -148,11 +146,11 @@ final class SignatureBoxType extends AbstractType
             'name_placeholder' => 'signature_box_type.name.placeholder',
             'choice_placeholder' => false,
 
-            /** @see ROADMAP.md "Page restriction" — limit which pages boxes can be placed on */
+            /* @see ROADMAP.md "Page restriction" — limit which pages boxes can be placed on */
             'allowed_pages' => null,
-            /** When true, show the rotation angle field (degrees). When false, angle is not in the form and defaults to 0. */
+            /* When true, show the rotation angle field (degrees). When false, angle is not in the form and defaults to 0. */
             'angle_enabled' => false,
-            /** Additional constraints on the whole box (SignatureBoxModel); e.g. Callback for custom validation */
+            /* Additional constraints on the whole box (SignatureBoxModel); e.g. Callback for custom validation */
             'constraints' => [],
         ]);
 
@@ -163,7 +161,7 @@ final class SignatureBoxType extends AbstractType
         $resolver->setAllowedTypes('choice_placeholder', ['bool', 'string']);
         $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);
         $resolver->setAllowedValues('allowed_pages', static function ($value): bool {
-            if ($value === null) {
+            if (null === $value) {
                 return true;
             }
             if (!is_array($value)) {
@@ -175,6 +173,7 @@ final class SignatureBoxType extends AbstractType
                     return false;
                 }
             }
+
             return true;
         });
     }

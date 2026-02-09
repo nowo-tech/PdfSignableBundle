@@ -37,6 +37,7 @@ class SignatureBoxModel
     public function setPage(int $page): self
     {
         $this->page = $page;
+
         return $this;
     }
 
@@ -56,6 +57,7 @@ class SignatureBoxModel
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -75,6 +77,7 @@ class SignatureBoxModel
     public function setX(float $x): self
     {
         $this->x = $x;
+
         return $this;
     }
 
@@ -94,6 +97,7 @@ class SignatureBoxModel
     public function setY(float $y): self
     {
         $this->y = $y;
+
         return $this;
     }
 
@@ -113,6 +117,7 @@ class SignatureBoxModel
     public function setWidth(float $width): self
     {
         $this->width = $width;
+
         return $this;
     }
 
@@ -132,6 +137,7 @@ class SignatureBoxModel
     public function setHeight(float $height): self
     {
         $this->height = $height;
+
         return $this;
     }
 
@@ -151,6 +157,7 @@ class SignatureBoxModel
     public function setAngle(float $angle): self
     {
         $this->angle = $angle;
+
         return $this;
     }
 
@@ -187,6 +194,7 @@ class SignatureBoxModel
         $box->setWidth((float) ($data['width'] ?? 150));
         $box->setHeight((float) ($data['height'] ?? 40));
         $box->setAngle((float) ($data['angle'] ?? 0));
+
         return $box;
     }
 }

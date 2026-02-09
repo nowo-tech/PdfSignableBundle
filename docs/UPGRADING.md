@@ -97,7 +97,30 @@ If you were using `dev-main` or `dev-master`:
 
 ---
 
-### Upgrading to a future version (e.g. 1.2.0)
+### Upgrading to 1.2.0
+
+**Release date**: 2026-02-10
+
+#### What’s new
+
+- **Optional rotation** (`enable_rotation`): form option (default `false`). When `true`, each box has an **angle** field and the viewer shows a rotate handle above each overlay; when `false`, the angle field is not rendered and boxes are not rotatable. See [USAGE](USAGE.md).
+- **Default values per box name** (`box_defaults_by_name`): form option to pre-fill width, height, x, y, angle when the user selects a name (dropdown or input). See [USAGE](USAGE.md).
+- **Demos**: rotation, defaults-by-name, and allow-overlap demo pages (16 demo pages in total for Symfony 7 and 8).
+
+#### Breaking changes
+
+None.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. If you use the bundle’s assets, run `pnpm run build` (or `make assets`) and `php bin/console assets:install`.
+3. Clear cache: `php bin/console cache:clear`.
+4. Optional: set `'enable_rotation' => true` and/or `box_defaults_by_name` on your form if you want rotation or name-based defaults.
+
+---
+
+### Upgrading to a future version (e.g. 1.3.0)
 
 When a new version is released, a new subsection will be added here with:
 
@@ -133,6 +156,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
+| 1.2.x          | 6.1+, 7.x, 8.x | 8.1+ | Optional rotation (enable_rotation), box_defaults_by_name, 16 demos. |
 | 1.1.x          | 6.1+, 7.x, 8.x | 8.1+ | Page restriction, proxy allowlist, sort_boxes, prevent_box_overlap default true, 12 languages. |
 | 1.0.x          | 6.1+, 7.x, 8.x | 8.1+ | First stable release. |
 | dev-main       | 6.1+, 7.x, 8.x | 8.1+ | Development; use only if you need unreleased changes. See [INSTALLATION.md](INSTALLATION.md). |

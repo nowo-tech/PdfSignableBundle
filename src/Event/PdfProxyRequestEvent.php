@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Event;
 
-use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Dispatched before the PDF proxy fetches an external URL.
@@ -79,6 +79,6 @@ final class PdfProxyRequestEvent extends Event
      */
     public function hasResponse(): bool
     {
-        return $this->response !== null;
+        return null !== $this->response;
     }
 }

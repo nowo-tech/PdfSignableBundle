@@ -34,6 +34,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             ],
         ]);
         $validator = Validation::createValidator();
+
         return [
             new PreloadedExtension(
                 [$signatureBoxType, $signatureCoordinatesType],

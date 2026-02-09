@@ -12,12 +12,12 @@ use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -58,7 +58,7 @@ final class SignatureController extends AbstractController
     public function index(Request $request): Response
     {
         $model = new SignatureCoordinatesModel();
-        if (!$request->isMethod('POST') && $this->examplePdfUrl !== '') {
+        if (!$request->isMethod('POST') && '' !== $this->examplePdfUrl) {
             $model->setPdfUrl($this->examplePdfUrl);
         }
         $form = $this->createForm(SignatureCoordinatesType::class, $model);
@@ -79,6 +79,7 @@ final class SignatureController extends AbstractController
                 ]);
             }
             $this->addFlash('success', $this->translator->trans('flash.save.success', [], 'nowo_pdf_signable'));
+
             return $this->redirectToRoute('nowo_pdf_signable_index');
         }
 
@@ -120,6 +121,7 @@ final class SignatureController extends AbstractController
                 'height' => $box->getHeight(),
             ];
         }
+
         return $out;
     }
 
@@ -143,7 +145,7 @@ final class SignatureController extends AbstractController
                 Response::HTTP_BAD_REQUEST
             );
         }
-        if ($this->proxyUrlAllowlist !== [] && !$this->isUrlAllowedByAllowlist($url)) {
+        if ([] !== $this->proxyUrlAllowlist && !$this->isUrlAllowedByAllowlist($url)) {
             return new Response(
                 $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable'),
                 Response::HTTP_FORBIDDEN
@@ -189,6 +191,7 @@ final class SignatureController extends AbstractController
             ]);
             $responseEvent = new PdfProxyResponseEvent($url, $request, $responseObj);
             $this->eventDispatcher->dispatch($responseEvent, PdfSignableEvents::PDF_PROXY_RESPONSE);
+
             return $responseEvent->getResponse();
         } catch (ExceptionInterface|\Throwable $e) {
             // Do not expose exception message to the client (information disclosure)
@@ -210,11 +213,11 @@ final class SignatureController extends AbstractController
     private function isUrlBlockedForSsrf(string $url): bool
     {
         $host = parse_url($url, PHP_URL_HOST);
-        if ($host === null || $host === '') {
+        if (null === $host || '' === $host) {
             return true;
         }
         $hostLower = strtolower($host);
-        if ($hostLower === 'localhost' || $hostLower === '::1') {
+        if ('localhost' === $hostLower || '::1' === $hostLower) {
             return true;
         }
         $ip = $host;
@@ -227,10 +230,11 @@ final class SignatureController extends AbstractController
         }
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             $long = ip2long($ip);
-            if ($long === false) {
+            if (false === $long) {
                 return true;
             }
             $u = (float) sprintf('%u', $long);
+
             // 127.0.0.0/8, 10.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16
             return ($u >= 2130706432 && $u <= 2147483647)
                 || ($u >= 167772160 && $u <= 184549375)
@@ -240,6 +244,7 @@ final class SignatureController extends AbstractController
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
             return str_starts_with($ip, '::1') || str_starts_with($ip, 'fe80:');
         }
+
         return false;
     }
 
@@ -253,11 +258,11 @@ final class SignatureController extends AbstractController
     private function isUrlAllowedByAllowlist(string $url): bool
     {
         foreach ($this->proxyUrlAllowlist as $pattern) {
-            if ($pattern === '') {
+            if ('' === $pattern) {
                 continue;
             }
             if (str_starts_with($pattern, '#')) {
-                if (@preg_match($pattern, $url) === 1) {
+                if (1 === @preg_match($pattern, $url)) {
                     return true;
                 }
                 continue;
@@ -266,6 +271,7 @@ final class SignatureController extends AbstractController
                 return true;
             }
         }
+
         return false;
     }
 }

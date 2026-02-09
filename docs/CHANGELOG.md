@@ -7,11 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_Nothing yet._
+
+---
+
+## [1.2.0] - 2026-02-10
+
 ### Added
 
 - **Optional rotation** (`enable_rotation`): form option (default `false`). When `true`, each box has an **angle** field (degrees) and the viewer shows a **rotate handle** above each overlay; when `false`, the angle field is not rendered and boxes are not rotatable. See [USAGE](USAGE.md).
 - **Default values per box name** (`box_defaults_by_name`): form option to pre-fill width, height, x, y, angle when the user selects a name (dropdown or input). See [USAGE](USAGE.md) and [ROADMAP](ROADMAP.md).
 - **Demos**: added rotation, defaults-by-name, and allow-overlap demo pages (16 demo pages in total for Symfony 7 and 8).
+
+For upgrade steps from 1.1.x, see [UPGRADING](UPGRADING.md).
 
 ---
 
@@ -88,6 +96,7 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdf-signable-bundle/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdf-signable-bundle/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.2.0
 [1.1.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.1.0
 [1.0.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.0.0

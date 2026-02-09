@@ -32,8 +32,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 final class SignatureCoordinatesType extends AbstractType
 {
     /**
-     * @param string                $examplePdfUrl Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array>  $namedConfigs   Named configs from nowo_pdf_signable.configs (option keys => values)
+     * @param string               $examplePdfUrl Fallback PDF URL when pdf_url option is not set
+     * @param array<string, array> $namedConfigs  Named configs from nowo_pdf_signable.configs (option keys => values)
      */
     public function __construct(
         private readonly string $examplePdfUrl = '',
@@ -106,7 +106,7 @@ final class SignatureCoordinatesType extends AbstractType
 
         // Resolve pdf_url: use option if set, otherwise fallback to bundle example
         $pdfUrl = $options['pdf_url'] ?? null;
-        if (($pdfUrl === null || $pdfUrl === '') && $this->examplePdfUrl !== '') {
+        if ((null === $pdfUrl || '' === $pdfUrl) && '' !== $this->examplePdfUrl) {
             $pdfUrl = $this->examplePdfUrl;
         }
 
@@ -114,23 +114,23 @@ final class SignatureCoordinatesType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($pdfUrl): void {
             $model = $event->getData();
             if ($model instanceof SignatureCoordinatesModel
-                && ($model->getPdfUrl() === null || $model->getPdfUrl() === '')
-                && $pdfUrl !== null
-                && $pdfUrl !== ''
+                && (null === $model->getPdfUrl() || '' === $model->getPdfUrl())
+                && null !== $pdfUrl
+                && '' !== $pdfUrl
             ) {
                 $model->setPdfUrl($pdfUrl);
             }
         });
 
         // --- PDF URL ---
-        if ($options['url_field'] === false && $pdfUrl !== null && $pdfUrl !== '') {
+        if (false === $options['url_field'] && null !== $pdfUrl && '' !== $pdfUrl) {
             $builder->add('pdfUrl', HiddenType::class, [
                 'data' => $pdfUrl,
                 'empty_data' => $pdfUrl,
                 'attr' => ['class' => 'pdf-url-input'],
             ]);
         } else {
-            if ($options['url_mode'] === self::URL_MODE_CHOICE && $options['url_choices'] !== []) {
+            if (self::URL_MODE_CHOICE === $options['url_mode'] && [] !== $options['url_choices']) {
                 $builder->add('pdfUrl', ChoiceType::class, [
                     'label' => $options['url_label'],
                     'choices' => $options['url_choices'],
@@ -152,7 +152,7 @@ final class SignatureCoordinatesType extends AbstractType
         }
 
         // --- Unit ---
-        if ($options['unit_mode'] === self::UNIT_MODE_INPUT) {
+        if (self::UNIT_MODE_INPUT === $options['unit_mode']) {
             $builder->add('unit', TextType::class, [
                 'label' => $options['unit_label'],
                 'attr' => ['class' => 'unit-selector form-control form-control-sm'],
@@ -169,7 +169,7 @@ final class SignatureCoordinatesType extends AbstractType
         }
 
         // --- Origin ---
-        if ($options['origin_mode'] === self::ORIGIN_MODE_INPUT) {
+        if (self::ORIGIN_MODE_INPUT === $options['origin_mode']) {
             $builder->add('origin', TextType::class, [
                 'label' => $options['origin_label'],
                 'attr' => ['class' => 'origin-selector form-control form-control-sm'],
@@ -194,7 +194,7 @@ final class SignatureCoordinatesType extends AbstractType
         }
         $entryOptions['angle_enabled'] = $options['enable_rotation'];
         $boxConstraints = $options['box_constraints'] ?? [];
-        if ($boxConstraints !== []) {
+        if ([] !== $boxConstraints) {
             $entryOptions['constraints'] = array_merge($entryOptions['constraints'] ?? [], $boxConstraints);
         }
         if ($options['sort_boxes']) {
@@ -217,6 +217,7 @@ final class SignatureCoordinatesType extends AbstractType
                     }
                     $xA = is_array($a) ? (float) ($a['x'] ?? 0) : ($a instanceof SignatureBoxModel ? $a->getX() : 0.0);
                     $xB = is_array($b) ? (float) ($b['x'] ?? 0) : ($b instanceof SignatureBoxModel ? $b->getX() : 0.0);
+
                     return $xA <=> $xB;
                 });
                 $data['signatureBoxes'] = array_values($boxes);
@@ -234,7 +235,7 @@ final class SignatureCoordinatesType extends AbstractType
         ];
         $maxEntries = $options['max_entries'];
         $collectionConstraints = [];
-        if ($maxEntries !== null || $options['min_entries'] > 0) {
+        if (null !== $maxEntries || $options['min_entries'] > 0) {
             $collectionConstraints[] = new Count(
                 min: $options['min_entries'],
                 max: $maxEntries,
@@ -243,8 +244,8 @@ final class SignatureCoordinatesType extends AbstractType
             );
         }
         $uniqueNamesOpt = $options['unique_box_names'];
-        if ($uniqueNamesOpt === true || (is_array($uniqueNamesOpt) && $uniqueNamesOpt !== [])) {
-            $namesToEnforce = $uniqueNamesOpt === true ? null : array_fill_keys(array_map('trim', $uniqueNamesOpt), true);
+        if (true === $uniqueNamesOpt || (is_array($uniqueNamesOpt) && [] !== $uniqueNamesOpt)) {
+            $namesToEnforce = true === $uniqueNamesOpt ? null : array_fill_keys(array_map('trim', $uniqueNamesOpt), true);
             $collectionConstraints[] = new Callback(function (mixed $boxes, ExecutionContextInterface $context) use ($namesToEnforce): void {
                 if (!is_array($boxes)) {
                     return;
@@ -255,15 +256,15 @@ final class SignatureCoordinatesType extends AbstractType
                         continue;
                     }
                     $name = trim($box->getName());
-                    if ($name === '') {
+                    if ('' === $name) {
                         continue;
                     }
-                    if ($namesToEnforce !== null && !isset($namesToEnforce[$name])) {
+                    if (null !== $namesToEnforce && !isset($namesToEnforce[$name])) {
                         continue;
                     }
                     if (isset($seen[$name])) {
                         $context->buildViolation('signature_coordinates_type.signature_boxes.unique_names_message')
-                            ->atPath('[' . $index . '].name')
+                            ->atPath('['.$index.'].name')
                             ->addViolation();
                     } else {
                         $seen[$name] = $index;
@@ -281,13 +282,13 @@ final class SignatureCoordinatesType extends AbstractType
                     $model = $box instanceof SignatureBoxModel
                         ? $box
                         : self::boxFromArray(is_array($box) ? $box : []);
-                    if ($model === null) {
+                    if (null === $model) {
                         continue;
                     }
                     $list[] = ['index' => $index, 'box' => $model];
                 }
-                for ($i = 0; $i < count($list); $i++) {
-                    for ($j = $i + 1; $j < count($list); $j++) {
+                for ($i = 0; $i < count($list); ++$i) {
+                    for ($j = $i + 1; $j < count($list); ++$j) {
                         $a = $list[$i]['box'];
                         $b = $list[$j]['box'];
                         if ($a->getPage() !== $b->getPage()) {
@@ -295,7 +296,7 @@ final class SignatureCoordinatesType extends AbstractType
                         }
                         if (self::boxesOverlap($a, $b)) {
                             $context->buildViolation('signature_coordinates_type.signature_boxes.no_overlap_message')
-                                ->atPath('[' . $list[$j]['index'] . ']')
+                                ->atPath('['.$list[$j]['index'].']')
                                 ->addViolation();
                         }
                     }
@@ -312,17 +313,15 @@ final class SignatureCoordinatesType extends AbstractType
     /**
      * Passes signature_coordinates_options to the view for the PDF viewer and box logic.
      *
-     * @param FormView       $view    The form view
-     * @param FormInterface  $form    The form
+     * @param FormView             $view    The form view
+     * @param FormInterface        $form    The form
      * @param array<string, mixed> $options Resolved form options
-     *
-     * @return void
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $options = $this->mergeNamedConfig($options);
         $pdfUrl = $options['pdf_url'] ?? null;
-        if (($pdfUrl === null || $pdfUrl === '') && $this->examplePdfUrl !== '') {
+        if ((null === $pdfUrl || '' === $pdfUrl) && '' !== $this->examplePdfUrl) {
             $pdfUrl = $this->examplePdfUrl;
         }
         $view->vars['signature_coordinates_options'] = [
@@ -344,8 +343,6 @@ final class SignatureCoordinatesType extends AbstractType
      * Configures default options and allowed types/values for URL, unit, origin and boxes.
      *
      * @param OptionsResolver $resolver The options resolver
-     *
-     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
@@ -381,19 +378,19 @@ final class SignatureCoordinatesType extends AbstractType
             'max_entries' => null,
             'unique_box_names' => false,
             'signature_box_options' => [],
-            /** @see ROADMAP.md "Page restriction" — limit which pages boxes can be placed on */
+            /* @see ROADMAP.md "Page restriction" — limit which pages boxes can be placed on */
             'allowed_pages' => null,
-            /** @see ROADMAP.md "Box order" — sort boxes by page, then Y, then X on submit */
+            /* @see ROADMAP.md "Box order" — sort boxes by page, then Y, then X on submit */
             'sort_boxes' => false,
-            /** Prevent overlapping boxes on the same page (validated on submit and enforced in frontend) */
+            /* Prevent overlapping boxes on the same page (validated on submit and enforced in frontend) */
             'prevent_box_overlap' => true,
-            /** @see ROADMAP.md "Customisable constraints" — additional constraints on the collection */
+            /* @see ROADMAP.md "Customisable constraints" — additional constraints on the collection */
             'collection_constraints' => [],
-            /** @see ROADMAP.md "Customisable constraints" — additional constraints on each box (SignatureBoxModel) */
+            /* @see ROADMAP.md "Customisable constraints" — additional constraints on each box (SignatureBoxModel) */
             'box_constraints' => [],
-            /** @see ROADMAP.md "Default values per box name" — default width, height, x, y, angle per name */
+            /* @see ROADMAP.md "Default values per box name" — default width, height, x, y, angle per name */
             'box_defaults_by_name' => [],
-            /** When true, each box has a rotation angle field and the viewer shows a rotate handle. When false, angle is not shown and defaults to 0. */
+            /* When true, each box has a rotation angle field and the viewer shows a rotate handle. When false, angle is not shown and defaults to 0. */
             'enable_rotation' => false,
         ]);
 
@@ -412,13 +409,14 @@ final class SignatureCoordinatesType extends AbstractType
             if (is_bool($value)) {
                 return true;
             }
+
             return is_array($value) && array_reduce($value, static fn ($carry, $v) => $carry && is_string($v), true);
         });
         $resolver->setAllowedTypes('signature_box_options', 'array');
         $resolver->setAllowedTypes('config', ['string', 'null']);
         $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);
         $resolver->setAllowedValues('allowed_pages', static function ($value): bool {
-            if ($value === null) {
+            if (null === $value) {
                 return true;
             }
             if (!is_array($value)) {
@@ -430,6 +428,7 @@ final class SignatureCoordinatesType extends AbstractType
                     return false;
                 }
             }
+
             return true;
         });
         $resolver->setAllowedTypes('sort_boxes', 'bool');
@@ -463,6 +462,7 @@ final class SignatureCoordinatesType extends AbstractType
         if (array_key_exists('angle', $arr)) {
             $box->setAngle((float) $arr['angle']);
         }
+
         return $box;
     }
 
@@ -483,6 +483,7 @@ final class SignatureCoordinatesType extends AbstractType
         $bx2 = $b->getX() + $b->getWidth();
         $ay2 = $a->getY() + $a->getHeight();
         $by2 = $b->getY() + $b->getHeight();
+
         return $a->getX() < $bx2 && $b->getX() < $ax2 && $a->getY() < $by2 && $b->getY() < $ay2;
     }
 
@@ -491,16 +492,18 @@ final class SignatureCoordinatesType extends AbstractType
      * Named config is the base; options passed to the type override (same keys in $options win).
      *
      * @param array<string, mixed> $options
+     *
      * @return array<string, mixed>
      */
     private function mergeNamedConfig(array $options): array
     {
         $name = $options['config'] ?? null;
-        if ($name === null || $name === '' || !isset($this->namedConfigs[$name]) || !is_array($this->namedConfigs[$name])) {
+        if (null === $name || '' === $name || !isset($this->namedConfigs[$name]) || !is_array($this->namedConfigs[$name])) {
             return $options;
         }
         $merged = array_merge($this->namedConfigs[$name], $options);
         unset($merged['config']);
+
         return $merged;
     }
 
@@ -508,6 +511,7 @@ final class SignatureCoordinatesType extends AbstractType
      * Builds choice array for unit field (label => value).
      *
      * @param list<string> $units
+     *
      * @return array<string, string>
      */
     private function buildUnitChoices(array $units): array
@@ -523,6 +527,7 @@ final class SignatureCoordinatesType extends AbstractType
         foreach ($units as $u) {
             $result[$labels[$u] ?? $u] = $u;
         }
+
         return $result;
     }
 
@@ -530,6 +535,7 @@ final class SignatureCoordinatesType extends AbstractType
      * Builds choice array for origin field (label => value).
      *
      * @param list<string> $origins
+     *
      * @return array<string, string>
      */
     private function buildOriginChoices(array $origins): array
@@ -544,6 +550,7 @@ final class SignatureCoordinatesType extends AbstractType
         foreach ($origins as $o) {
             $result[$labels[$o] ?? $o] = $o;
         }
+
         return $result;
     }
 }

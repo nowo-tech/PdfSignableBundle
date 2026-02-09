@@ -28,6 +28,7 @@ final class SignatureBoxTypeTest extends TypeTestCase
     {
         $type = new SignatureBoxType();
         $validator = Validation::createValidator();
+
         return [
             new PreloadedExtension([$type], []),
             new ValidatorExtension($validator),

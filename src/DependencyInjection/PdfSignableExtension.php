@@ -6,9 +6,9 @@ namespace Nowo\PdfSignableBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
-use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 
 /**
  * Loads bundle configuration and services, and prepends Twig and Framework translator paths.
@@ -23,20 +23,18 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
      *
      * @param array<string, mixed> $configs   Raw configuration arrays (e.g. from config files)
      * @param ContainerBuilder     $container The container builder
-     *
-     * @return void
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yaml');
 
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
 
-        $container->setParameter(Configuration::ALIAS . '.proxy_enabled', $config['proxy_enabled'] ?? true);
-        $container->setParameter(Configuration::ALIAS . '.proxy_url_allowlist', $config['proxy_url_allowlist'] ?? []);
-        $container->setParameter(Configuration::ALIAS . '.example_pdf_url', $config['example_pdf_url'] ?? '');
-        $container->setParameter(Configuration::ALIAS . '.configs', $config['configs'] ?? []);
+        $container->setParameter(Configuration::ALIAS.'.proxy_enabled', $config['proxy_enabled'] ?? true);
+        $container->setParameter(Configuration::ALIAS.'.proxy_url_allowlist', $config['proxy_url_allowlist'] ?? []);
+        $container->setParameter(Configuration::ALIAS.'.example_pdf_url', $config['example_pdf_url'] ?? '');
+        $container->setParameter(Configuration::ALIAS.'.configs', $config['configs'] ?? []);
     }
 
     /**
@@ -53,8 +51,6 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
      * Prepends Twig paths and form theme, and Framework translator paths for the bundle.
      *
      * @param ContainerBuilder $container The container builder
-     *
-     * @return void
      */
     public function prepend(ContainerBuilder $container): void
     {
@@ -62,7 +58,7 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
         if ($container->hasExtension('twig')) {
             $container->prependExtensionConfig('twig', [
                 'paths' => [
-                    $bundleDir . '/src/Resources/views' => 'NowoPdfSignable',
+                    $bundleDir.'/src/Resources/views' => 'NowoPdfSignable',
                 ],
                 'form_themes' => ['@NowoPdfSignable/form/theme.html.twig'],
             ]);
@@ -71,7 +67,7 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
             $container->prependExtensionConfig('framework', [
                 'translator' => [
                     'paths' => [
-                        $bundleDir . '/src/Resources/translations',
+                        $bundleDir.'/src/Resources/translations',
                     ],
                 ],
             ]);
