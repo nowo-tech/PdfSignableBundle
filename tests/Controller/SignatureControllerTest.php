@@ -126,4 +126,83 @@ final class SignatureControllerTest extends TestCase
 
         self::assertSame(403, $response->getStatusCode());
     }
+
+    /** SSRF: 10.x.x.x (private) is blocked. */
+    public function testProxyBlocks10NetworkReturns403(): void
+    {
+        $controller = $this->createController(true, []);
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://10.0.0.1/internal.pdf']);
+        $response = $controller->proxyPdf($request);
+        self::assertSame(403, $response->getStatusCode());
+    }
+
+    /** SSRF: 192.168.x.x (private) is blocked. */
+    public function testProxyBlocks192168NetworkReturns403(): void
+    {
+        $controller = $this->createController(true, []);
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://192.168.1.1/internal.pdf']);
+        $response = $controller->proxyPdf($request);
+        self::assertSame(403, $response->getStatusCode());
+    }
+
+    /** SSRF: 169.254.x.x (link-local) is blocked. */
+    public function testProxyBlocks169254NetworkReturns403(): void
+    {
+        $controller = $this->createController(true, []);
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://169.254.0.1/internal.pdf']);
+        $response = $controller->proxyPdf($request);
+        self::assertSame(403, $response->getStatusCode());
+    }
+
+    /** Allowlist substring: URL containing pattern is allowed; event provides response. */
+    public function testProxyUrlAllowedBySubstringReturns200WhenEventProvidesResponse(): void
+    {
+        $customResponse = new Response('pdf content', 200, ['Content-Type' => 'application/pdf']);
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(function (object $event) use ($customResponse): object {
+            if ($event instanceof PdfProxyRequestEvent) {
+                $event->setResponse($customResponse);
+            }
+            return $event;
+        });
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $controller = new SignatureController($dispatcher, $translator, true, ['example.com'], '');
+
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
+        $response = $controller->proxyPdf($request);
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('pdf content', $response->getContent());
+    }
+
+    /** Allowlist regex (# prefix): URL matching pattern is allowed. */
+    public function testProxyUrlAllowedByRegexReturns200WhenEventProvidesResponse(): void
+    {
+        $customResponse = new Response('pdf from regex allowlist', 200, ['Content-Type' => 'application/pdf']);
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(function (object $event) use ($customResponse): object {
+            if ($event instanceof PdfProxyRequestEvent) {
+                $event->setResponse($customResponse);
+            }
+            return $event;
+        });
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $controller = new SignatureController($dispatcher, $translator, true, ['#^https://allowed\.example\.com/#'], '');
+
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://allowed.example.com/doc.pdf']);
+        $response = $controller->proxyPdf($request);
+
+        self::assertSame(200, $response->getStatusCode());
+    }
+
+    /** Invalid URL (e.g. no host) returns 400. */
+    public function testProxyInvalidUrlNoHostReturns400(): void
+    {
+        $controller = $this->createController(true, []);
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http:///path']);
+        $response = $controller->proxyPdf($request);
+        self::assertSame(400, $response->getStatusCode());
+    }
 }
