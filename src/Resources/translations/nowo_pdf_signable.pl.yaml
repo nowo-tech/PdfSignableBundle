@@ -63,6 +63,8 @@ signature_box_type:
 
 signing:
   terms_link: 'Warunki i informacje prawne'
+  consent_label: 'Akceptuję skutki prawne tego podpisu (podpis prosty, niekwalifikowany).'
+  consent_required: 'Aby kontynuować, należy zaakceptować skutki prawne podpisu.'
 
 flash:
   save:

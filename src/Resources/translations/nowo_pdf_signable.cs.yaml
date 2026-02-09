@@ -63,6 +63,8 @@ signature_box_type:
 
 signing:
   terms_link: 'Podmínky a právní upozornění'
+  consent_label: 'Přijímám právní účinek tohoto podpisu (prostý podpis, nekvalifikovaný).'
+  consent_required: 'Pro pokračování musíte přijmout právní účinek podpisu.'
 
 flash:
   save:

@@ -63,6 +63,8 @@ signature_box_type:
 
 signing:
   terms_link: 'Voorwaarden en juridische kennisgeving'
+  consent_label: 'Ik aanvaard de juridische gevolgen van deze handtekening (eenvoudige handtekening, niet gekwalificeerd).'
+  consent_required: 'U moet de juridische gevolgen van de handtekening aanvaarden om door te gaan.'
 
 flash:
   save:

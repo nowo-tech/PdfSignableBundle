@@ -63,6 +63,8 @@ signature_box_type:
 
 signing:
   terms_link: 'Termini e avviso legale'
+  consent_label: 'Accetto l''effetto legale di questa firma (firma semplice, non qualificata).'
+  consent_required: 'È necessario accettare l''effetto legale della firma per continuare.'
 
 flash:
   save:

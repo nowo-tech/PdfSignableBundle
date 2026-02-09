@@ -63,6 +63,8 @@ signature_box_type:
 
 signing:
   terms_link: 'Şartlar ve yasal uyarı'
+  consent_label: 'Bu imzanın hukuki sonucunu kabul ediyorum (basit imza, nitelikli değil).'
+  consent_required: 'Devam etmek için imzanın hukuki sonucunu kabul etmeniz gerekir.'
 
 flash:
   save:

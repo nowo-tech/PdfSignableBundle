@@ -63,6 +63,8 @@ signature_box_type:
 
 signing:
   terms_link: 'Conditions et mentions légales'
+  consent_label: 'J''accepte l''effet juridique de cette signature (signature simple, non qualifiée).'
+  consent_required: 'Vous devez accepter l''effet juridique de la signature pour continuer.'
 
 flash:
   save:

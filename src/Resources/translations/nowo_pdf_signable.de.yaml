@@ -63,6 +63,8 @@ signature_box_type:
 
 signing:
   terms_link: 'AGB und rechtlicher Hinweis'
+  consent_label: 'Ich akzeptiere die rechtliche Wirkung dieser Signatur (einfache Signatur, nicht qualifiziert).'
+  consent_required: 'Sie müssen die rechtliche Wirkung der Signatur akzeptieren, um fortzufahren.'
 
 flash:
   save:
