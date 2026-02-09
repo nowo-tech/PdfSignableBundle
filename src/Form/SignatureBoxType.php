@@ -14,8 +14,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\FormView;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -150,8 +150,6 @@ final class SignatureBoxType extends AbstractType
      * @param FormView      $view    The form view
      * @param FormInterface $form    The form
      * @param array         $options Resolved options
-     *
-     * @return void
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {

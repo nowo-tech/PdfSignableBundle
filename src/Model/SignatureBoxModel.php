@@ -36,16 +36,12 @@ class SignatureBoxModel
     /**
      * Optional signature image as base64 data URL (e.g. from draw pad or upload).
      * When set, the viewer can show it inside the box overlay. Not a qualified/digital signature.
-     *
-     * @var string|null
      */
     private ?string $signatureData = null;
 
     /**
      * Optional ISO 8601 timestamp when the signature was captured (client or server).
      * Improves evidential value; backend can overwrite with server time on submit.
-     *
-     * @var string|null
      */
     private ?string $signedAt = null;
 
@@ -219,8 +215,6 @@ class SignatureBoxModel
 
     /**
      * Gets the optional signature image (base64 data URL), or null if not set.
-     *
-     * @return string|null
      */
     public function getSignatureData(): ?string
     {
@@ -243,8 +237,6 @@ class SignatureBoxModel
 
     /**
      * Gets the optional timestamp when the signature was captured (ISO 8601).
-     *
-     * @return string|null
      */
     public function getSignedAt(): ?string
     {
