@@ -1,0 +1,71 @@
+page:
+  title: 'Coordenadas de assinatura PDF'
+  pdf_viewer: 'Visualizador PDF'
+  url_label: 'URL do PDF'
+  load: 'Carregar PDF'
+  placeholder_intro: 'Introduza um URL de PDF acima e clique em Carregar para exibir o documento. Clique no PDF para adicionar caixas de assinatura.'
+  signature_boxes: 'Caixas de assinatura'
+  add: 'Adicionar caixa'
+  units_label: 'Unidades'
+  origin_label: 'Origem'
+  help_text: 'Clique no PDF para colocar uma nova caixa de assinatura. Arraste as caixas para mover, os cantos para redimensionar.'
+  delete: 'Eliminar'
+  empty_state: 'Ainda não há caixas de assinatura. Clique no PDF ou em "Adicionar caixa" para criar uma.'
+  save_coordinates: 'Guardar coordenadas'
+  errors_collection: 'Erros nas caixas de assinatura:'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'URL do PDF'
+    placeholder: 'https://example.com/document.pdf'
+  unit:
+    label: 'Unidades'
+    option:
+      pt: 'Pontos (pt)'
+      mm: 'Milímetros (mm)'
+      cm: 'Centímetros (cm)'
+      px: 'Pixels (px)'
+      in: 'Polegadas (in)'
+  origin:
+    label: 'Origem'
+    option:
+      top_left: 'Canto superior esquerdo'
+      bottom_left: 'Canto inferior esquerdo'
+      top_right: 'Canto superior direito'
+      bottom_right: 'Canto inferior direito'
+  signature_boxes:
+    label: 'Caixas de assinatura'
+    min_message: 'Pelo menos {{ limit }} caixa(s) de assinatura necessária(s).'
+    max_message: 'No máximo {{ limit }} caixa(s) de assinatura permitida(s).'
+    unique_names_message: 'Nome de caixa duplicado. Cada caixa de assinatura deve ter um nome único.'
+
+signature_box_type:
+  name:
+    placeholder: 'Nome da caixa (ex. signatario_1)'
+    required: 'O nome da caixa é obrigatório.'
+  page:
+    label: 'Página'
+  width:
+    label: 'Largura'
+  height:
+    label: 'Altura'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Coordenadas guardadas com sucesso.'
+
+proxy:
+  invalid_url: 'URL inválida ou em falta.'
+  error_load: 'Erro ao carregar o PDF:'
+
+js:
+  error_load_pdf: 'Erro ao carregar o PDF: '
+  alert_url_required: 'Introduza um URL de PDF.'
+  loading_state: 'A carregar...'
+  load_pdf_btn: 'Carregar PDF'
+  default_box_name: 'assinatura'
+  alert_submit_error: 'Erro ao enviar as coordenadas.'

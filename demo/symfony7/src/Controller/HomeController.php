@@ -14,7 +14,9 @@ use Symfony\Component\Routing\Attribute\Route;
 class HomeController extends AbstractController
 {
     /**
-     * Renders the home page.
+     * Renders the home page with links to signature demo variants.
+     *
+     * @return Response
      */
     #[Route('/', name: 'home', methods: ['GET'])]
     public function index(): Response

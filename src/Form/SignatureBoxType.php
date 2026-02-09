@@ -10,8 +10,11 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * Form type for a single signature box: name, page, x, y, width, height.
@@ -35,24 +38,35 @@ final class SignatureBoxType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if ($options['name_mode'] === self::NAME_MODE_CHOICE && $options['name_choices'] !== []) {
+            // Pre-select first choice when name is empty (new box) so the dropdown shows a selected value
+            $firstChoiceValue = array_values($options['name_choices'])[0] ?? null;
+            $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($firstChoiceValue): void {
+                $data = $event->getData();
+                if ($data instanceof SignatureBoxModel && ($data->getName() === null || $data->getName() === '') && $firstChoiceValue !== null) {
+                    $data->setName($firstChoiceValue);
+                }
+            });
+            // No empty option: required choice with no "Select role" / placeholder (first real choice must be selected)
             $builder->add('name', ChoiceType::class, [
                 'label' => $options['name_label'],
                 'choices' => $options['name_choices'],
                 'required' => true,
+                'placeholder' => $options['choice_placeholder'],
+                'constraints' => [new NotBlank(message: 'signature_box_type.name.required')],
                 'attr' => [
                     'class' => 'signature-box-name form-control form-control-sm form-select',
                 ],
                 'row_attr' => ['class' => 'col-8 col-md-9 col-lg-10 mb-2'],
-                'placeholder' => $options['name_placeholder'],
             ]);
         } else {
             $builder->add('name', TextType::class, [
                 'label' => $options['name_label'],
+                'required' => true,
+                'constraints' => [new NotBlank(message: 'signature_box_type.name.required')],
                 'attr' => [
                     'placeholder' => $options['name_placeholder'],
                     'class' => 'signature-box-name form-control form-control-sm',
                 ],
-                'required' => true,
                 'row_attr' => ['class' => 'col-8 col-md-9 col-lg-10 mb-2'],
             ]);
         }
@@ -99,9 +113,11 @@ final class SignatureBoxType extends AbstractType
             'name_choices' => [],
             'name_label' => false,
             'name_placeholder' => 'signature_box_type.name.placeholder',
+            'choice_placeholder' => false,
         ]);
 
         $resolver->setAllowedValues('name_mode', [self::NAME_MODE_INPUT, self::NAME_MODE_CHOICE]);
         $resolver->setAllowedTypes('name_choices', 'array');
+        $resolver->setAllowedTypes('choice_placeholder', ['bool', 'string']);
     }
 }

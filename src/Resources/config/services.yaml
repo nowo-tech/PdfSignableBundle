@@ -22,4 +22,5 @@ services:
     Nowo\PdfSignableBundle\Form\SignatureCoordinatesType:
         arguments:
             $examplePdfUrl: '%nowo_pdf_signable.example_pdf_url%'
+            $namedConfigs: '%nowo_pdf_signable.configs%'
         tags: ['form.type']

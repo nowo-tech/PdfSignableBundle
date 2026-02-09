@@ -7,45 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- **AJAX form submit**: Form submits via fetch; on success the page stays on the same URL and shows an alert with the submitted coordinates (JSON format). Controller returns JSON when `Accept: application/json` or `X-Requested-With: XMLHttpRequest`.
-- **Translation**: `js.alert_submit_error` for submit failure messages (EN, ES).
-
-### Changed
-
-- **PDF viewer**: ResizeObserver loop fix — added `scrollbar-gutter: stable` and `isReRendering` flag to prevent layout oscillation when the scrollbar appears/disappears.
-- **Makefile**: `make install` and `make assets` run via Docker (`docker-compose exec`) for consistency.
+_Nothing yet._
 
 ---
 
-## [1.0.0] - TBD
+## [1.0.0] - 2026-02-09
+
+First stable release.
 
 ### Added
 
 - **Form types**
   - `SignatureCoordinatesType`: form field that renders a PDF viewer and lets users define signature boxes by click; submits `SignatureCoordinatesModel` (pdfUrl, unit, origin, signatureBoxes).
-  - `SignatureBoxType`: child type for a single signature box; submits `SignatureBoxModel` (name, page, x, y, width, height).
+  - `SignatureBoxType`: child type for a single signature box; submits `SignatureBoxModel` (name, page, x, y, width, height). Name as text or dropdown (`name_mode: choice`); first choice pre-selected when empty.
 - **Models**
   - `SignatureCoordinatesModel`: pdfUrl, unit (mm, cm, pt, px, in), origin (corners), signatureBoxes collection.
   - `SignatureBoxModel`: name, page, x, y, width, height.
 - **PDF viewer**
-  - Browser-based viewer using PDF.js with overlays for each signature box.
-  - Click on the PDF to add a box; drag to move; drag corners to resize.
+  - Browser-based viewer using PDF.js with overlays for each signature box. Click on the PDF to add a box; drag to move; drag corners to resize.
+  - Overlay color by box name (deterministic); disambiguator label when same name on multiple boxes (e.g. `signer_1 (1)`, `signer_1 (2)`).
+  - ResizeObserver loop fix: `scrollbar-gutter: stable` and `isReRendering` flag to prevent layout oscillation.
 - **Configuration**
-  - `nowo_pdf_signable`: `proxy_enabled` for external PDFs (avoids CORS), `example_pdf_url` for form preload.
+  - `nowo_pdf_signable`: `proxy_enabled` for external PDFs (avoids CORS), `example_pdf_url` for form preload, optional `configs` (named presets).
+- **Named configurations**
+  - Define preset options in `nowo_pdf_signable.configs` and reference with form option `config: 'name'`. See [CONFIGURATION.md](CONFIGURATION.md) and [USAGE.md](USAGE.md).
 - **Optional proxy**
-  - Route and controller to proxy external PDFs and avoid CORS issues when loading PDFs from another domain.
+  - Route and controller to proxy external PDFs (`/pdf-signable/proxy`). Events: `PdfProxyRequestEvent`, `PdfProxyResponseEvent`. See [EVENTS.md](EVENTS.md).
 - **Form theme**
-  - Twig form theme for the signature coordinates widget (full widget: PDF + boxes).
+  - Twig form theme for the signature coordinates widget (full widget: PDF + boxes). Reusable `SignatureBoxType` layout.
 - **Frontend assets**
-  - Vite + TypeScript entry (`assets/pdf-signable.ts`) for the PDF viewer and box interaction logic.
+  - Vite + TypeScript entry (`assets/pdf-signable.ts`). Built file at `Resources/public/js/pdf-signable.js`. Form submits as normal POST; JS re-indexes collection before submit.
+- **Validation**
+  - Required box name (`NotBlank` on `SignatureBoxType`). `unique_box_names`: `true` (all unique), `false` (no check), or array (e.g. `['signer_1', 'witness']`) for per-name uniqueness. See [USAGE.md](USAGE.md).
+- **Events**
+  - `SignatureCoordinatesSubmittedEvent` (after valid form submit), `PdfProxyRequestEvent` (before proxy fetch), `PdfProxyResponseEvent` (after proxy fetch). See [EVENTS.md](EVENTS.md).
+- **Translation**
+  - EN, ES, FR, DE, IT, PT (e.g. `signature_box_type.name.required`, `signature_boxes.unique_names_message`, `js.alert_submit_error`). Script `scripts/validate-translations-yaml.php` for CI.
 - **Demos**
-  - Dockerized demos for Symfony 7 and Symfony 8 (Bootstrap, Vite, TypeScript).
-  - Demo pages: default config, fixed PDF URL, URL as dropdown, limited boxes, predefined boxes.
-  - Navigation and “Configuration” cards describing the active options per page.
+  - Dockerized demos for Symfony 7 and 8 (Bootstrap, Vite, TypeScript). Nine demo pages: no config, default, fixed_url, overridden, URL as dropdown, limited boxes, same signer multiple, unique per name, predefined boxes. Home and burger menu list all; each page shows configuration in bullets. Flash message with coordinates in bullets (name first).
 - **Documentation**
-  - README, INSTALLATION, CONFIGURATION, USAGE (all in English).
+  - README, [INSTALLATION.md](INSTALLATION.md), [CONFIGURATION.md](CONFIGURATION.md), [USAGE.md](USAGE.md), [EVENTS.md](EVENTS.md), [UPGRADING.md](UPGRADING.md), [ROADMAP.md](ROADMAP.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md) (all in `docs/`, English). “Same signer, multiple locations” and backend grouping example in USAGE.
+
+### Changed
+
+- **NotBlank**: Uses named argument `message:` (array form no longer supported in recent Symfony Validator).
+- **Makefile**: `make install`, `make assets`, `make validate-translations` run via Docker for consistency.
 
 ### Compatibility
 

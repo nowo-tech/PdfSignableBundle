@@ -39,27 +39,31 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ### Upgrading to 1.0.0
 
-**Release date**: TBD
+**Release date**: 2026-02-09
 
 #### What’s in this version
 
-- First stable release with form types `SignatureCoordinatesType` and `SignatureBoxType`, models `SignatureCoordinatesModel` and `SignatureBoxModel`, PDF viewer (PDF.js + overlays), optional proxy, Twig form theme, and Vite/TypeScript assets.
-- Demos for Symfony 7 and 8 with several configuration variants (default, fixed URL, URL as dropdown, limited boxes, predefined boxes).
+- First stable release. Form types `SignatureCoordinatesType` and `SignatureBoxType`, models `SignatureCoordinatesModel` and `SignatureBoxModel`, PDF viewer (PDF.js + overlays), optional proxy, Twig form theme, Vite/TypeScript assets.
+- Named configs, events, validation (`unique_box_names` global or per-name), translations (EN, ES, FR, DE, IT, PT).
+- Demos for Symfony 7 and 8 with nine configuration variants (no config, default, fixed URL, overridden, URL as dropdown, limited boxes, same signer multiple, unique per name, predefined boxes).
 
 #### Breaking changes
 
-None — this is the initial documented release.
+None — this is the initial stable release.
 
-#### Upgrade steps
+#### Upgrade steps (from dev version)
 
-1. Install the bundle (if not already installed):
+If you were using `dev-main` or `dev-master`:
+
+1. Update your constraint in `composer.json` to `^1.0` (or `>=1.0 <2.0`).
+2. Run:
    ```bash
-   composer require nowo-tech/pdf-signable-bundle
+   composer update nowo-tech/pdf-signable-bundle
    ```
-2. Follow [INSTALLATION.md](INSTALLATION.md) (register bundle, routes, config).
-3. Optionally configure `nowo_pdf_signable` as in [CONFIGURATION.md](CONFIGURATION.md).
-4. Clear cache: `php bin/console cache:clear`.
-5. If you use the bundle’s assets, build frontend assets and ensure the PDF signable script is loaded on the page where the form is rendered.
+3. Follow [INSTALLATION.md](INSTALLATION.md) (register bundle, routes, config) if you had a custom setup.
+4. Optionally configure `nowo_pdf_signable` as in [CONFIGURATION.md](CONFIGURATION.md).
+5. Clear cache: `php bin/console cache:clear`.
+6. If you use the bundle’s assets, run `php bin/console assets:install` and ensure the PDF signable script is loaded on the page where the form is rendered.
 
 ---
 
@@ -97,9 +101,10 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 ## Version compatibility
 
-| Bundle version | Symfony      | PHP   |
-|----------------|-------------|-------|
-| 1.0.0          | 6.1+, 7.x, 8.x | 8.1+ |
+| Bundle version | Symfony      | PHP   | Notes |
+|----------------|-------------|-------|-------|
+| 1.0.x          | 6.1+, 7.x, 8.x | 8.1+ | First stable release. Install with `composer require nowo-tech/pdf-signable-bundle`. |
+| dev-main       | 6.1+, 7.x, 8.x | 8.1+ | Development; use only if you need unreleased changes. See [INSTALLATION.md](INSTALLATION.md). |
 
 ---
 

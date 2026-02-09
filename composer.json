@@ -1,5 +1,6 @@
 {
   "name": "nowo-tech/pdf-signable-bundle",
+  "version": "1.0.0-dev",
   "description": "Symfony bundle for PDF signable form field: render PDF from URL, define signature coordinates by click.",
   "type": "symfony-bundle",
   "license": "MIT",
@@ -35,6 +36,7 @@
     "symfony/http-client": "^6.1 || ^7.0 || ^8.0",
     "symfony/twig-bundle": "^6.1 || ^7.0 || ^8.0",
     "symfony/translation": "^6.1 || ^7.0 || ^8.0",
+    "symfony/validator": "^6.1 || ^7.0 || ^8.0",
     "symfony/yaml": "^6.1 || ^7.0 || ^8.0"
   },
   "require-dev": {
@@ -58,11 +60,16 @@
   "prefer-stable": true,
   "scripts": {
     "test": "phpunit",
+    "test-coverage": "phpunit --coverage-text --coverage-html coverage --coverage-clover coverage.xml",
     "cs-check": "php-cs-fixer fix --dry-run --diff",
     "cs-fix": "php-cs-fixer fix",
     "qa": [
       "@cs-check",
       "@test"
-    ]
+    ],
+    "validate-translations": "php scripts/validate-translations-yaml.php"
+  },
+  "suggest": {
+    "ext-yaml": "For faster YAML parsing (optional; Symfony Yaml is used)"
   }
 }

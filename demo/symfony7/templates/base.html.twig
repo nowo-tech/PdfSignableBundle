@@ -30,12 +30,20 @@
                         <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="demoDropdown">
                             <li><h6 class="dropdown-header">By configuration</h6></li>
                             <li><a class="dropdown-item" href="{{ path('app_signature') }}">
-                                <span class="d-block">Default</span>
-                                <small class="text-body-secondary">Preset URL, units mm/cm/pt</small>
+                                <span class="d-block">No config</span>
+                                <small class="text-body-secondary">Inline options only</small>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_signature_default_config') }}">
+                                <span class="d-block">Config default</span>
+                                <small class="text-body-secondary">Units/origin from YAML</small>
                             </a></li>
                             <li><a class="dropdown-item" href="{{ path('app_signature_fixed_url') }}">
-                                <span class="d-block">Fixed URL</span>
+                                <span class="d-block">Config fixed_url</span>
                                 <small class="text-body-secondary">Single PDF, no URL field</small>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_signature_fixed_url_overridden') }}">
+                                <span class="d-block">Config overridden</span>
+                                <small class="text-body-secondary">fixed_url + unit_default in code</small>
                             </a></li>
                             <li><a class="dropdown-item" href="{{ path('app_signature_url_choice') }}">
                                 <span class="d-block">URL as dropdown</span>
@@ -43,7 +51,15 @@
                             </a></li>
                             <li><a class="dropdown-item" href="{{ path('app_signature_limited_boxes') }}">
                                 <span class="d-block">Limited boxes + name selector</span>
-                                <small class="text-body-secondary">Max 4, name = Signer/Witness</small>
+                                <small class="text-body-secondary">Max 4, unique names</small>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_signature_same_signer_multiple') }}">
+                                <span class="d-block">Same signer, multiple locations</span>
+                                <small class="text-body-secondary">Duplicate names allowed</small>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_signature_unique_per_name') }}">
+                                <span class="d-block">Unique per name (array)</span>
+                                <small class="text-body-secondary">Only some names unique</small>
                             </a></li>
                             <li><a class="dropdown-item" href="{{ path('app_signature_predefined') }}">
                                 <span class="d-block">Predefined boxes</span>
@@ -60,7 +76,7 @@
     <main class="container flex-grow-1 mt-4 pb-4">
         {% for message in app.flashes('success') %}
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ message }}
+                {{ message|raw }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         {% endfor %}

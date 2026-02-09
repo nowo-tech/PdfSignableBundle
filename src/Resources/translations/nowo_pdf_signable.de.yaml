@@ -1,0 +1,71 @@
+page:
+  title: 'PDF-Signaturkoordinaten'
+  pdf_viewer: 'PDF-Viewer'
+  url_label: 'PDF-URL'
+  load: 'PDF laden'
+  placeholder_intro: 'Geben Sie oben eine PDF-URL ein und klicken Sie auf Laden, um das Dokument anzuzeigen. Klicken Sie auf das PDF, um Signaturfelder hinzuzufügen.'
+  signature_boxes: 'Signaturfelder'
+  add: 'Feld hinzufügen'
+  units_label: 'Einheiten'
+  origin_label: 'Ursprung'
+  help_text: 'Klicken Sie auf das PDF, um ein neues Signaturfeld zu platzieren. Ziehen Sie Felder zum Verschieben, Ecken zum Ändern der Größe.'
+  delete: 'Löschen'
+  empty_state: 'Noch keine Signaturfelder. Klicken Sie auf das PDF oder auf "Feld hinzufügen", um eines zu erstellen.'
+  save_coordinates: 'Koordinaten speichern'
+  errors_collection: 'Fehler in den Signaturfeldern:'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'PDF-URL'
+    placeholder: 'https://example.com/document.pdf'
+  unit:
+    label: 'Einheiten'
+    option:
+      pt: 'Punkte (pt)'
+      mm: 'Millimeter (mm)'
+      cm: 'Zentimeter (cm)'
+      px: 'Pixel (px)'
+      in: 'Zoll (in)'
+  origin:
+    label: 'Ursprung'
+    option:
+      top_left: 'Oben links'
+      bottom_left: 'Unten links'
+      top_right: 'Oben rechts'
+      bottom_right: 'Unten rechts'
+  signature_boxes:
+    label: 'Signaturfelder'
+    min_message: 'Mindestens {{ limit }} Signaturfeld(er) erforderlich.'
+    max_message: 'Maximal {{ limit }} Signaturfeld(er) erlaubt.'
+    unique_names_message: 'Doppelter Feldname. Jedes Signaturfeld muss einen eindeutigen Namen haben.'
+
+signature_box_type:
+  name:
+    placeholder: 'Feldname (z. B. signer_1)'
+    required: 'Der Feldname ist erforderlich.'
+  page:
+    label: 'Seite'
+  width:
+    label: 'Breite'
+  height:
+    label: 'Höhe'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Koordinaten erfolgreich gespeichert.'
+
+proxy:
+  invalid_url: 'Ungültige oder fehlende URL.'
+  error_load: 'Fehler beim Laden des PDFs:'
+
+js:
+  error_load_pdf: 'Fehler beim Laden des PDFs: '
+  alert_url_required: 'Bitte geben Sie eine PDF-URL ein.'
+  loading_state: 'Laden...'
+  load_pdf_btn: 'PDF laden'
+  default_box_name: 'Signatur'
+  alert_submit_error: 'Fehler beim Senden der Koordinaten.'

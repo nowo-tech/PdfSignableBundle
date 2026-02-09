@@ -35,6 +35,12 @@ final class Configuration implements ConfigurationInterface
                     ->info('Default PDF URL for demo/preload')
                     ->defaultValue('https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf')
                 ->end()
+                ->arrayNode('configs')
+                    ->info('Named configurations for SignatureCoordinatesType. Use form option config: "name" to apply.')
+                    ->useAttributeAsKey('name')
+                    ->variablePrototype()->end()
+                    ->defaultValue([])
+                ->end()
             ->end();
 
         return $treeBuilder;

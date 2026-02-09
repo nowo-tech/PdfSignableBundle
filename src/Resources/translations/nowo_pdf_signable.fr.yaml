@@ -1,0 +1,71 @@
+page:
+  title: 'Coordonnées de signature PDF'
+  pdf_viewer: 'Visionneuse PDF'
+  url_label: 'URL du PDF'
+  load: 'Charger le PDF'
+  placeholder_intro: 'Saisissez une URL PDF ci-dessus et cliquez sur Charger pour afficher le document. Cliquez sur le PDF pour ajouter des zones de signature.'
+  signature_boxes: 'Zones de signature'
+  add: 'Ajouter une zone'
+  units_label: 'Unités'
+  origin_label: 'Origine'
+  help_text: 'Cliquez sur le PDF pour placer une nouvelle zone de signature. Glissez les zones pour déplacer, les coins pour redimensionner.'
+  delete: 'Supprimer'
+  empty_state: 'Aucune zone de signature. Cliquez sur le PDF ou sur "Ajouter une zone" pour en créer une.'
+  save_coordinates: 'Enregistrer les coordonnées'
+  errors_collection: 'Erreurs dans les zones de signature :'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'URL du PDF'
+    placeholder: 'https://example.com/document.pdf'
+  unit:
+    label: 'Unités'
+    option:
+      pt: 'Points (pt)'
+      mm: 'Millimètres (mm)'
+      cm: 'Centimètres (cm)'
+      px: 'Pixels (px)'
+      in: 'Pouces (in)'
+  origin:
+    label: 'Origine'
+    option:
+      top_left: 'Haut gauche'
+      bottom_left: 'Bas gauche'
+      top_right: 'Haut droit'
+      bottom_right: 'Bas droit'
+  signature_boxes:
+    label: 'Zones de signature'
+    min_message: 'Au moins {{ limit }} zone(s) de signature requise(s).'
+    max_message: 'Au maximum {{ limit }} zone(s) de signature autorisée(s).'
+    unique_names_message: 'Nom de zone en double. Chaque zone de signature doit avoir un nom unique.'
+
+signature_box_type:
+  name:
+    placeholder: 'Nom de la zone (ex. signataire_1)'
+    required: 'Le nom de la zone est obligatoire.'
+  page:
+    label: 'Page'
+  width:
+    label: 'Largeur'
+  height:
+    label: 'Hauteur'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Coordonnées enregistrées avec succès.'
+
+proxy:
+  invalid_url: 'URL invalide ou manquante.'
+  error_load: 'Erreur lors du chargement du PDF :'
+
+js:
+  error_load_pdf: 'Erreur lors du chargement du PDF : '
+  alert_url_required: 'Veuillez saisir une URL PDF.'
+  loading_state: 'Chargement...'
+  load_pdf_btn: 'Charger le PDF'
+  default_box_name: 'signature'
+  alert_submit_error: "Erreur lors de l'envoi des coordonnées."

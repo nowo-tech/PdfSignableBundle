@@ -8,8 +8,11 @@ use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Validation;
 
 /**
  * Tests for SignatureCoordinatesType: static helpers, options and form building.
@@ -19,12 +22,19 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     protected function getExtensions(): array
     {
         $signatureBoxType = new SignatureBoxType();
-        $signatureCoordinatesType = new SignatureCoordinatesType('');
+        $signatureCoordinatesType = new SignatureCoordinatesType('', [
+            'my_preset' => [
+                'unit_default' => SignatureCoordinatesModel::UNIT_PT,
+                'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+            ],
+        ]);
+        $validator = Validation::createValidator();
         return [
             new PreloadedExtension(
                 [$signatureBoxType, $signatureCoordinatesType],
                 []
             ),
+            new ValidatorExtension($validator),
         ];
     }
 
@@ -47,6 +57,26 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertContains(SignatureCoordinatesModel::ORIGIN_TOP_RIGHT, $origins);
         self::assertContains(SignatureCoordinatesModel::ORIGIN_BOTTOM_RIGHT, $origins);
         self::assertCount(4, $origins);
+    }
+
+    public function testFormWithNamedConfigMergesOptions(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'config' => 'my_preset',
+        ]);
+        $form->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_PT,
+            'origin' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+            'signatureBoxes' => [],
+        ]);
+
+        self::assertTrue($form->isSynchronized());
+        $data = $form->getData();
+        self::assertSame(SignatureCoordinatesModel::UNIT_PT, $data->getUnit());
+        self::assertSame(SignatureCoordinatesModel::ORIGIN_TOP_LEFT, $data->getOrigin());
     }
 
     public function testFormBuildsAndSubmits(): void
@@ -86,5 +116,41 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertSame(SignatureCoordinatesModel::UNIT_MM, $data->getUnit());
         self::assertCount(1, $data->getSignatureBoxes());
         self::assertSame('signer_1', $data->getSignatureBoxes()[0]->getName());
+    }
+
+    public function testUniqueBoxNamesFalseAddsNoUniqueConstraint(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'unique_box_names' => false,
+        ]);
+        $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
+        $callbacks = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        self::assertCount(0, $callbacks);
+    }
+
+    public function testUniqueBoxNamesTrueAddsUniqueConstraint(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'unique_box_names' => true,
+        ]);
+        $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
+        $callbacks = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        self::assertCount(1, $callbacks);
+    }
+
+    public function testUniqueBoxNamesArrayAddsUniqueConstraint(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'unique_box_names' => ['signer_1', 'witness'],
+        ]);
+        $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
+        $callbacks = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        self::assertCount(1, $callbacks);
     }
 }

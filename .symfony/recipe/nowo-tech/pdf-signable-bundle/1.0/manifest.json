@@ -1,0 +1,11 @@
+{
+    "bundles": {
+        "Nowo\\PdfSignableBundle\\NowoPdfSignableBundle": ["all"]
+    },
+    "copy-from-recipe": {
+        "config/": "%CONFIG_DIR%/"
+    },
+    "post-install-output": [
+        "  * Run <comment>php bin/console assets:install</comment> to publish the PDF viewer script."
+    ]
+}

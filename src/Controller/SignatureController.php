@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Controller;
 
+use Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent;
+use Nowo\PdfSignableBundle\Event\PdfProxyResponseEvent;
+use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
+use Nowo\PdfSignableBundle\Event\SignatureCoordinatesSubmittedEvent;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,11 +32,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class SignatureController extends AbstractController
 {
     /**
-     * @param TranslatorInterface $translator For flash and error messages
-     * @param bool                $proxyEnabled Whether the proxy route is enabled
-     * @param string              $examplePdfUrl Default PDF URL for form preload
+     * @param EventDispatcherInterface $eventDispatcher To dispatch signature and proxy events
+     * @param TranslatorInterface      $translator      For flash and error messages
+     * @param bool                     $proxyEnabled   Whether the proxy route is enabled
+     * @param string                   $examplePdfUrl  Default PDF URL for form preload
      */
     public function __construct(
+        private readonly EventDispatcherInterface $eventDispatcher,
         private readonly TranslatorInterface $translator,
         private readonly bool $proxyEnabled = true,
         private readonly string $examplePdfUrl = '',
@@ -55,6 +62,10 @@ final class SignatureController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $model = $form->getData();
+            $this->eventDispatcher->dispatch(
+                new SignatureCoordinatesSubmittedEvent($model, $request),
+                PdfSignableEvents::SIGNATURE_COORDINATES_SUBMITTED
+            );
             if ($this->wantsJson($request)) {
                 return new JsonResponse([
                     'success' => true,
@@ -120,6 +131,14 @@ final class SignatureController extends AbstractController
                 Response::HTTP_BAD_REQUEST
             );
         }
+
+        $requestEvent = new PdfProxyRequestEvent($url, $request);
+        $this->eventDispatcher->dispatch($requestEvent, PdfSignableEvents::PDF_PROXY_REQUEST);
+        $url = $requestEvent->getUrl();
+        if ($requestEvent->hasResponse()) {
+            return $requestEvent->getResponse();
+        }
+
         try {
             $client = HttpClient::create();
             $response = $client->request('GET', $url, [
@@ -140,10 +159,13 @@ final class SignatureController extends AbstractController
             if (!str_contains($contentType, 'pdf')) {
                 $contentType = 'application/pdf';
             }
-            return new Response($content, Response::HTTP_OK, [
+            $responseObj = new Response($content, Response::HTTP_OK, [
                 'Content-Type' => $contentType,
                 'Content-Disposition' => 'inline; filename="document.pdf"',
             ]);
+            $responseEvent = new PdfProxyResponseEvent($url, $request, $responseObj);
+            $this->eventDispatcher->dispatch($responseEvent, PdfSignableEvents::PDF_PROXY_RESPONSE);
+            return $responseEvent->getResponse();
         } catch (ExceptionInterface|\Throwable $e) {
             return new Response(
                 $this->translator->trans('proxy.error_load', [], 'nowo_pdf_signable') . ' ' . $e->getMessage(),

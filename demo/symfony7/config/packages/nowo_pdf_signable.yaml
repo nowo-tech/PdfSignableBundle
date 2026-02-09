@@ -1,3 +1,19 @@
+# PdfSignable Bundle - demo configuration (Symfony 7)
+# https://github.com/nowo-tech/pdf-signable-bundle
+
 nowo_pdf_signable:
+    # Enable proxy endpoint to load external PDFs (avoids CORS)
     proxy_enabled: true
+
+    # Example PDF URL for form preload (widely accessible test PDF)
     example_pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
+
+    # Named configs for SignatureCoordinatesType (use form option config: "name" to apply)
+    configs:
+        default:
+            units: ['mm', 'cm', 'pt']
+            unit_default: 'mm'
+            origin_default: 'bottom_left'
+        fixed_url:
+            pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
+            url_field: false

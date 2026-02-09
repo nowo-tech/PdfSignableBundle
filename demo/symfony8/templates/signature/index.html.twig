@@ -15,10 +15,10 @@
     .pdf-page-wrapper { position: relative; display: inline-block; margin-bottom: 10px; }
     .signature-overlays { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
     .signature-overlays .signature-box-overlay { pointer-events: auto; }
-    .signature-box-overlay { position: absolute; border: 2px solid rgba(13, 110, 253, 0.8); background: rgba(13, 110, 253, 0.12); box-sizing: border-box; font-size: 10px; color: #0d6efd; overflow: hidden; cursor: move; user-select: none; }
+    .signature-box-overlay { position: absolute; border: 2px solid var(--box-color, rgba(13, 110, 253, 0.8)); background: var(--box-bg, rgba(13, 110, 253, 0.12)); box-sizing: border-box; font-size: 10px; color: var(--box-color, #0d6efd); overflow: hidden; cursor: move; user-select: none; }
     .signature-box-overlay.dragging { z-index: 10; opacity: 0.9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     .signature-box-overlay .overlay-label { padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .signature-box-overlay .resize-handle { position: absolute; width: 8px; height: 8px; background: rgba(13, 110, 253, 0.9); border: 1px solid #fff; border-radius: 2px; pointer-events: auto; z-index: 1; }
+    .signature-box-overlay .resize-handle { position: absolute; width: 8px; height: 8px; background: var(--box-color, rgba(13, 110, 253, 0.9)); border: 1px solid #fff; border-radius: 2px; pointer-events: auto; z-index: 1; }
     .signature-box-overlay .resize-handle.nw { top: -4px; left: -4px; cursor: nwse-resize; }
     .signature-box-overlay .resize-handle.ne { top: -4px; right: -4px; cursor: nesw-resize; }
     .signature-box-overlay .resize-handle.sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
@@ -34,7 +34,7 @@
   <div class="card border-primary mb-4">
     <div class="card-header bg-primary bg-opacity-10 text-primary fw-semibold">Configuration</div>
     <div class="card-body">
-      <p class="card-text mb-0">{{ config_explanation|raw }}</p>
+      <div class="card-text mb-0">{{ config_explanation|raw }}</div>
     </div>
   </div>
   {% endif %}
@@ -43,7 +43,7 @@
     {{ form_start(form, { attr: { id: 'signatureForm' } }) }}
     {% if form.vars.submitted and not form.vars.valid %}
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>{% if app.request.locale starts with 'es' %}Hay errores en el formulario. Corrija los campos marcados abajo.{% else %}There are errors in the form. Please correct the fields marked below.{% endif %}</strong>
+        <strong>There are errors in the form. Please correct the fields marked below.</strong>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         {% if form.vars.errors|length > 0 %}
           <div class="mt-2">{{ form_errors(form) }}</div>

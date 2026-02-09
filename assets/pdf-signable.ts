@@ -108,9 +108,87 @@ function escapeHtml(s: string): string {
     .replace(/>/g, '&gt;');
 }
 
+/** Base hue (0–360) for the first signer; rest are derived by adding HUE_STEP per index. */
+const BOX_COLOR_BASE_HUE = 220;
+/** Hue step per signer index so colors stay distinct and never repeat (no fixed palette size). */
+const BOX_COLOR_HUE_STEP = 37;
+const BOX_COLOR_S = 65;
+const BOX_COLOR_L = 48;
+
+/**
+ * Converts HSL to hex (#rrggbb).
+ * @param h - Hue 0–360
+ * @param s - Saturation 0–100
+ * @param l - Lightness 0–100
+ */
+function hslToHex(h: number, s: number, l: number): string {
+  h = h % 360;
+  if (h < 0) h += 360;
+  const sNorm = s / 100;
+  const lNorm = l / 100;
+  const c = (1 - Math.abs(2 * lNorm - 1)) * sNorm;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = lNorm - c / 2;
+  let r = 0,
+    g = 0,
+    b = 0;
+  if (h < 60) {
+    r = c;
+    g = x;
+  } else if (h < 120) {
+    r = x;
+    g = c;
+  } else if (h < 180) {
+    g = c;
+    b = x;
+  } else if (h < 240) {
+    g = x;
+    b = c;
+  } else if (h < 300) {
+    r = x;
+    b = c;
+  } else {
+    r = c;
+    b = x;
+  }
+  const toHex = (n: number) => {
+    const v = Math.round((n + m) * 255);
+    return (v < 16 ? '0' : '') + Math.min(255, Math.max(0, v)).toString(16);
+  };
+  return '#' + toHex(r) + toHex(g) + toHex(b);
+}
+
+/**
+ * Returns colors for a signer index. First index uses base hue; each next index adds HUE_STEP.
+ * No palette limit and no repetition: colors are derived from the first.
+ * @param index - 0 = first signer, 1 = second, etc. (by order of first occurrence of name)
+ * @returns CSS values for border, background, text and handle
+ */
+function getColorForBoxIndex(index: number): {
+  border: string;
+  background: string;
+  color: string;
+  handle: string;
+} {
+  const hue = (BOX_COLOR_BASE_HUE + index * BOX_COLOR_HUE_STEP) % 360;
+  const hex = hslToHex(hue, BOX_COLOR_S, BOX_COLOR_L);
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return {
+    border: hex,
+    background: `rgba(${r}, ${g}, ${b}, 0.15)`,
+    color: hex,
+    handle: hex,
+  };
+}
+
 /**
  * Initializes the PDF signable widget: loads config, binds load/click/drag and overlay updates.
  * Exits early if NowoPdfSignableConfig or required DOM elements are missing.
+ *
+ * Binds: Load PDF button, unit/origin change, add/remove box, overlay drag (move/resize),
+ * form submit (re-index collection then native submit).
  */
 function run(): void {
   console.log('[PdfSignable] Script loaded');
@@ -371,6 +449,9 @@ function run(): void {
     });
 
     const items = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item');
+    const namesSoFar: Record<string, number> = {};
+    const nameToColorIndex: Record<string, number> = {};
+    let nextColorIndex = 0;
     items.forEach((item, boxIndex) => {
       const pageNum = parseInt(
         item.querySelector<HTMLInputElement>('.signature-box-page')?.value ?? '1',
@@ -389,7 +470,16 @@ function run(): void {
         item.querySelector<HTMLInputElement>('.signature-box-height')?.value ?? '40'
       );
       const nameEl = item.querySelector<HTMLInputElement | HTMLSelectElement>('.signature-box-name');
-      const name = nameEl?.value ?? '';
+      const name = (nameEl?.value ?? '').trim();
+      const nameKey = name === '' ? '__empty__' : name;
+      if (!(nameKey in nameToColorIndex)) {
+        nameToColorIndex[nameKey] = nextColorIndex++;
+      }
+      const colorIndex = nameToColorIndex[nameKey];
+      namesSoFar[name] = (namesSoFar[name] ?? 0) + 1;
+      const occurrence = namesSoFar[name];
+      const overlayLabel =
+        name === '' ? '' : name + (occurrence > 1 ? ` (${occurrence})` : '');
 
       const overlaysDiv = canvasWrapper.querySelector(
         `.pdf-page-wrapper[data-page="${pageNum}"] .signature-overlays`
@@ -413,8 +503,13 @@ function run(): void {
       overlay.style.top = v.vpY + 'px';
       overlay.style.width = Math.max(vpW, 20) + 'px';
       overlay.style.height = Math.max(vpH, 14) + 'px';
+      const colors = getColorForBoxIndex(colorIndex);
+      overlay.style.borderColor = colors.border;
+      overlay.style.backgroundColor = colors.background;
+      overlay.style.color = colors.color;
+      overlay.style.setProperty('--box-color', colors.handle);
       overlay.innerHTML =
-        (name ? '<span class="overlay-label">' + escapeHtml(name) + '</span>' : '') +
+        (overlayLabel ? '<span class="overlay-label">' + escapeHtml(overlayLabel) + '</span>' : '') +
         '<span class="resize-handle nw" data-handle="nw"></span>' +
         '<span class="resize-handle ne" data-handle="ne"></span>' +
         '<span class="resize-handle sw" data-handle="sw"></span>' +

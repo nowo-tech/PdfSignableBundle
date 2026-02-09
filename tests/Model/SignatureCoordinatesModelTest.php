@@ -53,4 +53,22 @@ final class SignatureCoordinatesModelTest extends TestCase
         self::assertCount(1, $model->getSignatureBoxes());
         self::assertSame('signer_1', $model->getSignatureBoxes()[0]->getName());
     }
+
+    /**
+     * Asserts setSignatureBoxes replaces the collection and returns self.
+     */
+    public function testSetSignatureBoxes(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $box1 = (new SignatureBoxModel())->setName('a')->setPage(1);
+        $box2 = (new SignatureBoxModel())->setName('b')->setPage(2);
+        $model->addSignatureBox($box1);
+        self::assertCount(1, $model->getSignatureBoxes());
+
+        $result = $model->setSignatureBoxes([$box1, $box2]);
+        self::assertSame($model, $result);
+        self::assertCount(2, $model->getSignatureBoxes());
+        self::assertSame('a', $model->getSignatureBoxes()[0]->getName());
+        self::assertSame('b', $model->getSignatureBoxes()[1]->getName());
+    }
 }

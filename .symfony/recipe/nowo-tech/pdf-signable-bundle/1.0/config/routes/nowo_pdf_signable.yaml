@@ -1,0 +1,3 @@
+# PdfSignable Bundle routes (form page + PDF proxy)
+nowo_pdf_signable:
+    resource: '@NowoPdfSignableBundle/Resources/config/routes.yaml'

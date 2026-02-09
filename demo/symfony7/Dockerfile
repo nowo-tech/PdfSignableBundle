@@ -27,4 +27,10 @@ RUN echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
+# Entrypoint crea var/cache y var/log y ajusta permisos para el volumen montado
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
 WORKDIR /workspace/demo/symfony7
+CMD ["php-fpm", "-F"]

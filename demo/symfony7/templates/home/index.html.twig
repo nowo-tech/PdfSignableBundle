@@ -6,52 +6,128 @@
 <div class="card mb-4">
     <div class="card-body">
         <h5 class="card-title">PdfSignable Bundle Demo (Symfony 7)</h5>
-        <p class="card-text">This demo shows different configurations of <code>SignatureCoordinatesType</code> and <code>SignatureBoxType</code>.</p>
+        <p class="card-text">Each demo illustrates a way to configure <code>SignatureCoordinatesType</code>: with or without named configs in YAML, inline options, box validation, and model pre-loading.</p>
     </div>
 </div>
 <div class="row g-3">
-    <div class="col-md-6 col-lg-4">
+    <div class="col-12"><h6 class="text-muted">Named configs usage (nowo_pdf_signable.configs)</h6></div>
+    <div class="col-md-6 col-lg-3">
         <div class="card h-100">
             <div class="card-body">
-                <h6 class="card-title">Default</h6>
-                <p class="card-text small">Preset URL (if configured), restricted units (mm, cm, pt), default origin.</p>
-                <a href="{{ path('app_signature') }}" class="btn btn-sm btn-primary">Open</a>
+                <h6 class="card-title">No config</h6>
+                <ul class="card-text small mb-0">
+                    <li>No <code>config</code> passed to the type</li>
+                    <li>Units, origin and example URL from form baseOptions + bundle <code>example_pdf_url</code></li>
+                    <li>Nothing from <code>configs</code></li>
+                </ul>
+                <a href="{{ path('app_signature') }}" class="btn btn-sm btn-primary mt-2">Open</a>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-4">
+    <div class="col-md-6 col-lg-3">
         <div class="card h-100">
             <div class="card-body">
-                <h6 class="card-title">Fixed URL</h6>
-                <p class="card-text small">Single PDF, URL field hidden. Good for one-document flows.</p>
-                <a href="{{ path('app_signature_fixed_url') }}" class="btn btn-sm btn-primary">Open</a>
+                <h6 class="card-title">Config <code>default</code></h6>
+                <ul class="card-text small mb-0">
+                    <li><code>config: 'default'</code></li>
+                    <li><code>units</code>, <code>unit_default</code>, <code>origin_default</code> from <code>configs.default</code></li>
+                    <li>Options in code override the config</li>
+                </ul>
+                <a href="{{ path('app_signature_default_config') }}" class="btn btn-sm btn-primary mt-2">Open</a>
             </div>
         </div>
     </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Config <code>fixed_url</code></h6>
+                <ul class="card-text small mb-0">
+                    <li><code>config: 'fixed_url'</code></li>
+                    <li>PDF URL and <code>url_field: false</code> from YAML</li>
+                    <li>URL field hidden — single document (template/contract)</li>
+                </ul>
+                <a href="{{ path('app_signature_fixed_url') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Config overridden</h6>
+                <ul class="card-text small mb-0">
+                    <li>Same <code>fixed_url</code> config</li>
+                    <li>Override in code: <code>unit_default: 'pt'</code></li>
+                    <li>Shows form options override named config</li>
+                </ul>
+                <a href="{{ path('app_signature_fixed_url_overridden') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 mt-2"><h6 class="text-muted">URL options (inline)</h6></div>
     <div class="col-md-6 col-lg-4">
         <div class="card h-100">
             <div class="card-body">
                 <h6 class="card-title">URL as dropdown</h6>
-                <p class="card-text small">Choose document from a list (<code>url_mode: choice</code>).</p>
-                <a href="{{ path('app_signature_url_choice') }}" class="btn btn-sm btn-primary">Open</a>
+                <ul class="card-text small mb-0">
+                    <li><code>url_mode: choice</code>, <code>url_choices</code> (label → URL)</li>
+                    <li>User picks document by label; <code>url_placeholder</code> for dropdown</li>
+                    <li>Fixed set of PDFs (templates/models)</li>
+                </ul>
+                <a href="{{ path('app_signature_url_choice') }}" class="btn btn-sm btn-primary mt-2">Open</a>
             </div>
         </div>
     </div>
+    <div class="col-12 mt-2"><h6 class="text-muted">Box / validation options</h6></div>
     <div class="col-md-6 col-lg-4">
         <div class="card h-100">
             <div class="card-body">
                 <h6 class="card-title">Limited boxes + name selector</h6>
-                <p class="card-text small">Max 4 boxes, name as dropdown (Signer 1, Signer 2, Witness).</p>
-                <a href="{{ path('app_signature_limited_boxes') }}" class="btn btn-sm btn-primary">Open</a>
+                <ul class="card-text small mb-0">
+                    <li><code>min_entries: 1</code>, <code>max_entries: 4</code></li>
+                    <li><code>unique_box_names: true</code> — no duplicate names</li>
+                    <li><code>name_mode: choice</code>, <code>name_choices</code> (Signer 1, 2, Witness)</li>
+                </ul>
+                <a href="{{ path('app_signature_limited_boxes') }}" class="btn btn-sm btn-primary mt-2">Open</a>
             </div>
         </div>
     </div>
     <div class="col-md-6 col-lg-4">
         <div class="card h-100">
             <div class="card-body">
+                <h6 class="card-title">Same signer, multiple locations</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>unique_box_names: false</code> — duplicate names allowed</li>
+                    <li>Same name on several boxes = same signer, multiple positions</li>
+                    <li>Overlay disambiguates (e.g. <code>signer_1 (1)</code>, <code>signer_1 (2)</code>)</li>
+                </ul>
+                <a href="{{ path('app_signature_same_signer_multiple') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Unique per name (array)</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>unique_box_names: ['signer_1', 'witness']</code> — only these unique</li>
+                    <li><code>signer_2</code> may appear on multiple boxes</li>
+                    <li>One Signer 1 and one Witness; Signer 2 can sign in several places</li>
+                </ul>
+                <a href="{{ path('app_signature_unique_per_name') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 mt-2"><h6 class="text-muted">Model prefill</h6></div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
                 <h6 class="card-title">Predefined boxes</h6>
-                <p class="card-text small">Model with 2 boxes already set; max 5. Edit positions and add more.</p>
-                <a href="{{ path('app_signature_predefined') }}" class="btn btn-sm btn-primary">Open</a>
+                <ul class="card-text small mb-0">
+                    <li>Model pre-filled on GET: fixed URL, two boxes (<code>signer_1</code>, <code>signer_2</code>)</li>
+                    <li><code>url_field: false</code>, <code>max_entries: 5</code></li>
+                    <li>Edit positions and optionally add more boxes</li>
+                </ul>
+                <a href="{{ path('app_signature_predefined') }}" class="btn btn-sm btn-primary mt-2">Open</a>
             </div>
         </div>
     </div>

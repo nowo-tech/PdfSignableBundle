@@ -1,0 +1,71 @@
+page:
+  title: 'Coordinate firma PDF'
+  pdf_viewer: 'Visualizzatore PDF'
+  url_label: 'URL PDF'
+  load: 'Carica PDF'
+  placeholder_intro: 'Inserisci un URL PDF sopra e clicca su Carica per visualizzare il documento. Clicca sul PDF per aggiungere campi firma.'
+  signature_boxes: 'Campi firma'
+  add: 'Aggiungi campo'
+  units_label: 'Unità'
+  origin_label: 'Origine'
+  help_text: 'Clicca sul PDF per posizionare un nuovo campo firma. Trascina i campi per spostare, gli angoli per ridimensionare.'
+  delete: 'Elimina'
+  empty_state: 'Nessun campo firma. Clicca sul PDF o su "Aggiungi campo" per crearne uno.'
+  save_coordinates: 'Salva coordinate'
+  errors_collection: 'Errori nei campi firma:'
+
+signature_coordinates_type:
+  pdf_url:
+    label: 'URL PDF'
+    placeholder: 'https://example.com/document.pdf'
+  unit:
+    label: 'Unità'
+    option:
+      pt: 'Punti (pt)'
+      mm: 'Millimetri (mm)'
+      cm: 'Centimetri (cm)'
+      px: 'Pixel (px)'
+      in: 'Pollici (in)'
+  origin:
+    label: 'Origine'
+    option:
+      top_left: 'In alto a sinistra'
+      bottom_left: 'In basso a sinistra'
+      top_right: 'In alto a destra'
+      bottom_right: 'In basso a destra'
+  signature_boxes:
+    label: 'Campi firma'
+    min_message: 'Almeno {{ limit }} campo/i firma richiesto/i.'
+    max_message: 'Al massimo {{ limit }} campo/i firma consentito/i.'
+    unique_names_message: 'Nome campo duplicato. Ogni campo firma deve avere un nome univoco.'
+
+signature_box_type:
+  name:
+    placeholder: 'Nome campo (es. firmatario_1)'
+    required: 'Il nome del campo è obbligatorio.'
+  page:
+    label: 'Pagina'
+  width:
+    label: 'Larghezza'
+  height:
+    label: 'Altezza'
+  x:
+    label: 'X'
+  y:
+    label: 'Y'
+
+flash:
+  save:
+    success: 'Coordinate salvate con successo.'
+
+proxy:
+  invalid_url: 'URL non valida o mancante.'
+  error_load: 'Errore nel caricamento del PDF:'
+
+js:
+  error_load_pdf: 'Errore nel caricamento del PDF: '
+  alert_url_required: 'Inserisci un URL PDF.'
+  loading_state: 'Caricamento...'
+  load_pdf_btn: 'Carica PDF'
+  default_box_name: 'firma'
+  alert_submit_error: "Errore nell'invio delle coordinate."

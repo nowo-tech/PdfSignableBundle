@@ -1,68 +1,120 @@
 # PdfSignable Bundle
 
-Symfony bundle to define **signature coordinates on PDFs**: a form field that receives the PDF URL, renders it on screen and lets you place signature boxes by click (and drag to move/resize).
+[![CI](https://github.com/nowo-tech/pdf-signable-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/pdf-signable-bundle/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-6.1%2B%20%7C%207%20%7C%208-000000?logo=symfony)](https://symfony.com) [![GitHub stars](https://img.shields.io/github/stars/nowo-tech/pdf-signable-bundle.svg?style=social&label=Star)](https://github.com/nowo-tech/pdf-signable-bundle)
+
+> ⭐ **Found this project useful?** Give it a star on GitHub! It helps us maintain and improve the project.
+
+**Symfony bundle to define signature coordinates on PDFs.** A form type that accepts a PDF URL, renders the document in the browser with PDF.js, and lets users place signature boxes by clicking on the page (drag to move, drag corners to resize). Ideal for configuring where signatures must appear in PDF documents before sending them to sign.
+
+> 📋 **Compatible with Symfony 6.1+, 7.x, and 8.x** — This bundle requires Symfony 6.1 or higher and PHP 8.1+.
+
+## What is this?
+
+This bundle helps you **define signature box coordinates on PDFs** in your Symfony applications for:
+
+- 📄 **PDF signature placement** — Let users visually place and resize signature areas on a PDF
+- 📐 **Units and origin** — Work in mm, cm, pt, px or in; choose coordinate origin (e.g. bottom-left)
+- 🔗 **External PDFs** — Optional proxy to load external PDFs without CORS issues
+- ⚙️ **Named configs** — Reuse presets (fixed URL, units, limits) via `config: 'name'` in YAML
+- ✅ **Validation** — Required box names, unique names per form, min/max entries
+- 🎯 **Events** — Hook into proxy request/response and coordinate submission for custom logic
+
+## Quick Search Terms
+
+Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.js Symfony**, **PDF form coordinates**, **signature position configurator**, **Symfony PDF viewer**, **signature overlay**, **PDF signing workflow**, **coordinate picker**, **document signing**? You've found the right bundle!
 
 ## Features
 
-- Form with PDF URL, units (mm, cm, pt, px, in), origin (corners) and a collection of signature boxes.
-- PDF viewer in the browser (PDF.js) with overlays for each box.
-- Click on the PDF to add a new box; drag to move; drag corners to resize.
-- Optional proxy to load external PDFs without CORS issues.
-- Compatible with Symfony 6.1+, 7 and 8.
+- ✅ **Form type** — `SignatureCoordinatesType` with PDF URL, units (mm, cm, pt, px, in), coordinate origin (corners) and collection of signature boxes
+- ✅ **PDF viewer** — In-browser viewer (PDF.js) with overlays for each box; click to add, drag to move, drag corners to resize
+- ✅ **Optional proxy** — Load external PDFs without CORS; configurable via `nowo_pdf_signable.proxy_enabled`
+- ✅ **Named configurations** — Define presets in `nowo_pdf_signable.configs` and use `config: 'name'` when adding the form type
+- ✅ **URL modes** — Free-text URL input or dropdown choice (`url_mode: choice`, `url_choices`)
+- ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation
+- ✅ **Validation** — Required box name (NotBlank); `unique_box_names` global (`true`/`false`) or per-name (array) to enforce unique box names
+- ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent` for integration
+- ✅ **Compatibility** — Symfony 6.1+, 7.x, 8.x and PHP 8.1+
 
 ## Installation
+
+Install the bundle with Composer:
 
 ```bash
 composer require nowo-tech/pdf-signable-bundle
 ```
 
-Register the bundle (automatic with Flex), import the routes and optionally configure `nowo_pdf_signable` (proxy and example URL). See [docs/INSTALLATION.md](docs/INSTALLATION.md) and [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+With [Symfony Flex](https://symfony.com/doc/current/setup/flex.html) the bundle is registered automatically. Otherwise register it and import the routes — see [Installation](docs/INSTALLATION.md).
 
-## Quick usage
+**Development / unreleased:** To use the latest `main` branch before the next tag, add the VCS repository and require `dev-main` (see [docs/INSTALLATION.md](docs/INSTALLATION.md)).
 
-The **Type** `SignatureCoordinatesType` is a form field that renders the full view (PDF viewer + boxes) and submits coordinates in the model:
+## Quick Start
 
-- **Model**: `SignatureCoordinatesModel` (pdfUrl, unit, origin, signatureBoxes) and `SignatureBoxModel` (name, page, x, y, width, height).
-- **View**: the bundle form theme renders the full widget (PDF + click to define boxes).
+1. **Add the form type** to your form (or use the default route `/pdf-signable`):
 
-1. Go to the bundle route (default `/pdf-signable`) or include the Type in your own form.
-2. Enter a PDF URL and click "Load PDF".
-3. Click on the PDF to place signature boxes; adjust position and size by dragging.
-4. Submit the form to get the model with all coordinates.
+```php
+use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
+use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 
-See [docs/USAGE.md](docs/USAGE.md) for using the form type in your app and proxy details.
+$model = new SignatureCoordinatesModel();
+$form = $this->createForm(SignatureCoordinatesType::class, $model);
+// Or use a named config: ['config' => 'fixed_url']
+```
+
+2. **Render the form** with the bundle form theme so the PDF viewer and boxes render correctly:
+
+```twig
+{% form_theme form '@NowoPdfSignable/form/theme.html.twig' %}
+{{ form_widget(form.signatureCoordinates) }}
+```
+
+3. **On submit** you get a `SignatureCoordinatesModel` with `pdfUrl`, `unit`, `origin` and `signatureBoxes` (each with name, page, x, y, width, height).
+
+Configure `nowo_pdf_signable` (proxy, example URL, optional [named configs](docs/CONFIGURATION.md)) as needed. See [Usage](docs/USAGE.md) for full options and examples.
+
+## Requirements
+
+- PHP >= 8.1
+- **Symfony >= 6.1** || >= 7.0 || >= 8.0
+- Extensions: `form`, `http-client`, `twig`, `translation`, `validator`, `yaml`
+
+## Configuration
+
+The bundle works with default settings. Create or edit `config/packages/nowo_pdf_signable.yaml`:
+
+```yaml
+nowo_pdf_signable:
+    proxy_enabled: true                    # Enable proxy for external PDFs (avoids CORS)
+    example_pdf_url: ''                    # Optional default URL for form preload
+    configs: {}                            # Optional named configs (see CONFIGURATION.md)
+```
+
+See [CONFIGURATION.md](docs/CONFIGURATION.md) for detailed options and named configs.
 
 ## Demos
 
-Dockerized demos for Symfony 7 and 8 (Bootstrap, Vite, TypeScript):
+Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples:
 
 ```bash
 cd demo
 make run-symfony7   # → http://localhost:8000
-# or
 make run-symfony8   # → http://localhost:8001
 ```
 
-See [demo/Makefile](demo/Makefile) for more targets.
+Nine demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), predefined boxes. See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
 
-### Debugger (Xdebug)
+### Xdebug
 
-Demos include **Xdebug** in the PHP container. Your host IDE must listen on port **9003**.
-
-- **VS Code / Cursor**: "PHP Debug" extension, use "Listen for Xdebug" in `launch.json` (port 9003).
-- **PhpStorm**: Settings → PHP → Debug, port 9003; then Run → Start Listening.
-
-On each request to the demo, Xdebug will try to connect to the IDE. If nothing is listening, the response may take a few seconds; to start only on demand, in the demo's `docker-compose.yml` you can set `XDEBUG_START_WITH_REQUEST=trigger` on the `php` service and use your IDE trigger (cookie/parameter).
+Demos include **Xdebug**. Your IDE should listen on port **9003**. To start only on demand, set `XDEBUG_START_WITH_REQUEST=trigger` in the demo `docker-compose.yml` and use your IDE trigger.
 
 ## Frontend (Vite + TypeScript)
 
-The PDF viewer script is built with **Vite** and **TypeScript**. The built file is in `src/Resources/public/js/pdf-signable.js` and is included by the form theme. After installing the bundle in your app, run:
+The PDF viewer is built with **Vite** and **TypeScript**. The bundle ships a built file at `src/Resources/public/js/pdf-signable.js`. After installing the bundle:
 
 ```bash
 php bin/console assets:install
 ```
 
-To rebuild the script (e.g. after changing `assets/pdf-signable.ts`), from the bundle root:
+To rebuild from source (bundle root):
 
 ```bash
 pnpm install
@@ -71,23 +123,41 @@ pnpm run build
 
 ## Tests and QA
 
-From the bundle root:
+From the bundle root (optionally via Docker):
 
 ```bash
+make up
 make install
-make test       # PHPUnit
-make cs-check   # PHP-CS-Fixer
-make qa         # cs-check + test
+make test          # PHPUnit
+make test-coverage # PHPUnit + HTML (coverage/) and Clover (coverage.xml). Requires PCOV in the container.
+make cs-check      # PHP-CS-Fixer
+make qa            # cs-check + test
+make validate-translations  # Validate translation YAML files (inside Docker)
 ```
 
-## Documentation (English)
+Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `composer qa`. The bundle Docker image includes PCOV for coverage.
 
-- [Installation](docs/INSTALLATION.md)
-- [Configuration](docs/CONFIGURATION.md)
-- [Usage](docs/USAGE.md)
-- [Changelog](docs/CHANGELOG.md)
-- [Upgrading](docs/UPGRADING.md)
+## Documentation
+
+- [Installation](docs/INSTALLATION.md) — Step-by-step installation and route registration
+- [Configuration](docs/CONFIGURATION.md) — Proxy, example URL, named configs
+- [Usage](docs/USAGE.md) — Form options, named configs, customization
+- [Events](docs/EVENTS.md) — Proxy and submission events
+- [Changelog](docs/CHANGELOG.md) — Version history
+- [Upgrading](docs/UPGRADING.md) — Upgrade instructions
+- [Roadmap](docs/ROADMAP.md) — Possible improvements and future ideas
+- [Release process](docs/RELEASE.md) — How to create a release and tag
+- [Contributing](docs/CONTRIBUTING.md) — How to contribute
+- [Security](docs/SECURITY.md) — Reporting vulnerabilities
 
 ## License
 
-MIT.
+The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for details on how to contribute to this project. For security issues see [SECURITY.md](docs/SECURITY.md).
+
+## Author
+
+Created by [Héctor Franco Aceituno](https://github.com/HecFranco) at [Nowo.tech](https://nowo.tech)

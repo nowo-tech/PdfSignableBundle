@@ -1,6 +1,6 @@
 # PdfSignable Bundle demos
 
-Dockerized demos (Symfony 7 and Symfony 8) to try the bundle. They include **Web Profiler**, **Xdebug**, and **pnpm** for building the bundle assets.
+Dockerized demos (Symfony 7 and Symfony 8) to try the bundle. Nine demo pages cover no config, default/fixed_url/overridden config, URL as dropdown, limited boxes, same signer multiple locations, unique per name (array), and predefined boxes. Demos include **Web Profiler**, **Xdebug**, and **pnpm** for building the bundle assets.
 
 ## Start
 

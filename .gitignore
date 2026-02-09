@@ -9,3 +9,5 @@ coverage.xml
 .env.local
 package-lock.json
 yarn.lock
+.symfony.local.yaml
+.phpunit.result.cache

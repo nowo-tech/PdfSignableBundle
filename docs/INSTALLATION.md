@@ -4,13 +4,24 @@
 
 - PHP 8.1+
 - Symfony 6.1+, 7.x or 8.x
-- Extensions: form, http-client, twig, translation, yaml
+- Extensions: form, http-client, twig, translation, validator, yaml
 
 ## Composer
+
+Install the bundle (stable, from Packagist or your configured repository):
 
 ```bash
 composer require nowo-tech/pdf-signable-bundle
 ```
+
+**Development / unreleased:** To use the latest `main` (or default) branch before the next tag:
+
+```bash
+composer config repositories.pdf-signable-bundle vcs https://github.com/nowo-tech/pdf-signable-bundle
+composer require nowo-tech/pdf-signable-bundle:dev-main
+```
+
+Use `dev-main` or `dev-master` to match the repository’s default branch.
 
 ## Register the bundle
 

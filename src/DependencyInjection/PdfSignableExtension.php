@@ -29,6 +29,7 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
 
         $container->setParameter(Configuration::ALIAS . '.proxy_enabled', $config['proxy_enabled'] ?? true);
         $container->setParameter(Configuration::ALIAS . '.example_pdf_url', $config['example_pdf_url'] ?? '');
+        $container->setParameter(Configuration::ALIAS . '.configs', $config['configs'] ?? []);
     }
 
     /**

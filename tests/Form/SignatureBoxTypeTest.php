@@ -6,8 +6,11 @@ namespace Nowo\PdfSignableBundle\Tests\Form;
 
 use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
+use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Validation;
 
 /**
  * Tests for SignatureBoxType form type: options, submit and data mapping.
@@ -17,8 +20,10 @@ final class SignatureBoxTypeTest extends TypeTestCase
     protected function getExtensions(): array
     {
         $type = new SignatureBoxType();
+        $validator = Validation::createValidator();
         return [
             new PreloadedExtension([$type], []),
+            new ValidatorExtension($validator),
         ];
     }
 
@@ -50,5 +55,34 @@ final class SignatureBoxTypeTest extends TypeTestCase
     {
         $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel());
         self::assertInstanceOf(SignatureBoxType::class, $form->getConfig()->getType()->getInnerType());
+    }
+
+    public function testSubmitWithNameModeChoice(): void
+    {
+        $model = new SignatureBoxModel();
+        $form = $this->factory->create(SignatureBoxType::class, $model, [
+            'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+            'name_choices' => ['Signer 1' => 'signer_1', 'Witness' => 'witness'],
+        ]);
+        $form->submit([
+            'name' => 'witness',
+            'page' => 2,
+            'width' => 100.0,
+            'height' => 30.0,
+            'x' => 10.0,
+            'y' => 20.0,
+        ]);
+
+        self::assertTrue($form->isSynchronized());
+        self::assertSame('witness', $model->getName());
+        self::assertSame(2, $model->getPage());
+    }
+
+    public function testNameFieldHasNotBlankConstraint(): void
+    {
+        $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel());
+        $constraints = $form->get('name')->getConfig()->getOption('constraints');
+        $notBlanks = array_filter($constraints ?? [], static fn ($c) => $c instanceof NotBlank);
+        self::assertCount(1, $notBlanks);
     }
 }

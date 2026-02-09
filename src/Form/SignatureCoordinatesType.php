@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Form;
 
+use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -17,8 +18,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Count;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * Form type for signature coordinates: PDF URL, unit, origin and a collection of signature boxes.
@@ -31,10 +34,12 @@ final class SignatureCoordinatesType extends AbstractType
     private const PREFIX_TRANS = 'signature_coordinates_type';
 
     /**
-     * @param string $examplePdfUrl Fallback PDF URL when pdf_url option is not set
+     * @param string                $examplePdfUrl Fallback PDF URL when pdf_url option is not set
+     * @param array<string, array>  $namedConfigs   Named configs from nowo_pdf_signable.configs (option keys => values)
      */
     public function __construct(
         private readonly string $examplePdfUrl = '',
+        private readonly array $namedConfigs = [],
     ) {
     }
 
@@ -90,10 +95,11 @@ final class SignatureCoordinatesType extends AbstractType
     /**
      * Builds the form: pdfUrl, unit, origin and signatureBoxes collection.
      *
-     * @param array<string, mixed> $options Resolved options (pdf_url, url_field, units, etc.)
+     * @param array<string, mixed> $options Resolved options (pdf_url, url_field, units, etc.). Merged with named config when option "config" is set.
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $options = $this->mergeNamedConfig($options);
         $units = $options['units'] ?? self::getAllUnits();
         $origins = $options['origins'] ?? self::getAllOrigins();
 
@@ -195,15 +201,46 @@ final class SignatureCoordinatesType extends AbstractType
             'attr' => ['class' => 'signature-boxes-collection'],
         ];
         $maxEntries = $options['max_entries'];
+        $collectionConstraints = [];
         if ($maxEntries !== null || $options['min_entries'] > 0) {
-            $collectionOptions['constraints'] = [
-                new Count(
-                    min: $options['min_entries'],
-                    max: $maxEntries,
-                    minMessage: 'signature_coordinates_type.signature_boxes.min_message',
-                    maxMessage: 'signature_coordinates_type.signature_boxes.max_message',
-                ),
-            ];
+            $collectionConstraints[] = new Count(
+                min: $options['min_entries'],
+                max: $maxEntries,
+                minMessage: 'signature_coordinates_type.signature_boxes.min_message',
+                maxMessage: 'signature_coordinates_type.signature_boxes.max_message',
+            );
+        }
+        $uniqueNamesOpt = $options['unique_box_names'];
+        if ($uniqueNamesOpt === true || (is_array($uniqueNamesOpt) && $uniqueNamesOpt !== [])) {
+            $namesToEnforce = $uniqueNamesOpt === true ? null : array_fill_keys(array_map('trim', $uniqueNamesOpt), true);
+            $collectionConstraints[] = new Callback(function (mixed $boxes, ExecutionContextInterface $context) use ($namesToEnforce): void {
+                if (!is_array($boxes)) {
+                    return;
+                }
+                $seen = [];
+                foreach ($boxes as $index => $box) {
+                    if (!$box instanceof SignatureBoxModel) {
+                        continue;
+                    }
+                    $name = trim($box->getName());
+                    if ($name === '') {
+                        continue;
+                    }
+                    if ($namesToEnforce !== null && !isset($namesToEnforce[$name])) {
+                        continue;
+                    }
+                    if (isset($seen[$name])) {
+                        $context->buildViolation('signature_coordinates_type.signature_boxes.unique_names_message')
+                            ->atPath('[' . $index . '].name')
+                            ->addViolation();
+                    } else {
+                        $seen[$name] = $index;
+                    }
+                }
+            });
+        }
+        if ($collectionConstraints !== []) {
+            $collectionOptions['constraints'] = $collectionConstraints;
         }
         $builder->add('signatureBoxes', CollectionType::class, $collectionOptions);
     }
@@ -215,6 +252,7 @@ final class SignatureCoordinatesType extends AbstractType
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
+        $options = $this->mergeNamedConfig($options);
         $pdfUrl = $options['pdf_url'] ?? null;
         if (($pdfUrl === null || $pdfUrl === '') && $this->examplePdfUrl !== '') {
             $pdfUrl = $this->examplePdfUrl;
@@ -239,6 +277,9 @@ final class SignatureCoordinatesType extends AbstractType
             'data_class' => SignatureCoordinatesModel::class,
             'translation_domain' => 'nowo_pdf_signable',
 
+            // Named config from nowo_pdf_signable.configs (options merged; passed options override)
+            'config' => null,
+
             // URL (null = use bundle example_pdf_url when set)
             'pdf_url' => null,
             'url_field' => true,
@@ -262,6 +303,7 @@ final class SignatureCoordinatesType extends AbstractType
             // Signature boxes collection
             'min_entries' => 0,
             'max_entries' => null,
+            'unique_box_names' => false,
             'signature_box_options' => [],
         ]);
 
@@ -275,7 +317,33 @@ final class SignatureCoordinatesType extends AbstractType
         $resolver->setAllowedValues('origin_mode', [self::ORIGIN_MODE_CHOICE, self::ORIGIN_MODE_INPUT]);
         $resolver->setAllowedTypes('min_entries', 'int');
         $resolver->setAllowedTypes('max_entries', ['int', 'null']);
+        $resolver->setAllowedTypes('unique_box_names', ['bool', 'array']);
+        $resolver->setAllowedValues('unique_box_names', static function ($value): bool {
+            if (is_bool($value)) {
+                return true;
+            }
+            return is_array($value) && array_reduce($value, static fn ($carry, $v) => $carry && is_string($v), true);
+        });
         $resolver->setAllowedTypes('signature_box_options', 'array');
+        $resolver->setAllowedTypes('config', ['string', 'null']);
+    }
+
+    /**
+     * Merges options with the named config when option "config" is set.
+     * Named config is the base; options passed to the type override (same keys in $options win).
+     *
+     * @param array<string, mixed> $options
+     * @return array<string, mixed>
+     */
+    private function mergeNamedConfig(array $options): array
+    {
+        $name = $options['config'] ?? null;
+        if ($name === null || $name === '' || !isset($this->namedConfigs[$name]) || !is_array($this->namedConfigs[$name])) {
+            return $options;
+        }
+        $merged = array_merge($this->namedConfigs[$name], $options);
+        unset($merged['config']);
+        return $merged;
     }
 
     /**

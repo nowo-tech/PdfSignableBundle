@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Nowo\PdfSignableBundle\Tests\Event;
+
+use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Tests for PdfSignableEvents constants.
+ */
+final class PdfSignableEventsTest extends TestCase
+{
+    public function testSignatureCoordinatesSubmittedConstant(): void
+    {
+        self::assertSame('nowo_pdf_signable.signature_coordinates_submitted', PdfSignableEvents::SIGNATURE_COORDINATES_SUBMITTED);
+    }
+
+    public function testPdfProxyRequestConstant(): void
+    {
+        self::assertSame('nowo_pdf_signable.pdf_proxy_request', PdfSignableEvents::PDF_PROXY_REQUEST);
+    }
+
+    public function testPdfProxyResponseConstant(): void
+    {
+        self::assertSame('nowo_pdf_signable.pdf_proxy_response', PdfSignableEvents::PDF_PROXY_RESPONSE);
+    }
+}

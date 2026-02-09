@@ -1,0 +1,32 @@
+# Composer
+/composer.lock export-ignore
+/composer.phar export-ignore
+
+# CI / QA
+/.github export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/phpunit.xml.dist export-ignore
+/tests export-ignore
+/scripts export-ignore
+
+# Development / Demos
+/demo export-ignore
+/docker-compose.yml export-ignore
+/Dockerfile export-ignore
+/Makefile export-ignore
+/.symfony export-ignore
+
+# Frontend source (dist is in src/Resources/public)
+/assets export-ignore
+/vite.config.ts export-ignore
+/tsconfig.json export-ignore
+/package.json export-ignore
+/pnpm-lock.yaml export-ignore
+
+# Documentation (optional: remove to ship docs in dist)
+/docs export-ignore
+
+# Misc
+/.editorconfig export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore

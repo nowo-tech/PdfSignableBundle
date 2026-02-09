@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     curl \
     && docker-php-ext-install zip \
+    && pecl install pcov \
+    && docker-php-ext-enable pcov \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -18,6 +20,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+# Allow git when project is mounted at /app (e.g. different host ownership)
+RUN git config --global --add safe.directory /app
 
 COPY composer.json composer.lock* ./
 

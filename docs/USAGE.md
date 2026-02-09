@@ -26,7 +26,7 @@ The bundle exposes a page at the configured route (default `/pdf-signable`) with
 - **Resize**: drag the box corner handles.
 - **Delete**: "Delete" button on each box row in the list.
 
-Coordinates stay in sync between the form and the PDF overlays. On submit the form is sent via AJAX (fetch) and, on success, the page stays on the same URL and shows an alert with the submitted coordinates (JSON). You receive the model with `pdfUrl`, `unit`, `origin` and the list of `signatureBoxes` (each with `name`, `page`, `x`, `y`, `width`, `height`).
+Coordinates stay in sync between the form and the PDF overlays. On submit the form is sent as a normal POST. On success the server redirects and shows a flash message (including the saved coordinates); on validation errors the form is re-rendered with the submitted data and error messages. You receive the model with `pdfUrl`, `unit`, `origin` and the list of `signatureBoxes` (each with `name`, `page`, `x`, `y`, `width`, `height`).
 
 ## Using the form type in your application
 
@@ -51,9 +51,48 @@ Render the form in your template. **Important**: add the form theme so the widge
 
 The bundle theme is prepended automatically, but when embedding in a custom form you may need to add it explicitly if the widget does not display.
 
+## Named configurations
+
+You can define **named configs** in `nowo_pdf_signable.configs` and reference them when adding the form type so you don’t repeat the same options everywhere.
+
+**1. Define configs** in `config/packages/nowo_pdf_signable.yaml`:
+
+```yaml
+nowo_pdf_signable:
+    configs:
+        fixed_url:
+            pdf_url: 'https://example.com/template.pdf'
+            url_field: false
+            units: ['mm', 'pt']
+        limited:
+            min_entries: 1
+            max_entries: 4
+            signature_box_options:
+                name_mode: choice
+                name_choices: { 'Signer 1': signer_1, 'Witness': witness }
+```
+
+**2. Use a named config** with the `config` option (options passed here override the config):
+
+```php
+$builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
+    'config' => 'fixed_url',
+    // optional overrides
+    'pdf_url' => 'https://other.com/doc.pdf',
+]);
+```
+
+If `config` is set, the named config is merged first; any option you pass when creating the form overrides the config. Keys in a named config are the same as the form type options (e.g. `pdf_url`, `url_field`, `units`, `unit_default`, `signature_box_options`).
+
 ## Customization options
 
 `SignatureCoordinatesType` is highly configurable via options.
+
+### Config
+
+| Option   | Type   | Default | Description |
+|----------|--------|---------|-------------|
+| `config` | string \| null | `null` | Name of a config from `nowo_pdf_signable.configs`. That config is merged with the options passed here (passed options win). |
 
 ### URL
 
@@ -90,9 +129,34 @@ The bundle theme is prepended automatically, but when embedding in a custom form
 |--------------------------|--------|---------|-------------|
 | `min_entries`            | int    | `0`     | Minimum number of signature boxes (validated on submit). |
 | `max_entries`            | int \| null | `null` | Maximum number of boxes; `null` = unlimited. "Add box" is hidden when at max. |
+| `unique_box_names`       | bool \| string[] | `false` | **Global:** `true` = all names must be unique; `false` = no check. **Per name:** array of names (e.g. `['signer_1', 'witness']`) = only those names must be unique; other names may repeat. |
 | `signature_box_options`  | array  | `[]`    | Options passed to each **SignatureBoxType** entry (e.g. `name_mode`, `name_choices`). |
 
 Predefined elements: set the model’s `signatureBoxes` (e.g. with existing `SignatureBoxModel` instances) before creating the form; the collection will render those entries. The same `SignatureCoordinatesModel` / array structure is returned on submit.
+
+### Same signer (machine name), multiple locations
+
+The **name** of a box is a logical identifier (e.g. `signer_1`, `witness`). You can have **several boxes with the same name** when the same signer must sign in more than one place (e.g. initial on page 1 and full signature on page 3).
+
+- **By default** (`unique_box_names: false`): duplicate names are allowed. Add two (or more) boxes and set the same name on each; each box is a separate position. The overlay will show the same color for the same name and, when there are duplicates, a disambiguator in the label (e.g. `signer_1 (1)`, `signer_1 (2)`).
+- **Global** `unique_box_names: true`: at most one box per name (all names must be unique). Use when each role has exactly one signature location.
+- **Per name** `unique_box_names: ['signer_1', 'witness']`: only the listed names must be unique; other names (e.g. `signer_2`) may appear on multiple boxes.
+
+**Backend handling:** You receive a flat list of `SignatureBoxModel`. To get "all positions per signer", group by name:
+
+```php
+$byName = [];
+foreach ($model->getSignatureBoxes() as $box) {
+    $byName[$box->getName()][] = [
+        'page'   => $box->getPage(),
+        'x'      => $box->getX(),
+        'y'      => $box->getY(),
+        'width'  => $box->getWidth(),
+        'height' => $box->getHeight(),
+    ];
+}
+// Example: $byName['signer_1'] = [ ['page' => 1, 'x' => 10, ...], ['page' => 3, 'x' => 50, ...] ]
+```
 
 ### SignatureBoxType (each box): name field
 
@@ -103,7 +167,8 @@ When used as the collection entry type, **SignatureBoxType** accepts options (vi
 | `name_mode`       | string | `'input'` | `'input'` = text (TextType); `'choice'` = dropdown (ChoiceType) with `name_choices`. |
 | `name_choices`    | array  | `[]`    | For `name_mode: 'choice'`: map of label => value (e.g. `['Signer 1' => 'signer_1', 'Witness' => 'witness']`). |
 | `name_label`      | mixed  | `false` | Label for the name field. |
-| `name_placeholder`| string | (trans) | Placeholder (input) or empty option label (choice). |
+| `name_placeholder`   | string | (trans) | Placeholder for the **text input** when `name_mode: 'input'` (ignored in choice mode). |
+| `choice_placeholder`| `false` \| string | `false` | When `name_mode: 'choice'`, empty option label. Use `false` (default) for **no empty option** (no "Select role"); use a string to show an explicit "Choose…" option. |
 
 The submitted data is still the same: each box has `name`, `page`, `x`, `y`, `width`, `height` in the returned array.
 
@@ -163,7 +228,7 @@ $builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
             'Signer 2' => 'signer_2',
             'Witness' => 'witness',
         ],
-        'name_placeholder' => 'Select role',
+        // choice_placeholder => false (default): no empty "Select role" option; user must pick a real choice
     ],
 ]);
 ```
@@ -246,7 +311,7 @@ Important: keep the CSS classes the viewer JS uses (`.signature-box-name`, `.sig
 
 ## Form submit behavior
 
-The bundle’s JavaScript intercepts the form submit and sends it via `fetch` with `Accept: application/json`. If the controller returns JSON (valid form), the page does not redirect and an alert shows the submitted coordinates. If the response is HTML (e.g. validation errors) or an error occurs, the user sees an error alert. This applies when the form theme and `pdf-signable.js` are loaded.
+The bundle’s JavaScript runs on submit to re-index the collection field names (so the server receives consecutive indices `[0]`, `[1]`, …) and then submits the form normally (full page POST). The server handles the request; on success it redirects and can show a flash message with the saved coordinates; on validation errors it re-renders the form with the submitted data and field errors. The form theme and `pdf-signable.js` must be loaded on the page where the form is rendered.
 
 ## PDF proxy
 

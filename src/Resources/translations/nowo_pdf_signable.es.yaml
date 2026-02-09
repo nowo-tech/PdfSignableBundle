@@ -37,10 +37,12 @@ signature_coordinates_type:
     label: 'Cajas de firma'
     min_message: 'Se requiere al menos {{ limit }} caja(s) de firma.'
     max_message: 'Se permite como máximo {{ limit }} caja(s) de firma.'
+    unique_names_message: 'Nombre de caja duplicado. Cada caja de firma debe tener un nombre único.'
 
 signature_box_type:
   name:
     placeholder: 'Nombre (ej. firmante_1)'
+    required: 'El nombre de la caja es obligatorio.'
   page:
     label: 'Página'
   width:

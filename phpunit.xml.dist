@@ -17,11 +17,11 @@
         <exclude>
             <directory>src/Resources</directory>
         </exclude>
-        <coverage>
-            <report>
-                <html outputDirectory="coverage"/>
-                <clover outputFile="coverage.xml"/>
-            </report>
-        </coverage>
     </source>
+    <coverage>
+        <report>
+            <html outputDirectory="coverage"/>
+            <clover outputFile="coverage.xml"/>
+        </report>
+    </coverage>
 </phpunit>

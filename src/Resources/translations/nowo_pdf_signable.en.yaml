@@ -37,10 +37,12 @@ signature_coordinates_type:
     label: 'Signature boxes'
     min_message: 'At least {{ limit }} signature box(es) required.'
     max_message: 'At most {{ limit }} signature box(es) allowed.'
+    unique_names_message: 'Duplicate box name. Each signature box must have a unique name.'
 
 signature_box_type:
   name:
     placeholder: 'Box name (e.g. signer_1)'
+    required: 'Box name is required.'
   page:
     label: 'Page'
   width:
