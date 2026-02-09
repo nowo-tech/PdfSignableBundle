@@ -1,8 +1,10 @@
 {#
-  Default layout for SignatureBoxType (name, page, width, height, x, y).
+  Default layout for SignatureBoxType (name, page, width, height, x, y, and optionally angle).
+  When enable_rotation is false, form.angle is not defined and no angle row is rendered.
   DOM structure expected by pdf-signable.js:
   - .signature-box-name, .signature-box-page
   - .signature-box-width, .signature-box-height, .signature-box-x, .signature-box-y
+  - .signature-box-angle (only when rotation is enabled)
   Override: {% block signature_box_widget %} ... {% endblock %} in form theme.
 #}
 <div class="row g-2 align-items-end mb-2">
@@ -14,4 +16,7 @@
   {{ form_row(form.height) }}
   {{ form_row(form.x) }}
   {{ form_row(form.y) }}
+  {% if form.angle is defined %}
+  {{ form_row(form.angle) }}
+  {% endif %}
 </div>

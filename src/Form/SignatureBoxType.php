@@ -53,9 +53,11 @@ final class SignatureBoxType extends AbstractType
                 'choices' => $options['name_choices'],
                 'required' => true,
                 'placeholder' => $options['choice_placeholder'],
+                'empty_data' => '',
                 'constraints' => [new NotBlank(message: 'signature_box_type.name.required')],
                 'attr' => [
                     'class' => 'signature-box-name form-control form-control-sm form-select',
+                    'required' => 'required',
                 ],
                 'row_attr' => ['class' => 'col-8 col-md-9 col-lg-10 mb-2'],
             ]);
@@ -63,10 +65,12 @@ final class SignatureBoxType extends AbstractType
             $builder->add('name', TextType::class, [
                 'label' => $options['name_label'],
                 'required' => true,
+                'empty_data' => '',
                 'constraints' => [new NotBlank(message: 'signature_box_type.name.required')],
                 'attr' => [
                     'placeholder' => $options['name_placeholder'],
                     'class' => 'signature-box-name form-control form-control-sm',
+                    'required' => 'required',
                 ],
                 'row_attr' => ['class' => 'col-8 col-md-9 col-lg-10 mb-2'],
             ]);
@@ -82,7 +86,7 @@ final class SignatureBoxType extends AbstractType
                 'choices' => $pageChoices,
                 'required' => true,
                 'attr' => ['class' => 'signature-box-page form-control form-control-sm form-select'],
-                'constraints' => [new Choice(['choices' => $allowedPages, 'message' => 'signature_box_type.page.not_allowed'])],
+                'constraints' => [new Choice(choices: $allowedPages, message: 'signature_box_type.page.not_allowed')],
                 'row_attr' => ['class' => 'col-4 col-md-3 col-lg-2 mb-2'],
             ]);
         } else {
@@ -115,6 +119,14 @@ final class SignatureBoxType extends AbstractType
                 'attr' => ['min' => 0, 'step' => '0.01', 'class' => 'signature-box-y form-control form-control-sm'],
                 'row_attr' => ['class' => 'col mb-2'],
             ]);
+        if ($options['angle_enabled']) {
+            $builder->add('angle', NumberType::class, [
+                'label' => 'signature_box_type.angle.label',
+                'empty_data' => 0,
+                'attr' => ['min' => -180, 'max' => 180, 'step' => '0.1', 'class' => 'signature-box-angle form-control form-control-sm'],
+                'row_attr' => ['class' => 'col mb-2'],
+            ]);
+        }
     }
 
     /**
@@ -138,9 +150,15 @@ final class SignatureBoxType extends AbstractType
 
             /** @see ROADMAP.md "Page restriction" — limit which pages boxes can be placed on */
             'allowed_pages' => null,
+            /** When true, show the rotation angle field (degrees). When false, angle is not in the form and defaults to 0. */
+            'angle_enabled' => false,
+            /** Additional constraints on the whole box (SignatureBoxModel); e.g. Callback for custom validation */
+            'constraints' => [],
         ]);
 
         $resolver->setAllowedValues('name_mode', [self::NAME_MODE_INPUT, self::NAME_MODE_CHOICE]);
+        $resolver->setAllowedTypes('constraints', 'array');
+        $resolver->setAllowedTypes('angle_enabled', 'bool');
         $resolver->setAllowedTypes('name_choices', 'array');
         $resolver->setAllowedTypes('choice_placeholder', ['bool', 'string']);
         $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);

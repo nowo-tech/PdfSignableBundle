@@ -1,6 +1,6 @@
 # PdfSignable Bundle demos
 
-Dockerized demos (Symfony 7 and Symfony 8) to try the bundle. Nine demo pages cover no config, default/fixed_url/overridden config, URL as dropdown, limited boxes, same signer multiple locations, unique per name (array), and predefined boxes. Demos include **Web Profiler**, **Xdebug**, and **pnpm** for building the bundle assets.
+Dockerized demos (Symfony 7 and Symfony 8) to try the bundle. Sixteen demo pages cover: no config, default/fixed_url/overridden config, URL as dropdown, limited boxes, same signer multiple locations, unique per name (array), page restriction, sorted boxes, no-overlap, **allow-overlap**, **rotation** (enable_rotation), **defaults-by-name** (box_defaults_by_name), latest features (combined), and predefined boxes. Demos include **Web Profiler**, **Xdebug**, and **pnpm** for building the bundle assets.
 
 Screenshots (demo home and signature coordinates form) are in the [main README](../README.md#screenshots) and in [docs/img/](../docs/img/) (`demo-home.png`, `demo-signature-form.png`).
 

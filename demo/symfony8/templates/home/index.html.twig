@@ -117,7 +117,7 @@
             </div>
         </div>
     </div>
-    <div class="col-12 mt-2"><h6 class="text-muted">Roadmap: page restriction &amp; box order</h6></div>
+    <div class="col-12 mt-2"><h6 class="text-muted">Page &amp; box options</h6></div>
     <div class="col-md-6 col-lg-4">
         <div class="card h-100">
             <div class="card-body">
@@ -152,6 +152,56 @@
                     <li>Validation error on submit if two boxes intersect</li>
                 </ul>
                 <a href="{{ path('app_signature_no_overlap') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Allow overlapping boxes</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>prevent_box_overlap: false</code> — overlap allowed on the same page</li>
+                    <li>No frontend revert; no validation error</li>
+                    <li>Use case: testing or intentional overlapping layout</li>
+                </ul>
+                <a href="{{ path('app_signature_allow_overlap') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Rotation (angle + rotate handle)</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>enable_rotation: true</code> — angle field per box</li>
+                    <li>Viewer shows rotate handle above each overlay; drag to rotate</li>
+                </ul>
+                <a href="{{ path('app_signature_rotation') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Default values per box name</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>box_defaults_by_name</code> — width, height, x, y, angle per name</li>
+                    <li>Selecting a name in the form fills those fields automatically</li>
+                </ul>
+                <a href="{{ path('app_signature_defaults_by_name') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 mt-2"><h6 class="text-muted">Latest features (combined)</h6></div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-primary">
+            <div class="card-body">
+                <h6 class="card-title">Page restriction + sort + no overlap</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>allowed_pages: [1]</code>, <code>sort_boxes: true</code>, <code>prevent_box_overlap: true</code></li>
+                    <li>Single demo combining the latest form options</li>
+                </ul>
+                <a href="{{ path('app_signature_latest_features') }}" class="btn btn-sm btn-primary mt-2">Open</a>
             </div>
         </div>
     </div>

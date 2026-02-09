@@ -192,6 +192,11 @@ final class SignatureCoordinatesType extends AbstractType
         if (isset($options['allowed_pages'])) {
             $entryOptions['allowed_pages'] = $options['allowed_pages'];
         }
+        $entryOptions['angle_enabled'] = $options['enable_rotation'];
+        $boxConstraints = $options['box_constraints'] ?? [];
+        if ($boxConstraints !== []) {
+            $entryOptions['constraints'] = array_merge($entryOptions['constraints'] ?? [], $boxConstraints);
+        }
         if ($options['sort_boxes']) {
             $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event): void {
                 $data = $event->getData();
@@ -273,10 +278,13 @@ final class SignatureCoordinatesType extends AbstractType
                 }
                 $list = [];
                 foreach ($boxes as $index => $box) {
-                    if (!$box instanceof SignatureBoxModel) {
+                    $model = $box instanceof SignatureBoxModel
+                        ? $box
+                        : self::boxFromArray(is_array($box) ? $box : []);
+                    if ($model === null) {
                         continue;
                     }
-                    $list[] = ['index' => $index, 'box' => $box];
+                    $list[] = ['index' => $index, 'box' => $model];
                 }
                 for ($i = 0; $i < count($list); $i++) {
                     for ($j = $i + 1; $j < count($list); $j++) {
@@ -294,9 +302,10 @@ final class SignatureCoordinatesType extends AbstractType
                 }
             });
         }
-        if ($collectionConstraints !== []) {
-            $collectionOptions['constraints'] = $collectionConstraints;
-        }
+        $collectionOptions['constraints'] = array_merge(
+            $collectionConstraints,
+            $options['collection_constraints'] ?? []
+        );
         $builder->add('signatureBoxes', CollectionType::class, $collectionOptions);
     }
 
@@ -326,6 +335,8 @@ final class SignatureCoordinatesType extends AbstractType
             'max_entries' => $options['max_entries'],
             'allowed_pages' => $options['allowed_pages'] ?? null,
             'prevent_box_overlap' => $options['prevent_box_overlap'],
+            'box_defaults_by_name' => $options['box_defaults_by_name'] ?? [],
+            'enable_rotation' => $options['enable_rotation'],
         ];
     }
 
@@ -376,6 +387,14 @@ final class SignatureCoordinatesType extends AbstractType
             'sort_boxes' => false,
             /** Prevent overlapping boxes on the same page (validated on submit and enforced in frontend) */
             'prevent_box_overlap' => true,
+            /** @see ROADMAP.md "Customisable constraints" — additional constraints on the collection */
+            'collection_constraints' => [],
+            /** @see ROADMAP.md "Customisable constraints" — additional constraints on each box (SignatureBoxModel) */
+            'box_constraints' => [],
+            /** @see ROADMAP.md "Default values per box name" — default width, height, x, y, angle per name */
+            'box_defaults_by_name' => [],
+            /** When true, each box has a rotation angle field and the viewer shows a rotate handle. When false, angle is not shown and defaults to 0. */
+            'enable_rotation' => false,
         ]);
 
         $resolver->setAllowedTypes('pdf_url', ['string', 'null']);
@@ -415,6 +434,36 @@ final class SignatureCoordinatesType extends AbstractType
         });
         $resolver->setAllowedTypes('sort_boxes', 'bool');
         $resolver->setAllowedTypes('prevent_box_overlap', 'bool');
+        $resolver->setAllowedTypes('collection_constraints', 'array');
+        $resolver->setAllowedTypes('box_constraints', 'array');
+        $resolver->setAllowedTypes('box_defaults_by_name', 'array');
+        $resolver->setAllowedTypes('enable_rotation', 'bool');
+    }
+
+    /**
+     * Builds a SignatureBoxModel from a raw array (e.g. submitted form data) for overlap validation.
+     * Returns null if the array does not contain the required keys.
+     *
+     * @param array<string, mixed> $arr
+     */
+    private static function boxFromArray(array $arr): ?SignatureBoxModel
+    {
+        if (!isset($arr['page'], $arr['x'], $arr['y'], $arr['width'], $arr['height'])) {
+            return null;
+        }
+        $box = new SignatureBoxModel();
+        $box->setPage((int) $arr['page']);
+        $box->setX((float) $arr['x']);
+        $box->setY((float) $arr['y']);
+        $box->setWidth((float) $arr['width']);
+        $box->setHeight((float) $arr['height']);
+        if (isset($arr['name'])) {
+            $box->setName((string) $arr['name']);
+        }
+        if (array_key_exists('angle', $arr)) {
+            $box->setAngle((float) $arr['angle']);
+        }
+        return $box;
     }
 
     /**

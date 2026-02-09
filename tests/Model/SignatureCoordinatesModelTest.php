@@ -71,4 +71,32 @@ final class SignatureCoordinatesModelTest extends TestCase
         self::assertSame('a', $model->getSignatureBoxes()[0]->getName());
         self::assertSame('b', $model->getSignatureBoxes()[1]->getName());
     }
+
+    /**
+     * Asserts toArray and fromArray round-trip.
+     */
+    public function testToArrayAndFromArray(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $model->setUnit(SignatureCoordinatesModel::UNIT_MM);
+        $model->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT);
+        $model->addSignatureBox(
+            (new SignatureBoxModel())->setName('s1')->setPage(1)->setX(10)->setY(20)->setWidth(150)->setHeight(40)->setAngle(0)
+        );
+        $model->addSignatureBox(
+            (new SignatureBoxModel())->setName('s2')->setPage(2)->setX(50)->setY(60)->setWidth(120)->setHeight(30)->setAngle(5.0)
+        );
+        $arr = $model->toArray();
+        self::assertSame('https://example.com/doc.pdf', $arr['pdf_url']);
+        self::assertSame('mm', $arr['unit']);
+        self::assertSame('bottom_left', $arr['origin']);
+        self::assertCount(2, $arr['signature_boxes']);
+        self::assertSame('s1', $arr['signature_boxes'][0]['name']);
+        self::assertSame(5.0, $arr['signature_boxes'][1]['angle']);
+        $restored = SignatureCoordinatesModel::fromArray($arr);
+        self::assertSame($model->getPdfUrl(), $restored->getPdfUrl());
+        self::assertCount(2, $restored->getSignatureBoxes());
+        self::assertSame($model->getSignatureBoxes()[1]->getAngle(), $restored->getSignatureBoxes()[1]->getAngle());
+    }
 }

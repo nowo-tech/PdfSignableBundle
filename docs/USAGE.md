@@ -5,7 +5,7 @@
 The bundle provides a **Form Type** (`SignatureCoordinatesType`) that:
 
 1. **Renders the view**: when you render the field with `form_widget(form.signatureCoordinates)` (or `form_widget(form)` when the form root is the type), the PDF viewer, unit/origin selector and signature boxes list are shown (the bundle form theme defines the full widget).
-2. **Submits coordinates**: on form submit you get a `SignatureCoordinatesModel` with `pdfUrl`, `unit`, `origin` and `signatureBoxes` (each `SignatureBoxModel` with `name`, `page`, `x`, `y`, `width`, `height`).
+2. **Submits coordinates**: on form submit you get a `SignatureCoordinatesModel` with `pdfUrl`, `unit`, `origin` and `signatureBoxes` (each `SignatureBoxModel` with `name`, `page`, `x`, `y`, `width`, `height`, `angle`).
 
 The models (`SignatureCoordinatesModel`, `SignatureBoxModel`) define the fields; the Type and form theme handle the view and binding.
 
@@ -16,7 +16,7 @@ The bundle exposes a page at the configured route (default `/pdf-signable`) with
 1. **PDF URL field**: enter the document URL. If the PDF is from another origin, the bundle uses its proxy to load it.
 2. **Units**: mm, cm, pt, px, in for coordinates.
 3. **Origin**: reference point (top/bottom, left/right) for X and Y.
-4. **Signature boxes**: collection of boxes, each with name, page, width, height, X, Y.
+4. **Signature boxes**: collection of boxes, each with name, page, width, height, X, Y, and optional rotation angle (°).
 
 ## Viewer interaction
 
@@ -26,7 +26,7 @@ The bundle exposes a page at the configured route (default `/pdf-signable`) with
 - **Resize**: drag the box corner handles.
 - **Delete**: "Delete" button on each box row in the list.
 
-Coordinates stay in sync between the form and the PDF overlays. On submit the form is sent as a normal POST. On success the server redirects and shows a flash message (including the saved coordinates); on validation errors the form is re-rendered with the submitted data and error messages. You receive the model with `pdfUrl`, `unit`, `origin` and the list of `signatureBoxes` (each with `name`, `page`, `x`, `y`, `width`, `height`).
+Coordinates stay in sync between the form and the PDF overlays. On submit the form is sent as a normal POST. On success the server redirects and can show a flash message with the saved coordinates (e.g. unit, origin, and a list of boxes); on validation errors the form is re-rendered with the submitted data and error messages. You receive the model with `pdfUrl`, `unit`, `origin` and the list of `signatureBoxes` (each with `name`, `page`, `x`, `y`, `width`, `height`, `angle`).
 
 ## Using the form type in your application
 
@@ -134,6 +134,10 @@ If `config` is set, the named config is merged first; any option you pass when c
 | `allowed_pages`          | int[] \| null | `null` | When set, the page field becomes a dropdown and boxes can only be placed on these pages (e.g. `[1]` for first page only). Passed to each box entry. |
 | `sort_boxes`             | bool   | `false` | When `true`, on submit the boxes collection is sorted by page, then Y, then X before binding. Useful for deterministic export order. |
 | `prevent_box_overlap`    | bool   | `true`  | When `true`, overlapping boxes on the **same page** are rejected: validation fails on submit and the frontend blocks drag/resize that would cause overlap (reverts and shows a message). Set to `false` to allow overlap. |
+| `collection_constraints` | array  | `[]`    | Additional Symfony constraints on the **collection** (e.g. custom `Callback`). Merged with built-in constraints (count, unique names, overlap). |
+| `box_constraints`        | array  | `[]`    | Additional constraints on each **SignatureBoxModel** (e.g. `Callback` receiving the box). Passed to each entry via `signature_box_options`. |
+| `box_defaults_by_name`   | array  | `[]`    | Map of box name to default dimensions: `['signer_1' => ['width' => 150, 'height' => 40, 'x' => 0, 'y' => 0, 'angle' => 0], ...]`. When the user selects a name, the frontend fills in those fields. |
+| `enable_rotation`        | bool   | `false` | When `true`, each box has an **angle** field (rotation in degrees) and the viewer shows a **rotate handle** above each overlay. When `false`, the angle field is not rendered and boxes are not rotatable (angle is treated as 0). |
 
 Predefined elements: set the model’s `signatureBoxes` (e.g. with existing `SignatureBoxModel` instances) before creating the form; the collection will render those entries. The same `SignatureCoordinatesModel` / array structure is returned on submit.
 
@@ -174,7 +178,7 @@ When used as the collection entry type, **SignatureBoxType** accepts options (vi
 | `choice_placeholder`| `false` \| string | `false` | When `name_mode: 'choice'`, empty option label. Use `false` (default) for **no empty option** (no "Select role"); use a string to show an explicit "Choose…" option. |
 | `allowed_pages`     | int[] \| null | `null` | When set (e.g. `[1, 2, 3]`), the page field is rendered as a dropdown with only these pages; validation ensures the submitted page is in the list. Use for single-page or limited-page contracts. Can be set on **SignatureCoordinatesType** (and passed to all boxes) or per box via `signature_box_options`. |
 
-The submitted data is still the same: each box has `name`, `page`, `x`, `y`, `width`, `height` in the returned array.
+The submitted data is still the same: each box has `name`, `page`, `x`, `y`, `width`, `height`, `angle` in the returned array.
 
 ### Example: fixed URL and restricted units
 
@@ -250,6 +254,71 @@ $builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
 ]);
 ```
 
+### Export / import coordinates
+
+The models can be exported to or imported from a plain array (e.g. for JSON/YAML persistence or APIs):
+
+- **`SignatureCoordinatesModel::toArray()`** — returns `['pdf_url' => ..., 'unit' => ..., 'origin' => ..., 'signature_boxes' => [...]]`.
+- **`SignatureCoordinatesModel::fromArray(array $data)`** — creates a new model from that structure.
+- **`SignatureBoxModel::toArray()`** — returns `['name' => ..., 'page' => ..., 'x' => ..., 'y' => ..., 'width' => ..., 'height' => ..., 'angle' => ...]`.
+- **`SignatureBoxModel::fromArray(array $data)`** — creates a new box from that structure.
+
+Example: export to JSON and import from a file:
+
+```php
+$model = $form->getData(); // SignatureCoordinatesModel
+$array = $model->toArray();
+$json = json_encode($array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+file_put_contents('coordinates.json', $json);
+
+// Later: import
+$data = json_decode(file_get_contents('coordinates.json'), true);
+$model = SignatureCoordinatesModel::fromArray($data);
+```
+
+### Example: default values per box name
+
+When the user selects a box name (e.g. from a dropdown), pre-fill width, height, position and angle from a map:
+
+```php
+$builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
+    'signature_box_options' => [
+        'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+        'name_choices' => ['Signer 1' => 'signer_1', 'Witness' => 'witness'],
+    ],
+    'box_defaults_by_name' => [
+        'signer_1' => ['width' => 150, 'height' => 40, 'x' => 0, 'y' => 0, 'angle' => 0],
+        'witness'  => ['width' => 120, 'height' => 30, 'x' => 0, 'y' => 0, 'angle' => 0],
+    ],
+]);
+```
+
+### Example: custom constraints
+
+Add your own validation on the collection or on each box:
+
+```php
+use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+
+$builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
+    'collection_constraints' => [
+        new Callback(function (mixed $boxes, ExecutionContextInterface $context): void {
+            if (!is_array($boxes) || count($boxes) < 2) return;
+            // e.g. custom rule across boxes
+        }),
+    ],
+    'box_constraints' => [
+        new Callback(function (SignatureBoxModel $box, ExecutionContextInterface $context): void {
+            if ($box->getWidth() > 500) {
+                $context->buildViolation('Box too wide.')->addViolation();
+            }
+        }),
+    ],
+]);
+```
+
 ### Example: limited boxes and name as selector
 
 ```php
@@ -285,12 +354,12 @@ $form = $this->createForm(SignatureCoordinatesType::class, $model, [
 
 ## Reusable SignatureBoxType layout
 
-The bundle provides a default Twig layout for **SignatureBoxType** (each box: name, page, width, height, x, y) that you can reuse or override like any bundle theme.
+The bundle provides a default Twig layout for **SignatureBoxType** (each box: name, page, width, height, x, y, angle) that you can reuse or override like any bundle theme.
 
 ### Default usage
 
 - The layout is in the bundle form theme (`@NowoPdfSignable/form/theme.html.twig`), which is registered automatically.
-- The concrete fragment is at `@NowoPdfSignable/form/_signature_box_type_widget.html.twig`: two rows (name + page; width, height, x, y) with the Bootstrap classes the viewer JS expects (`.signature-box-name`, `.signature-box-page`, etc.).
+- The concrete fragment is at `@NowoPdfSignable/form/_signature_box_type_widget.html.twig`: two rows (name + page; width, height, x, y, angle) with the Bootstrap classes the viewer JS expects (`.signature-box-name`, `.signature-box-page`, `.signature-box-angle`, etc.). The overlay is drawn with CSS `transform: rotate(angle deg)`.
 
 ### Reusing the fragment
 
@@ -349,7 +418,7 @@ Important: keep the CSS classes the viewer JS uses (`.signature-box-name`, `.sig
 
 ## Form submit behavior
 
-The bundle’s JavaScript runs on submit to re-index the collection field names (so the server receives consecutive indices `[0]`, `[1]`, …) and then submits the form normally (full page POST). The server handles the request; on success it redirects and can show a flash message with the saved coordinates; on validation errors it re-renders the form with the submitted data and field errors. The form theme and `pdf-signable.js` must be loaded on the page where the form is rendered.
+The bundle’s JavaScript runs on submit to re-index the collection field names (so the server receives consecutive indices `[0]`, `[1]`, …) and then submits the form normally (full page POST). The server handles the request; on success it redirects and can show a flash message with the saved coordinates (e.g. unit, origin, and list of boxes); on validation errors it re-renders the form with the submitted data and field errors. The form theme and `pdf-signable.js` must be loaded on the page where the form is rendered.
 
 ## PDF proxy
 

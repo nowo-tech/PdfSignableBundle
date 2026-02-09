@@ -6,8 +6,8 @@ This document lists **possible improvements** and ideas for future versions of t
 
 ## Form and coordinates functionality
 
-- **Default values per box name**  
-  Allow config (or form type options) to define default size/position per `name` (e.g. `signer_1` always 150×40, `witness` 120×30).
+- **Default values per box name** *(implemented)*  
+  Form option `box_defaults_by_name`: map of box name to default `width`, `height`, `x`, `y`, `angle`. When the user selects a name (dropdown or input), the frontend fills in those fields. See [USAGE](USAGE.md).
 
 - **Page restriction** *(implemented)*  
   Option to limit which pages boxes can be placed on (e.g. page 1 only, or range 1–3) via `allowed_pages` or `page_choices`. Implemented as `allowed_pages` (form option and `SignatureBoxType`); see [USAGE](USAGE.md).
@@ -15,14 +15,14 @@ This document lists **possible improvements** and ideas for future versions of t
 - **Box order** *(implemented)*  
   Option to sort the collection by page and then by position (Y/X) when serialising or displaying in the overlay. Implemented as `sort_boxes` (form option; sorts on submit by page, then Y, then X); see [USAGE](USAGE.md).
 
-- **Rotate coordinates**  
-  Support a rotation angle per signature box (e.g. in degrees). Model and form would store the angle; in the viewer, allow rotating each box (drag handle or angle input) so signatures can be placed at an angle on the PDF.
+- **Rotate coordinates** *(implemented)*  
+  Each signature box has an `angle` (degrees). Model and form store it; the viewer overlay uses CSS `transform: rotate(angle deg)`. Rotation is **optional**: set `enable_rotation: true` on `SignatureCoordinatesType` to show the angle field and a rotate handle in the viewer; when `false` (default), the angle field is omitted and boxes are not rotatable. See [USAGE](USAGE.md).
 
-- **Export/import coordinates**  
-  Helpers or standard format (JSON/YAML) to export the coordinates model and import it into another form or environment.
+- **Export/import coordinates** *(implemented)*  
+  `SignatureCoordinatesModel::toArray()` and `::fromArray(array)`; `SignatureBoxModel::toArray()` and `::fromArray(array)`. Use for JSON/YAML export or import. See [USAGE](USAGE.md#export--import-coordinates).
 
-- **Customisable constraints**  
-  Allow injecting additional constraints on the collection or each box (e.g. validate that boxes do not overlap). **Non-overlapping boxes** is implemented as `prevent_box_overlap` (form option, default `true`): validation on submit plus **frontend enforcement** (drag/resize that would overlap is reverted and a message is shown); see [USAGE](USAGE.md).
+- **Customisable constraints** *(implemented)*  
+  Form options `collection_constraints` (array of constraints on the boxes collection) and `box_constraints` (array of constraints on each `SignatureBoxModel`). **Non-overlapping boxes** is built-in as `prevent_box_overlap` (default `true`); see [USAGE](USAGE.md).
 
 ---
 
@@ -68,6 +68,8 @@ This document lists **possible improvements** and ideas for future versions of t
 ---
 
 ## Frontend and PDF.js
+
+Key idea: **Multiple views (thumbnails)** — thumbnail panel for pages to jump quickly and see which page each box is on.
 
 - **Password-protected PDF support**  
   Allow passing a password (or flow to prompt for it) when the PDF is protected.

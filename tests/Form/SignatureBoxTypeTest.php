@@ -133,4 +133,30 @@ final class SignatureBoxTypeTest extends TypeTestCase
         $choices = array_filter($constraints ?? [], static fn ($c) => $c instanceof Choice);
         self::assertCount(1, $choices);
     }
+
+    public function testAngleEnabledFalseOmitsAngleField(): void
+    {
+        $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel());
+        self::assertFalse($form->has('angle'));
+    }
+
+    public function testAngleEnabledTrueAddsAngleFieldAndSubmits(): void
+    {
+        $model = new SignatureBoxModel();
+        $form = $this->factory->create(SignatureBoxType::class, $model, [
+            'angle_enabled' => true,
+        ]);
+        self::assertTrue($form->has('angle'));
+        $form->submit([
+            'name' => 'signer_1',
+            'page' => 1,
+            'width' => 150.0,
+            'height' => 40.0,
+            'x' => 50.0,
+            'y' => 100.0,
+            'angle' => -15.5,
+        ]);
+        self::assertTrue($form->isSynchronized());
+        self::assertSame(-15.5, $model->getAngle());
+    }
 }

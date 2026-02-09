@@ -129,4 +129,39 @@ class SignatureCoordinatesModel
         $this->signatureBoxes[] = $box;
         return $this;
     }
+
+    /**
+     * Exports the coordinates model to an array (e.g. for JSON/YAML export).
+     *
+     * @return array{pdf_url: string|null, unit: string, origin: string, signature_boxes: array<int, array{name: string, page: int, x: float, y: float, width: float, height: float, angle: float}>}
+     */
+    public function toArray(): array
+    {
+        return [
+            'pdf_url' => $this->pdfUrl,
+            'unit' => $this->unit,
+            'origin' => $this->origin,
+            'signature_boxes' => array_map(static fn (SignatureBoxModel $box) => $box->toArray(), $this->signatureBoxes),
+        ];
+    }
+
+    /**
+     * Creates a coordinates model from an array (e.g. from JSON/YAML import).
+     *
+     * @param array{pdf_url?: string|null, unit?: string, origin?: string, signature_boxes?: array<int, array>} $data
+     */
+    public static function fromArray(array $data): self
+    {
+        $model = new self();
+        $model->setPdfUrl($data['pdf_url'] ?? null);
+        $model->setUnit((string) ($data['unit'] ?? self::UNIT_MM));
+        $model->setOrigin((string) ($data['origin'] ?? self::ORIGIN_BOTTOM_LEFT));
+        $boxes = $data['signature_boxes'] ?? [];
+        foreach ($boxes as $boxData) {
+            if (is_array($boxData)) {
+                $model->addSignatureBox(SignatureBoxModel::fromArray($boxData));
+            }
+        }
+        return $model;
+    }
 }

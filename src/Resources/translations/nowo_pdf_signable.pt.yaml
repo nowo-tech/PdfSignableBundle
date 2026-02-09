@@ -55,6 +55,8 @@ signature_box_type:
     label: 'X'
   y:
     label: 'Y'
+  angle:
+    label: 'Rotação (°)'
 
 flash:
   save:

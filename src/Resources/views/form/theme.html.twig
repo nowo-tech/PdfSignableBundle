@@ -77,11 +77,13 @@
     .nowo-pdf-signable-widget .signature-box-overlay .resize-handle.ne { top: -4px; right: -4px; cursor: nesw-resize; }
     .nowo-pdf-signable-widget .signature-box-overlay .resize-handle.sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
     .nowo-pdf-signable-widget .signature-box-overlay .resize-handle.se { bottom: -4px; right: -4px; cursor: nwse-resize; }
+    .nowo-pdf-signable-widget .signature-box-overlay .rotate-handle { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: var(--box-color, rgba(13, 110, 253, 0.9)); border: 1px solid #fff; border-radius: 50%; pointer-events: auto; cursor: grab; z-index: 2; }
+    .nowo-pdf-signable-widget .signature-box-overlay .rotate-handle:active { cursor: grabbing; }
     .nowo-pdf-signable-widget .signature-box-item { border: 1px solid #dee2e6; padding: 1rem; margin-bottom: 0.75rem; border-radius: 0.375rem; background: #fff; }
     .nowo-pdf-signable-widget #signature-boxes-list { max-height: 50vh; overflow-y: auto; }
   </style>
   {# Main layout: 7/12 PDF viewer, 5/12 boxes list #}
-  <div class="row g-4 nowo-pdf-signable-widget" data-prevent-box-overlap="{{ opts.prevent_box_overlap|default(true) ? '1' : '0' }}">
+  <div class="row g-4 nowo-pdf-signable-widget" data-prevent-box-overlap="{{ opts.prevent_box_overlap|default(true) ? '1' : '0' }}" data-box-defaults-by-name="{{ (opts.box_defaults_by_name|default({}))|json_encode|e('html_attr') }}" data-enable-rotation="{{ opts.enable_rotation|default(false) ? '1' : '0' }}">
     {# PDF viewer card #}
     <div class="col-lg-7">
       <div class="card h-100">

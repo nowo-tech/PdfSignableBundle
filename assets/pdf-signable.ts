@@ -214,6 +214,14 @@ function run(): void {
     return;
   }
   const preventBoxOverlap = widget?.dataset.preventBoxOverlap === '1';
+  const enableRotation = widget?.dataset.enableRotation === '1';
+  let boxDefaultsByName: Record<string, { width?: number; height?: number; x?: number; y?: number; angle?: number }> = {};
+  try {
+    const raw = widget?.dataset.boxDefaultsByName ?? '{}';
+    boxDefaultsByName = typeof raw === 'string' ? (JSON.parse(raw) as Record<string, { width?: number; height?: number; x?: number; y?: number; angle?: number }>) : {};
+  } catch {
+    boxDefaultsByName = {};
+  }
 
   console.log('[PdfSignable] Initialized');
 
@@ -485,6 +493,8 @@ function run(): void {
       const hVal = parseFloat(
         item.querySelector<HTMLInputElement>('.signature-box-height')?.value ?? '40'
       );
+      const angleEl = item.querySelector<HTMLInputElement>('.signature-box-angle');
+      const angleVal = enableRotation && angleEl ? parseFloat(angleEl.value ?? '0') : 0;
       const nameEl = item.querySelector<HTMLInputElement | HTMLSelectElement>('.signature-box-name');
       const name = (nameEl?.value ?? '').trim();
       const nameKey = name === '' ? '__empty__' : name;
@@ -524,8 +534,14 @@ function run(): void {
       overlay.style.backgroundColor = colors.background;
       overlay.style.color = colors.color;
       overlay.style.setProperty('--box-color', colors.handle);
+      overlay.style.transformOrigin = '50% 50%';
+      if (enableRotation) {
+        overlay.style.transform = `rotate(${angleVal}deg)`;
+      }
+      const rotateHandleHtml = enableRotation ? '<span class="rotate-handle" title="Rotate"></span>' : '';
       overlay.innerHTML =
         (overlayLabel ? '<span class="overlay-label">' + escapeHtml(overlayLabel) + '</span>' : '') +
+        rotateHandleHtml +
         '<span class="resize-handle nw" data-handle="nw"></span>' +
         '<span class="resize-handle ne" data-handle="ne"></span>' +
         '<span class="resize-handle sw" data-handle="sw"></span>' +
@@ -638,6 +654,8 @@ function run(): void {
       else if (f === 'width') inp.value = String(round(ptToUnit(wPt, unit)));
       else if (f === 'height') inp.value = String(round(ptToUnit(hPt, unit)));
     }
+    const angleInp = div.querySelector<HTMLInputElement>('.signature-box-angle');
+    if (angleInp) angleInp.value = '0';
     if (nameInput) nameInput.value = strings.default_box_name;
 
     boxesList.appendChild(div);
@@ -688,7 +706,26 @@ function run(): void {
   }
 
   boxesList.addEventListener('input', updateOverlays);
-  boxesList.addEventListener('change', updateOverlays);
+  boxesList.addEventListener('change', (e) => {
+    const target = (e.target as HTMLElement).closest('.signature-box-item');
+    const nameEl = target?.querySelector<HTMLInputElement | HTMLSelectElement>('.signature-box-name');
+    if (nameEl && e.target === nameEl && Object.keys(boxDefaultsByName).length > 0) {
+      const name = (nameEl.value ?? '').trim();
+      const def = name ? boxDefaultsByName[name] : null;
+      if (def) {
+        const set = (cls: string, val: number | undefined): void => {
+          const inp = target?.querySelector<HTMLInputElement>('.signature-box-' + cls);
+          if (inp && val !== undefined) inp.value = String(val);
+        };
+        set('width', def.width);
+        set('height', def.height);
+        set('x', def.x);
+        set('y', def.y);
+        set('angle', def.angle);
+      }
+    }
+    updateOverlays();
+  });
   if (originSelector) originSelector.addEventListener('change', updateOverlays);
 
   boxesList.addEventListener('click', (e) => {
@@ -865,16 +902,66 @@ function run(): void {
   }
   let dragState: DragState | null = null;
 
+  interface RotateState {
+    overlay: HTMLElement;
+    item: HTMLElement;
+    centerX: number;
+    centerY: number;
+    startAngle: number; // degrees from input
+    startMouseAngle: number; // radians atan2(dy, dx) at mousedown
+  }
+  let rotateState: RotateState | null = null;
+
+  function onRotateMove(e: MouseEvent): void {
+    if (!rotateState) return;
+    const { overlay, item, centerX, centerY, startAngle, startMouseAngle } = rotateState;
+    const currentMouseAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+    let deltaDeg = ((currentMouseAngle - startMouseAngle) * 180) / Math.PI;
+    let newAngle = startAngle + deltaDeg;
+    while (newAngle > 180) newAngle -= 360;
+    while (newAngle < -180) newAngle += 360;
+    const angleInp = item.querySelector<HTMLInputElement>('.signature-box-angle');
+    if (angleInp) angleInp.value = String(Math.round(newAngle * 100) / 100);
+    overlay.style.transform = `rotate(${newAngle}deg)`;
+  }
+
+  function onRotateEnd(): void {
+    if (!rotateState) return;
+    document.removeEventListener('mousemove', onRotateMove);
+    document.removeEventListener('mouseup', onRotateEnd);
+    rotateState = null;
+  }
+
   /**
    * Starts a drag (move or resize) when the user mousedowns on an overlay or resize handle.
+   * If mousedown is on .rotate-handle and rotation is enabled, starts rotate drag instead.
    * Attaches mousemove and mouseup listeners.
    */
   function onOverlayMouseDown(e: MouseEvent): void {
-    const handleEl = (e.target as HTMLElement).closest('.resize-handle');
     const overlay = (e.target as HTMLElement).closest('.signature-box-overlay') as HTMLElement | null;
     if (!overlay?.dataset?.boxIndex) return;
     e.preventDefault();
     e.stopPropagation();
+
+    const rotateHandle = (e.target as HTMLElement).closest('.rotate-handle');
+    if (enableRotation && rotateHandle) {
+      const boxIndex = parseInt(overlay.dataset.boxIndex, 10);
+      const item = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item')[boxIndex];
+      if (!item) return;
+      const angleInp = item.querySelector<HTMLInputElement>('.signature-box-angle');
+      if (!angleInp) return;
+      const rect = overlay.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const startAngle = parseFloat(angleInp.value) || 0;
+      const startMouseAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+      rotateState = { overlay, item, centerX, centerY, startAngle, startMouseAngle };
+      document.addEventListener('mousemove', onRotateMove);
+      document.addEventListener('mouseup', onRotateEnd);
+      return;
+    }
+
+    const handleEl = (e.target as HTMLElement).closest('.resize-handle');
     const boxIndex = parseInt(overlay.dataset.boxIndex, 10);
     const item = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item')[
       boxIndex

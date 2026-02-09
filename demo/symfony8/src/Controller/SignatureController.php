@@ -208,6 +208,77 @@ class SignatureController extends AbstractController
     }
 
     /**
+     * Rotation enabled: each box has an angle field and the viewer shows a rotate handle.
+     */
+    #[Route('/demo-signature/rotation', name: 'app_signature_rotation', methods: ['GET', 'POST'])]
+    public function rotation(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>enable_rotation: true</code> — each box has an <strong>angle</strong> field (degrees)</li><li>Viewer shows a <strong>rotate handle</strong> above each overlay; drag to rotate</li><li>Use case: tilted signature boxes or stamps</li></ul>';
+        return $this->signaturePage($request, 'Rotation (enable_rotation)', [
+            'enable_rotation' => true,
+            'min_entries' => 0,
+            'max_entries' => 6,
+        ], $explanation);
+    }
+
+    /**
+     * Default dimensions per box name: when the user selects a name, width/height/x/y/angle are filled from the map.
+     */
+    #[Route('/demo-signature/defaults-by-name', name: 'app_signature_defaults_by_name', methods: ['GET', 'POST'])]
+    public function defaultsByName(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>box_defaults_by_name</code> — map of name to default <code>width</code>, <code>height</code>, <code>x</code>, <code>y</code>, <code>angle</code></li><li>When the user selects a name (dropdown or input), the frontend fills in those fields</li><li><code>name_mode: choice</code> with Signer 1, Signer 2, Witness; each has different default size/position</li></ul>';
+        return $this->signaturePage($request, 'Default values per box name', [
+            'box_defaults_by_name' => [
+                'signer_1' => ['width' => 180, 'height' => 45, 'x' => 80, 'y' => 700, 'angle' => 0],
+                'signer_2' => ['width' => 150, 'height' => 40, 'x' => 80, 'y' => 650, 'angle' => 0],
+                'witness' => ['width' => 120, 'height' => 35, 'x' => 400, 'y' => 700, 'angle' => 0],
+            ],
+            'signature_box_options' => [
+                'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+                'name_choices' => [
+                    'Signer 1' => 'signer_1',
+                    'Signer 2' => 'signer_2',
+                    'Witness' => 'witness',
+                ],
+            ],
+            'unit_default' => SignatureCoordinatesModel::UNIT_PT,
+            'min_entries' => 0,
+            'max_entries' => 6,
+        ], $explanation);
+    }
+
+    /**
+     * Overlap allowed: prevent_box_overlap false — boxes on the same page may overlap (e.g. for testing or special layouts).
+     */
+    #[Route('/demo-signature/allow-overlap', name: 'app_signature_allow_overlap', methods: ['GET', 'POST'])]
+    public function allowOverlap(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>prevent_box_overlap: false</code> — overlapping boxes on the same page are <strong>allowed</strong></li><li>No frontend revert; no validation error on submit</li><li>Use case: testing, or layouts where overlap is intentional</li></ul>';
+        return $this->signaturePage($request, 'Allow overlapping boxes', [
+            'prevent_box_overlap' => false,
+            'min_entries' => 0,
+            'max_entries' => 6,
+        ], $explanation);
+    }
+
+    /**
+     * Latest features combined: page restriction, sorted boxes, no overlap (single demo for all).
+     */
+    #[Route('/demo-signature/latest-features', name: 'app_signature_latest_features', methods: ['GET', 'POST'])]
+    public function latestFeatures(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>allowed_pages: [1]</code> — boxes only on page 1</li><li><code>sort_boxes: true</code> — saved order by page, Y, X</li><li><code>prevent_box_overlap: true</code> — no overlapping; frontend reverts invalid drag/resize</li><li>Combined demo for the latest form options</li></ul>';
+        return $this->signaturePage($request, 'Latest features (page restriction + sort + no overlap)', [
+            'allowed_pages' => [1],
+            'sort_boxes' => true,
+            'prevent_box_overlap' => true,
+            'min_entries' => 0,
+            'max_entries' => 5,
+        ], $explanation);
+    }
+
+    /**
      * Predefined boxes demo: model pre-filled with two boxes, fixed URL, max 5 boxes.
      */
     #[Route('/demo-signature/predefined', name: 'app_signature_predefined', methods: ['GET', 'POST'])]
@@ -300,9 +371,8 @@ class SignatureController extends AbstractController
                     ]);
                 }
                 $coords = $model->getSignatureCoordinates();
-                $count = count($coords->getSignatureBoxes());
-                $this->addFlash('success', sprintf('Coordinates saved (demo). %d box(es).', $count));
-                return $this->redirectToRoute($request->attributes->get('_route'));
+                $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($coords));
+                // return $this->redirectToRoute($request->attributes->get('_route'));
             }
 
             if (!$form->isValid()) {
@@ -335,7 +405,7 @@ class SignatureController extends AbstractController
      *
      * @param SignatureCoordinatesModel $model The coordinates model
      *
-     * @return array<int, array{name: string, page: int, x: float, y: float, width: float, height: float}>
+     * @return array<int, array{name: string, page: int, x: float, y: float, width: float, height: float, angle: float}>
      */
     private function formatCoordinates(SignatureCoordinatesModel $model): array
     {
@@ -348,6 +418,7 @@ class SignatureController extends AbstractController
                 'y' => $box->getY(),
                 'width' => $box->getWidth(),
                 'height' => $box->getHeight(),
+                'angle' => $box->getAngle(),
             ];
         }
         return $out;
@@ -371,15 +442,17 @@ class SignatureController extends AbstractController
         }
         $items = array_map(static function (array $b) use ($unit): string {
             $name = htmlspecialchars($b['name'], ENT_QUOTES, 'UTF-8');
+            $angle = isset($b['angle']) ? (float) $b['angle'] : 0.0;
             return sprintf(
-                '<li><strong>%s</strong>: page %d, x=%s, y=%s, %s×%s (%s)</li>',
+                '<li><strong>%s</strong>: page %d, x=%s, y=%s, %s×%s (%s), angle=%s°</li>',
                 $name,
                 $b['page'],
                 (string) $b['x'],
                 (string) $b['y'],
                 (string) $b['width'],
                 (string) $b['height'],
-                $unit
+                $unit,
+                (string) $angle
             );
         }, $boxes);
         return $intro . ' <ul class="mb-0 mt-1">' . implode('', $items) . '</ul>';

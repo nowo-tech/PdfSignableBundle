@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- **Optional rotation** (`enable_rotation`): form option (default `false`). When `true`, each box has an **angle** field (degrees) and the viewer shows a **rotate handle** above each overlay; when `false`, the angle field is not rendered and boxes are not rotatable. See [USAGE](USAGE.md).
+- **Default values per box name** (`box_defaults_by_name`): form option to pre-fill width, height, x, y, angle when the user selects a name (dropdown or input). See [USAGE](USAGE.md) and [ROADMAP](ROADMAP.md).
+- **Demos**: added rotation, defaults-by-name, and allow-overlap demo pages (16 demo pages in total for Symfony 7 and 8).
 
 ---
 
@@ -21,11 +25,11 @@ _Nothing yet._
 - **Non-overlapping boxes** (`prevent_box_overlap`): default is now `true`; validation on submit and **frontend enforcement** (drag/resize that would overlap is reverted and a translated message is shown). Set to `false` to allow overlapping boxes.
 - **Translations**: added CA, CS, NL, PL, RU (12 languages total: EN, ES, FR, DE, IT, PT, TR, CA, CS, NL, PL, RU).
 - **Translation validation**: `scripts/validate-translations-yaml.php` now checks that all translation files have the same keys as the reference (English) file; `composer validate-translations` runs it.
-- **Demos**: added page restriction, sorted boxes, and no-overlap demos (12 demo pages in total for Symfony 7 and 8).
+- **Demos**: added page restriction, sorted boxes, no-overlap, and latest features (combined) demos (13 demo pages in total for Symfony 7 and 8).
 
 ### Changed
 
-- **SECURITY**: Proxy no longer leaks exception messages to the client on 502/errors; SSRF mitigation blocks private/local URLs before fetch. Flash messages in demos use plain text (no `|raw`). See [SECURITY](SECURITY.md).
+- **SECURITY**: Proxy no longer leaks exception messages to the client on 502/errors; SSRF mitigation blocks private/local URLs before fetch. Success flash in demos shows coordinates as an HTML list (user names escaped); see [SECURITY](SECURITY.md).
 - **`prevent_box_overlap`** default changed from `false` to `true`. If you relied on overlapping boxes being allowed by default, set `'prevent_box_overlap' => false` when adding the form type. See [UPGRADING](UPGRADING.md).
 
 ### Compatibility

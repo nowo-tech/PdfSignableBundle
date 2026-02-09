@@ -30,7 +30,7 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Optional proxy** — Load external PDFs without CORS; configurable via `nowo_pdf_signable.proxy_enabled`
 - ✅ **Named configurations** — Define presets in `nowo_pdf_signable.configs` and use `config: 'name'` when adding the form type
 - ✅ **URL modes** — Free-text URL input or dropdown choice (`url_mode: choice`, `url_choices`)
-- ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation
+- ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation; **page restriction** (`allowed_pages`); **sort order** on submit (`sort_boxes`); **no overlapping boxes** (`prevent_box_overlap`, default true, enforced in frontend and on submit)
 - ✅ **Validation** — Required box name (NotBlank); `unique_box_names` global (`true`/`false`) or per-name (array) to enforce unique box names
 - ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent` for integration
 - ✅ **Compatibility** — Symfony 6.1+, 7.x, 8.x and PHP 8.1+
@@ -102,7 +102,7 @@ See [CONFIGURATION.md](docs/CONFIGURATION.md) for detailed options and named con
 
 ## Demos
 
-Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. The [screenshots above](#screenshots) show the demo home (nine configuration cards) and the signature coordinates form (PDF viewer + boxes).
+Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. The [screenshots above](#screenshots) show the demo home (configuration cards) and the signature coordinates form (PDF viewer + boxes).
 
 ```bash
 cd demo
@@ -110,7 +110,7 @@ make run-symfony7   # → http://localhost:8000
 make run-symfony8   # → http://localhost:8001
 ```
 
-Nine demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), predefined boxes. See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
+Sixteen demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, rotation, defaults-by-name, latest features (combined), predefined boxes. See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
 
 ### Xdebug
 
