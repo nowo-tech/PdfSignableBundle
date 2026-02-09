@@ -8,11 +8,11 @@ This document lists **possible improvements** and ideas for future versions of t
 
 The bundle today focuses on **defining where** signature boxes go (coordinates). The ideas below extend toward **actually signing** inside those boxes, with different levels of legal validity.
 
-- **Simple in-box signature (draw / finger)**  
-  Let the signer draw their signature (or write with finger on touch) inside a box. Capture as image (e.g. canvas → PNG/data URL) and store or embed in the PDF. **Low legal validity**: useful for “I accept” or consent flows; not a qualified or advanced electronic signature.
+- **Simple in-box signature (draw / finger)** *(implemented)*  
+  Draw pad per box; image stored in `SignatureBoxModel::signatureData`. Implemented via `enable_signature_capture: true`. See [USAGE](USAGE.md#signing-in-boxes-draw-or-image).
 
-- **Pre-made signature image**  
-  Option to upload or choose a stored signature image (e.g. from user profile) and place it in one or more boxes. Still “simple” from a legal standpoint unless combined with other mechanisms (e.g. authentication + timestamp).
+- **Pre-made signature image** *(implemented)*  
+  Upload image per box via `enable_signature_upload: true`. See [USAGE](USAGE.md#signing-in-boxes-draw-or-image).
 
 - **Digital signature (PKI / PAdES)**  
   Use certificates (e.g. X.509) to sign the PDF in the defined boxes (PAdES-BES or PAdES-EPES). Requires backend integration with a signing service or HSM. **Higher legal validity** (advanced electronic signature in many jurisdictions).
@@ -26,8 +26,8 @@ The bundle today focuses on **defining where** signature boxes go (coordinates).
 - **One-click / batch signing**  
   For workflows where boxes are predefined: “Sign all” or “Sign selected boxes” with a chosen method (draw, image, or digital), without redefining coordinates each time.
 
-- **Legal disclaimer in UI**  
-  Configurable short text (e.g. “Simple signature – no qualified validity”) or link to terms, so integrators can inform users about the legal effect of each signing method.
+- **Legal disclaimer in UI** *(implemented)*  
+  Via `signing_legal_disclaimer` and `signing_legal_disclaimer_url`. See [USAGE](USAGE.md#legal-disclaimer).
 
 *Implementing any of these would require design choices (e.g. backend API for PKI, storage of drawn signatures, PDF writing library) and possibly new packages or optional dependencies.*
 

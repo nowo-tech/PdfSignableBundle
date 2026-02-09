@@ -57,6 +57,12 @@ signature_box_type:
     label: 'Y'
   angle:
     label: 'Otočení (°)'
+  signature:
+    label: 'Podpis (kreslit nebo nahrát)'
+    clear: 'Vymazat'
+
+signing:
+  terms_link: 'Podmínky a právní upozornění'
 
 flash:
   save:

@@ -57,6 +57,12 @@ signature_box_type:
     label: 'Y'
   angle:
     label: 'Rotatie (°)'
+  signature:
+    label: 'Handtekening (tekenen of uploaden)'
+    clear: 'Wissen'
+
+signing:
+  terms_link: 'Voorwaarden en juridische kennisgeving'
 
 flash:
   save:

@@ -1,12 +1,57 @@
 {#
-  Default layout for SignatureBoxType (name, page, width, height, x, y, and optionally angle).
+  Default layout for SignatureBoxType (name, page, width, height, x, y, and optionally angle, signatureData).
   When enable_rotation is false, form.angle is not defined and no angle row is rendered.
+  When enable_signature_capture or enable_signature_upload, form.signatureData is present and we show pad/upload.
+  When signing_only is true, only the box name (read-only) and signature capture are shown; coordinates are hidden but submitted.
   DOM structure expected by pdf-signable.js:
   - .signature-box-name, .signature-box-page
   - .signature-box-width, .signature-box-height, .signature-box-x, .signature-box-y
   - .signature-box-angle (only when rotation is enabled)
+  - .signature-box-signature-data (hidden), .signature-pad-container (canvas + clear), .signature-upload-input (optional)
   Override: {% block signature_box_widget %} ... {% endblock %} in form theme.
 #}
+{% if form.vars.signing_only|default(false) %}
+{# Signing only: show name as label and signature capture; hide coordinate fields (still submitted) #}
+<div class="signing-only-box">
+  <div class="signing-only-name mb-2">
+    <strong>
+      {%- for choice in form.name.vars.choices|default([]) -%}
+        {%- if choice.value == form.name.vars.value -%}{{ choice.label }}{% endif -%}
+      {%- endfor -%}
+      {%- if form.name.vars.choices is empty or form.name.vars.value is empty -%}
+        {{ form.name.vars.value|default('') }}
+      {%- endif -%}
+    </strong>
+  </div>
+  <div class="d-none" aria-hidden="true">
+    {{ form_widget(form.name) }}
+    {{ form_widget(form.page) }}
+    {{ form_widget(form.width) }}
+    {{ form_widget(form.height) }}
+    {{ form_widget(form.x) }}
+    {{ form_widget(form.y) }}
+    {% if form.angle is defined %}{{ form_widget(form.angle) }}{% endif %}
+  </div>
+  {% if form.signatureData is defined and (form.vars.enable_signature_capture or form.vars.enable_signature_upload) %}
+  <div class="signature-capture-row w-100 mb-2">
+    <label class="form-label small">{{ 'signature_box_type.signature.label'|trans({}, 'nowo_pdf_signable') }}</label>
+    {{ form_widget(form.signatureData) }}
+    {% if form.signedAt is defined %}{{ form_widget(form.signedAt) }}{% endif %}
+    {% if form.vars.enable_signature_capture %}
+    <div class="signature-pad-wrapper w-100">
+      <canvas class="signature-pad-canvas" width="280" height="120"></canvas>
+      <button type="button" class="btn btn-sm btn-outline-secondary signature-pad-clear mt-1">{{ 'signature_box_type.signature.clear'|trans({}, 'nowo_pdf_signable') }}</button>
+    </div>
+    {% endif %}
+    {% if form.vars.enable_signature_upload %}
+    <div class="signature-upload-wrapper w-100 mt-1">
+      <input type="file" class="signature-upload-input form-control form-control-sm w-100" accept="image/*" />
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% else %}
 <div class="row g-2 align-items-end mb-2">
   {{ form_row(form.name) }}
   {{ form_row(form.page) }}
@@ -20,3 +65,22 @@
   {{ form_row(form.angle) }}
   {% endif %}
 </div>
+{% if form.signatureData is defined and (form.vars.enable_signature_capture or form.vars.enable_signature_upload) %}
+<div class="signature-capture-row w-100 mb-2">
+  <label class="form-label small">{{ 'signature_box_type.signature.label'|trans({}, 'nowo_pdf_signable') }}</label>
+  {{ form_widget(form.signatureData) }}
+  {% if form.signedAt is defined %}{{ form_widget(form.signedAt) }}{% endif %}
+  {% if form.vars.enable_signature_capture %}
+  <div class="signature-pad-wrapper w-100">
+    <canvas class="signature-pad-canvas" width="280" height="120"></canvas>
+    <button type="button" class="btn btn-sm btn-outline-secondary signature-pad-clear mt-1">{{ 'signature_box_type.signature.clear'|trans({}, 'nowo_pdf_signable') }}</button>
+  </div>
+  {% endif %}
+  {% if form.vars.enable_signature_upload %}
+  <div class="signature-upload-wrapper w-100 mt-1">
+    <input type="file" class="signature-upload-input form-control form-control-sm w-100" accept="image/*" />
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endif %}

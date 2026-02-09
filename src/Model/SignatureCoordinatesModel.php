@@ -44,6 +44,17 @@ class SignatureCoordinatesModel
     /** @var SignatureBoxModel[] List of signature boxes. */
     private array $signatureBoxes = [];
 
+    /** @var bool Whether the user accepted the legal effect of the signature (consent checkbox). */
+    private bool $signingConsent = false;
+
+    /**
+     * Optional audit metadata (e.g. signed_at, ip, user_agent) set by the app on submit.
+     * Exported in toArray for evidence; not part of the form.
+     *
+     * @var array<string, mixed>
+     */
+    private array $auditMetadata = [];
+
     /**
      * Gets the PDF document URL.
      *
@@ -155,24 +166,80 @@ class SignatureCoordinatesModel
     }
 
     /**
+     * Gets whether the user gave explicit consent (e.g. "I accept the legal effect").
+     *
+     * @return bool
+     */
+    public function getSigningConsent(): bool
+    {
+        return $this->signingConsent;
+    }
+
+    /**
+     * Sets the user's explicit consent to the legal effect of the signature.
+     *
+     * @param bool $signingConsent
+     *
+     * @return $this
+     */
+    public function setSigningConsent(bool $signingConsent): self
+    {
+        $this->signingConsent = $signingConsent;
+
+        return $this;
+    }
+
+    /**
+     * Gets optional audit metadata (e.g. signed_at, ip, user_agent) for evidence.
+     *
+     * @return array<string, mixed>
+     */
+    public function getAuditMetadata(): array
+    {
+        return $this->auditMetadata;
+    }
+
+    /**
+     * Sets audit metadata (e.g. from Request on submit: signed_at, ip, user_agent).
+     *
+     * @param array<string, mixed> $auditMetadata
+     *
+     * @return $this
+     */
+    public function setAuditMetadata(array $auditMetadata): self
+    {
+        $this->auditMetadata = $auditMetadata;
+
+        return $this;
+    }
+
+    /**
      * Exports the coordinates model to an array (e.g. for JSON/YAML export).
      *
-     * @return array{pdf_url: string|null, unit: string, origin: string, signature_boxes: array<int, array{name: string, page: int, x: float, y: float, width: float, height: float, angle: float}>}
+     * @return array{pdf_url: string|null, unit: string, origin: string, signature_boxes: array, signing_consent?: bool, audit_metadata?: array}
      */
     public function toArray(): array
     {
-        return [
+        $out = [
             'pdf_url' => $this->pdfUrl,
             'unit' => $this->unit,
             'origin' => $this->origin,
             'signature_boxes' => array_map(static fn (SignatureBoxModel $box) => $box->toArray(), $this->signatureBoxes),
         ];
+        if ($this->signingConsent) {
+            $out['signing_consent'] = true;
+        }
+        if ([] !== $this->auditMetadata) {
+            $out['audit_metadata'] = $this->auditMetadata;
+        }
+
+        return $out;
     }
 
     /**
      * Creates a coordinates model from an array (e.g. from JSON/YAML import).
      *
-     * @param array{pdf_url?: string|null, unit?: string, origin?: string, signature_boxes?: array<int, array>} $data Raw data; defaults applied for missing values
+     * @param array{pdf_url?: string|null, unit?: string, origin?: string, signature_boxes?: array<int, array>, signing_consent?: bool, audit_metadata?: array} $data Raw data; defaults applied for missing values
      *
      * @return self New instance with data applied
      */
@@ -187,6 +254,10 @@ class SignatureCoordinatesModel
             if (is_array($boxData)) {
                 $model->addSignatureBox(SignatureBoxModel::fromArray($boxData));
             }
+        }
+        $model->setSigningConsent(!empty($data['signing_consent']));
+        if (isset($data['audit_metadata']) && is_array($data['audit_metadata'])) {
+            $model->setAuditMetadata($data['audit_metadata']);
         }
 
         return $model;

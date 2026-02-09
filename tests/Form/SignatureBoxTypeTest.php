@@ -160,4 +160,40 @@ final class SignatureBoxTypeTest extends TypeTestCase
         self::assertTrue($form->isSynchronized());
         self::assertSame(-15.5, $model->getAngle());
     }
+
+    public function testEnableSignatureCaptureAddsSignatureDataField(): void
+    {
+        $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
+            'enable_signature_capture' => true,
+        ]);
+        self::assertTrue($form->has('signatureData'));
+    }
+
+    public function testEnableSignatureUploadAddsSignatureDataField(): void
+    {
+        $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
+            'enable_signature_upload' => true,
+        ]);
+        self::assertTrue($form->has('signatureData'));
+    }
+
+    public function testSubmitWithSignatureData(): void
+    {
+        $model = new SignatureBoxModel();
+        $form = $this->factory->create(SignatureBoxType::class, $model, [
+            'enable_signature_capture' => true,
+        ]);
+        $dataUrl = 'data:image/png;base64,iVBORw0KGgo=';
+        $form->submit([
+            'name' => 'signer_1',
+            'page' => 1,
+            'width' => 150.0,
+            'height' => 40.0,
+            'x' => 50.0,
+            'y' => 100.0,
+            'signatureData' => $dataUrl,
+        ]);
+        self::assertTrue($form->isSynchronized());
+        self::assertSame($dataUrl, $model->getSignatureData());
+    }
 }

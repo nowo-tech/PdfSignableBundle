@@ -7,12 +7,15 @@ namespace Nowo\PdfSignableBundle\Form;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormView;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -131,6 +134,32 @@ final class SignatureBoxType extends AbstractType
                 'row_attr' => ['class' => 'col mb-2'],
             ]);
         }
+        if ($options['enable_signature_capture'] || $options['enable_signature_upload']) {
+            $builder->add('signatureData', HiddenType::class, [
+                'required' => false,
+                'attr' => ['class' => 'signature-box-signature-data'],
+            ]);
+            $builder->add('signedAt', HiddenType::class, [
+                'required' => false,
+                'attr' => ['class' => 'signature-box-signed-at'],
+            ]);
+        }
+    }
+
+    /**
+     * Passes signature capture options to the view for the widget (draw pad / upload).
+     *
+     * @param FormView      $view    The form view
+     * @param FormInterface $form    The form
+     * @param array         $options Resolved options
+     *
+     * @return void
+     */
+    public function buildView(FormView $view, FormInterface $form, array $options): void
+    {
+        $view->vars['enable_signature_capture'] = $options['enable_signature_capture'];
+        $view->vars['enable_signature_upload'] = $options['enable_signature_upload'];
+        $view->vars['signing_only'] = $options['signing_only'];
     }
 
     /**
@@ -156,6 +185,12 @@ final class SignatureBoxType extends AbstractType
             'allowed_pages' => null,
             /* When true, show the rotation angle field (degrees). When false, angle is not in the form and defaults to 0. */
             'angle_enabled' => false,
+            /* When true, show draw pad (canvas) to capture signature as image (low legal validity). */
+            'enable_signature_capture' => false,
+            /* When true, show file input to upload a signature image (same storage as draw). */
+            'enable_signature_upload' => false,
+            /* When true, hide coordinate fields and show only box name (read-only) and signature capture (for predefined sign-only flows). */
+            'signing_only' => false,
             /* Additional constraints on the whole box (SignatureBoxModel); e.g. Callback for custom validation */
             'constraints' => [],
         ]);
@@ -163,6 +198,9 @@ final class SignatureBoxType extends AbstractType
         $resolver->setAllowedValues('name_mode', [self::NAME_MODE_INPUT, self::NAME_MODE_CHOICE]);
         $resolver->setAllowedTypes('constraints', 'array');
         $resolver->setAllowedTypes('angle_enabled', 'bool');
+        $resolver->setAllowedTypes('enable_signature_capture', 'bool');
+        $resolver->setAllowedTypes('enable_signature_upload', 'bool');
+        $resolver->setAllowedTypes('signing_only', 'bool');
         $resolver->setAllowedTypes('name_choices', 'array');
         $resolver->setAllowedTypes('choice_placeholder', ['bool', 'string']);
         $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);

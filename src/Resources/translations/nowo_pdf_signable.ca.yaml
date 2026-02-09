@@ -57,6 +57,12 @@ signature_box_type:
     label: 'Y'
   angle:
     label: 'Rotació (°)'
+  signature:
+    label: 'Signatura (dibuixar o pujar)'
+    clear: 'Esborrar'
+
+signing:
+  terms_link: 'Termes i avís legal'
 
 flash:
   save:

@@ -11,6 +11,36 @@ _Nothing yet._
 
 ---
 
+## [1.4.0] - 2026-02-09
+
+### Added
+
+- **Signing in boxes**: Draw or upload a signature image per box. Options `enable_signature_capture` (draw pad) and `enable_signature_upload` (file input); image stored in `SignatureBoxModel::signatureData` and shown in the PDF overlay. See [USAGE](USAGE.md#signing-in-boxes-draw-or-image).
+- **Legal disclaimer**: `signing_legal_disclaimer` and `signing_legal_disclaimer_url` form options to show a notice above the viewer (e.g. “simple signature, not qualified”). See [USAGE](USAGE.md#legal-disclaimer).
+- **Consent checkbox**: `signing_require_consent` (default `false`) and `signing_consent_label`. When `true`, a required checkbox is shown; value in `SignatureCoordinatesModel::getSigningConsent()`. Translations: `signing.consent_label`, `signing.consent_required` (EN, ES).
+- **Timestamp per box**: `SignatureBoxModel::getSignedAt()` / `setSignedAt()` (ISO 8601). Set by the frontend when the user draws or uploads; backend can overwrite with server time for stronger evidence. Exported in `toArray()` / `fromArray()` as `signed_at`.
+- **Audit metadata**: `SignatureCoordinatesModel::getAuditMetadata()` / `setAuditMetadata()` (e.g. `signed_at`, `ip`, `user_agent`) for evidence; included in `toArray()`. See [USAGE](USAGE.md#making-the-signature-more-legally-robust).
+- **Signing-only mode** (`signing_only`): When `true`, each box row shows only the **box name** (read-only) and the **signature capture** (draw/upload); coordinate fields and unit/origin are hidden (values still submitted). Use for predefined boxes where the user only signs. See [USAGE](USAGE.md).
+- **Signature pad improvements**: Canvas resized to display size with `devicePixelRatio` for sharp rendering; smooth strokes via `quadraticCurveTo`; **pressure-sensitive line width** (1–6 px) on touch (`Touch.force`) and mouse (`MouseEvent.pressure`) when supported. Signature capture row uses full form width.
+- **Demo**: “Signing options (AutoFirma, legal)” info page with links to AutoFirma, bundle roadmap (eIDAS/qualified), and USAGE; all demo texts in English.
+- **Demo layout**: Burger menu replaced by a **sidebar (aside)** with all demo links (By configuration, Define areas, Signing, Bundle route); on small screens a “Demos” button opens an offcanvas with the same nav.
+
+### Changed
+
+- **Demo**: All demo UI copy is in English. Sidebar and offcanvas list all demo pages; predefined sign-only demo uses `signing_only: true` (name + signature only, no coordinate fields).
+
+### Fixed
+
+- **TypeScript**: `MouseEvent.pressure` access fixed for strict DOM types (cast to `MouseEvent & { pressure?: number }`).
+
+### Developer
+
+- **Tests**: `SignatureCoordinatesTypeTest` asserts `signing_only` default and when true; consent checkbox submit uses `'1'`/`null`. `SignatureBoxModelTest` and `SignatureCoordinatesModelTest` cover `signedAt`, `signingConsent`, `auditMetadata` and toArray/fromArray.
+
+For upgrade steps from 1.3.x, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [1.3.0] - 2026-02-09
 
 ### Added
@@ -124,8 +154,9 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdf-signable-bundle/compare/v1.3.0...HEAD
-[1.3.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.3.0
-[1.2.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.2.0
-[1.1.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.1.0
-[1.0.0]: https://github.com/nowo-tech/pdf-signable-bundle/releases/tag/v1.0.0
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.0
+[1.3.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.3.0
+[1.2.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.2.0
+[1.1.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.1.0
+[1.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.0.0

@@ -6,94 +6,78 @@
     <title>{% block title %}PdfSignable Bundle Demo{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .navbar .dropdown-menu { min-width: 16rem; }
-        .navbar .dropdown-item small { opacity: 0.85; }
+        .demos-aside { width: 16rem; min-height: 0; }
+        .demos-aside .nav-link { padding-left: 1rem; color: #fff; }
+        .demos-aside .nav-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .demos-aside .nav-link.active { font-weight: 600; color: #fff; }
+        #demosOffcanvas .nav-link { color: #fff; }
+        #demosOffcanvas .nav-link:hover { color: #fff; }
+        @media (max-width: 991.98px) {
+            .demos-aside.demos-aside-desktop { display: none !important; }
+        }
     </style>
     {% block stylesheets %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="{{ path('home') }}">PdfSignable Demo</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarDemo" aria-controls="navbarDemo" aria-expanded="false" aria-label="Toggle menu">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarDemo">
-                <ul class="navbar-nav ms-auto">
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('home') }}">Home</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="demoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Demo pages &amp; config
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="demoDropdown">
-                            <li><h6 class="dropdown-header">By configuration</h6></li>
-                            <li><a class="dropdown-item" href="{{ path('app_signature') }}">
-                                <span class="d-block">No config</span>
-                                <small class="text-body-secondary">Inline options only</small>
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ path('app_signature_default_config') }}">
-                                <span class="d-block">Config default</span>
-                                <small class="text-body-secondary">Units/origin from YAML</small>
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ path('app_signature_fixed_url') }}">
-                                <span class="d-block">Config fixed_url</span>
-                                <small class="text-body-secondary">Single PDF, no URL field</small>
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ path('app_signature_fixed_url_overridden') }}">
-                                <span class="d-block">Config overridden</span>
-                                <small class="text-body-secondary">fixed_url + unit_default in code</small>
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ path('app_signature_url_choice') }}">
-                                <span class="d-block">URL as dropdown</span>
-                                <small class="text-body-secondary">Choose document from list</small>
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ path('app_signature_limited_boxes') }}">
-                                <span class="d-block">Limited boxes + name selector</span>
-                                <small class="text-body-secondary">Max 4, unique names</small>
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ path('app_signature_same_signer_multiple') }}">
-                                <span class="d-block">Same signer, multiple locations</span>
-                                <small class="text-body-secondary">Duplicate names allowed</small>
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ path('app_signature_unique_per_name') }}">
-                                <span class="d-block">Unique per name (array)</span>
-                                <small class="text-body-secondary">Only some names unique</small>
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ path('app_signature_predefined') }}">
-                                <span class="d-block">Predefined boxes</span>
-                                <small class="text-body-secondary">2 boxes pre-filled, max 5</small>
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ path('nowo_pdf_signable_index') }}">Bundle route</a></li>
-                        </ul>
-                    </li>
                 </ul>
+                <button class="btn btn-outline-light btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#demosOffcanvas" aria-controls="demosOffcanvas" aria-label="Open demos menu">Demos</button>
             </div>
         </div>
     </nav>
-    <main class="container flex-grow-1 mt-4 pb-4">
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ message|raw }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+    <div class="d-flex flex-grow-1 overflow-hidden">
+        <aside id="demosSidebar" class="demos-aside demos-aside-desktop flex-shrink-0 bg-dark text-white overflow-y-auto py-3" aria-label="Demo pages">
+            <div class="px-2">
+                {% include 'demos_nav.html.twig' %}
             </div>
-        {% endfor %}
-        {% for message in app.flashes('warning') %}
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </aside>
+
+        <main class="flex-grow-1 overflow-auto py-4 px-3 px-lg-4">
+            <div class="container-fluid">
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message|raw }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+                {% for message in app.flashes('warning') %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+                {% block body %}{% endblock %}
             </div>
-        {% endfor %}
-        {% for message in app.flashes('error') %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-        {% block body %}{% endblock %}
-    </main>
+        </main>
+    </div>
+
+    <div class="offcanvas offcanvas-start offcanvas-dark bg-dark" tabindex="-1" id="demosOffcanvas" aria-labelledby="demosOffcanvasLabel">
+        <div class="offcanvas-header border-secondary">
+            <h5 class="offcanvas-title" id="demosOffcanvasLabel">Demo pages</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body overflow-y-auto py-0">
+            {% include 'demos_nav.html.twig' %}
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     {% block javascripts %}{% endblock %}
 </body>

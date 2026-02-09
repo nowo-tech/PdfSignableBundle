@@ -215,6 +215,75 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertSame($defaults, $view->vars['signature_coordinates_options']['box_defaults_by_name']);
     }
 
+    public function testEnableSignatureCaptureAndDisclaimerPassedToView(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model);
+        $view = $form->createView();
+        $opts = $view->vars['signature_coordinates_options'];
+        self::assertFalse($opts['enable_signature_capture']);
+        self::assertFalse($opts['enable_signature_upload']);
+        self::assertNull($opts['signing_legal_disclaimer']);
+        self::assertNull($opts['signing_legal_disclaimer_url']);
+
+        $form2 = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'enable_signature_capture' => true,
+            'enable_signature_upload' => true,
+            'signing_legal_disclaimer' => 'Simple signature – no qualified validity.',
+            'signing_legal_disclaimer_url' => 'https://example.com/terms',
+        ]);
+        $view2 = $form2->createView();
+        $opts2 = $view2->vars['signature_coordinates_options'];
+        self::assertTrue($opts2['enable_signature_capture']);
+        self::assertTrue($opts2['enable_signature_upload']);
+        self::assertSame('Simple signature – no qualified validity.', $opts2['signing_legal_disclaimer']);
+        self::assertSame('https://example.com/terms', $opts2['signing_legal_disclaimer_url']);
+        self::assertFalse($opts2['signing_require_consent']);
+        self::assertSame('signing.consent_label', $opts2['signing_consent_label']);
+        self::assertFalse($opts2['signing_only']);
+
+        $form3 = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'signing_require_consent' => true,
+            'signing_consent_label' => 'I accept.',
+        ]);
+        $view3 = $form3->createView();
+        $opts3 = $view3->vars['signature_coordinates_options'];
+        self::assertTrue($opts3['signing_require_consent']);
+        self::assertSame('I accept.', $opts3['signing_consent_label']);
+        self::assertTrue($form3->has('signingConsent'));
+        $form3->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [],
+            'signingConsent' => '1',
+        ]);
+        self::assertTrue($form3->isValid());
+        self::assertTrue($form3->getData()->getSigningConsent());
+
+        $modelNoConsent = new SignatureCoordinatesModel();
+        $form3b = $this->factory->create(SignatureCoordinatesType::class, $modelNoConsent, [
+            'signing_require_consent' => true,
+            'signing_consent_label' => 'I accept.',
+        ]);
+        $form3b->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [],
+            'signingConsent' => null,
+        ]);
+        self::assertFalse($form3b->isValid());
+
+        $form4 = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'signing_only' => true,
+        ]);
+        $view4 = $form4->createView();
+        $opts4 = $view4->vars['signature_coordinates_options'];
+        self::assertTrue($opts4['signing_only']);
+    }
+
     public function testSortBoxesReordersOnSubmit(): void
     {
         $model = new SignatureCoordinatesModel();

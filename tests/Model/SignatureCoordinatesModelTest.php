@@ -99,4 +99,21 @@ final class SignatureCoordinatesModelTest extends TestCase
         self::assertCount(2, $restored->getSignatureBoxes());
         self::assertSame($model->getSignatureBoxes()[1]->getAngle(), $restored->getSignatureBoxes()[1]->getAngle());
     }
+
+    public function testSigningConsentAndAuditMetadata(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setSigningConsent(true);
+        self::assertTrue($model->getSigningConsent());
+        $model->setAuditMetadata(['signed_at' => '2025-02-09T12:00:00+00:00', 'ip' => '127.0.0.1']);
+        self::assertSame(['signed_at' => '2025-02-09T12:00:00+00:00', 'ip' => '127.0.0.1'], $model->getAuditMetadata());
+        $arr = $model->toArray();
+        self::assertArrayHasKey('signing_consent', $arr);
+        self::assertTrue($arr['signing_consent']);
+        self::assertArrayHasKey('audit_metadata', $arr);
+        self::assertSame('127.0.0.1', $arr['audit_metadata']['ip']);
+        $restored = SignatureCoordinatesModel::fromArray($arr);
+        self::assertTrue($restored->getSigningConsent());
+        self::assertSame($model->getAuditMetadata(), $restored->getAuditMetadata());
+    }
 }

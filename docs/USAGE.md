@@ -5,7 +5,7 @@
 The bundle provides a **Form Type** (`SignatureCoordinatesType`) that:
 
 1. **Renders the view**: when you render the field with `form_widget(form.signatureCoordinates)` (or `form_widget(form)` when the form root is the type), the PDF viewer, unit/origin selector and signature boxes list are shown (the bundle form theme defines the full widget).
-2. **Submits coordinates**: on form submit you get a `SignatureCoordinatesModel` with `pdfUrl`, `unit`, `origin` and `signatureBoxes` (each `SignatureBoxModel` with `name`, `page`, `x`, `y`, `width`, `height`, `angle`).
+2. **Submits coordinates**: on form submit you get a `SignatureCoordinatesModel` with `pdfUrl`, `unit`, `origin` and `signatureBoxes` (each `SignatureBoxModel` with `name`, `page`, `x`, `y`, `width`, `height`, `angle`, and optionally `signatureData` when signing in box is enabled).
 
 The models (`SignatureCoordinatesModel`, `SignatureBoxModel`) define the fields; the Type and form theme handle the view and binding.
 
@@ -144,8 +144,50 @@ If `config` is set, the named config is merged first; any option you pass when c
 | `enable_rotation`        | bool   | `false` | When `true`, each box has an **angle** field (rotation in degrees) and the viewer shows a **rotate handle** above each overlay. When `false`, the angle field is not rendered and boxes are not rotatable (angle is treated as 0). |
 | `snap_to_grid`           | float  | `0`     | Grid step in the current form unit (e.g. `5` for 5 mm). When dragging, box position and size snap to this grid. Use `0` to disable. |
 | `snap_to_boxes`          | bool   | `true`  | When `true`, dragging snaps box edges to other boxes’ edges (within ~10 px) on the same page. Set to `false` to disable. |
+| `enable_signature_capture` | bool | `false` | When `true`, each box shows a draw pad (canvas); image stored in `SignatureBoxModel::signatureData`. Low legal validity. See ROADMAP. |
+| `enable_signature_upload`  | bool | `false` | When `true`, each box shows a file input to upload a signature image (same `signatureData`). |
+| `signing_legal_disclaimer` | string \| null | `null` | Optional text shown above the PDF viewer. |
+| `signing_legal_disclaimer_url` | string \| null | `null` | Optional URL link when disclaimer is set. |
+| `signing_require_consent` | bool | `false` | When `true`, a required checkbox is shown (e.g. "I accept the legal effect of this signature"); user must check it to submit. Stored in `SignatureCoordinatesModel::getSigningConsent()`. |
+| `signing_consent_label` | string \| null | `'signing.consent_label'` | Label for the consent checkbox (translation key or literal string). |
+| `signing_only` | bool | `false` | When `true`, each signature box row shows only the **box name** (read-only) and the **signature capture** (draw/upload). Coordinate fields (page, x, y, width, height, angle) and unit/origin selectors are hidden (values are still submitted). Use for predefined boxes where the user only signs. |
 
 Predefined elements: set the model’s `signatureBoxes` (e.g. with existing `SignatureBoxModel` instances) before creating the form; the collection will render those entries. The same `SignatureCoordinatesModel` / array structure is returned on submit.
+
+### Signing in boxes (draw or image)
+
+When `enable_signature_capture` and/or `enable_signature_upload` is `true`, each signature box row includes a **draw pad** (canvas) and/or an **upload** input. The image is stored in `SignatureBoxModel::getSignatureData()` and shown inside the box overlay on the PDF. This is a **simple signature** (low legal validity); for qualified/advanced electronic signatures see the [ROADMAP](ROADMAP.md#pdf-signing-and-legal-validity).
+
+### Legal disclaimer
+
+Set `signing_legal_disclaimer` (and optionally `signing_legal_disclaimer_url`) to display a short notice above the viewer, e.g. to inform users that the signature has no qualified legal validity. The URL is shown as a link (translation key `signing.terms_link`).
+
+### Making the signature more legally robust
+
+To strengthen evidential value of the simple (draw/upload) signature:
+
+- **Timestamp per box** — When the user draws or uploads a signature, the frontend sets an ISO 8601 timestamp in `SignatureBoxModel::getSignedAt()`. You can **overwrite with server time** on submit for stronger evidence:
+  ```php
+  foreach ($model->getSignatureCoordinates()->getSignatureBoxes() as $box) {
+      if ($box->getSignatureData() !== null && $box->getSignatureData() !== '') {
+          $box->setSignedAt((new \DateTimeImmutable())->format('c'));
+      }
+  }
+  ```
+- **Explicit consent** — Set `signing_require_consent: true` (and optionally `signing_consent_label`) so the user must check "I accept the legal effect of this signature" before submitting. The value is in `SignatureCoordinatesModel::getSigningConsent()`.
+- **Audit metadata** — After a valid submit, store IP and user agent (and optionally server timestamp) for audit. You can attach them to the model so they are exported with `toArray()`:
+  ```php
+  $coords = $model->getSignatureCoordinates();
+  $coords->setAuditMetadata([
+      'signed_at' => (new \DateTimeImmutable())->format('c'),
+      'ip' => $request->getClientIp(),
+      'user_agent' => $request->headers->get('User-Agent'),
+  ]);
+  $export = $coords->toArray(); // includes audit_metadata
+  ```
+  Then persist or log `$export` (or the full model) for evidence.
+
+These measures do not make the signature *qualified* (for that, see [ROADMAP](ROADMAP.md#pdf-signing-and-legal-validity)), but they improve traceability and consent.
 
 ### Same signer (machine name), multiple locations
 

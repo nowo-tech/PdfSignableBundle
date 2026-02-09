@@ -6,10 +6,11 @@
 <div class="card mb-4">
     <div class="card-body">
         <h5 class="card-title">PdfSignable Bundle Demo (Symfony 7)</h5>
-        <p class="card-text">Each demo illustrates a way to configure <code>SignatureCoordinatesType</code>: with or without named configs in YAML, inline options, box validation, and model pre-loading.</p>
+        <p class="card-text">Demos are split into <strong>Define signature areas</strong> (where boxes go, validation, layout) and <strong>Signing</strong> (draw/upload signature in box, legal disclaimer). Each illustrates a way to configure <code>SignatureCoordinatesType</code>.</p>
     </div>
 </div>
 <div class="row g-3">
+    <div class="col-12"><h5 class="border-bottom pb-2">Define signature areas</h5></div>
     <div class="col-12"><h6 class="text-muted">Named configs usage (nowo_pdf_signable.configs)</h6></div>
     <div class="col-md-6 col-lg-3">
         <div class="card h-100">
@@ -229,6 +230,68 @@
                     <li>Edit positions and optionally add more boxes</li>
                 </ul>
                 <a href="{{ path('app_signature_predefined') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 mt-4"><h5 class="border-bottom pb-2">Signing (draw / image / legal)</h5></div>
+    <div class="col-12"><h6 class="text-muted">Capture signature in box and legal disclaimer</h6></div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-success">
+            <div class="card-body">
+                <h6 class="card-title">Draw signature in box</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>enable_signature_capture: true</code> — draw pad per box</li>
+                    <li>Draw with mouse or finger; image in overlay. Low legal validity.</li>
+                </ul>
+                <a href="{{ path('app_signing_draw') }}" class="btn btn-sm btn-success mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Draw or upload signature image</h6>
+                <ul class="card-text small mb-0">
+                    <li>Draw pad + file upload per box</li>
+                </ul>
+                <a href="{{ path('app_signing_upload') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Legal disclaimer</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>signing_legal_disclaimer</code> + optional URL</li>
+                </ul>
+                <a href="{{ path('app_signing_legal_disclaimer') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-success">
+            <div class="card-body">
+                <h6 class="card-title">Predefined boxes — sign only</h6>
+                <ul class="card-text small mb-0">
+                    <li>Boxes already placed (2 signers)</li>
+                    <li><code>min_entries = max_entries = 2</code> — cannot add or remove boxes</li>
+                    <li>Only draw or upload signature in each box</li>
+                </ul>
+                <a href="{{ path('app_signing_predefined_boxes') }}" class="btn btn-sm btn-success mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-info">
+            <div class="card-body">
+                <h6 class="card-title">Signing options (AutoFirma, legal)</h6>
+                <ul class="card-text small mb-0">
+                    <li>Legal validity: simple vs qualified signature</li>
+                    <li>Links to AutoFirma and roadmap (eIDAS, PKI)</li>
+                    <li>Legal disclaimer and signing demos</li>
+                </ul>
+                <a href="{{ path('app_signing_options') }}" class="btn btn-sm btn-info mt-2">Open</a>
             </div>
         </div>
     </div>

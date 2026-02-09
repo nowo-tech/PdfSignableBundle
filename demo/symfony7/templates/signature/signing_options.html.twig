@@ -1,0 +1,34 @@
+{#
+  Info page: signing options, AutoFirma, qualified signatures and legal validity.
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}Signing options (AutoFirma, legal) - PdfSignable Demo{% endblock %}
+
+{% block body %}
+  <h2 class="mb-3">Signing options and legal validity</h2>
+
+  <div class="card border-info mb-4">
+    <div class="card-header bg-info bg-opacity-10 text-info fw-semibold">Signing in this bundle</div>
+    <div class="card-body">
+      <p class="card-text mb-2">The demos include <strong>drawn signature</strong> or <strong>uploaded image</strong> inside each box. This is a simple signature (acceptance/consent) with <strong>low legal validity</strong>.</p>
+      <p class="card-text mb-2">To give it <strong>stronger evidential value</strong> without going as far as qualified signature, the bundle supports: <strong>timestamp per box</strong> (<code>signed_at</code>, ISO 8601 when drawing/uploading), a required <strong>consent checkbox</strong> (<code>signing_require_consent</code>), and <strong>audit metadata</strong> (IP, user agent, date) that the app can store on submit. See <a href="https://github.com/nowo-tech/pdfSignableBundle/blob/master/docs/USAGE.md#making-the-signature-more-legally-robust" target="_blank" rel="noopener">USAGE</a>.</p>
+      <p class="card-text mb-0">For signing with <strong>full legal validity</strong> (qualified, e.g. with certificate or AutoFirma), you need to integrate with a trust service (TSP) or applications such as AutoFirma; see links below.</p>
+    </div>
+  </div>
+
+  <h5 class="border-bottom pb-2">Signing demos in this app</h5>
+  <ul class="mb-4">
+    <li><a href="{{ path('app_signing_draw') }}">Draw signature in box</a> — draw on canvas per box</li>
+    <li><a href="{{ path('app_signing_upload') }}">Draw or upload signature</a> — draw or upload image</li>
+    <li><a href="{{ path('app_signing_legal_disclaimer') }}">Legal disclaimer</a> — legal notice about the signature (text + optional link)</li>
+    <li><a href="{{ path('app_signing_predefined_boxes') }}">Predefined boxes — sign only</a> — fixed boxes, sign only</li>
+  </ul>
+
+  <h5 class="border-bottom pb-2">Signing with legal validity (AutoFirma, qualified)</h5>
+  <ul class="mb-2">
+    <li><a href="https://firmaelectronica.gob.es/Home/Descargas.html" target="_blank" rel="noopener">AutoFirma (downloads)</a> — Spanish Tax Agency app for certificate-based signing (DNIe, FNMT, etc.).</li>
+    <li><a href="https://github.com/nowo-tech/pdfSignableBundle/blob/master/docs/ROADMAP.md#pdf-signing-and-legal-validity" target="_blank" rel="noopener">Bundle roadmap: qualified signature / eIDAS</a> — PKI, PAdES, TSA, LTV and possible integrations.</li>
+  </ul>
+  <p class="text-muted small">Integration with AutoFirma or qualified trust providers is not implemented in this bundle; the roadmap describes ideas and requirements.</p>
+{% endblock %}

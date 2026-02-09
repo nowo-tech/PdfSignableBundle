@@ -57,6 +57,12 @@ signature_box_type:
     label: 'Y'
   angle:
     label: 'Döndürme (°)'
+  signature:
+    label: 'İmza (çiz veya yükle)'
+    clear: 'Temizle'
+
+signing:
+  terms_link: 'Şartlar ve yasal uyarı'
 
 flash:
   save:

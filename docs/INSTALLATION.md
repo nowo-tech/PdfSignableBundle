@@ -17,7 +17,7 @@ composer require nowo-tech/pdf-signable-bundle
 **Development / unreleased:** To use the latest `main` (or default) branch before the next tag:
 
 ```bash
-composer config repositories.pdf-signable-bundle vcs https://github.com/nowo-tech/pdf-signable-bundle
+composer config repositories.pdf-signable-bundle vcs https://github.com/nowo-tech/pdfSignableBundle
 composer require nowo-tech/pdf-signable-bundle:dev-main
 ```
 

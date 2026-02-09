@@ -101,6 +101,9 @@
     .nowo-pdf-signable-widget .pdf-zoom-btn:focus { outline: 0; box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.5); }
     .nowo-pdf-signable-widget .signature-box-item { border: 1px solid #dee2e6; padding: 1rem; margin-bottom: 0.75rem; border-radius: 0.375rem; background: #fff; }
     .nowo-pdf-signable-widget #signature-boxes-list { max-height: 50vh; overflow-y: auto; }
+    .nowo-pdf-signable-widget .signature-capture-row { width: 100%; }
+    .nowo-pdf-signable-widget .signature-pad-wrapper { width: 100%; }
+    .nowo-pdf-signable-widget .signature-pad-canvas { width: 100%; max-width: 100%; height: 120px; display: block; box-sizing: border-box; border: 1px solid #dee2e6; border-radius: 0.25rem; touch-action: none; }
   </style>
   {# Main layout: 7/12 PDF viewer, 5/12 boxes list #}
   <div class="row g-4 nowo-pdf-signable-widget" data-prevent-box-overlap="{{ opts.prevent_box_overlap|default(true) ? '1' : '0' }}" data-box-defaults-by-name="{{ (opts.box_defaults_by_name|default({}))|json_encode|e('html_attr') }}" data-enable-rotation="{{ opts.enable_rotation|default(false) ? '1' : '0' }}" data-snap-grid="{{ opts.snap_to_grid|default(0) }}" data-snap-to-boxes="{{ opts.snap_to_boxes|default(true) ? '1' : '0' }}">
@@ -122,6 +125,19 @@
             {{ form_widget(form.pdfUrl, { attr: { class: (form.pdfUrl.vars.attr.class|default('') ~ (form.pdfUrl.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
             {{ form_errors(form.pdfUrl) }}
           {% endif %}
+          {% if opts.signing_legal_disclaimer is defined and opts.signing_legal_disclaimer is not null and opts.signing_legal_disclaimer != '' %}
+          <div class="signing-legal-disclaimer alert alert-info small py-2 mb-3" role="note">
+            {{ opts.signing_legal_disclaimer|raw }}
+            {% if opts.signing_legal_disclaimer_url is defined and opts.signing_legal_disclaimer_url is not null and opts.signing_legal_disclaimer_url != '' %}
+            <a href="{{ opts.signing_legal_disclaimer_url }}" target="_blank" rel="noopener noreferrer" class="alert-link">{{ 'signing.terms_link'|trans({}, 'nowo_pdf_signable') }}</a>
+            {% endif %}
+          </div>
+          {% endif %}
+          {% if form.signingConsent is defined %}
+          <div class="signing-consent-row mb-3">
+            {{ form_row(form.signingConsent) }}
+          </div>
+          {% endif %}
           <div id="pdf-viewer-container">
             <div id="pdf-placeholder" class="text-center text-muted py-5">
               <p class="mb-0">{{ 'page.placeholder_intro'|trans({}, 'nowo_pdf_signable') }}</p>
@@ -136,9 +152,18 @@
       <div class="card">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
           <h6 class="card-title mb-0">{{ 'page.signature_boxes'|trans({}, 'nowo_pdf_signable') }}</h6>
+          {% if not (opts.signing_only|default(false)) %}
           <button type="button" class="btn btn-outline-primary btn-sm" id="addBoxBtn" data-max-entries="{{ opts.max_entries is defined and opts.max_entries is not null ? opts.max_entries : '' }}">{{ 'page.add'|trans({}, 'nowo_pdf_signable') }}</button>
+          {% endif %}
         </div>
         <div class="card-body">
+          {% if opts.signing_only|default(false) %}
+          <div class="d-none" aria-hidden="true">
+            {{ form_widget(form.unit) }}
+            {{ form_widget(form.origin) }}
+          </div>
+          {% endif %}
+          {% if not (opts.signing_only|default(false)) %}
           <div class="row align-items-center mb-3 g-2">
             <div class="col-auto">
               <label class="form-label small text-muted mb-0 me-2">{{ 'page.units_label'|trans({}, 'nowo_pdf_signable') }}</label>
@@ -157,6 +182,7 @@
             </div>
           </div>
           <p class="small text-muted mb-3">{{ 'page.help_text'|trans({}, 'nowo_pdf_signable') }}</p>
+          {% endif %}
           {# Prototype for JS: used when adding new boxes via #addBoxBtn #}
           {% set boxPrototype %}
             <div class="signature-box-item" data-index="__name__">
@@ -176,9 +202,11 @@
             {% for box in form.signatureBoxes %}
               <div class="signature-box-item {% if box.vars.errors|length > 0 %}border-danger{% endif %}" data-index="{{ loop.index0 }}">
                 {{ form_row(box) }}
+                {% if not (opts.signing_only|default(false)) %}
                 <div class="mt-2 pt-2 border-top">
                   <button type="button" class="btn btn-sm btn-outline-danger remove-box">{{ 'page.delete'|trans({}, 'nowo_pdf_signable') }}</button>
                 </div>
+                {% endif %}
               </div>
             {% endfor %}
           </div>

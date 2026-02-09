@@ -41,7 +41,7 @@ Thank you for considering contributing.
 
 ## Reporting issues
 
-- Use the [GitHub issue tracker](https://github.com/nowo-tech/pdf-signable-bundle/issues).
+- Use the [GitHub issue tracker](https://github.com/nowo-tech/pdfSignableBundleues).
 - For security issues, see [SECURITY.md](SECURITY.md).
 
 ## License

@@ -342,6 +342,126 @@ class SignatureController extends AbstractController
     /**
      * Predefined boxes demo: model pre-filled with two boxes, fixed URL, max 5 boxes.
      */
+    /**
+     * Draw signature in box: each box has a canvas to draw (or finger); image shown in overlay. Low legal validity.
+     */
+    #[Route('/demo-signing/draw', name: 'app_signing_draw', methods: ['GET', 'POST'])]
+    public function signingDraw(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>enable_signature_capture: true</code> — draw pad per box</li><li>Draw with mouse or finger; image in overlay. Low legal validity.</li></ul>';
+        return $this->signaturePage($request, 'Draw signature in box', [
+            'enable_signature_capture' => true,
+            'min_entries' => 0,
+            'max_entries' => 4,
+        ], $explanation);
+    }
+
+    /**
+     * Draw or upload signature image per box.
+     */
+    #[Route('/demo-signing/upload', name: 'app_signing_upload', methods: ['GET', 'POST'])]
+    public function signingUpload(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>enable_signature_capture</code> + <code>enable_signature_upload: true</code></li><li>Draw or upload image per box</li></ul>';
+        return $this->signaturePage($request, 'Draw or upload signature image', [
+            'enable_signature_capture' => true,
+            'enable_signature_upload' => true,
+            'min_entries' => 0,
+            'max_entries' => 4,
+        ], $explanation);
+    }
+
+    /**
+     * Legal disclaimer text and optional URL above the viewer.
+     */
+    #[Route('/demo-signing/legal-disclaimer', name: 'app_signing_legal_disclaimer', methods: ['GET', 'POST'])]
+    public function signingLegalDisclaimer(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>signing_legal_disclaimer</code> + optional URL</li><li>Inform users about legal effect</li></ul>';
+        return $this->signaturePage($request, 'Legal disclaimer (signing)', [
+            'signing_legal_disclaimer' => 'This is a <strong>simple signature</strong> (draw or image). It has no qualified legal validity.',
+            'signing_legal_disclaimer_url' => '#',
+            'min_entries' => 0,
+            'max_entries' => 4,
+        ], $explanation);
+    }
+
+    /**
+     * Predefined boxes for signing only: boxes already placed, user only draws or uploads signature in each.
+     */
+    #[Route('/demo-signing/predefined-boxes', name: 'app_signing_predefined_boxes', methods: ['GET', 'POST'])]
+    public function signingPredefinedBoxes(Request $request): Response
+    {
+        $model = new SignaturePageModel();
+        $defaultPdfUrl = $this->examplePdfUrl ?? 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf';
+
+        if (!$request->isMethod('POST')) {
+            $coords = $model->getSignatureCoordinates();
+            $coords->setPdfUrl($defaultPdfUrl);
+            $coords->setUnit(SignatureCoordinatesModel::UNIT_PT);
+            $coords->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT);
+            $coords->addSignatureBox(
+                (new SignatureBoxModel())->setName('signer_1')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(700)
+            );
+            $coords->addSignatureBox(
+                (new SignatureBoxModel())->setName('signer_2')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(650)
+            );
+        }
+
+        $form = $this->createForm(SignaturePageType::class, $model, [
+            'signature_options' => [
+                'pdf_url' => $defaultPdfUrl,
+                'url_field' => false,
+                'unit_default' => SignatureCoordinatesModel::UNIT_PT,
+                'min_entries' => 2,
+                'max_entries' => 2,
+                'enable_signature_capture' => true,
+                'enable_signature_upload' => true,
+                'signing_only' => true,
+                'signature_box_options' => [
+                    'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+                    'name_choices' => ['Signer 1' => 'signer_1', 'Signer 2' => 'signer_2'],
+                ],
+            ],
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $model = $form->getData();
+            if ($this->wantsJson($request)) {
+                $coords = $model->getSignatureCoordinates();
+                return new JsonResponse([
+                    'success' => true,
+                    'coordinates' => $this->formatCoordinates($coords),
+                    'unit' => $coords->getUnit(),
+                    'origin' => $coords->getOrigin(),
+                ]);
+            }
+            $coords = $model->getSignatureCoordinates();
+            $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($coords));
+        }
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('error', 'Please correct the errors in the form below.');
+        }
+
+        $explanation = '<ul class="mb-0"><li><strong>Boxes already placed</strong> — two fixed positions (Signer 1, Signer 2) on page 1</li><li><code>min_entries: 2</code>, <code>max_entries: 2</code> — cannot add or remove boxes</li><li>User only <strong>draws or uploads</strong> the signature in each box</li></ul>';
+
+        return $this->render('signature/index.html.twig', [
+            'form' => $form,
+            'page_title' => 'Predefined boxes — sign only (draw or upload)',
+            'config_explanation' => $explanation,
+        ]);
+    }
+
+    /**
+     * Info page: signing options, AutoFirma, qualified signatures and legal validity.
+     */
+    #[Route('/demo-signing/options', name: 'app_signing_options', methods: ['GET'])]
+    public function signingOptions(): Response
+    {
+        return $this->render('signature/signing_options.html.twig');
+    }
+
     #[Route('/demo-signature/predefined', name: 'app_signature_predefined', methods: ['GET', 'POST'])]
     public function predefinedBoxes(Request $request): Response
     {

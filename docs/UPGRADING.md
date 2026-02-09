@@ -37,6 +37,34 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 1.4.0
+
+**Release date**: 2026-02-09
+
+#### What's new
+
+- **Signing in boxes**: Draw or upload a signature per box (`enable_signature_capture`, `enable_signature_upload`); image in `SignatureBoxModel::signatureData`. See [USAGE](USAGE.md#signing-in-boxes-draw-or-image).
+- **Legal disclaimer**: `signing_legal_disclaimer` and `signing_legal_disclaimer_url` form options. See [USAGE](USAGE.md#legal-disclaimer).
+- **Consent checkbox**: `signing_require_consent` and `signing_consent_label`; value in `SignatureCoordinatesModel::getSigningConsent()`.
+- **Timestamp per box**: `SignatureBoxModel::getSignedAt()` / `setSignedAt()` (ISO 8601); in toArray/fromArray as `signed_at`.
+- **Audit metadata**: `SignatureCoordinatesModel::getAuditMetadata()` / `setAuditMetadata()`; in toArray. See [USAGE](USAGE.md#making-the-signature-more-legally-robust).
+- **Signing-only mode**: `signing_only: true` shows only box name (read-only) and signature capture; coordinates hidden but submitted.
+- **Signature pad**: High-DPI canvas, smooth strokes, pressure-sensitive line width; full-width signature row.
+- **Demo**: "Signing options" page; sidebar with all demos; offcanvas on small screens; all copy in English.
+
+#### Breaking changes
+
+None.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. If you use the bundle's assets, run `pnpm run build` (or `make assets`) and `php bin/console assets:install`.
+3. Clear cache: `php bin/console cache:clear`.
+4. Optional: enable `enable_signature_capture` / `enable_signature_upload`, `signing_require_consent`, `signing_only`, or legal disclaimer (see [USAGE](USAGE.md)).
+
+---
+
 ### Upgrading to 1.3.0
 
 **Release date**: 2026-02-09
@@ -143,7 +171,7 @@ None.
 
 ---
 
-### Upgrading to a future version (e.g. 1.4.0)
+### Upgrading to a future version (e.g. 1.5.0)
 
 When a new version is released, a new subsection will be added here with:
 
@@ -179,6 +207,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
+| 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad improvements, demo sidebar. |
 | 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |
 | 1.2.x          | 6.1+, 7.x, 8.x | 8.1+ | Optional rotation (enable_rotation), box_defaults_by_name, 16 demos. |
 | 1.1.x          | 6.1+, 7.x, 8.x | 8.1+ | Page restriction, proxy allowlist, sort_boxes, prevent_box_overlap default true, 12 languages. |

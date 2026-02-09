@@ -1,5 +1,5 @@
 # PdfSignable Bundle - demo configuration (Symfony 8)
-# https://github.com/nowo-tech/pdf-signable-bundle
+# https://github.com/nowo-tech/pdfSignableBundle
 
 nowo_pdf_signable:
     # Enable proxy endpoint to load external PDFs (avoids CORS)

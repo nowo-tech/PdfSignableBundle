@@ -34,6 +34,22 @@ class SignatureBoxModel
     private float $angle = 0.0;
 
     /**
+     * Optional signature image as base64 data URL (e.g. from draw pad or upload).
+     * When set, the viewer can show it inside the box overlay. Not a qualified/digital signature.
+     *
+     * @var string|null
+     */
+    private ?string $signatureData = null;
+
+    /**
+     * Optional ISO 8601 timestamp when the signature was captured (client or server).
+     * Improves evidential value; backend can overwrite with server time on submit.
+     *
+     * @var string|null
+     */
+    private ?string $signedAt = null;
+
+    /**
      * Gets the PDF page number (1-based).
      *
      * @return int Page number (1 or greater)
@@ -202,13 +218,61 @@ class SignatureBoxModel
     }
 
     /**
+     * Gets the optional signature image (base64 data URL), or null if not set.
+     *
+     * @return string|null
+     */
+    public function getSignatureData(): ?string
+    {
+        return $this->signatureData;
+    }
+
+    /**
+     * Sets the signature image (base64 data URL from draw pad or upload).
+     *
+     * @param string|null $signatureData Data URL (e.g. data:image/png;base64,...) or null to clear
+     *
+     * @return $this
+     */
+    public function setSignatureData(?string $signatureData): self
+    {
+        $this->signatureData = $signatureData;
+
+        return $this;
+    }
+
+    /**
+     * Gets the optional timestamp when the signature was captured (ISO 8601).
+     *
+     * @return string|null
+     */
+    public function getSignedAt(): ?string
+    {
+        return $this->signedAt;
+    }
+
+    /**
+     * Sets the timestamp when the signature was captured (ISO 8601; e.g. from client or server).
+     *
+     * @param string|null $signedAt ISO 8601 datetime or null to clear
+     *
+     * @return $this
+     */
+    public function setSignedAt(?string $signedAt): self
+    {
+        $this->signedAt = $signedAt;
+
+        return $this;
+    }
+
+    /**
      * Exports the box to an array (e.g. for JSON/YAML export).
      *
-     * @return array{name: string, page: int, x: float, y: float, width: float, height: float, angle: float}
+     * @return array{name: string, page: int, x: float, y: float, width: float, height: float, angle: float, signature_data?: string, signed_at?: string}
      */
     public function toArray(): array
     {
-        return [
+        $out = [
             'name' => $this->name,
             'page' => $this->page,
             'x' => $this->x,
@@ -217,12 +281,20 @@ class SignatureBoxModel
             'height' => $this->height,
             'angle' => $this->angle,
         ];
+        if (null !== $this->signatureData && '' !== $this->signatureData) {
+            $out['signature_data'] = $this->signatureData;
+        }
+        if (null !== $this->signedAt && '' !== $this->signedAt) {
+            $out['signed_at'] = $this->signedAt;
+        }
+
+        return $out;
     }
 
     /**
      * Creates a box from an array (e.g. from JSON/YAML import).
      *
-     * @param array{name?: string, page?: int, x?: float, y?: float, width?: float, height?: float, angle?: float} $data Raw data with optional keys; defaults applied for missing values
+     * @param array{name?: string, page?: int, x?: float, y?: float, width?: float, height?: float, angle?: float, signature_data?: string|null, signed_at?: string|null} $data Raw data with optional keys; defaults applied for missing values
      *
      * @return self New instance with data applied
      */
@@ -236,6 +308,8 @@ class SignatureBoxModel
         $box->setWidth((float) ($data['width'] ?? 150));
         $box->setHeight((float) ($data['height'] ?? 40));
         $box->setAngle((float) ($data['angle'] ?? 0));
+        $box->setSignatureData(isset($data['signature_data']) && '' !== $data['signature_data'] ? (string) $data['signature_data'] : null);
+        $box->setSignedAt(isset($data['signed_at']) && '' !== $data['signed_at'] ? (string) $data['signed_at'] : null);
 
         return $box;
     }

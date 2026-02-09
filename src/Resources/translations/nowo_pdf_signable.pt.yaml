@@ -57,6 +57,12 @@ signature_box_type:
     label: 'Y'
   angle:
     label: 'Rotação (°)'
+  signature:
+    label: 'Assinatura (desenhar ou enviar)'
+    clear: 'Limpar'
+
+signing:
+  terms_link: 'Termos e aviso legal'
 
 flash:
   save:

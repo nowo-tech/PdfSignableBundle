@@ -57,6 +57,14 @@ signature_box_type:
     label: 'Y'
   angle:
     label: 'Rotation (°)'
+  signature:
+    label: 'Signature (draw or upload)'
+    clear: 'Clear'
+
+signing:
+  terms_link: 'Terms and legal notice'
+  consent_label: 'I accept the legal effect of this signature (simple signature, not qualified).'
+  consent_required: 'You must accept the legal effect of the signature to continue.'
 
 flash:
   save:

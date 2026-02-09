@@ -57,6 +57,12 @@ signature_box_type:
     label: 'Y'
   angle:
     label: 'Rotazione (°)'
+  signature:
+    label: 'Firma (disegna o carica)'
+    clear: 'Cancella'
+
+signing:
+  terms_link: 'Termini e avviso legale'
 
 flash:
   save:

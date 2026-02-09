@@ -57,6 +57,14 @@ signature_box_type:
     label: 'Y'
   angle:
     label: 'Rotación (°)'
+  signature:
+    label: 'Firma (dibujar o subir)'
+    clear: 'Borrar'
+
+signing:
+  terms_link: 'Términos y aviso legal'
+  consent_label: 'Acepto el efecto legal de esta firma (firma simple, no cualificada).'
+  consent_required: 'Debe aceptar el efecto legal de la firma para continuar.'
 
 flash:
   save:

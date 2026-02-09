@@ -7,11 +7,13 @@ namespace Nowo\PdfSignableBundle\Form;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
+use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -198,6 +200,9 @@ final class SignatureCoordinatesType extends AbstractType
             $entryOptions['allowed_pages'] = $options['allowed_pages'];
         }
         $entryOptions['angle_enabled'] = $options['enable_rotation'];
+        $entryOptions['enable_signature_capture'] = $options['enable_signature_capture'];
+        $entryOptions['enable_signature_upload'] = $options['enable_signature_upload'];
+        $entryOptions['signing_only'] = $options['signing_only'];
         $boxConstraints = $options['box_constraints'] ?? [];
         if ([] !== $boxConstraints) {
             $entryOptions['constraints'] = array_merge($entryOptions['constraints'] ?? [], $boxConstraints);
@@ -313,6 +318,15 @@ final class SignatureCoordinatesType extends AbstractType
             $options['collection_constraints'] ?? []
         );
         $builder->add('signatureBoxes', CollectionType::class, $collectionOptions);
+
+        if ($options['signing_require_consent']) {
+            $builder->add('signingConsent', CheckboxType::class, [
+                'label' => $options['signing_consent_label'],
+                'required' => true,
+                'constraints' => [new IsTrue(message: 'signing.consent_required')],
+                'attr' => ['class' => 'signing-consent-checkbox'],
+            ]);
+        }
     }
 
     /**
@@ -345,6 +359,13 @@ final class SignatureCoordinatesType extends AbstractType
             'enable_rotation' => $options['enable_rotation'],
             'snap_to_grid' => $options['snap_to_grid'],
             'snap_to_boxes' => $options['snap_to_boxes'],
+            'enable_signature_capture' => $options['enable_signature_capture'],
+            'enable_signature_upload' => $options['enable_signature_upload'],
+            'signing_legal_disclaimer' => $options['signing_legal_disclaimer'],
+            'signing_legal_disclaimer_url' => $options['signing_legal_disclaimer_url'],
+            'signing_require_consent' => $options['signing_require_consent'],
+            'signing_consent_label' => $options['signing_consent_label'],
+            'signing_only' => $options['signing_only'],
             'debug' => $this->debug,
         ];
     }
@@ -408,6 +429,13 @@ final class SignatureCoordinatesType extends AbstractType
             'snap_to_grid' => 0,
             /* When true, dragging snaps box edges to other boxes’ edges (within threshold). */
             'snap_to_boxes' => true,
+            'enable_signature_capture' => false,
+            'enable_signature_upload' => false,
+            'signing_legal_disclaimer' => null,
+            'signing_legal_disclaimer_url' => null,
+            'signing_require_consent' => false,
+            'signing_consent_label' => 'signing.consent_label',
+            'signing_only' => false,
         ]);
 
         $resolver->setAllowedTypes('pdf_url', ['string', 'null']);
@@ -429,6 +457,13 @@ final class SignatureCoordinatesType extends AbstractType
             return is_array($value) && array_reduce($value, static fn ($carry, $v) => $carry && is_string($v), true);
         });
         $resolver->setAllowedTypes('signature_box_options', 'array');
+        $resolver->setAllowedTypes('enable_signature_capture', 'bool');
+        $resolver->setAllowedTypes('enable_signature_upload', 'bool');
+        $resolver->setAllowedTypes('signing_legal_disclaimer', ['string', 'null']);
+        $resolver->setAllowedTypes('signing_legal_disclaimer_url', ['string', 'null']);
+        $resolver->setAllowedTypes('signing_require_consent', 'bool');
+        $resolver->setAllowedTypes('signing_consent_label', ['string', 'null']);
+        $resolver->setAllowedTypes('signing_only', 'bool');
         $resolver->setAllowedTypes('config', ['string', 'null']);
         $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);
         $resolver->setAllowedValues('allowed_pages', static function ($value): bool {

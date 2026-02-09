@@ -1,0 +1,32 @@
+{#
+  Shared demo navigation links (used in sidebar and offcanvas).
+#}
+<nav class="nav flex-column small">
+    <h6 class="px-3 pt-2 pb-1 text-uppercase text-muted">By configuration</h6>
+    <a class="nav-link py-1" href="{{ path('app_signature') }}">No config</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_default_config') }}">Config default</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_fixed_url') }}">Config fixed_url</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_fixed_url_overridden') }}">Config overridden</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_url_choice') }}">URL as dropdown</a>
+    <h6 class="px-3 pt-3 pb-1 text-uppercase text-muted">Define areas</h6>
+    <a class="nav-link py-1" href="{{ path('app_signature_limited_boxes') }}">Limited boxes + name selector</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_same_signer_multiple') }}">Same signer, multiple locations</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_unique_per_name') }}">Unique per name (array)</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_page_restriction') }}">Page restriction</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_sorted_boxes') }}">Sorted boxes</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_no_overlap') }}">No overlapping boxes</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_allow_overlap') }}">Allow overlapping boxes</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_rotation') }}">Rotation (angle + handle)</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_defaults_by_name') }}">Defaults per box name</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_snap_to_grid') }}">Snap to grid + boxes</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_latest_features') }}">Latest features (combined)</a>
+    <a class="nav-link py-1" href="{{ path('app_signature_predefined') }}">Predefined boxes</a>
+    <h6 class="px-3 pt-3 pb-1 text-uppercase text-muted">Signing</h6>
+    <a class="nav-link py-1" href="{{ path('app_signing_draw') }}">Draw signature in box</a>
+    <a class="nav-link py-1" href="{{ path('app_signing_upload') }}">Draw or upload signature</a>
+    <a class="nav-link py-1" href="{{ path('app_signing_legal_disclaimer') }}">Legal disclaimer</a>
+    <a class="nav-link py-1" href="{{ path('app_signing_predefined_boxes') }}">Predefined boxes — sign only</a>
+    <a class="nav-link py-1" href="{{ path('app_signing_options') }}">Signing options (AutoFirma, legal)</a>
+    <hr class="my-2">
+    <a class="nav-link py-1" href="{{ path('nowo_pdf_signable_index') }}">Bundle route</a>
+</nav>

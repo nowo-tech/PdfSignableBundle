@@ -57,6 +57,12 @@ signature_box_type:
     label: 'Y'
   angle:
     label: 'Поворот (°)'
+  signature:
+    label: 'Подпись (нарисовать или загрузить)'
+    clear: 'Очистить'
+
+signing:
+  terms_link: 'Условия и правовая информация'
 
 flash:
   save:
