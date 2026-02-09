@@ -167,8 +167,6 @@ class SignatureCoordinatesModel
 
     /**
      * Gets whether the user gave explicit consent (e.g. "I accept the legal effect").
-     *
-     * @return bool
      */
     public function getSigningConsent(): bool
     {
@@ -177,8 +175,6 @@ class SignatureCoordinatesModel
 
     /**
      * Sets the user's explicit consent to the legal effect of the signature.
-     *
-     * @param bool $signingConsent
      *
      * @return $this
      */
