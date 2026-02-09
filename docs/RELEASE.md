@@ -29,4 +29,15 @@
 ## After releasing
 
 - Keep `## [Unreleased]` at the top of [CHANGELOG.md](CHANGELOG.md) for the next version; add new changes there.
-- Optionally bump `version` in `composer.json` to the next dev (e.g. `1.2.0-dev`) for development.
+- Optionally bump `version` in `composer.json` to the next dev (e.g. `1.4.0-dev`) for development.
+
+---
+
+## Ready for v1.3.0 (2026-02-09)
+
+- [x] CHANGELOG: [1.3.0] with zoom, debug, translations, tests.
+- [x] UPGRADING: “Upgrading to 1.3.0” and version table.
+- [x] README, USAGE, ACCESSIBILITY, RELEASE: updated.
+- [ ] Run `make test` and `make cs-check`.
+- [ ] Run `make assets` (bundle JS built).
+- [ ] Commit, push, then: `git tag -a v1.3.0 -m "Release v1.3.0"` and `git push origin v1.3.0`.

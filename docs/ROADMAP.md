@@ -4,6 +4,35 @@ This document lists **possible improvements** and ideas for future versions of t
 
 ---
 
+## PDF signing and legal validity
+
+The bundle today focuses on **defining where** signature boxes go (coordinates). The ideas below extend toward **actually signing** inside those boxes, with different levels of legal validity.
+
+- **Simple in-box signature (draw / finger)**  
+  Let the signer draw their signature (or write with finger on touch) inside a box. Capture as image (e.g. canvas → PNG/data URL) and store or embed in the PDF. **Low legal validity**: useful for “I accept” or consent flows; not a qualified or advanced electronic signature.
+
+- **Pre-made signature image**  
+  Option to upload or choose a stored signature image (e.g. from user profile) and place it in one or more boxes. Still “simple” from a legal standpoint unless combined with other mechanisms (e.g. authentication + timestamp).
+
+- **Digital signature (PKI / PAdES)**  
+  Use certificates (e.g. X.509) to sign the PDF in the defined boxes (PAdES-BES or PAdES-EPES). Requires backend integration with a signing service or HSM. **Higher legal validity** (advanced electronic signature in many jurisdictions).
+
+- **Qualified / eIDAS-style signatures**  
+  Integration with qualified trust service providers (TSP): qualified certificates, optional **timestamp** (TSA) and/or **LTV** (long-term validation) to increase legal weight and long-term verifiability. Relevant for EU eIDAS and similar frameworks.
+
+- **Timestamp and audit trail**  
+  Optional trusted timestamp (RFC 3161) and audit log (who signed, when, which box, IP/session) to strengthen evidence. Can complement both “draw” signatures and PKI signatures.
+
+- **One-click / batch signing**  
+  For workflows where boxes are predefined: “Sign all” or “Sign selected boxes” with a chosen method (draw, image, or digital), without redefining coordinates each time.
+
+- **Legal disclaimer in UI**  
+  Configurable short text (e.g. “Simple signature – no qualified validity”) or link to terms, so integrators can inform users about the legal effect of each signing method.
+
+*Implementing any of these would require design choices (e.g. backend API for PKI, storage of drawn signatures, PDF writing library) and possibly new packages or optional dependencies.*
+
+---
+
 ## Form and coordinates functionality
 
 - **Default values per box name** *(implemented)*  
@@ -29,7 +58,10 @@ This document lists **possible improvements** and ideas for future versions of t
 ## User experience (PDF viewer)
 
 - **Keyboard shortcuts** *(implemented)*  
-  **Ctrl+Shift+A** Add box (centred on page 1), **Ctrl+Z** Undo last box, **Delete** / **Backspace** Delete selected box. Click an overlay to select it; click on the canvas to clear selection. See [USAGE](USAGE.md). Zoom in/out is not yet implemented.
+  **Ctrl+Shift+A** Add box (centred on page 1), **Ctrl+Z** Undo last box, **Delete** / **Backspace** Delete selected box. Click an overlay to select it; click on the canvas to clear selection. See [USAGE](USAGE.md).
+
+- **Zoom toolbar** *(implemented)*  
+  Zoom out (−), zoom in (+), fit width (translated). PDF loads at fit-to-width; range 0.5×–3×. See [USAGE](USAGE.md).
 
 - **Guides and grid**  
   Option to show guides or grid on the canvas (e.g. every 10 mm) to align boxes.
