@@ -1,9 +1,9 @@
 # Release process
 
-## Creating a new version (e.g. v1.4.1)
+## Creating a new version (e.g. v1.5.0)
 
 1. **Ensure everything is ready**
-   - [CHANGELOG.md](CHANGELOG.md) has the target version (e.g. `[1.4.1]`) with date and full entry; `[Unreleased]` is at the top and empty or updated for the next cycle.
+   - [CHANGELOG.md](CHANGELOG.md) has the target version (e.g. `[1.5.0]`) with date and full entry; `[Unreleased]` is at the top and empty or updated for the next cycle.
    - [UPGRADING.md](UPGRADING.md) has a section “Upgrading to X.Y.Z” with what’s new, breaking changes (if any), and upgrade steps.
    - Tests pass: `make test` or `composer test`.
    - Code style: `make cs-check` or `composer cs-check`.
@@ -13,14 +13,14 @@
 2. **Commit and push** any last changes to your default branch (e.g. `main` or `master`):
    ```bash
    git add -A
-   git commit -m "Prepare v1.4.1 release"
+   git commit -m "Prepare v1.5.0 release"
    git push origin HEAD
    ```
 
 3. **Create and push the tag**
    ```bash
-   git tag -a v1.4.1 -m "Release v1.4.1"
-   git push origin v1.4.1
+   git tag -a v1.5.0 -m "Release v1.5.0"
+   git push origin v1.5.0
    ```
 
 4. **GitHub Actions** (if [.github/workflows/release.yml](../.github/workflows/release.yml) is configured) will create the GitHub Release from the tag.
@@ -30,16 +30,17 @@
 ## After releasing
 
 - Keep `## [Unreleased]` at the top of [CHANGELOG.md](CHANGELOG.md) for the next version; add new changes there.
-- Optionally bump `version` in `composer.json` to the next dev (e.g. `1.4.0-dev`) for development.
+- Optionally bump `version` in `composer.json` to the next dev (e.g. `1.5.0-dev`) for development.
 
 ---
 
-## Ready for v1.4.1 (2026-02-09)
+## Ready for v1.5.0 (2026-02-10)
 
-- [x] CHANGELOG: [1.4.1] with translation fixes (consent in all locales, YAML escaping), test fix (no double submit).
-- [x] UPGRADING: “Upgrading to 1.4.1” and version table.
-- [x] RELEASE: checklist updated for v1.4.1; validate-translations in steps.
-- [x] `make validate-translations` passes (12 files).
+- [x] CHANGELOG: [1.5.0] with date; [Unreleased] emptied; links updated.
+- [x] UPGRADING: “Upgrading to 1.5.0” with release date and upgrade steps; version table includes 1.5.x.
+- [x] RELEASE: this checklist for v1.5.0.
 - [ ] Run `make test` and `make cs-check`.
 - [ ] Run `make assets` (bundle JS built).
-- [ ] Commit, push, then: `git tag -a v1.4.1 -m "Release v1.4.1"` and `git push origin v1.4.1`.
+- [ ] Run `make validate-translations`.
+- [ ] Commit and push: `git add -A && git commit -m "Prepare v1.5.0 release" && git push origin HEAD`
+- [ ] Create and push tag: `git tag -a v1.5.0 -m "Release v1.5.0"` then `git push origin v1.5.0`.

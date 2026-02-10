@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- (None yet.)
+
+### Changed
+
+- (None yet.)
+
+### Fixed
+
+- (None yet.)
+
+---
+
+## [1.5.0] - 2026-02-10
+
+### Added
+
 - **Guides and grid**: Form options **`show_grid`** (default `false`) and **`grid_step`** (e.g. `5` in form unit). When `show_grid` is true, a grid overlay is drawn on each page in the viewer (canvas above PDF, below signature overlays) to help align boxes; coordinates are unchanged. See [USAGE](USAGE.md) and [STYLES](STYLES.md) (`.pdf-grid-overlay`).
 - **Viewer lazy load**: Form option **`viewer_lazy_load`** (default `false`). When `true`, PDF.js and the signable script are not loaded at page bottom; a small inline script uses **IntersectionObserver** and loads them when the widget enters the viewport. Useful for long pages with multiple widgets. See [USAGE](USAGE.md).
 - **Advanced signing (structure and extension points)**: Bundle now provides structures and events for PKI/PAdES, timestamp, audit trail, and batch signing without adding third-party dependencies. Your app adds keys, TSA URL, and signing service. See [SIGNING_ADVANCED](SIGNING_ADVANCED.md).
@@ -28,9 +44,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Developer
 
-- **Tests**: `NowoPdfSignableTwigExtensionTest` covers `nowo_pdf_signable_include_assets()` (true once per request, then false; no request → always true).
-- **Documentation**: [CONTRIBUTING](CONTRIBUTING.md) documents form theme assets and the Twig function for overriders. [TESTING](TESTING.md) updated with current coverage summary and exclusion of `PdfSignableEvents.php`.
+- **Tests**: `NowoPdfSignableTwigExtensionTest` covers `nowo_pdf_signable_include_assets()` (true once per request, then false; no request → always true). `BatchSignRequestedEventTest` and `PdfSignRequestEventTest` added; `PdfSignableEventsTest` extended with `BATCH_SIGN_REQUESTED` and `PDF_SIGN_REQUEST` constants.
+- **Documentation**: [CONTRIBUTING](CONTRIBUTING.md) documents form theme assets and the Twig function for overriders. [TESTING](TESTING.md) updated with current coverage summary (120 tests) and exclusion of `PdfSignableEvents.php`.
 - **Coverage**: `PdfSignableEvents.php` excluded from coverage (constants only); phpunit.xml.dist and TESTING.md updated.
+
+For upgrade steps from 1.4.x, see [UPGRADING](UPGRADING.md).
 
 ---
 
@@ -186,7 +204,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.0
 [1.4.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.1
 [1.4.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.0
 [1.3.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.3.0

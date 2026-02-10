@@ -37,10 +37,10 @@ final class SignatureController extends AbstractController
 {
     /**
      * @param EventDispatcherInterface $eventDispatcher      Dispatches signature and proxy events
-     * @param TranslatorInterface      $translator          Used for flash and error messages
-     * @param bool                     $proxyEnabled        Whether the proxy route is enabled
-     * @param list<string>             $proxyUrlAllowlist   When non-empty, proxy only allows these URL patterns
-     * @param string                   $examplePdfUrl       Default PDF URL for form preload when not POST
+     * @param TranslatorInterface      $translator           Used for flash and error messages
+     * @param bool                     $proxyEnabled         Whether the proxy route is enabled
+     * @param list<string>             $proxyUrlAllowlist    When non-empty, proxy only allows these URL patterns
+     * @param string                   $examplePdfUrl        Default PDF URL for form preload when not POST
      * @param bool                     $auditFillFromRequest When true, merge IP, user_agent, submitted_at into model audit before dispatch
      */
     public function __construct(

@@ -37,9 +37,11 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
-### Upgrading to 1.5.0 (unreleased)
+### Upgrading to 1.5.0
 
-**Planned changes (no breaking changes):**
+**Release date**: 2026-02-10
+
+#### What's new (no breaking changes)
 
 - **Guides and grid**: Form options `show_grid` (default `false`) and `grid_step` (e.g. `5` in form unit). When enabled, a grid overlay is drawn on each page in the viewer. See [USAGE](USAGE.md).
 - **Viewer lazy load**: Form option `viewer_lazy_load` (default `false`). When `true`, PDF.js and the signable script load when the widget enters the viewport (IntersectionObserver). See [USAGE](USAGE.md).
@@ -198,7 +200,7 @@ None.
 
 ---
 
-### Upgrading to a future version (e.g. 1.5.0)
+### Upgrading to a future version (e.g. 1.6.0)
 
 When a new version is released, a new subsection will be added here with:
 

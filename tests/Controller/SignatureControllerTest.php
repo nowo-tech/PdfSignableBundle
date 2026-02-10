@@ -56,9 +56,9 @@ final class SignatureControllerTest extends TestCase
     /**
      * Builds a minimal container with form.factory, twig, router and request_stack for index() tests.
      *
-     * @param Request|null       $request Request to use as current (for request_stack)
-     * @param Session|null       $session Session to return from request_stack->getSession() (if null, uses $request->getSession() when available)
-     * @param Environment|null   $twig    Optional Twig mock (e.g. to assert form vars); default returns '<html>form</html>'
+     * @param Request|null     $request Request to use as current (for request_stack)
+     * @param Session|null     $session Session to return from request_stack->getSession() (if null, uses $request->getSession() when available)
+     * @param Environment|null $twig    Optional Twig mock (e.g. to assert form vars); default returns '<html>form</html>'
      */
     private function createContainerForIndex(?Request $request = null, ?Session $session = null, ?Environment $twig = null): ContainerInterface
     {
@@ -125,9 +125,9 @@ final class SignatureControllerTest extends TestCase
         $twig = $this->createMock(Environment::class);
         $twig->method('render')->willReturnCallback(function (string $view, array $vars) use ($exampleUrl): string {
             $form = $vars['form'] ?? null;
-            if ($form !== null && method_exists($form, 'getData')) {
+            if (null !== $form && method_exists($form, 'getData')) {
                 $data = $form->getData();
-                if ($data !== null && method_exists($data, 'getPdfUrl')) {
+                if (null !== $data && method_exists($data, 'getPdfUrl')) {
                     self::assertSame($exampleUrl, $data->getPdfUrl(), 'Model should be pre-filled with example PDF URL on GET');
                 }
             }
