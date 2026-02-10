@@ -7,7 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- **Guides and grid**: Form options **`show_grid`** (default `false`) and **`grid_step`** (e.g. `5` in form unit). When `show_grid` is true, a grid overlay is drawn on each page in the viewer (canvas above PDF, below signature overlays) to help align boxes; coordinates are unchanged. See [USAGE](USAGE.md) and [STYLES](STYLES.md) (`.pdf-grid-overlay`).
+- **Viewer lazy load**: Form option **`viewer_lazy_load`** (default `false`). When `true`, PDF.js and the signable script are not loaded at page bottom; a small inline script uses **IntersectionObserver** and loads them when the widget enters the viewport. Useful for long pages with multiple widgets. See [USAGE](USAGE.md).
+- **Advanced signing (structure and extension points)**: Bundle now provides structures and events for PKI/PAdES, timestamp, audit trail, and batch signing without adding third-party dependencies. Your app adds keys, TSA URL, and signing service. See [SIGNING_ADVANCED](SIGNING_ADVANCED.md).
+  - **Audit**: Config `audit.fill_from_request` (default `true`) merges `submitted_at`, `ip`, `user_agent` into the model before dispatch. **`AuditMetadata`** class with recommended keys (`tsa_token`, `user_id`, etc.). Config placeholders **`tsa_url`** and **`signing_service_id`** (bundle does not call them; use in listeners).
+  - **Events**: **`BATCH_SIGN_REQUESTED`** (when form is submitted with “Sign all”, `batch_sign=1`); **`PDF_SIGN_REQUEST`** (when your code requests a digital signature; listener can set response). See [EVENTS](EVENTS.md).
+  - **Batch signing**: Form option **`batch_sign_enabled`** shows a “Sign all” button; your listener subscribes to `BATCH_SIGN_REQUESTED` to perform the actual signing.
+- **Single inclusion of CSS and JS per request**: When multiple `SignatureCoordinatesType` widgets are rendered on the same page, the form theme includes the PDF viewer CSS (`pdf-signable.css`), PDF.js, and `pdf-signable.js` only once. A new Twig extension (`NowoPdfSignableTwigExtension`) exposes `nowo_pdf_signable_include_assets()` used by the theme. See [USAGE](USAGE.md) and [STYLES](STYLES.md).
+- **Demo**: "Guides and grid" and "Viewer lazy load" demo pages (19 demos in total); sidebar and offcanvas highlight the current route; home index lists all demos including the new two.
+
+### Changed
+
+- **Larger resize and rotate handles**: Corner resize handles on signature box overlays are now 12×12 px (was 8×8 px); the rotation handle is 16×16 px (was 12×12 px) for easier grabbing. See [STYLES](STYLES.md).
+
+### Fixed
+
+- **Rotated signature boxes**: Drag constraints now use the axis-aligned bounding box of the rotated rectangle, so boxes can be moved flush to all page edges (left, right, top, bottom) at any rotation angle (e.g. -90°, 45°). Previously, rotated boxes could not be placed against the left (and sometimes top) edge.
+
+### Developer
+
+- **Tests**: `NowoPdfSignableTwigExtensionTest` covers `nowo_pdf_signable_include_assets()` (true once per request, then false; no request → always true).
+- **Documentation**: [CONTRIBUTING](CONTRIBUTING.md) documents form theme assets and the Twig function for overriders. [TESTING](TESTING.md) updated with current coverage summary and exclusion of `PdfSignableEvents.php`.
+- **Coverage**: `PdfSignableEvents.php` excluded from coverage (constants only); phpunit.xml.dist and TESTING.md updated.
 
 ---
 

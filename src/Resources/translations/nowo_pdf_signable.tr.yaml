@@ -12,6 +12,7 @@ page:
   delete: 'Sil'
   empty_state: 'Henüz imza kutusu yok. Oluşturmak için PDF''e veya "Kutu ekle"ye tıklayın.'
   save_coordinates: 'Koordinatları kaydet'
+  sign_all: 'Tümünü imzala'
   errors_collection: 'İmza kutularında hatalar:'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Yakınlaştır'
   zoom_out: 'Uzaklaştır'
   zoom_fit: 'Genişliğe sığdır'
+  fit_width: 'Genişliğe sığdır'
+  fit_page: 'Sayfaya sığdır'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Sil'

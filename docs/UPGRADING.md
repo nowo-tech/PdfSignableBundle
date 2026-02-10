@@ -37,6 +37,25 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 1.5.0 (unreleased)
+
+**Planned changes (no breaking changes):**
+
+- **Guides and grid**: Form options `show_grid` (default `false`) and `grid_step` (e.g. `5` in form unit). When enabled, a grid overlay is drawn on each page in the viewer. See [USAGE](USAGE.md).
+- **Viewer lazy load**: Form option `viewer_lazy_load` (default `false`). When `true`, PDF.js and the signable script load when the widget enters the viewport (IntersectionObserver). See [USAGE](USAGE.md).
+- **Single inclusion of assets**: CSS and JS for the PDF viewer are output only once per request when you have multiple signature-coordinates widgets on the same page. If you override `signature_coordinates_widget` and inject the bundle assets yourself, use the Twig function `nowo_pdf_signable_include_assets()` so behaviour stays consistent (see [CONTRIBUTING](CONTRIBUTING.md)).
+- **Larger handles**: Resize handles (corners) and the rotation handle on signature boxes are slightly larger (12×12 px and 16×16 px) for easier use.
+- **Rotated boxes**: Drag limits for rotated signature boxes now use the visual bounding box, so you can place boxes flush to all page edges (left, right, top, bottom) at any angle (e.g. -90°, 45°).
+- **Advanced signing (optional)**: New config `audit.fill_from_request` (default `true`), optional placeholders `tsa_url` and `signing_service_id`; new events `BATCH_SIGN_REQUESTED` and `PDF_SIGN_REQUEST`; form option `batch_sign_enabled` and “Sign all” button. See [SIGNING_ADVANCED](SIGNING_ADVANCED.md) and [EVENTS](EVENTS.md). No breaking changes; existing config remains valid.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. If you use the bundle’s assets, run `pnpm run build` (or `make assets`) and `php bin/console assets:install`.
+3. Clear cache: `php bin/console cache:clear`.
+
+---
+
 ### Upgrading to 1.4.0
 
 **Release date**: 2026-02-09
@@ -215,6 +234,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
+| 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | Guides and grid (show_grid, grid_step), viewer lazy load (viewer_lazy_load), advanced signing (audit, events, batch_sign_enabled), single asset inclusion, larger handles, rotated box drag fix, 19 demos. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |
 | 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |
 | 1.2.x          | 6.1+, 7.x, 8.x | 8.1+ | Optional rotation (enable_rotation), box_defaults_by_name, 16 demos. |
@@ -230,3 +250,4 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 - [INSTALLATION.md](INSTALLATION.md) — Install and register the bundle.
 - [CONFIGURATION.md](CONFIGURATION.md) — Configuration reference.
 - [USAGE.md](USAGE.md) — Using the form type and proxy in your app.
+- [SIGNING_ADVANCED.md](SIGNING_ADVANCED.md) — PKI, timestamp, audit, and batch signing (from 1.5.0).

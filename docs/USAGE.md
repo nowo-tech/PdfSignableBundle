@@ -144,6 +144,9 @@ If `config` is set, the named config is merged first; any option you pass when c
 | `enable_rotation`        | bool   | `false` | When `true`, each box has an **angle** field (rotation in degrees) and the viewer shows a **rotate handle** above each overlay. When `false`, the angle field is not rendered and boxes are not rotatable (angle is treated as 0). |
 | `snap_to_grid`           | float  | `0`     | Grid step in the current form unit (e.g. `5` for 5 mm). When dragging, box position and size snap to this grid. Use `0` to disable. |
 | `snap_to_boxes`          | bool   | `true`  | When `true`, dragging snaps box edges to other boxes’ edges (within ~10 px) on the same page. Set to `false` to disable. |
+| `show_grid`             | bool   | `false` | When `true`, a grid overlay is drawn on the PDF (step given by `grid_step` in the form unit) to help align boxes. |
+| `grid_step`             | float  | `10`    | Grid step in form unit for the visual grid (e.g. `10` for 10 mm). Used when `show_grid` is `true`. |
+| `viewer_lazy_load`      | bool   | `false` | When `true`, PDF.js and the viewer script load only when the coordinates block is visible (IntersectionObserver). Use on long pages to reduce initial load. |
 | `enable_signature_capture` | bool | `false` | When `true`, each box shows a draw pad (canvas); image stored in `SignatureBoxModel::signatureData`. Low legal validity. See ROADMAP. |
 | `enable_signature_upload`  | bool | `false` | When `true`, each box shows a file input to upload a signature image (same `signatureData`). |
 | `signing_legal_disclaimer` | string \| null | `null` | Optional text shown above the PDF viewer. |
@@ -151,6 +154,7 @@ If `config` is set, the named config is merged first; any option you pass when c
 | `signing_require_consent` | bool | `false` | When `true`, a required checkbox is shown (e.g. "I accept the legal effect of this signature"); user must check it to submit. Stored in `SignatureCoordinatesModel::getSigningConsent()`. |
 | `signing_consent_label` | string \| null | `'signing.consent_label'` | Label for the consent checkbox (translation key or literal string). |
 | `signing_only` | bool | `false` | When `true`, each signature box row shows only the **box name** (read-only) and the **signature capture** (draw/upload). Coordinate fields (page, x, y, width, height, angle) and unit/origin selectors are hidden (values are still submitted). Use for predefined boxes where the user only signs. |
+| `batch_sign_enabled` | bool | `false` | When `true`, a **Sign all** button is shown; submitting with that button sends `batch_sign=1` and the bundle dispatches **`BATCH_SIGN_REQUESTED`**. Your listener performs the actual batch signing. See [SIGNING_ADVANCED](SIGNING_ADVANCED.md). |
 
 Predefined elements: set the model’s `signatureBoxes` (e.g. with existing `SignatureBoxModel` instances) before creating the form; the collection will render those entries. The same `SignatureCoordinatesModel` / array structure is returned on submit.
 
@@ -175,7 +179,7 @@ To strengthen evidential value of the simple (draw/upload) signature:
   }
   ```
 - **Explicit consent** — Set `signing_require_consent: true` (and optionally `signing_consent_label`) so the user must check "I accept the legal effect of this signature" before submitting. The value is in `SignatureCoordinatesModel::getSigningConsent()`.
-- **Audit metadata** — After a valid submit, store IP and user agent (and optionally server timestamp) for audit. You can attach them to the model so they are exported with `toArray()`:
+- **Audit metadata** — The bundle can fill `submitted_at`, `ip` and `user_agent` automatically when `nowo_pdf_signable.audit.fill_from_request` is true (default). Use the `AuditMetadata` class constants for recommended keys (`Nowo\PdfSignableBundle\Model\AuditMetadata`). After a valid submit you can add more (e.g. `user_id`, `tsa_token`) in a listener; see [SIGNING_ADVANCED](SIGNING_ADVANCED.md). Example (manual attach):
   ```php
   $coords = $model->getSignatureCoordinates();
   $coords->setAuditMetadata([
@@ -467,6 +471,8 @@ Important: keep the CSS classes the viewer JS uses (`.signature-box-name`, `.sig
 ## Form submit behavior
 
 The bundle’s JavaScript runs on submit to re-index the collection field names (so the server receives consecutive indices `[0]`, `[1]`, …) and then submits the form normally (full page POST). The server handles the request; on success it redirects and can show a flash message with the saved coordinates (e.g. unit, origin, and list of boxes); on validation errors it re-renders the form with the submitted data and field errors. The form theme and `pdf-signable.js` must be loaded on the page where the form is rendered.
+
+**CSS and JS included once per request:** The bundle form theme includes the PDF viewer CSS (`pdf-signable.css`), PDF.js, and `pdf-signable.js` only once per request. If you have several `SignatureCoordinatesType` widgets on the same page (e.g. in a multi-step form or repeated blocks), the link and scripts are output only for the first widget, so the same CSS and JS are not duplicated.
 
 ## PDF proxy
 

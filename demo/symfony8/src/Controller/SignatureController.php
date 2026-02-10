@@ -324,6 +324,36 @@ class SignatureController extends AbstractController
     }
 
     /**
+     * Guides and grid: show a visual grid on the PDF (e.g. every 10 mm) to align boxes.
+     */
+    #[Route('/demo-signature/guides-and-grid', name: 'app_signature_guides_and_grid', methods: ['GET', 'POST'])]
+    public function guidesAndGrid(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>show_grid: true</code> — a grid overlay is drawn on the PDF</li><li><code>grid_step: 10</code> — grid lines every 10 mm (in the form unit)</li><li>Use case: align signature boxes to a visible grid</li></ul>';
+        return $this->signaturePage($request, 'Guides and grid (show_grid + grid_step)', [
+            'show_grid' => true,
+            'grid_step' => 10.0,
+            'unit_default' => SignatureCoordinatesModel::UNIT_MM,
+            'min_entries' => 0,
+            'max_entries' => 6,
+        ], $explanation);
+    }
+
+    /**
+     * Viewer lazy load: PDF.js and the viewer script load only when the coordinates block is visible (IntersectionObserver).
+     */
+    #[Route('/demo-signature/lazy-load', name: 'app_signature_lazy_load', methods: ['GET', 'POST'])]
+    public function lazyLoad(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>viewer_lazy_load: true</code> — PDF.js and pdf-signable.js are loaded only when the widget enters the viewport</li><li>Uses <strong>IntersectionObserver</strong> with a small rootMargin so scripts load just before the block is visible</li><li>Use case: long pages or multiple widgets; reduces initial load when the form is below the fold</li></ul>';
+        return $this->signaturePage($request, 'Viewer lazy load (IntersectionObserver)', [
+            'viewer_lazy_load' => true,
+            'min_entries' => 0,
+            'max_entries' => 6,
+        ], $explanation);
+    }
+
+    /**
      * Latest features combined: page restriction, sorted boxes, no overlap, snap options.
      */
     #[Route('/demo-signature/latest-features', name: 'app_signature_latest_features', methods: ['GET', 'POST'])]

@@ -355,6 +355,9 @@ final class SignatureCoordinatesType extends AbstractType
             'enable_rotation' => $options['enable_rotation'],
             'snap_to_grid' => $options['snap_to_grid'],
             'snap_to_boxes' => $options['snap_to_boxes'],
+            'show_grid' => $options['show_grid'],
+            'grid_step' => $options['grid_step'],
+            'viewer_lazy_load' => $options['viewer_lazy_load'],
             'enable_signature_capture' => $options['enable_signature_capture'],
             'enable_signature_upload' => $options['enable_signature_upload'],
             'signing_legal_disclaimer' => $options['signing_legal_disclaimer'],
@@ -362,6 +365,7 @@ final class SignatureCoordinatesType extends AbstractType
             'signing_require_consent' => $options['signing_require_consent'],
             'signing_consent_label' => $options['signing_consent_label'],
             'signing_only' => $options['signing_only'],
+            'batch_sign_enabled' => $options['batch_sign_enabled'],
             'debug' => $this->debug,
         ];
     }
@@ -423,6 +427,9 @@ final class SignatureCoordinatesType extends AbstractType
             'snap_to_grid' => 0,
             /* When true, dragging snaps box edges to other boxes’ edges (within threshold). */
             'snap_to_boxes' => true,
+            'show_grid' => false,
+            'grid_step' => 10.0,
+            'viewer_lazy_load' => false,
             'enable_signature_capture' => false,
             'enable_signature_upload' => false,
             'signing_legal_disclaimer' => null,
@@ -430,6 +437,8 @@ final class SignatureCoordinatesType extends AbstractType
             'signing_require_consent' => false,
             'signing_consent_label' => 'signing.consent_label',
             'signing_only' => false,
+            /* When true, show a "Sign all" button that submits with batch_sign=1; BATCH_SIGN_REQUESTED is then dispatched. */
+            'batch_sign_enabled' => false,
         ]);
 
         $resolver->setAllowedTypes('pdf_url', ['string', 'null']);
@@ -458,6 +467,7 @@ final class SignatureCoordinatesType extends AbstractType
         $resolver->setAllowedTypes('signing_require_consent', 'bool');
         $resolver->setAllowedTypes('signing_consent_label', ['string', 'null']);
         $resolver->setAllowedTypes('signing_only', 'bool');
+        $resolver->setAllowedTypes('batch_sign_enabled', 'bool');
         $resolver->setAllowedTypes('config', ['string', 'null']);
         $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);
         $resolver->setAllowedValues('allowed_pages', static function ($value): bool {
@@ -484,6 +494,9 @@ final class SignatureCoordinatesType extends AbstractType
         $resolver->setAllowedTypes('enable_rotation', 'bool');
         $resolver->setAllowedTypes('snap_to_grid', ['int', 'float']);
         $resolver->setAllowedTypes('snap_to_boxes', 'bool');
+        $resolver->setAllowedTypes('show_grid', 'bool');
+        $resolver->setAllowedTypes('grid_step', ['int', 'float']);
+        $resolver->setAllowedTypes('viewer_lazy_load', 'bool');
     }
 
     /**

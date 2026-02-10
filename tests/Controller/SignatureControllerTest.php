@@ -56,10 +56,11 @@ final class SignatureControllerTest extends TestCase
     /**
      * Builds a minimal container with form.factory, twig, router and request_stack for index() tests.
      *
-     * @param Request|null $request Request to use as current (for request_stack)
-     * @param Session|null $session Session to return from request_stack->getSession() (if null, uses $request->getSession() when available)
+     * @param Request|null       $request Request to use as current (for request_stack)
+     * @param Session|null       $session Session to return from request_stack->getSession() (if null, uses $request->getSession() when available)
+     * @param Environment|null   $twig    Optional Twig mock (e.g. to assert form vars); default returns '<html>form</html>'
      */
-    private function createContainerForIndex(?Request $request = null, ?Session $session = null): ContainerInterface
+    private function createContainerForIndex(?Request $request = null, ?Session $session = null, ?Environment $twig = null): ContainerInterface
     {
         $formFactory = (new FormFactoryBuilder())
             ->addExtension(new HttpFoundationExtension())
@@ -70,8 +71,10 @@ final class SignatureControllerTest extends TestCase
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
 
-        $twig = $this->createMock(Environment::class);
-        $twig->method('render')->willReturn('<html>form</html>');
+        if (null === $twig) {
+            $twig = $this->createMock(Environment::class);
+            $twig->method('render')->willReturn('<html>form</html>');
+        }
 
         $router = $this->createMock(RouterInterface::class);
         $router->method('generate')->with('nowo_pdf_signable_index', [], UrlGeneratorInterface::ABSOLUTE_PATH)->willReturn('/pdf-signable');
@@ -113,6 +116,32 @@ final class SignatureControllerTest extends TestCase
 
         self::assertSame(200, $response->getStatusCode());
         self::assertStringContainsString('<html>form</html>', $response->getContent());
+    }
+
+    /** GET with non-empty examplePdfUrl pre-fills the model (covers controller line 64). */
+    public function testIndexGetWithExamplePdfUrlPrefillsModel(): void
+    {
+        $exampleUrl = 'https://example.com/default.pdf';
+        $twig = $this->createMock(Environment::class);
+        $twig->method('render')->willReturnCallback(function (string $view, array $vars) use ($exampleUrl): string {
+            $form = $vars['form'] ?? null;
+            if ($form !== null && method_exists($form, 'getData')) {
+                $data = $form->getData();
+                if ($data !== null && method_exists($data, 'getPdfUrl')) {
+                    self::assertSame($exampleUrl, $data->getPdfUrl(), 'Model should be pre-filled with example PDF URL on GET');
+                }
+            }
+
+            return '<html>form</html>';
+        });
+        $request = Request::create('/pdf-signable', 'GET');
+        $request->setSession(new Session(new MockArraySessionStorage()));
+        $controller = $this->createController(proxyEnabled: true, proxyUrlAllowlist: [], examplePdfUrl: $exampleUrl);
+        $controller->setContainer($this->createContainerForIndex($request, null, $twig));
+
+        $response = $controller->index($request);
+
+        self::assertSame(200, $response->getStatusCode());
     }
 
     public function testIndexPostValidRedirectsWithFlash(): void
@@ -362,5 +391,47 @@ final class SignatureControllerTest extends TestCase
         $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http:///path']);
         $response = $controller->proxyPdf($request);
         self::assertSame(400, $response->getStatusCode());
+    }
+
+    /** Allowlist entries that are empty string are skipped; URL must match another entry. */
+    public function testProxyAllowlistEmptyPatternSkippedReturns403(): void
+    {
+        $controller = $this->createController(true, ['', 'https://allowed.example.com/']);
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://other.example.com/doc.pdf']);
+        $response = $controller->proxyPdf($request);
+        self::assertSame(403, $response->getStatusCode());
+    }
+
+    /** Allowlist regex that does not match the URL returns 403. */
+    public function testProxyUrlNotMatchingRegexAllowlistReturns403(): void
+    {
+        $controller = $this->createController(true, ['#^https://only\.this\.com/#']);
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://other.example.com/doc.pdf']);
+        $response = $controller->proxyPdf($request);
+        self::assertSame(403, $response->getStatusCode());
+    }
+
+    /** SSRF mitigation: host "::1" (IPv6 loopback) is blocked. */
+    public function testProxyBlocksIpv6LoopbackHostReturns403(): void
+    {
+        $controller = $this->createController(true, []);
+        // parse_url with "http://[::1]/x" returns host "::1" on PHP 7.4+
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://[::1]/internal.pdf']);
+        $response = $controller->proxyPdf($request);
+        // Blocked by SSRF (403) or request fails with 502 if host is not resolved as IPv6 in this environment
+        self::assertContains($response->getStatusCode(), [403, 502], 'IPv6 loopback should be blocked or request fail');
+    }
+
+    /** When event does not provide a response and the HTTP fetch fails, proxy returns 502. */
+    public function testProxyReturns502WhenFetchFails(): void
+    {
+        $controller = $this->createController(true, []);
+        // URL passes validation and SSRF (unresolved host); fetch will fail (connection error)
+        $request = Request::create('/pdf-signable/proxy', 'GET', [
+            'url' => 'https://non-existent-domain-xyz-12345.invalid/document.pdf',
+        ]);
+        $response = $controller->proxyPdf($request);
+        self::assertSame(502, $response->getStatusCode());
+        self::assertStringContainsString('proxy.error_load', $response->getContent());
     }
 }

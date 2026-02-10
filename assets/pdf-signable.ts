@@ -1,234 +1,32 @@
 /**
- * @fileoverview PdfSignable bundle: PDF viewer and signature box overlays.
- *
- * Expects:
- * - window.NowoPdfSignableConfig (injected by Twig theme): { proxyUrl, strings }
- * - pdfjsLib (PDF.js) loaded from CDN before this script
- *
- * DOM structure (from form theme):
- * - .nowo-pdf-signable-widget: root container
- * - .pdf-url-input: URL input or select
- * - #loadPdfBtn: load PDF button
- * - #pdf-viewer-container, #pdf-placeholder, #pdf-canvas-wrapper
- * - #signature-boxes-list with data-prototype, data-min-entries, data-max-entries
- * - .signature-box-item, .signature-box-name, .signature-box-page, .signature-box-{x,y,width,height}
- * - #addBoxBtn, .remove-box
- * - .unit-selector, .origin-selector
+ * PdfSignable bundle: PDF viewer with signature box overlays, units/origin, and optional touch zoom.
+ * @fileoverview Entry point. See pdf-signable/ for constants, types, utils. URL/scale from shared-pdf-viewer. Run logic remains here.
+ * @requires pdfjsLib
  */
+export type { NowoPdfSignableConfig } from './pdf-signable/types';
+import type { PDFViewport, PDFDocumentProxy } from './pdf-signable/types';
+import { getLoadUrl, getScaleForFitWidth, getScaleForFitPage } from './shared-pdf-viewer';
+/** PDF.js is loaded by the page before this bundle; types in pdf-signable/types. */
+declare const pdfjsLib: { getDocument(url: string): { promise: Promise<PDFDocumentProxy> } };
+import { ptToUnit, unitToPt, escapeHtml, getColorForBoxIndex } from './pdf-signable/utils';
 
-/**
- * Runtime configuration injected by the Twig template (window.NowoPdfSignableConfig).
- */
-export interface NowoPdfSignableConfig {
-  /** Base URL for the PDF proxy endpoint (e.g. /pdf-signable/proxy). */
-  proxyUrl: string;
-  /** When true, emit console.log/console.warn in the browser dev tools (see nowo_pdf_signable.debug). */
-  debug?: boolean;
-  /** Translated strings for UI messages. */
-  strings: {
-    error_load_pdf: string;
-    alert_url_required: string;
-    alert_submit_error: string;
-    loading_state: string;
-    load_pdf_btn: string;
-    default_box_name: string;
-    zoom_in?: string;
-    zoom_out?: string;
-    zoom_fit?: string;
-    /** Message shown when overlap is prevented (drag/resize would overlap another box). */
-    no_overlap_message?: string;
-  };
-}
+import './pdf-signable.scss';
 
-declare global {
-  interface Window {
-    NowoPdfSignableConfig?: NowoPdfSignableConfig;
-  }
-}
-
-/** PDF.js viewport (scale, dimensions, point conversion). Used when loading pdfjsLib from CDN. */
-interface PDFViewport {
-  scale: number;
-  width: number;
-  height: number;
-  convertToPdfPoint(x: number, y: number): [number, number];
-}
-
-/** PDF.js page proxy: viewport and render. */
-interface PDFPageProxy {
-  getViewport(params: { scale: number }): PDFViewport;
-  render(params: {
-    canvasContext: CanvasRenderingContext2D;
-    viewport: PDFViewport;
-  }): { promise: Promise<void> };
-}
-
-/** PDF.js document proxy: page count and getPage. */
-interface PDFDocumentProxy {
-  numPages: number;
-  getPage(num: number): Promise<PDFPageProxy>;
-}
-
-/** Global PDF.js library (loaded from CDN). */
-declare const pdfjsLib: {
-  getDocument(url: string): { promise: Promise<PDFDocumentProxy> };
-};
-
-/** Conversion factors from points to each unit (multiply pt by this to get unit value). */
-const PT_TO_UNIT: Record<string, number> = {
-  pt: 1,
-  mm: 25.4 / 72,
-  cm: 2.54 / 72,
-  in: 1 / 72,
-  px: 96 / 72,
-};
-
-/**
- * Converts a value from points to the given unit.
- * @param val - Value in points
- * @param unit - Target unit (pt, mm, cm, in, px)
- * @returns Value in the target unit
- */
-function ptToUnit(val: number, unit: string): number {
-  return val * (PT_TO_UNIT[unit] ?? 1);
-}
-
-/**
- * Converts a value from the given unit to points.
- * @param val - Value in the given unit
- * @param unit - Source unit (pt, mm, cm, in, px)
- * @returns Value in points
- */
-function unitToPt(val: number, unit: string): number {
-  return val / (PT_TO_UNIT[unit] ?? 1);
-}
-
-/**
- * Escapes HTML special characters in a string for safe use in HTML content and attributes.
- *
- * @param s - Raw string (e.g. user-controlled box name)
- * @returns HTML-escaped string safe for innerHTML text content
- */
-function escapeHtml(s: string): string {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-/** Base hue (0–360) for the first signer; rest are derived by adding HUE_STEP per index. */
-const BOX_COLOR_BASE_HUE = 220;
-/** Hue step per signer index so colors stay distinct and never repeat (no fixed palette size). */
-const BOX_COLOR_HUE_STEP = 37;
-/** Saturation (0–100) for box border/background. */
-const BOX_COLOR_S = 65;
-/** Lightness (0–100) for box border/background. */
-const BOX_COLOR_L = 48;
-
-/**
- * Converts HSL to hex (#rrggbb).
- *
- * @param h - Hue 0–360
- * @param s - Saturation 0–100
- * @param l - Lightness 0–100
- * @returns Hex color string (e.g. '#0d6efd')
- */
-function hslToHex(h: number, s: number, l: number): string {
-  h = h % 360;
-  if (h < 0) h += 360;
-  const sNorm = s / 100;
-  const lNorm = l / 100;
-  const c = (1 - Math.abs(2 * lNorm - 1)) * sNorm;
-  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-  const m = lNorm - c / 2;
-  let r = 0,
-    g = 0,
-    b = 0;
-  if (h < 60) {
-    r = c;
-    g = x;
-  } else if (h < 120) {
-    r = x;
-    g = c;
-  } else if (h < 180) {
-    g = c;
-    b = x;
-  } else if (h < 240) {
-    g = x;
-    b = c;
-  } else if (h < 300) {
-    r = x;
-    b = c;
-  } else {
-    r = c;
-    b = x;
-  }
-  const toHex = (n: number) => {
-    const v = Math.round((n + m) * 255);
-    return (v < 16 ? '0' : '') + Math.min(255, Math.max(0, v)).toString(16);
-  };
-  return '#' + toHex(r) + toHex(g) + toHex(b);
-}
-
-/**
- * Returns colors for a signer index. First index uses base hue; each next index adds HUE_STEP.
- * No palette limit and no repetition: colors are derived from the first.
- * @param index - 0 = first signer, 1 = second, etc. (by order of first occurrence of name)
- * @returns CSS values for border, background, text and handle
- */
-function getColorForBoxIndex(index: number): {
-  border: string;
-  background: string;
-  color: string;
-  handle: string;
-} {
-  const hue = (BOX_COLOR_BASE_HUE + index * BOX_COLOR_HUE_STEP) % 360;
-  const hex = hslToHex(hue, BOX_COLOR_S, BOX_COLOR_L);
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return {
-    border: hex,
-    background: `rgba(${r}, ${g}, ${b}, 0.15)`,
-    color: hex,
-    handle: hex,
-  };
-}
-
-/**
- * Initializes the PDF signable widget: loads config, binds load/click/drag and overlay updates.
- * Exits early if NowoPdfSignableConfig or required DOM elements are missing.
- *
- * Binds: Load PDF button, unit/origin change, add/remove box, overlay drag (move/resize),
- * form submit (re-index collection then native submit).
- *
- * @returns void
- */
+/** Initializes the signable PDF widget: load URL, scale, thumbnails, signature boxes, units, and touch zoom. */
 function run(): void {
-  const config = (window as Window & { NowoPdfSignableConfig?: NowoPdfSignableConfig })
-    .NowoPdfSignableConfig;
+  const config = window.NowoPdfSignableConfig;
   if (!config) {
     console.warn('[PdfSignable] NowoPdfSignableConfig not found, skipping init');
     return;
   }
   const { proxyUrl, strings, debug: debugMode = false } = config;
 
-  /**
-   * Logs to console only when debug mode is enabled (nowo_pdf_signable.debug: true).
-   *
-   * @param args - Same as console.log (message and optional objects)
-   */
+  /** Logs to console only when config.debug is true. */
   const debugLog = (...args: unknown[]): void => {
     if (debugMode) console.log('[PdfSignable]', ...args);
   };
 
-  /**
-   * Warns to console only when debug mode is enabled.
-   *
-   * @param args - Same as console.warn
-   */
+  /** Warns to console only when config.debug is true. */
   const debugWarn = (...args: unknown[]): void => {
     if (debugMode) console.warn('[PdfSignable]', ...args);
   };
@@ -250,6 +48,8 @@ function run(): void {
   }
   const snapGrid = Math.max(0, parseFloat(widget?.dataset.snapGrid ?? '0') || 0);
   const snapToBoxes = widget?.dataset.snapToBoxes === '1';
+  const showGrid = widget?.dataset.showGrid === '1';
+  const gridStep = Math.max(0, parseFloat(widget?.dataset.gridStep ?? '10') || 0);
   const SNAP_THRESHOLD_PX = 10;
 
   debugLog('Initialized');
@@ -263,12 +63,13 @@ function run(): void {
   const unitSelector = form.querySelector<HTMLSelectElement>('.unit-selector');
   const originSelector = form.querySelector<HTMLSelectElement>('.origin-selector');
   const pdfViewerContainer = document.getElementById('pdf-viewer-container');
+  const pdfZoomValue = document.getElementById('pdfZoomValue');
 
   if (!pdfCanvasWrapper || !signatureBoxesList) return;
   const canvasWrapper = pdfCanvasWrapper;
   const boxesList = signatureBoxesList;
 
-  /** Touch/pinch state: scale and translate applied to the viewer. Used for click/drag coordinate conversion. */
+  /** Touch/pinch state for the viewer; used for click/drag coordinate conversion. */
   let touchScale = 1;
   let touchTranslate = { x: 0, y: 0 };
   let touchWrapper: HTMLElement | null = null;
@@ -277,10 +78,7 @@ function run(): void {
   const THUMB_MAX_WIDTH = 80;
 
   /**
-   * Fills the thumbnail strip with page thumbnails and wires scroll sync.
-   * Layout (strip + scroll) must already exist (see ensureThumbnailsLayout).
-   *
-   * @returns void
+   * Fills the thumbnail strip with page thumbnails and wires scroll-to-thumb sync. Layout must exist (ensureThumbnailsLayout).
    */
   function buildThumbnailsAndLayout(): void {
     if (!pdfDoc || !pdfViewerContainer) return;
@@ -349,10 +147,7 @@ function run(): void {
   }
 
   /**
-   * Creates the touch wrapper element and moves the canvas wrapper inside it for pinch-zoom/pan.
-   * Idempotent: does nothing if the wrapper already exists.
-   *
-   * @returns void
+   * Creates the touch wrapper and moves the canvas wrapper into it for pinch-zoom/pan. Idempotent.
    */
   function ensureTouchWrapper(): void {
     if (touchWrapper || !pdfViewerContainer) return;
@@ -365,11 +160,7 @@ function run(): void {
     setupTouchListeners();
   }
 
-  /**
-   * Attaches touch listeners for two-finger pinch zoom and pan on the PDF viewer.
-   *
-   * @returns void
-   */
+  /** Attaches touch listeners for two-finger pinch zoom and pan on the PDF viewer. */
   function setupTouchListeners(): void {
     if (!touchWrapper) return;
     let initialDistance = 0;
@@ -535,27 +326,8 @@ function run(): void {
   let currentPdfScale = 1.5;
 
   /**
-   * Returns the URL to use for loading the PDF: same-origin as-is, cross-origin via proxy.
-   * @param url - User-provided PDF URL
-   * @returns URL to pass to pdfjsLib.getDocument
-   */
-  function getLoadUrl(url: string): string {
-    try {
-      const u = new URL(url, window.location.origin);
-      return u.origin === window.location.origin
-        ? url
-        : proxyUrl + '?url=' + encodeURIComponent(url);
-    } catch {
-      return proxyUrl + '?url=' + encodeURIComponent(url);
-    }
-  }
-
-  /**
    * Ensures the thumbnail strip and scroll wrapper exist so the PDF area has a defined width.
-   * When present, getScaleForContainer() uses the scroll area width so the PDF fits without horizontal scroll.
-   * Idempotent: does nothing if the layout already exists.
-   *
-   * @returns void
+   * When present, getScaleForFitWidth() uses the scroll area width. Idempotent.
    */
   function ensureThumbnailsLayout(): void {
     if (!pdfViewerContainer || !touchWrapper) return;
@@ -566,33 +338,54 @@ function run(): void {
     thumbStrip.setAttribute('aria-label', 'Page thumbnails');
     const scrollWrapper = document.createElement('div');
     scrollWrapper.className = 'pdf-viewer-scroll';
+    const themeToolbar = pdfViewerContainer.querySelector('.pdf-zoom-toolbar');
+    if (themeToolbar) scrollWrapper.appendChild(themeToolbar);
     scrollWrapper.appendChild(touchWrapper);
     pdfViewerContainer.appendChild(scrollWrapper);
     pdfViewerContainer.insertBefore(thumbStrip, scrollWrapper);
   }
 
   /**
-   * Computes a scale so that the first page fits the viewer width (no horizontal scroll).
-   * When the thumbnails layout exists, uses the scroll area width; waits one frame so layout is applied.
-   *
-   * @returns {Promise<number>} Scale factor for getViewport({ scale })
+   * Draws a grid overlay on a canvas (form-unit grid, e.g. every 10 mm) for alignment.
+   * PDF space uses bottom-left origin; viewport Y is top-down.
    */
-  async function getScaleForContainer(): Promise<number> {
-    if (!pdfDoc || !pdfViewerContainer) return 1.5;
-    await new Promise<void>((r) => requestAnimationFrame(() => r()));
-    const page = await pdfDoc.getPage(1);
-    const vp1 = page.getViewport({ scale: 1 });
-    const scrollEl = pdfViewerContainer.querySelector('.pdf-viewer-scroll');
-    const el = scrollEl ? (scrollEl as HTMLElement) : pdfViewerContainer;
-    const scrollbarGutter = 8;
-    const contentWidth = Math.max(0, el.clientWidth - scrollbarGutter);
-    return contentWidth <= 0 ? 1.5 : Math.max(0.5, contentWidth / vp1.width);
+  function drawGridOnCanvas(
+    gridCanvas: HTMLCanvasElement,
+    viewport: PDFViewport,
+    scale: number,
+    unit: string,
+    gridStep: number
+  ): void {
+    const ctx = gridCanvas.getContext('2d');
+    if (!ctx) return;
+    const pageWidthPt = viewport.width / scale;
+    const pageHeightPt = viewport.height / scale;
+    const pageWidthUnit = ptToUnit(pageWidthPt, unit);
+    const pageHeightUnit = ptToUnit(pageHeightPt, unit);
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.lineWidth = 1;
+    for (let xUnit = 0; xUnit <= pageWidthUnit; xUnit += gridStep) {
+      const xPt = unitToPt(xUnit, unit);
+      const vpX = xPt * scale;
+      ctx.beginPath();
+      ctx.moveTo(vpX, 0);
+      ctx.lineTo(vpX, viewport.height);
+      ctx.stroke();
+    }
+    for (let yUnit = 0; yUnit <= pageHeightUnit; yUnit += gridStep) {
+      const yPt = unitToPt(yUnit, unit);
+      const vpY = viewport.height - yPt * scale;
+      ctx.beginPath();
+      ctx.moveTo(0, vpY);
+      ctx.lineTo(viewport.width, vpY);
+      ctx.stroke();
+    }
   }
 
-
   /**
-   * Renders all PDF pages at the given scale into canvasWrapper and updates overlays.
-   * Requires pdfDoc to be loaded. Clears existing page viewports and canvas wrapper content.
+   * Renders all PDF pages at the given scale into the canvas wrapper and updates signature box overlays.
+   * Equivalent to PdfTemplate renderPagesAtScale (this bundle does not rescale form coordinates).
+   * @param scale - Target scale factor (e.g. 1.5 = 150%)
    */
   async function renderPdfAtScale(scale: number): Promise<void> {
     if (!pdfDoc) return;
@@ -615,64 +408,56 @@ function run(): void {
       const overlaysDiv = document.createElement('div');
       overlaysDiv.className = 'signature-overlays';
       wrapper.appendChild(canvas);
+      if (showGrid && gridStep > 0) {
+        const gridCanvas = document.createElement('canvas');
+        gridCanvas.className = 'pdf-grid-overlay';
+        gridCanvas.width = viewport.width;
+        gridCanvas.height = viewport.height;
+        gridCanvas.dataset.page = String(num);
+        drawGridOnCanvas(gridCanvas, viewport, scale, getSelectedUnit(), gridStep);
+        wrapper.appendChild(gridCanvas);
+      }
       wrapper.appendChild(overlaysDiv);
       renderTask = page.render({ canvasContext: ctx, viewport }).promise;
       await renderTask;
       canvasWrapper.appendChild(wrapper);
     }
+    if (pdfZoomValue) pdfZoomValue.textContent = Math.round(scale * 100) + '%';
     updateOverlays();
   }
 
-  function addZoomToolbar(): void {
+  /**
+   * Binds zoom toolbar buttons (zoom in/out, fit width, fit page). Removes legacy #pdf-zoom-toolbar if present.
+   */
+  function bindZoomToolbar(): void {
     pdfViewerContainer?.querySelector('#pdf-zoom-toolbar')?.remove();
-    if (!pdfViewerContainer) return;
-    const t = document.createElement('div');
-    t.id = 'pdf-zoom-toolbar';
-    t.className = 'pdf-zoom-toolbar';
-    t.setAttribute('role', 'toolbar');
-    t.setAttribute('aria-label', strings.zoom_fit ?? 'Zoom');
-    const zoomOut = document.createElement('button');
-    zoomOut.type = 'button';
-    zoomOut.className = 'pdf-zoom-btn';
-    zoomOut.title = strings.zoom_out ?? 'Zoom out';
-    zoomOut.textContent = '-';
-    zoomOut.setAttribute('aria-label', strings.zoom_out ?? 'Zoom out');
-    const zoomIn = document.createElement('button');
-    zoomIn.type = 'button';
-    zoomIn.className = 'pdf-zoom-btn';
-    zoomIn.title = strings.zoom_in ?? 'Zoom in';
-    zoomIn.textContent = '+';
-    zoomIn.setAttribute('aria-label', strings.zoom_in ?? 'Zoom in');
-    const fitWidth = document.createElement('button');
-    fitWidth.type = 'button';
-    fitWidth.className = 'pdf-zoom-btn';
-    fitWidth.title = strings.zoom_fit ?? 'Fit width';
-    fitWidth.textContent = strings.zoom_fit ?? 'Fit';
-    fitWidth.setAttribute('aria-label', strings.zoom_fit ?? 'Fit width');
-    zoomOut.addEventListener('click', () => {
+
+    document.getElementById('pdfZoomOut')?.addEventListener('click', () => {
+      if (!pdfDoc) return;
       currentPdfScale = Math.max(0.5, currentPdfScale / 1.25);
       renderPdfAtScale(currentPdfScale);
     });
-    zoomIn.addEventListener('click', () => {
-      currentPdfScale = Math.min(3, currentPdfScale * 1.25);
+    document.getElementById('pdfZoomIn')?.addEventListener('click', () => {
+      if (!pdfDoc) return;
+      currentPdfScale = Math.min(4, currentPdfScale * 1.25);
       renderPdfAtScale(currentPdfScale);
     });
-    fitWidth.addEventListener('click', async () => {
-      const scale = await getScaleForContainer();
+    document.getElementById('pdfFitWidth')?.addEventListener('click', async () => {
+      if (!pdfDoc) return;
+      const scale = await getScaleForFitWidth(pdfDoc, pdfViewerContainer);
       currentPdfScale = scale;
       await renderPdfAtScale(currentPdfScale);
     });
-    t.appendChild(zoomOut);
-    t.appendChild(zoomIn);
-    t.appendChild(fitWidth);
-    pdfViewerContainer.insertBefore(t, pdfViewerContainer.firstChild);
+    document.getElementById('pdfFitPage')?.addEventListener('click', async () => {
+      if (!pdfDoc) return;
+      const scale = await getScaleForFitPage(pdfDoc, pdfViewerContainer);
+      currentPdfScale = scale;
+      await renderPdfAtScale(currentPdfScale);
+    });
   }
 
   /**
-   * Loads the PDF from the URL input (or proxy), renders all pages and builds overlay containers.
-   * Shows loading state and errors via config strings. Establishes thumbnails layout before scaling.
-   *
-   * @returns {Promise<void>}
+   * Loads the PDF from the URL (or proxy), renders pages at fit-width scale, builds thumbnails and overlays. Same name as PdfTemplateBundle.
    */
   async function loadPdf(): Promise<void> {
     const url = pdfUrlInput?.value?.trim() ?? '';
@@ -681,7 +466,7 @@ function run(): void {
       alert(strings.alert_url_required);
       return;
     }
-    const loadUrl = getLoadUrl(url);
+    const loadUrl = getLoadUrl(proxyUrl, url);
     debugLog('Loading PDF', { url, viaProxy: loadUrl !== url });
     if (loadPdfBtn) {
       loadPdfBtn.setAttribute('disabled', '');
@@ -693,6 +478,10 @@ function run(): void {
     canvasWrapper.innerHTML = '';
     const strip = pdfViewerContainer?.querySelector('#pdf-thumbnails-strip');
     const scroll = pdfViewerContainer?.querySelector('.pdf-viewer-scroll');
+    const themeToolbar = scroll?.querySelector('.pdf-zoom-toolbar');
+    if (themeToolbar && pdfViewerContainer) {
+      pdfViewerContainer.insertBefore(themeToolbar, pdfViewerContainer.firstChild);
+    }
     if (scroll && touchWrapper && touchWrapper.parentElement === scroll) {
       scroll.removeChild(touchWrapper);
       pdfViewerContainer?.appendChild(touchWrapper);
@@ -723,14 +512,13 @@ function run(): void {
       Object.keys(pageViewports).forEach((k) => delete pageViewports[Number(k)]);
       ensureTouchWrapper();
       ensureThumbnailsLayout();
-      const scale = await getScaleForContainer();
+      const scale = await getScaleForFitWidth(pdfDoc, pdfViewerContainer);
       currentPdfScale = scale;
       await renderPdfAtScale(scale);
 
       if (pdfPlaceholder) pdfPlaceholder.style.display = 'none';
       canvasWrapper.style.display = 'block';
       buildThumbnailsAndLayout();
-      addZoomToolbar();
       // Draw overlays when landing with data: run after paint and with retries so boxes always show
       const scheduleOverlayUpdates = (): void => {
         updateOverlays();
@@ -739,7 +527,7 @@ function run(): void {
         setTimeout(updateOverlays, 700);
       };
       requestAnimationFrame(scheduleOverlayUpdates);
-      debugLog('PDF loaded', { pages: pdfDoc.numPages, scale });
+      debugLog('PDF loaded', { pages: pdfDoc!.numPages, scale });
     } catch (err) {
       debugLog('PDF load failed', err);
       alert(strings.error_load_pdf + (err instanceof Error ? err.message : String(err)));
@@ -753,11 +541,7 @@ function run(): void {
   }
 
   /**
-   * Rebuilds all signature box overlays from the form inputs (page, x, y, width, height, unit, origin).
-   * Clears existing overlays and creates one overlay per signature-box-item.
-   * Skips when isDragging to avoid removing the overlay being dragged.
-   *
-   * @returns void
+   * Rebuilds signature box overlays from form inputs (page, x, y, width, height, unit, origin). Skips while dragging.
    */
   function updateOverlays(): void {
     if (isDragging || Object.keys(pageViewports).length === 0) return;
@@ -1031,9 +815,8 @@ function run(): void {
   }
 
   /**
-   * Reads the max signature boxes allowed from data attributes (boxes list or add button).
-   *
-   * @returns {number|null} Max entries or null if unlimited
+   * Reads the max signature boxes allowed from data attributes.
+   * @returns Max entries or null if unlimited
    */
   function getMaxEntries(): number | null {
     const raw = boxesList.dataset.maxEntries ?? addBoxBtn?.dataset.maxEntries ?? '';
@@ -1042,11 +825,7 @@ function run(): void {
     return Number.isNaN(n) ? null : n;
   }
 
-  /**
-   * Hides the "Add box" button when the current box count has reached max_entries.
-   *
-   * @returns void
-   */
+  /** Hides the Add box button when box count has reached max_entries. */
   function updateAddButtonVisibility(): void {
     if (!addBoxBtn) return;
     const max = getMaxEntries();
@@ -1059,10 +838,10 @@ function run(): void {
   }
 
   /**
-   * Adds a new signature box entry to the list and syncs overlays. Respects max_entries.
+   * Adds a new signature box to the list and updates overlays. Respects max_entries.
    * @param page - PDF page number (1-based)
-   * @param xPdf - X position in PDF space (points)
-   * @param yPdf - Y position in PDF space (points)
+   * @param xPdf - X in PDF points
+   * @param yPdf - Y in PDF points
    * @param width - Box width in points (default 150)
    * @param height - Box height in points (default 40)
    */
@@ -1253,7 +1032,7 @@ function run(): void {
         if (isReRendering) return;
         isReRendering = true;
         try {
-          const scale = await getScaleForContainer();
+          const scale = await getScaleForFitWidth(pdfDoc, pdfViewerContainer);
           currentPdfScale = scale;
           await renderPdfAtScale(scale);
           if (pdfViewerContainer) lastObservedWidth = pdfViewerContainer.clientWidth;
@@ -1264,6 +1043,8 @@ function run(): void {
     });
     ro.observe(pdfViewerContainer);
   }
+
+  bindZoomToolbar();
 
   // Auto-load PDF when DOM is ready so #signature-boxes-list and form values are available for overlays
   function startAutoLoad(): void {
@@ -1340,6 +1121,20 @@ function run(): void {
       result.push({ page, x, y, w, h });
     });
     return result;
+  }
+
+  /**
+   * Axis-aligned bounding box size for a rectangle of size (w, h) rotated by angleDeg (degrees).
+   * Used so drag constraints keep the rotated overlay fully inside the page.
+   */
+  function getRotatedAabbSize(w: number, h: number, angleDeg: number): { aabbW: number; aabbH: number } {
+    const rad = (angleDeg * Math.PI) / 180;
+    const cos = Math.abs(Math.cos(rad));
+    const sin = Math.abs(Math.sin(rad));
+    return {
+      aabbW: w * cos + h * sin,
+      aabbH: w * sin + h * cos,
+    };
   }
 
   /** Viewport bounds (left, top, right, bottom in pixels) for snap-to-boxes. */
@@ -1524,10 +1319,20 @@ function run(): void {
     let newLeft: number, newTop: number, newW: number, newH: number;
 
     if (dragState.mode === 'move') {
-      newLeft = Math.max(0, Math.min(vp.width - (sr - sl), sl + dx));
-      newTop = Math.max(0, Math.min(vp.height - (sb - st), st + dy));
-      newW = sr - sl;
-      newH = sb - st;
+      const moveW = sr - sl;
+      const moveH = sb - st;
+      const angleInp = dragState.item.querySelector<HTMLInputElement>('.signature-box-angle');
+      const angleDeg = enableRotation && angleInp ? parseFloat(angleInp.value) || 0 : 0;
+      const { aabbW, aabbH } = getRotatedAabbSize(moveW, moveH, angleDeg);
+      // Allow overlay left/top to be negative so the rotated AABB can touch page edges (e.g. left edge at -90°).
+      const leftMin = aabbW / 2 - moveW / 2;
+      const leftMax = vp.width - aabbW / 2 - moveW / 2;
+      const topMin = aabbH / 2 - moveH / 2;
+      const topMax = vp.height - aabbH / 2 - moveH / 2;
+      newLeft = Math.max(leftMin, Math.min(leftMax, sl + dx));
+      newTop = Math.max(topMin, Math.min(topMax, st + dy));
+      newW = moveW;
+      newH = moveH;
     } else {
       const h = dragState.handle;
       let left = sl;

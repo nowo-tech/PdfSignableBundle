@@ -14,22 +14,22 @@ The bundle today focuses on **defining where** signature boxes go (coordinates).
 - **Pre-made signature image** *(implemented)*  
   Upload image per box via `enable_signature_upload: true`. See [USAGE](USAGE.md#signing-in-boxes-draw-or-image).
 
-- **Digital signature (PKI / PAdES)**  
-  Use certificates (e.g. X.509) to sign the PDF in the defined boxes (PAdES-BES or PAdES-EPES). Requires backend integration with a signing service or HSM. **Higher legal validity** (advanced electronic signature in many jurisdictions).
+- **Digital signature (PKI / PAdES)** *(structure in bundle; you add keys & service)*  
+  The bundle provides **`PdfSignRequestEvent`** and config placeholder **`signing_service_id`**. Your app adds a signing library or HSM/signing service and subscribes to the event (or `SIGNATURE_COORDINATES_SUBMITTED`) to produce PAdES-BES/EPES in the defined boxes. See [SIGNING_ADVANCED](SIGNING_ADVANCED.md).
 
-- **Qualified / eIDAS-style signatures**  
-  Integration with qualified trust service providers (TSP): qualified certificates, optional **timestamp** (TSA) and/or **LTV** (long-term validation) to increase legal weight and long-term verifiability. Relevant for EU eIDAS and similar frameworks.
+- **Qualified / eIDAS-style signatures** *(same as PKI + TSA/LTV in your app)*  
+  Use the same events and audit metadata; your app integrates a qualified TSP (certificates, TSA, LTV). No TSP code in the bundle. See [SIGNING_ADVANCED](SIGNING_ADVANCED.md).
 
-- **Timestamp and audit trail**  
-  Optional trusted timestamp (RFC 3161) and audit log (who signed, when, which box, IP/session) to strengthen evidence. Can complement both “draw” signatures and PKI signatures.
+- **Timestamp and audit trail** *(implemented)*  
+  **Audit:** `SignatureCoordinatesModel::audit_metadata`, **`AuditMetadata`** constants (e.g. `tsa_token`, `ip`, `user_id`). **Config `audit.fill_from_request`** (default true) fills `submitted_at`, `ip`, `user_agent` before dispatch. **Config `tsa_url`** is a placeholder: your listener calls your TSA and sets the token in audit. See [SIGNING_ADVANCED](SIGNING_ADVANCED.md) and [CONFIGURATION](CONFIGURATION.md).
 
-- **One-click / batch signing**  
-  For workflows where boxes are predefined: “Sign all” or “Sign selected boxes” with a chosen method (draw, image, or digital), without redefining coordinates each time.
+- **One-click / batch signing** *(implemented)*  
+  **Form option `batch_sign_enabled`** shows a **Sign all** button; submit with `batch_sign=1` dispatches **`BATCH_SIGN_REQUESTED`**. Your listener performs the actual batch sign (draw/upload or PKI). See [SIGNING_ADVANCED](SIGNING_ADVANCED.md) and [EVENTS](EVENTS.md).
 
 - **Legal disclaimer in UI** *(implemented)*  
   Via `signing_legal_disclaimer` and `signing_legal_disclaimer_url`. See [USAGE](USAGE.md#legal-disclaimer).
 
-*Implementing any of these would require design choices (e.g. backend API for PKI, storage of drawn signatures, PDF writing library) and possibly new packages or optional dependencies.*
+*The bundle provides events and structures for PKI, timestamp and batch; the actual TSA/PKI calls and PDF signing require your backend integration (signing service, HSM or library). See [SIGNING_ADVANCED](SIGNING_ADVANCED.md).*
 
 ---
 
@@ -63,8 +63,8 @@ The bundle today focuses on **defining where** signature boxes go (coordinates).
 - **Zoom toolbar** *(implemented)*  
   Zoom out (−), zoom in (+), fit width (translated). PDF loads at fit-to-width; range 0.5×–3×. See [USAGE](USAGE.md).
 
-- **Guides and grid**  
-  Option to show guides or grid on the canvas (e.g. every 10 mm) to align boxes.
+- **Guides and grid** *(implemented)*  
+  Form options `show_grid` (bool) and `grid_step` (in form unit, e.g. 10 mm). A grid overlay is drawn on the PDF so boxes can be aligned. Demo: `/demo-signature/guides-and-grid`.
 
 - **Snap to grid / snap between boxes** *(implemented)*  
   Form options `snap_to_grid` (grid step in form unit, 0 = off) and `snap_to_boxes` (default true). When dragging, position/size snap to the grid and box edges snap to other boxes’ edges within ~10 px. See [USAGE](USAGE.md).
@@ -160,8 +160,8 @@ Key idea: **Multiple views (thumbnails)** — thumbnail panel for pages to jump 
 - **Proxy PDF size limit**  
   Reject or truncate responses above a configurable size.
 
-- **Viewer lazy load**  
-  Load the PDF script only when the coordinates block is visible (intersection observer).
+- **Viewer lazy load** *(implemented)*  
+  Form option `viewer_lazy_load: true` defers loading of PDF.js and pdf-signable.js until the widget enters the viewport (IntersectionObserver with rootMargin). Demo: `/demo-signature/lazy-load`.
 
 - **Web Worker for PDF.js**  
   Move PDF parsing to a worker so the main thread is not blocked on large documents.

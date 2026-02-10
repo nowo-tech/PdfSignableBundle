@@ -12,6 +12,7 @@ page:
   delete: 'Supprimer'
   empty_state: 'Aucune zone de signature. Cliquez sur le PDF ou sur "Ajouter une zone" pour en créer une.'
   save_coordinates: 'Enregistrer les coordonnées'
+  sign_all: 'Tout signer'
   errors_collection: 'Erreurs dans les zones de signature :'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Zoom avant'
   zoom_out: 'Zoom arrière'
   zoom_fit: 'Ajuster la largeur'
+  fit_width: 'Ajuster la largeur'
+  fit_page: 'Ajuster la page'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Suppr'

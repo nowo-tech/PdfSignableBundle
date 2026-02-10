@@ -12,6 +12,7 @@ page:
   delete: 'Удалить'
   empty_state: 'Поля подписи пока нет. Щёлкните по PDF или «Добавить поле», чтобы создать.'
   save_coordinates: 'Сохранить координаты'
+  sign_all: 'Подписать всё'
   errors_collection: 'Ошибки в полях подписи:'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Увеличить'
   zoom_out: 'Уменьшить'
   zoom_fit: 'По ширине'
+  fit_width: 'По ширине'
+  fit_page: 'По странице'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Удалить'

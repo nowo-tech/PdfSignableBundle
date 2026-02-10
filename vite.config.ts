@@ -12,6 +12,7 @@ export default defineConfig({
       output: {
         format: 'iife',
         entryFileNames: 'pdf-signable.js',
+        assetFileNames: '[name][extname]',
       },
     },
   },

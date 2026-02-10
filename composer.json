@@ -1,20 +1,28 @@
 {
   "name": "nowo-tech/pdf-signable-bundle",
-  "description": "Symfony bundle for PDF signable form field: render PDF from URL, define signature coordinates by click.",
+  "description": "Define signature box coordinates on PDFs in Symfony: form type with PDF.js viewer, drag-and-drop placement, validation, and signing hooks.",
   "type": "symfony-bundle",
   "license": "MIT",
   "keywords": [
     "symfony",
     "symfony-bundle",
     "pdf",
+    "pdf-viewer",
+    "pdfjs",
     "signature",
+    "signature-coordinates",
+    "document-signing",
     "form",
-    "coordinates"
+    "form-type",
+    "coordinates",
+    "signing",
+    "eidas"
   ],
   "homepage": "https://github.com/nowo-tech/pdfSignableBundle",
   "support": {
     "issues": "https://github.com/nowo-tech/pdfSignableBundle/issues",
-    "source": "https://github.com/nowo-tech/pdfSignableBundle"
+    "source": "https://github.com/nowo-tech/pdfSignableBundle",
+    "docs": "https://github.com/nowo-tech/pdfSignableBundle/tree/main/docs"
   },
   "authors": [
     {

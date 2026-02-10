@@ -12,6 +12,7 @@ page:
   delete: 'Verwijderen'
   empty_state: 'Nog geen handtekeningvakken. Klik op de PDF of op "Vak toevoegen" om er een te maken.'
   save_coordinates: 'Coördinaten opslaan'
+  sign_all: 'Alles ondertekenen'
   errors_collection: 'Fouten in handtekeningvakken:'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Inzoomen'
   zoom_out: 'Uitzoomen'
   zoom_fit: 'Breedte passend'
+  fit_width: 'Breedte passend'
+  fit_page: 'Pagina passend'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Verwijderen'

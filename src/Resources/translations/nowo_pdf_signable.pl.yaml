@@ -12,6 +12,7 @@ page:
   delete: 'Usuń'
   empty_state: 'Brak pól podpisu. Kliknij w PDF lub „Dodaj pole”, aby utworzyć.'
   save_coordinates: 'Zapisz współrzędne'
+  sign_all: 'Podpisz wszystko'
   errors_collection: 'Błędy w polach podpisu:'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Powiększ'
   zoom_out: 'Pomniejsz'
   zoom_fit: 'Dopasuj szerokość'
+  fit_width: 'Dopasuj szerokość'
+  fit_page: 'Dopasuj stronę'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Usuń'

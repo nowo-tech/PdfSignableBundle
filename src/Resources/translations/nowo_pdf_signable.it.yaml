@@ -12,6 +12,7 @@ page:
   delete: 'Elimina'
   empty_state: 'Nessun campo firma. Clicca sul PDF o su "Aggiungi campo" per crearne uno.'
   save_coordinates: 'Salva coordinate'
+  sign_all: 'Firma tutto'
   errors_collection: 'Errori nei campi firma:'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Ingrandisci'
   zoom_out: 'Riduci'
   zoom_fit: 'Adatta larghezza'
+  fit_width: 'Adatta larghezza'
+  fit_page: 'Adatta pagina'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Canc'

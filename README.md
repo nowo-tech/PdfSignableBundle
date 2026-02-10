@@ -1,12 +1,10 @@
 # PdfSignable Bundle
 
-[![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-6.1%2B%20%7C%207%20%7C%208-000000?logo=symfony)](https://symfony.com) [![GitHub stars](https://img.shields.io/github/stars/nowo-tech/pdf-signable-bundle.svg?style=social&label=Star)](https://github.com/nowo-tech/pdfSignableBundle)
+[![Packagist Version](https://img.shields.io/packagist/v/nowo-tech/pdf-signable-bundle.svg?style=flat)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-6.1%2B%20%7C%207%20%7C%208-000000?logo=symfony)](https://symfony.com) [![GitHub stars](https://img.shields.io/github/stars/nowo-tech/PdfSignableBundle.svg?style=social&label=Star)](https://github.com/nowo-tech/PdfSignableBundle)
 
-> ⭐ **Found this project useful?** Give it a star on GitHub! It helps us maintain and improve the project.
+> ⭐ **Found this useful?** [Install from Packagist](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) · Give it a star on [GitHub](https://github.com/nowo-tech/PdfSignableBundle) to help others find it.
 
-**Symfony bundle to define signature coordinates on PDFs.** A form type that accepts a PDF URL, renders the document in the browser with PDF.js, and lets users place signature boxes by clicking on the page (drag to move, drag corners to resize). Ideal for configuring where signatures must appear in PDF documents before sending them to sign.
-
-> 📋 **Compatible with Symfony 6.1+, 7.x, and 8.x** — This bundle requires Symfony 6.1 or higher and PHP 8.1+.
+**Symfony bundle to define signature box coordinates on PDFs.** Form type with an in-browser PDF.js viewer: users place and resize signature areas by clicking and dragging. Supports units (mm, cm, pt), validation, proxy for external PDFs, and hooks for PKI/timestamp/batch signing. Symfony 6.1+, 7.x, 8.x · PHP 8.1+.
 
 ## What is this?
 
@@ -30,10 +28,10 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Optional proxy** — Load external PDFs without CORS; configurable via `nowo_pdf_signable.proxy_enabled`
 - ✅ **Named configurations** — Define presets in `nowo_pdf_signable.configs` and use `config: 'name'` when adding the form type
 - ✅ **URL modes** — Free-text URL input or dropdown choice (`url_mode: choice`, `url_choices`)
-- ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation; **page restriction** (`allowed_pages`); **sort order** on submit (`sort_boxes`); **no overlapping boxes** (`prevent_box_overlap`, default true); **optional rotation** (`enable_rotation`); **default values per name** (`box_defaults_by_name`); **snap to grid** (`snap_to_grid`) and **snap to other boxes** (`snap_to_boxes`, default true)
+- ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation; **page restriction** (`allowed_pages`); **sort order** on submit (`sort_boxes`); **no overlapping boxes** (`prevent_box_overlap`, default true); **optional rotation** (`enable_rotation`); **default values per name** (`box_defaults_by_name`); **snap to grid** (`snap_to_grid`) and **snap to other boxes** (`snap_to_boxes`, default true); **guides and grid** (`show_grid`, `grid_step`); **viewer lazy load** (`viewer_lazy_load`); **batch signing** (`batch_sign_enabled`, “Sign all” button). **Audit**: optional fill from request (`audit.fill_from_request`), placeholders for TSA and signing service (see [SIGNING_ADVANCED](docs/SIGNING_ADVANCED.md))
 - ✅ **Viewer** — **Thumbnails**: page strip to jump to a page; **Zoom**: toolbar (zoom in, zoom out, fit width, translated); **Touch**: pinch to zoom, two-finger pan on tablets
 - ✅ **Validation** — Required box name (NotBlank); `unique_box_names` global (`true`/`false`) or per-name (array) to enforce unique box names
-- ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent` for integration
+- ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent`, `BatchSignRequestedEvent`, `PdfSignRequestEvent` for integration (see [EVENTS](docs/EVENTS.md) and [SIGNING_ADVANCED](docs/SIGNING_ADVANCED.md))
 - ✅ **Compatibility** — Symfony 6.1+, 7.x, 8.x and PHP 8.1+
 
 ## Screenshots
@@ -46,17 +44,19 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 
 ![Signature coordinates form — PDF viewer and boxes](docs/img/demo-signature-form.png)
 
-## Installation
+**Signature form (alternate view)** — Same form with thumbnails strip, zoom toolbar and optional rotation; boxes can be placed flush to page edges at any angle:
 
-Install the bundle with Composer:
+![Signature form — thumbnails, zoom and rotation](docs/img/demo-signature-form-2.png)
+
+## Installation
 
 ```bash
 composer require nowo-tech/pdf-signable-bundle
 ```
 
-With [Symfony Flex](https://symfony.com/doc/current/setup/flex.html) the bundle is registered automatically. Otherwise register it and import the routes — see [Installation](docs/INSTALLATION.md).
+[Symfony Flex](https://symfony.com/doc/current/setup/flex.html) registers the bundle automatically. Otherwise see [Installation](docs/INSTALLATION.md) to register the bundle and routes.
 
-**Development / unreleased:** To use the latest `main` branch before the next tag, add the VCS repository and require `dev-main` (see [docs/INSTALLATION.md](docs/INSTALLATION.md)).
+**Unreleased / dev:** To use the latest `main` branch, add the VCS repo and require `dev-main` — see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 ## Quick Start
 
@@ -103,7 +103,7 @@ See [CONFIGURATION.md](docs/CONFIGURATION.md) for detailed options and named con
 
 ## Demos
 
-Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. The [screenshots above](#screenshots) show the demo home (configuration cards) and the signature coordinates form (PDF viewer + boxes).
+Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. The [screenshots above](#screenshots) show the demo home (configuration cards), the signature coordinates form (PDF viewer + boxes), and an alternate view with thumbnails, zoom and rotation.
 
 ```bash
 cd demo
@@ -111,7 +111,7 @@ make run-symfony7   # → http://localhost:8000
 make run-symfony8   # → http://localhost:8001
 ```
 
-Seventeen demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, rotation, defaults-by-name, snap-to-grid, latest features (combined), predefined boxes. See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
+Nineteen demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, rotation, defaults-by-name, snap-to-grid, **guides-and-grid**, **viewer lazy-load**, latest features (combined), predefined boxes; plus signing (draw, upload, legal disclaimer, predefined boxes — sign only, signing options). See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
 
 ### Xdebug
 
@@ -153,7 +153,9 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 - [Installation](docs/INSTALLATION.md) — Step-by-step installation and route registration
 - [Configuration](docs/CONFIGURATION.md) — Proxy, example URL, named configs
 - [Usage](docs/USAGE.md) — Form options, named configs, customization
-- [Events](docs/EVENTS.md) — Proxy and submission events
+- [Events](docs/EVENTS.md) — Proxy, submission, batch sign and PDF sign request events
+- [Advanced signing](docs/SIGNING_ADVANCED.md) — PKI/PAdES, timestamp, audit trail, batch (structure; you add keys and services)
+- [Styles](docs/STYLES.md) — PDF viewer CSS, handle sizes, single-inclusion
 - [Testing](docs/TESTING.md) — Test structure and code coverage
 - [Changelog](docs/CHANGELOG.md) — Version history
 - [Upgrading](docs/UPGRADING.md) — Upgrade instructions

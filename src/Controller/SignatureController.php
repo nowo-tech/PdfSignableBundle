@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Controller;
 
+use Nowo\PdfSignableBundle\Event\BatchSignRequestedEvent;
 use Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent;
 use Nowo\PdfSignableBundle\Event\PdfProxyResponseEvent;
 use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
 use Nowo\PdfSignableBundle\Event\SignatureCoordinatesSubmittedEvent;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
+use Nowo\PdfSignableBundle\Model\AuditMetadata;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -34,11 +36,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class SignatureController extends AbstractController
 {
     /**
-     * @param EventDispatcherInterface $eventDispatcher   Dispatches signature and proxy events
-     * @param TranslatorInterface      $translator        Used for flash and error messages
-     * @param bool                     $proxyEnabled      Whether the proxy route is enabled
-     * @param list<string>             $proxyUrlAllowlist When non-empty, proxy only allows these URL patterns
-     * @param string                   $examplePdfUrl     Default PDF URL for form preload when not POST
+     * @param EventDispatcherInterface $eventDispatcher      Dispatches signature and proxy events
+     * @param TranslatorInterface      $translator          Used for flash and error messages
+     * @param bool                     $proxyEnabled        Whether the proxy route is enabled
+     * @param list<string>             $proxyUrlAllowlist   When non-empty, proxy only allows these URL patterns
+     * @param string                   $examplePdfUrl       Default PDF URL for form preload when not POST
+     * @param bool                     $auditFillFromRequest When true, merge IP, user_agent, submitted_at into model audit before dispatch
      */
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
@@ -46,6 +49,7 @@ final class SignatureController extends AbstractController
         private readonly bool $proxyEnabled = true,
         private readonly array $proxyUrlAllowlist = [],
         private readonly string $examplePdfUrl = '',
+        private readonly bool $auditFillFromRequest = true,
     ) {
     }
 
@@ -68,6 +72,20 @@ final class SignatureController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $model = $form->getData();
+            if ($this->auditFillFromRequest) {
+                $audit = array_merge($model->getAuditMetadata(), [
+                    AuditMetadata::SUBMITTED_AT => date('c'),
+                    AuditMetadata::IP => $request->getClientIp() ?? '',
+                    AuditMetadata::USER_AGENT => $request->headers->get('User-Agent', ''),
+                ]);
+                $model->setAuditMetadata($audit);
+            }
+            if ($request->request->getBoolean('batch_sign', false)) {
+                $this->eventDispatcher->dispatch(
+                    new BatchSignRequestedEvent($model, $request, null),
+                    PdfSignableEvents::BATCH_SIGN_REQUESTED
+                );
+            }
             $this->eventDispatcher->dispatch(
                 new SignatureCoordinatesSubmittedEvent($model, $request),
                 PdfSignableEvents::SIGNATURE_COORDINATES_SUBMITTED

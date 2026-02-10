@@ -7,9 +7,11 @@ namespace Nowo\PdfSignableBundle\Tests\Form;
 use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validation;
@@ -63,6 +65,17 @@ final class SignatureBoxTypeTest extends TypeTestCase
     {
         $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel());
         self::assertInstanceOf(SignatureBoxType::class, $form->getConfig()->getType()->getInnerType());
+    }
+
+    /** PRE_SET_DATA listener pre-fills name with first choice when model name is empty. */
+    public function testPreSetDataSelectsFirstChoiceWhenNameEmpty(): void
+    {
+        $model = new SignatureBoxModel();
+        $this->factory->create(SignatureBoxType::class, $model, [
+            'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+            'name_choices' => ['First' => 'first_val', 'Second' => 'second_val'],
+        ]);
+        self::assertSame('first_val', $model->getName());
     }
 
     public function testSubmitWithNameModeChoice(): void
@@ -195,5 +208,24 @@ final class SignatureBoxTypeTest extends TypeTestCase
         ]);
         self::assertTrue($form->isSynchronized());
         self::assertSame($dataUrl, $model->getSignatureData());
+    }
+
+    /** allowed_pages must contain only positive integers; invalid values trigger OptionsResolver. */
+    public function testAllowedPagesInvalidValueThrows(): void
+    {
+        $this->expectException(InvalidOptionsException::class);
+        $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
+            'allowed_pages' => [0],
+        ]);
+    }
+
+    /** When name_mode is choice but name_choices is empty, name field is TextType (same as input mode). */
+    public function testNameModeChoiceWithEmptyChoicesUsesTextType(): void
+    {
+        $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
+            'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+            'name_choices' => [],
+        ]);
+        self::assertInstanceOf(TextType::class, $form->get('name')->getConfig()->getType()->getInnerType());
     }
 }

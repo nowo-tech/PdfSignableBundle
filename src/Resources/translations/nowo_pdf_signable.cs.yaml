@@ -12,6 +12,7 @@ page:
   delete: 'Smazat'
   empty_state: 'Zatím žádná pole pro podpisy. Klikněte na PDF nebo na "Přidat pole" pro vytvoření.'
   save_coordinates: 'Uložit souřadnice'
+  sign_all: 'Podepsat vše'
   errors_collection: 'Chyby v polích pro podpisy:'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Přiblížit'
   zoom_out: 'Oddálit'
   zoom_fit: 'Přizpůsobit šířku'
+  fit_width: 'Přizpůsobit šířku'
+  fit_page: 'Přizpůsobit stránku'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Delete'

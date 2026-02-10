@@ -16,6 +16,7 @@
         </include>
         <exclude>
             <directory>src/Resources</directory>
+            <file>src/Event/PdfSignableEvents.php</file>
         </exclude>
     </source>
     <coverage>

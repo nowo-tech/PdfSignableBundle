@@ -9,6 +9,7 @@ services:
             $proxyEnabled: '%nowo_pdf_signable.proxy_enabled%'
             $proxyUrlAllowlist: '%nowo_pdf_signable.proxy_url_allowlist%'
             $examplePdfUrl: '%nowo_pdf_signable.example_pdf_url%'
+            $auditFillFromRequest: '%nowo_pdf_signable.audit.fill_from_request%'
         tags: ['controller.service_arguments']
 
     Nowo\PdfSignableBundle\Controller\:
@@ -26,3 +27,6 @@ services:
             $namedConfigs: '%nowo_pdf_signable.configs%'
             $debug: '%nowo_pdf_signable.debug%'
         tags: ['form.type']
+
+    Nowo\PdfSignableBundle\Twig\NowoPdfSignableTwigExtension:
+        tags: ['twig.extension']

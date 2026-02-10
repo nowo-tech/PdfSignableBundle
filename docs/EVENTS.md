@@ -6,7 +6,9 @@ The bundle dispatches events at key moments so you can extend behavior without m
 
 | Event | When | Use case |
 |-------|------|----------|
-| `SignatureCoordinatesSubmittedEvent` | After the signature form is submitted and valid | Persist coordinates, send to a signing service, log |
+| `SignatureCoordinatesSubmittedEvent` | After the signature form is submitted and valid | Persist coordinates, send to a signing service, add audit metadata, log |
+| `BatchSignRequestedEvent` | Form submitted with "Sign all" (`batch_sign=1`) | Perform batch signing (draw/upload or PKI) in one go |
+| `PdfSignRequestEvent` | When your code requests a digital (PKI) signature | Call your signing service/HSM, set signed PDF or custom response |
 | `PdfProxyRequestEvent` | Before the PDF proxy fetches an external URL | Change URL, serve from cache, short-circuit with custom response |
 | `PdfProxyResponseEvent` | After the proxy successfully fetches the PDF | Modify response (headers, content), log |
 
@@ -58,6 +60,44 @@ if ($form->isSubmitted() && $form->isValid()) {
     // redirect or return JSON
 }
 ```
+
+---
+
+## BatchSignRequestedEvent
+
+**Name:** `nowo_pdf_signable.batch_sign_requested`
+
+Dispatched when the form is submitted with the **Sign all** button (`batch_sign=1`). The bundle does not perform the actual signing; your listener can call your signing service or handle the flow.
+
+### Payload
+
+- `getCoordinates(): SignatureCoordinatesModel` — the submitted model (all boxes).
+- `getRequest(): Request` — the POST request.
+- `getBoxTarget(): ?array` — `null` = all boxes, or list of indices/names to sign.
+
+### Example
+
+See [SIGNING_ADVANCED](SIGNING_ADVANCED.md). Enable the button with form option `batch_sign_enabled: true`.
+
+---
+
+## PdfSignRequestEvent
+
+**Name:** `nowo_pdf_signable.pdf_sign_request`
+
+Dispatched when your application requests a digital (PKI/PAdES) signature. The bundle does not call any signing library; your listener calls your signing service or HSM and can set a custom response.
+
+### Payload
+
+- `getCoordinates(): SignatureCoordinatesModel` — coordinates and boxes.
+- `getRequest(): Request` — current request.
+- `getOptions(): array` — optional (e.g. signing_profile, box_indices).
+- `setResponse(?Response): void` — set a response to return (e.g. redirect to certificate picker).
+- `getResponse(): ?Response` — response set by a listener.
+
+### Example
+
+Dispatch from your code when the user clicks "Sign with certificate", then in the listener call your signing service and optionally `$event->setResponse($response)`.
 
 ---
 
@@ -133,6 +173,8 @@ class PdfProxyHeaderListener
 
 - `Nowo\PdfSignableBundle\Event\PdfSignableEvents` — event name constants.
 - `Nowo\PdfSignableBundle\Event\SignatureCoordinatesSubmittedEvent`
+- `Nowo\PdfSignableBundle\Event\BatchSignRequestedEvent`
+- `Nowo\PdfSignableBundle\Event\PdfSignRequestEvent`
 - `Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent`
 - `Nowo\PdfSignableBundle\Event\PdfProxyResponseEvent`
 

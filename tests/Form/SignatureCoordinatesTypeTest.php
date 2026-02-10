@@ -8,9 +8,13 @@ use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Validation;
 
@@ -430,5 +434,317 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertEqualsWithDelta(100.0, $boxes[0]->getY(), 0.01);
         self::assertSame('b', $boxes[1]->getName());
         self::assertEqualsWithDelta(200.0, $boxes[1]->getY(), 0.01);
+    }
+
+    /** When pdf_url is set and url_field is false, pdfUrl is a hidden field. */
+    public function testUrlFieldFalseWithPdfUrlUsesHiddenField(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'url_field' => false,
+            'pdf_url' => 'https://example.com/fixed.pdf',
+        ]);
+        $pdfUrlField = $form->get('pdfUrl');
+        self::assertInstanceOf(HiddenType::class, $pdfUrlField->getConfig()->getType()->getInnerType());
+        self::assertSame('https://example.com/fixed.pdf', $pdfUrlField->getConfig()->getData());
+    }
+
+    /** When url_mode is choice and url_choices non-empty, pdfUrl is ChoiceType. */
+    public function testUrlModeChoiceRendersPdfUrlAsChoiceType(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'url_mode' => SignatureCoordinatesType::URL_MODE_CHOICE,
+            'url_choices' => ['Document A' => 'https://a.com/a.pdf', 'Document B' => 'https://b.com/b.pdf'],
+        ]);
+        self::assertInstanceOf(ChoiceType::class, $form->get('pdfUrl')->getConfig()->getType()->getInnerType());
+    }
+
+    /** When unit_mode is input, unit field is TextType. */
+    public function testUnitModeInputRendersUnitAsTextType(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'unit_mode' => SignatureCoordinatesType::UNIT_MODE_INPUT,
+            'units' => [SignatureCoordinatesModel::UNIT_MM, SignatureCoordinatesModel::UNIT_PT],
+        ]);
+        self::assertInstanceOf(TextType::class, $form->get('unit')->getConfig()->getType()->getInnerType());
+    }
+
+    /** When origin_mode is input, origin field is TextType. */
+    public function testOriginModeInputRendersOriginAsTextType(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'origin_mode' => SignatureCoordinatesType::ORIGIN_MODE_INPUT,
+            'origins' => [SignatureCoordinatesModel::ORIGIN_TOP_LEFT, SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT],
+        ]);
+        self::assertInstanceOf(TextType::class, $form->get('origin')->getConfig()->getType()->getInnerType());
+    }
+
+    /** pdf_url option pre-populates model when model pdfUrl is empty (PRE_SET_DATA). */
+    public function testPdfUrlOptionPrePopulatesModelWhenEmpty(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        self::assertNull($model->getPdfUrl());
+        $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'pdf_url' => 'https://example.com/preload.pdf',
+        ]);
+        self::assertSame('https://example.com/preload.pdf', $model->getPdfUrl());
+    }
+
+    /** When signing_require_consent is true, signingConsent checkbox is added and required. */
+    public function testSigningRequireConsentAddsCheckboxAndSubmits(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'signing_require_consent' => true,
+            'signing_consent_label' => 'I agree to sign',
+        ]);
+        self::assertTrue($form->has('signingConsent'));
+        $form->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [],
+            'signingConsent' => '1',
+        ]);
+        self::assertTrue($form->isSynchronized());
+        self::assertTrue($form->isValid());
+        self::assertTrue($form->getData()->getSigningConsent());
+    }
+
+    /** Signing consent is required when signing_require_consent is true; unchecked checkbox fails validation. */
+    public function testSigningConsentRequiredFailsWhenUnchecked(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'signing_require_consent' => true,
+        ]);
+        // Checkbox not checked: omit key or send empty; form normalizes to false, IsTrue constraint fails
+        $form->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [],
+        ]);
+        self::assertTrue($form->isSynchronized());
+        self::assertFalse($form->isValid());
+        self::assertCount(1, $form->get('signingConsent')->getErrors());
+    }
+
+    /** unique_box_names can be an array of allowed duplicate names; form builds successfully. */
+    public function testUniqueBoxNamesArrayAccepted(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'unique_box_names' => ['signer_1', 'witness'],
+        ]);
+        self::assertTrue($form->has('signatureBoxes'));
+    }
+
+    /** allowed_pages must contain only positive integers; invalid values trigger OptionsResolver. */
+    public function testAllowedPagesInvalidValueThrows(): void
+    {
+        $this->expectException(InvalidOptionsException::class);
+        $this->factory->create(SignatureCoordinatesType::class, new SignatureCoordinatesModel(), [
+            'allowed_pages' => [1, 0],
+        ]);
+    }
+
+    /** When config name is not in namedConfigs, mergeNamedConfig returns options unchanged (no merge). */
+    public function testConfigNonexistentUsesOptionsWithoutMerge(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'config' => 'nonexistent_preset',
+            'unit_default' => SignatureCoordinatesModel::UNIT_CM,
+        ]);
+        $view = $form->createView();
+        $opts = $view->vars['signature_coordinates_options'];
+        self::assertSame(SignatureCoordinatesModel::UNIT_CM, $opts['unit_default'], 'Options should be used as-is when config does not exist');
+    }
+
+    /** box_constraints are merged into signature box entry options. */
+    public function testBoxConstraintsMergedIntoEntryOptions(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'box_constraints' => [new \Symfony\Component\Validator\Constraints\NotNull()],
+        ]);
+        $form->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [
+                0 => ['name' => 'a', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
+            ],
+        ]);
+        self::assertTrue($form->isSynchronized());
+    }
+
+    /** buildUnitChoices uses fallback when unit is not in labels map (e.g. custom unit key). */
+    public function testUnitsWithUnmappedUnitUsesFallbackInChoices(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'units' => [SignatureCoordinatesModel::UNIT_MM, 'custom_unit'],
+        ]);
+        $unitField = $form->get('unit');
+        $choices = $unitField->getConfig()->getOption('choices');
+        self::assertArrayHasKey('custom_unit', $choices);
+        self::assertSame('custom_unit', $choices['custom_unit']);
+    }
+
+    /** unique_box_names true: submitting two boxes with the same name yields a violation on the second. */
+    public function testUniqueBoxNamesTrueViolationWhenDuplicateNames(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'unique_box_names' => true,
+            'prevent_box_overlap' => false,
+        ]);
+        $form->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [
+                0 => ['name' => 'signer', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
+                1 => ['name' => 'signer', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 200.0],
+            ],
+        ]);
+        self::assertTrue($form->isSynchronized());
+        self::assertFalse($form->isValid());
+        self::assertCount(1, $form->get('signatureBoxes')->get('1')->get('name')->getErrors());
+    }
+
+    /** unique_box_names as array: two boxes with a name not in the list do not trigger unique-name violation. */
+    public function testUniqueBoxNamesArrayNoViolationWhenNameNotInList(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'unique_box_names' => ['signer_1', 'witness'],
+            'prevent_box_overlap' => false,
+        ]);
+        $form->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [
+                0 => ['name' => 'other', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
+                1 => ['name' => 'other', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 200.0],
+            ],
+        ]);
+        self::assertTrue($form->isSynchronized());
+        self::assertTrue($form->isValid());
+    }
+
+    /** prevent_box_overlap true: submitting two overlapping boxes on the same page yields a violation. */
+    public function testPreventBoxOverlapViolationWhenOverlapping(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'prevent_box_overlap' => true,
+        ]);
+        $form->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [
+                0 => ['name' => 'a', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
+                1 => ['name' => 'b', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 50.0, 'y' => 120.0],
+            ],
+        ]);
+        self::assertTrue($form->isSynchronized());
+        self::assertFalse($form->isValid());
+        // Error may be on signatureBoxes or a child ([0]/[1]); count all errors under root
+        self::assertGreaterThanOrEqual(1, iterator_count($form->getErrors(true)));
+    }
+
+    /** sort_boxes true: PRE_SUBMIT listener reorders boxes by page, then y, then x. */
+    public function testSortBoxesReordersByPageAndPosition(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'sort_boxes' => true,
+        ]);
+        $form->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [
+                0 => ['name' => 'page2', 'page' => 2, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 50.0],
+                1 => ['name' => 'page1', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
+            ],
+        ]);
+        self::assertTrue($form->isSynchronized());
+        self::assertTrue($form->isValid());
+        $boxes = $form->getData()->getSignatureBoxes();
+        self::assertCount(2, $boxes);
+        self::assertSame(1, $boxes[0]->getPage());
+        self::assertSame('page1', $boxes[0]->getName());
+        self::assertSame(2, $boxes[1]->getPage());
+        self::assertSame('page2', $boxes[1]->getName());
+    }
+
+    /** buildView uses type examplePdfUrl when pdf_url option is empty. */
+    public function testBuildViewUsesExamplePdfUrlWhenOptionEmpty(): void
+    {
+        $exampleUrl = 'https://example.com/fallback.pdf';
+        $typeWithExample = new SignatureCoordinatesType($exampleUrl, []);
+        $factory = (new \Symfony\Component\Form\FormFactoryBuilder())
+            ->addExtension(new PreloadedExtension([new SignatureBoxType(), $typeWithExample], []))
+            ->addExtension(new ValidatorExtension(Validation::createValidator()))
+            ->getFormFactory();
+        $form = $factory->create(SignatureCoordinatesType::class, new SignatureCoordinatesModel(), []);
+        $view = $form->createView();
+        self::assertSame($exampleUrl, $view->vars['signature_coordinates_options']['pdf_url']);
+    }
+
+    /** boxFromArray (private) builds a box from an array; missing required keys return null. */
+    public function testBoxFromArrayViaReflection(): void
+    {
+        $ref = new \ReflectionMethod(SignatureCoordinatesType::class, 'boxFromArray');
+        $ref->setAccessible(true);
+
+        self::assertNull($ref->invoke(null, []));
+        self::assertNull($ref->invoke(null, ['page' => 1]));
+
+        $box = $ref->invoke(null, [
+            'page' => 2,
+            'x' => 10.5,
+            'y' => 20.5,
+            'width' => 100.0,
+            'height' => 40.0,
+            'name' => 'test',
+            'angle' => -90.0,
+        ]);
+        self::assertInstanceOf(SignatureBoxModel::class, $box);
+        self::assertSame(2, $box->getPage());
+        self::assertEqualsWithDelta(10.5, $box->getX(), 0.01);
+        self::assertEqualsWithDelta(20.5, $box->getY(), 0.01);
+        self::assertEqualsWithDelta(100.0, $box->getWidth(), 0.01);
+        self::assertEqualsWithDelta(40.0, $box->getHeight(), 0.01);
+        self::assertSame('test', $box->getName());
+        self::assertEqualsWithDelta(-90.0, $box->getAngle(), 0.01);
+
+        $boxNoAngle = $ref->invoke(null, [
+            'page' => 1,
+            'x' => 0.0,
+            'y' => 0.0,
+            'width' => 50.0,
+            'height' => 20.0,
+        ]);
+        self::assertInstanceOf(SignatureBoxModel::class, $boxNoAngle);
+        self::assertSame(0.0, $boxNoAngle->getAngle());
     }
 }

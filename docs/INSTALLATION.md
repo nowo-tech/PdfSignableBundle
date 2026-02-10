@@ -58,3 +58,8 @@ This copies `Resources/public/js/pdf-signable.js` to `public/bundles/nowopdfsign
 ## Base template
 
 The bundle views extend `base.html.twig` by default. Ensure your application has a base template (e.g. `templates/base.html.twig`) with blocks `title`, `stylesheets`, `body` and `javascripts`.
+
+## See also
+
+- [Configuration](CONFIGURATION.md) — Proxy, example URL, named configs, audit and signing placeholders.
+- [Usage](USAGE.md) — Form options and examples.

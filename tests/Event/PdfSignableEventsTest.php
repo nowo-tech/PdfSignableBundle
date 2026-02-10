@@ -26,4 +26,14 @@ final class PdfSignableEventsTest extends TestCase
     {
         self::assertSame('nowo_pdf_signable.pdf_proxy_response', PdfSignableEvents::PDF_PROXY_RESPONSE);
     }
+
+    public function testBatchSignRequestedConstant(): void
+    {
+        self::assertSame('nowo_pdf_signable.batch_sign_requested', PdfSignableEvents::BATCH_SIGN_REQUESTED);
+    }
+
+    public function testPdfSignRequestConstant(): void
+    {
+        self::assertSame('nowo_pdf_signable.pdf_sign_request', PdfSignableEvents::PDF_SIGN_REQUEST);
+    }
 }

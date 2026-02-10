@@ -12,6 +12,7 @@ page:
   delete: 'Eliminar'
   empty_state: 'Ainda não há caixas de assinatura. Clique no PDF ou em "Adicionar caixa" para criar uma.'
   save_coordinates: 'Guardar coordenadas'
+  sign_all: 'Assinar tudo'
   errors_collection: 'Erros nas caixas de assinatura:'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Aumentar zoom'
   zoom_out: 'Diminuir zoom'
   zoom_fit: 'Ajustar largura'
+  fit_width: 'Ajustar largura'
+  fit_page: 'Ajustar página'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Supr'

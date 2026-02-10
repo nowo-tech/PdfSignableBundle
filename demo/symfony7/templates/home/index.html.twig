@@ -206,6 +206,30 @@
             </div>
         </div>
     </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Guides and grid</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>show_grid: true</code>, <code>grid_step</code> — grid overlay on each page (in form unit)</li>
+                    <li>Helps align boxes; grid is visual only, does not affect coordinates</li>
+                </ul>
+                <a href="{{ path('app_signature_guides_and_grid') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">Viewer lazy load</h6>
+                <ul class="card-text small mb-0">
+                    <li><code>viewer_lazy_load: true</code> — PDF.js and signable script load when widget enters viewport</li>
+                    <li>Uses IntersectionObserver; useful for long pages with several widgets</li>
+                </ul>
+                <a href="{{ path('app_signature_lazy_load') }}" class="btn btn-sm btn-primary mt-2">Open</a>
+            </div>
+        </div>
+    </div>
     <div class="col-12 mt-2"><h6 class="text-muted">Latest features (combined)</h6></div>
     <div class="col-md-6 col-lg-4">
         <div class="card h-100 border-primary">

@@ -32,6 +32,10 @@ Thank you for considering contributing.
 - TypeScript: follow the existing style in `assets/pdf-signable.ts`.
 - Documentation: English for code comments, PHPDoc, JSDoc and docs in `docs/`.
 
+## Form theme and assets
+
+- The form theme (`src/Resources/views/form/theme.html.twig`) includes the PDF viewer CSS and JS (PDF.js, pdf-signable.js) only once per request using the Twig function `nowo_pdf_signable_include_assets()` from `Nowo\PdfSignableBundle\Twig\NowoPdfSignableTwigExtension`. If you override `signature_coordinates_widget` and still want to output the bundle assets, use the same function so multiple widgets on the same page do not duplicate the link/scripts.
+
 ## Pull requests
 
 - Target the `master` (or `main`) branch.
@@ -41,7 +45,7 @@ Thank you for considering contributing.
 
 ## Reporting issues
 
-- Use the [GitHub issue tracker](https://github.com/nowo-tech/pdfSignableBundleues).
+- Use the [GitHub issue tracker](https://github.com/nowo-tech/pdf-signable-bundle/issues).
 - For security issues, see [SECURITY.md](SECURITY.md).
 
 ## License

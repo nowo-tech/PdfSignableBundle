@@ -39,6 +39,9 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
         $container->setParameter(Configuration::ALIAS.'.example_pdf_url', $config['example_pdf_url'] ?? '');
         $container->setParameter(Configuration::ALIAS.'.debug', $config['debug'] ?? false);
         $container->setParameter(Configuration::ALIAS.'.configs', $config['configs'] ?? []);
+        $container->setParameter(Configuration::ALIAS.'.audit.fill_from_request', $config['audit']['fill_from_request'] ?? true);
+        $container->setParameter(Configuration::ALIAS.'.tsa_url', $config['tsa_url'] ?? null);
+        $container->setParameter(Configuration::ALIAS.'.signing_service_id', $config['signing_service_id'] ?? null);
     }
 
     /**

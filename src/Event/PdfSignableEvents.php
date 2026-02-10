@@ -34,6 +34,22 @@ final class PdfSignableEvents
     public const PDF_PROXY_RESPONSE = 'nowo_pdf_signable.pdf_proxy_response';
 
     /**
+     * Dispatched when the form is submitted with batch_sign=1 (e.g. "Sign all" button).
+     * Listeners can perform batch signing (draw/upload or PKI) and redirect or return a response.
+     *
+     * @see BatchSignRequestedEvent
+     */
+    public const BATCH_SIGN_REQUESTED = 'nowo_pdf_signable.batch_sign_requested';
+
+    /**
+     * Dispatched when the app requests a digital (PKI/PAdES) signature.
+     * Listeners call the signing service/HSM and set the result on the event.
+     *
+     * @see PdfSignRequestEvent
+     */
+    public const PDF_SIGN_REQUEST = 'nowo_pdf_signable.pdf_sign_request';
+
+    /**
      * Non-instantiable: only event name constants are used.
      */
     private function __construct()

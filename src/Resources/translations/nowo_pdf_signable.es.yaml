@@ -12,6 +12,7 @@ page:
   delete: 'Eliminar'
   empty_state: 'Aún no hay cajas de firma. Haz clic en el PDF o en "Añadir caja" para crear una.'
   save_coordinates: 'Guardar coordenadas'
+  sign_all: 'Firmar todo'
   errors_collection: 'Errores en las cajas de firma:'
 
 signature_coordinates_type:
@@ -85,6 +86,8 @@ js:
   zoom_in: 'Acercar'
   zoom_out: 'Alejar'
   zoom_fit: 'Ajustar ancho'
+  fit_width: 'Ajustar ancho'
+  fit_page: 'Ajustar página'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Supr'

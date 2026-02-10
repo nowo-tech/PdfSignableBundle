@@ -736,6 +736,11 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     example_pdf_url?: scalar|Param|null, // Default PDF URL for demo/preload // Default: "https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf"
  *     debug?: bool|Param, // Enable console logging in the browser (PDF viewer and signature boxes) // Default: false
  *     configs?: array<string, mixed>,
+ *     audit?: array{ // Audit metadata options for evidence trail.
+ *         fill_from_request?: bool|Param, // When true, the controller merges IP, user_agent and submitted_at into the model audit_metadata before dispatching SIGNATURE_COORDINATES_SUBMITTED. // Default: true
+ *     },
+ *     tsa_url?: scalar|Param|null, // Optional TSA URL for RFC 3161 timestamps. The bundle does not call it; use in your listener to obtain a timestamp token and set it in audit_metadata. // Default: null
+ *     signing_service_id?: scalar|Param|null, // Optional service ID for PKI/PAdES signing. The bundle does not use it; reference in your listener to call your signing service or HSM. // Default: null
  * }
  * @psalm-type NowoTwigInspectorConfig = array{
  *     enabled_extensions?: list<scalar|Param|null>,

@@ -12,6 +12,7 @@ page:
   delete: 'Eliminar'
   empty_state: 'Encara no hi ha caixes de signatura. Feu clic al PDF o a "Afegir caixa" per crear-ne una.'
   save_coordinates: 'Desar coordenades'
+  sign_all: 'Signar tot'
   errors_collection: 'Errors a les caixes de signatura:'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Apropar'
   zoom_out: 'Allunyar'
   zoom_fit: 'Ajustar amplada'
+  fit_width: 'Ajustar amplada'
+  fit_page: 'Ajustar pàgina'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Supr'

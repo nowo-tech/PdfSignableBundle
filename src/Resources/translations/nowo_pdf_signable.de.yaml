@@ -12,6 +12,7 @@ page:
   delete: 'Löschen'
   empty_state: 'Noch keine Signaturfelder. Klicken Sie auf das PDF oder auf "Feld hinzufügen", um eines zu erstellen.'
   save_coordinates: 'Koordinaten speichern'
+  sign_all: 'Alle signieren'
   errors_collection: 'Fehler in den Signaturfeldern:'
 
 signature_coordinates_type:
@@ -84,6 +85,8 @@ js:
   zoom_in: 'Vergrößern'
   zoom_out: 'Verkleinern'
   zoom_fit: 'Breite anpassen'
+  fit_width: 'Breite anpassen'
+  fit_page: 'Seite anpassen'
   shortcut_add_box: 'Ctrl+Shift+A'
   shortcut_undo: 'Ctrl+Z'
   shortcut_delete_selected: 'Entf'
