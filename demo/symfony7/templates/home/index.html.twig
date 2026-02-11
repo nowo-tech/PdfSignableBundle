@@ -44,8 +44,9 @@
                 <h6 class="card-title">Config <code>fixed_url</code></h6>
                 <ul class="card-text small mb-0">
                     <li><code>config: 'fixed_url'</code></li>
-                    <li>PDF URL and <code>url_field: false</code> from YAML</li>
-                    <li>URL field hidden — single document (template/contract)</li>
+                    <li><code>url_field: false</code>, <code>show_load_pdf_button: false</code> — URL hidden, no Load PDF button</li>
+                    <li><code>unit_field: false</code>, <code>origin_field: false</code> — unit and origin hidden (fixed to default)</li>
+                    <li>Single document (template/contract); only boxes form visible</li>
                 </ul>
                 <a href="{{ path('app_signature_fixed_url') }}" class="btn btn-sm btn-primary mt-2">Open</a>
             </div>

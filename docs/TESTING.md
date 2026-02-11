@@ -45,7 +45,7 @@ Excluded from coverage: `src/Resources` (views, config, assets), and `src/Event/
 
 ### Typical summary
 
-After a full run (120 tests):
+After a full run (121 tests):
 
 - **Lines:** ~96%
 - **Methods:** ~92%
@@ -60,7 +60,7 @@ After a full run (120 tests):
 ### Partially covered
 
 - **SignatureController** (~83% lines, 4/7 methods): Uncovered code is mainly the live HTTP client path in `proxyPdf()` and a few SSRF branches (e.g. unresolved hostname, ip2long false).
-- **SignatureCoordinatesType** (~97% lines, 9/11 methods): Unique-name and overlap callbacks, sort_boxes PRE_SUBMIT, buildView, and boxFromArray are covered; some config-merge paths may remain partial.
+- **SignatureCoordinatesType** (~97% lines, 9/11 methods): Unique-name and overlap callbacks, sort_boxes PRE_SUBMIT, buildView, and boxFromArray are covered. Named config merge (url_field/unit_field/origin_field false overriding defaults) is covered by `testNamedConfigWithHiddenFieldsOverridesDefaults`.
 - **SignatureBoxType** (~99% lines, 2/3 methods): One line in `configureOptions` (allowed_pages validator) may remain uncovered depending on PHPUnit execution order.
 - **AuditMetadata**: Constants-only class (excluded from coverage in practice or low coverage); see `Nowo\PdfSignableBundle\Model\AuditMetadata`.
 

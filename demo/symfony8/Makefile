@@ -1,11 +1,11 @@
-# PdfSignable Bundle Demo - Symfony 8 (Docker)
+# PdfSignable Bundle Demo - Symfony 8 (Docker, FrankenPHP + Caddy, HTTPS)
 .PHONY: help up down shell install setup run clean logs
 
 help:
-	@echo "PdfSignable Demo (Symfony 8) - Docker"
+	@echo "PdfSignable Demo (Symfony 8) - Docker (FrankenPHP + Caddy)"
 	@echo ""
-	@echo "  up      - Start containers (PHP-FPM + Nginx)"
-	@echo "  down    - Stop containers"
+	@echo "  up      - Start container (FrankenPHP)"
+	@echo "  down    - Stop container"
 	@echo "  shell   - Shell into PHP container"
 	@echo "  install - composer install in container"
 	@echo "  setup   - install + cache:clear"
@@ -13,7 +13,7 @@ help:
 	@echo "  clean   - Stop and remove vendor/var"
 	@echo "  logs    - View logs"
 	@echo ""
-	@echo "After make run: http://localhost:8001"
+	@echo "After make run: https://localhost:8002 (accept self-signed cert in browser)"
 
 up:
 	@if [ ! -f .env ]; then \
@@ -35,26 +35,26 @@ shell:
 
 install:
 	@echo "📦 Building bundle assets (pnpm)..."
-	docker-compose exec -T php sh -c "cd /workspace && pnpm install && pnpm run build"
+	docker-compose exec -T php sh -c "cd /var/pdf-signable-bundle && pnpm install && pnpm run build"
 	@echo "📦 Installing PHP dependencies..."
-	docker-compose exec -T php composer install --no-interaction
+	docker-compose exec -T php sh -c 'sed -i '\''s|"url":"../.."|"url":"/var/pdf-signable-bundle"|g'\'' composer.json && ( test -f composer.lock && sed -i '\''s|"url":"../.."|"url":"/var/pdf-signable-bundle"|g'\'' composer.lock; true ) && rm -rf vendor/nowo-tech/pdf-signable-bundle && composer install --no-interaction && rm -rf vendor/nowo-tech/pdf-signable-bundle && ln -sfn /var/pdf-signable-bundle vendor/nowo-tech/pdf-signable-bundle && sed -i '\''s|"url":"/var/pdf-signable-bundle"|"url":"../.."|g'\'' composer.json && ( test -f composer.lock && sed -i '\''s|"url":"/var/pdf-signable-bundle"|"url":"../.."|g'\'' composer.lock; true )'
 	@echo "📦 Installing bundle assets..."
 	docker-compose exec -T php php bin/console assets:install --symlink
 	@echo "✅ Dependencies installed"
 
 setup: install
 	docker-compose exec -T php php bin/console cache:clear
-	@echo "✅ Demo ready at http://localhost:8001"
+	@echo "✅ Demo ready at https://localhost:8002"
 
 run: up
 	@echo "📦 Building bundle assets (pnpm)..."
-	@docker-compose exec -T php sh -c "cd /workspace && pnpm install && pnpm run build"
+	@docker-compose exec -T php sh -c "cd /var/pdf-signable-bundle && pnpm install && pnpm run build"
 	@echo "📦 Installing PHP dependencies..."
-	@docker-compose exec -T php composer install --no-interaction
+	@docker-compose exec -T php sh -c 'sed -i '\''s|"url":"../.."|"url":"/var/pdf-signable-bundle"|g'\'' composer.json composer.lock && rm -rf vendor/nowo-tech/pdf-signable-bundle && composer install --no-interaction && rm -rf vendor/nowo-tech/pdf-signable-bundle && ln -sfn /var/pdf-signable-bundle vendor/nowo-tech/pdf-signable-bundle && sed -i '\''s|"url":"/var/pdf-signable-bundle"|"url":"../.."|g'\'' composer.json composer.lock'
 	@echo "📦 Installing bundle assets..."
 	@docker-compose exec -T php php bin/console assets:install --symlink
 	@docker-compose exec -T php php bin/console cache:clear
-	@echo "✅ Demo ready: http://localhost:8001"
+	@echo "✅ Demo ready: https://localhost:8002"
 
 clean: down
 	rm -rf vendor var/cache var/log

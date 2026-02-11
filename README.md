@@ -103,12 +103,12 @@ See [CONFIGURATION.md](docs/CONFIGURATION.md) for detailed options and named con
 
 ## Demos
 
-Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. The [screenshots above](#screenshots) show the demo home (configuration cards), the signature coordinates form (PDF viewer + boxes), and an alternate view with thumbnails, zoom and rotation.
+Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. They run with **FrankenPHP** (Caddy + PHP) and are served over **HTTPS** on localhost (self-signed certificate; accept it in the browser to access). The [screenshots above](#screenshots) show the demo home (configuration cards), the signature coordinates form (PDF viewer + boxes), and an alternate view with thumbnails, zoom and rotation.
 
 ```bash
 cd demo
-make run-symfony7   # → http://localhost:8000
-make run-symfony8   # → http://localhost:8001
+make run-symfony7   # → https://localhost:8001
+make run-symfony8   # → https://localhost:8002
 ```
 
 Nineteen demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, rotation, defaults-by-name, snap-to-grid, **guides-and-grid**, **viewer lazy-load**, latest features (combined), predefined boxes; plus signing (draw, upload, legal disclaimer, predefined boxes — sign only, signing options). See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).

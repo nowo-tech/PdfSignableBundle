@@ -64,13 +64,18 @@
 #}
 {% block signature_coordinates_widget %}
   {% set opts = form.vars.signature_coordinates_options|default({}) %}
+  {# Visibility: treat false and "false" as hidden (config may come as bool or string) #}
+  {% set show_url_row = opts.url_field is not defined or (opts.url_field is not same as(false) and opts.url_field is not same as('false')) %}
+  {% set show_load_btn = opts.show_load_pdf_button is not defined or (opts.show_load_pdf_button is not same as(false) and opts.show_load_pdf_button is not same as('false')) %}
+  {% set show_unit = opts.unit_field is not defined or (opts.unit_field is not same as(false) and opts.unit_field is not same as('false')) %}
+  {% set show_origin = opts.origin_field is not defined or (opts.origin_field is not same as(false) and opts.origin_field is not same as('false')) %}
   {# Include CSS and JS only once per request when multiple widgets are on the same page. #}
   {% set _include_assets = nowo_pdf_signable_include_assets() %}
   {% if _include_assets %}
   <link rel="stylesheet" href="{{ asset('bundles/nowopdfsignable/js/pdf-signable.css') }}">
   {% endif %}
   {# Main layout: 7/12 PDF viewer, 5/12 boxes list #}
-  <div class="row g-4 nowo-pdf-signable-widget" data-prevent-box-overlap="{{ opts.prevent_box_overlap|default(true) ? '1' : '0' }}" data-box-defaults-by-name="{{ (opts.box_defaults_by_name|default({}))|json_encode|e('html_attr') }}" data-enable-rotation="{{ opts.enable_rotation|default(false) ? '1' : '0' }}" data-snap-grid="{{ opts.snap_to_grid|default(0) }}" data-snap-to-boxes="{{ opts.snap_to_boxes|default(true) ? '1' : '0' }}" data-show-grid="{{ opts.show_grid|default(false) ? '1' : '0' }}" data-grid-step="{{ opts.grid_step|default(10) }}" data-viewer-lazy-load="{{ opts.viewer_lazy_load|default(false) ? '1' : '0' }}" data-pdfjs-url="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" data-pdfjs-worker-url="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js" data-pdf-signable-js="{{ asset('bundles/nowopdfsignable/js/pdf-signable.js') }}">
+  <div class="row g-4 nowo-pdf-signable-widget" data-unit-default="{{ opts.unit_default|default('mm') }}" data-origin-default="{{ opts.origin_default|default('bottom_left') }}" data-prevent-box-overlap="{{ opts.prevent_box_overlap|default(true) ? '1' : '0' }}" data-box-defaults-by-name="{{ (opts.box_defaults_by_name|default({}))|json_encode|e('html_attr') }}" data-enable-rotation="{{ opts.enable_rotation|default(false) ? '1' : '0' }}" data-snap-grid="{{ opts.snap_to_grid|default(0) }}" data-snap-to-boxes="{{ opts.snap_to_boxes|default(true) ? '1' : '0' }}" data-show-grid="{{ opts.show_grid|default(false) ? '1' : '0' }}" data-grid-step="{{ opts.grid_step|default(10) }}" data-viewer-lazy-load="{{ opts.viewer_lazy_load|default(false) ? '1' : '0' }}" data-pdfjs-url="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" data-pdfjs-worker-url="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js" data-pdf-signable-js="{{ asset('bundles/nowopdfsignable/js/pdf-signable.js') }}">
     {# PDF viewer card #}
     <div class="col-lg-7">
       <div class="card h-100">
@@ -78,11 +83,11 @@
           <h6 class="card-title mb-0">{{ 'page.pdf_viewer'|trans({}, 'nowo_pdf_signable') }}</h6>
         </div>
         <div class="card-body">
-          {% if opts.url_field|default(true) %}
+          {% if show_url_row %}
             <label class="form-label small text-uppercase fw-semibold text-muted mb-2">{{ form.pdfUrl.vars.label is defined ? form.pdfUrl.vars.label : ('page.url_label'|trans({}, 'nowo_pdf_signable')) }}</label>
             <div class="input-group input-group-lg mb-3">
               {{ form_widget(form.pdfUrl, { attr: { class: (form.pdfUrl.vars.attr.class|default('') ~ (form.pdfUrl.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
-              <button type="button" class="btn btn-primary px-4" id="loadPdfBtn">{{ 'page.load'|trans({}, 'nowo_pdf_signable') }}</button>
+              {% if show_load_btn %}<button type="button" class="btn btn-primary px-4" id="loadPdfBtn">{{ 'page.load'|trans({}, 'nowo_pdf_signable') }}</button>{% endif %}
             </div>
             {{ form_errors(form.pdfUrl) }}
           {% else %}
@@ -137,7 +142,9 @@
           </div>
           {% endif %}
           {% if not (opts.signing_only|default(false)) %}
+          {% if show_unit or show_origin %}
           <div class="row align-items-center mb-3 g-2">
+            {% if show_unit %}
             <div class="col-auto">
               <label class="form-label small text-muted mb-0 me-2">{{ 'page.units_label'|trans({}, 'nowo_pdf_signable') }}</label>
             </div>
@@ -146,6 +153,10 @@
               {{ form_errors(form.unit) }}
             </div>
             <div class="col-auto"><span class="badge bg-secondary" id="unitBadge">mm</span></div>
+            {% else %}
+            <div class="d-none" aria-hidden="true">{{ form_widget(form.unit) }}</div>
+            {% endif %}
+            {% if show_origin %}
             <div class="col-auto ms-md-3">
               <label class="form-label small text-muted mb-0 me-2">{{ 'page.origin_label'|trans({}, 'nowo_pdf_signable') }}</label>
             </div>
@@ -153,7 +164,16 @@
               {{ form_widget(form.origin, { attr: { class: 'origin-selector form-select form-select-sm w-auto' ~ (form.origin.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
               {{ form_errors(form.origin) }}
             </div>
+            {% else %}
+            <div class="d-none" aria-hidden="true">{{ form_widget(form.origin) }}</div>
+            {% endif %}
           </div>
+          {% else %}
+          <div class="d-none" aria-hidden="true">
+            {{ form_widget(form.unit) }}
+            {{ form_widget(form.origin) }}
+          </div>
+          {% endif %}
           <p class="small text-muted mb-3">{{ 'page.help_text'|trans({}, 'nowo_pdf_signable') }}</p>
           {% endif %}
           {# Prototype for JS: used when adding new boxes via #addBoxBtn #}

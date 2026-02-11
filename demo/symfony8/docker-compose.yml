@@ -1,12 +1,15 @@
+# FrankenPHP (Caddy + PHP) — serves Symfony 8 demo over HTTPS on localhost
 services:
   php:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: pdf-signable-demo-symfony8-php
-    working_dir: /workspace/demo/symfony8
+    container_name: pdf-signable-symfony8
+    working_dir: /app
     volumes:
-      - ../../:/workspace
+      - .:/app
+      # Bundle root for pnpm build and optional vendor symlink
+      - ../..:/var/pdf-signable-bundle
       - composer-cache:/root/.composer/cache
     environment:
       - COMPOSER_ALLOW_SUPERUSER=1
@@ -14,26 +17,15 @@ services:
       - XDEBUG_CONFIG=client_host=host.docker.internal client_port=9003
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    command: ["php-fpm", "-F"]
-    networks:
-      - pdf-signable-demo-s8-network
-
-  nginx:
-    image: nginx:alpine
-    container_name: pdf-signable-demo-symfony8-nginx
-    volumes:
-      - ../../:/workspace:ro
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - "8001:80"
-    depends_on:
-      - php
+      - "${PORT:-8002}:443"
     networks:
-      - pdf-signable-demo-s8-network
+      - pdf-signable-demo-network
 
 volumes:
   composer-cache:
+    driver: local
 
 networks:
-  pdf-signable-demo-s8-network:
+  pdf-signable-demo-network:
     driver: bridge

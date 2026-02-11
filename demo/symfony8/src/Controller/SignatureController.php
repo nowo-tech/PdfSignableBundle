@@ -61,7 +61,7 @@ class SignatureController extends AbstractController
     #[Route('/demo-signature/fixed-url', name: 'app_signature_fixed_url', methods: ['GET', 'POST'])]
     public function fixedUrl(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li><code>config: \'fixed_url\'</code></li><li>PDF URL and <code>url_field: false</code> from YAML</li><li>URL field hidden — single document (template/contract)</li></ul>';
+        $explanation = '<ul class="mb-0"><li><code>config: \'fixed_url\'</code></li><li><code>url_field: false</code>, <code>show_load_pdf_button: false</code> — URL and Load PDF button hidden</li><li><code>unit_field: false</code>, <code>origin_field: false</code> — unit and origin hidden (fixed to default)</li><li>Single document; only signature boxes form visible</li></ul>';
         return $this->signaturePage($request, 'Fixed URL config (from YAML)', [
             'config' => 'fixed_url',
         ], $explanation);
@@ -73,7 +73,7 @@ class SignatureController extends AbstractController
     #[Route('/demo-signature/fixed-url-overridden', name: 'app_signature_fixed_url_overridden', methods: ['GET', 'POST'])]
     public function fixedUrlOverridden(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li>Same <code>config: \'fixed_url\'</code></li><li>Override in code: <code>unit_default: \'pt\'</code></li><li>Shows that form options override the named config</li></ul>';
+        $explanation = '<ul class="mb-0"><li>Same <code>config: \'fixed_url\'</code></li><li>Override in code: <code>unit_default: \'pt\'</code> (unit field is hidden; submitted value is pt)</li><li>Shows that form options override the named config</li></ul>';
         return $this->signaturePage($request, 'Fixed URL config overridden (config + override)', [
             'config' => 'fixed_url',
             'unit_default' => SignatureCoordinatesModel::UNIT_PT,

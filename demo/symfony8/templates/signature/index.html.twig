@@ -39,6 +39,10 @@
   </div>
   {% endif %}
   <div class="container-fluid">
+    {% if form.signatureCoordinates is defined %}
+      {# Dump here so it appears in the profiler (dumps inside bundle form theme may not) #}
+      {#{% dump form.signatureCoordinates.vars.signature_coordinates_options %}#}
+    {% endif %}
     {% form_theme form '@NowoPdfSignable/form/theme.html.twig' %}
     {{ form_start(form, { attr: { id: 'signatureForm' } }) }}
     {% if form.vars.submitted and not form.vars.valid %}

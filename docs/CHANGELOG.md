@@ -21,6 +21,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.1] - 2026-02-11
+
+### Fixed
+
+- **Named config merge order**: When using a named config (e.g. `config: 'fixed_url'`), the named config now **overrides** the form type’s resolver defaults. Previously the merge order was reversed, so options like `url_field: false`, `show_load_pdf_button: false`, `unit_field: false`, and `origin_field: false` from the YAML config were overwritten by the defaults and had no effect. If you use a named config with these options set to `false`, they now apply correctly (URL row, Load PDF button, and unit/origin selectors are hidden).
+- **Form theme visibility**: The Twig form theme now evaluates `url_field`, `show_load_pdf_button`, `unit_field`, and `origin_field` so that when they are `false` (or the string `'false'`), the corresponding UI is hidden. View options are passed as strict booleans from `buildView` for consistent behaviour.
+
+### Changed
+
+- **Demo**: The Symfony 7 and 8 demos’ Makefile forces `vendor/nowo-tech/pdf-signable-bundle` to be a **symlink** to the mounted repo (`/var/pdf-signable-bundle`) after `composer install`, so the container always uses the live bundle code. Path repository in the demos’ `composer.json` has `"options": {"symlink": true}`.
+
+### Developer
+
+- **Tests**: New test `SignatureCoordinatesTypeTest::testNamedConfigWithHiddenFieldsOverridesDefaults` ensures that a named config with `url_field`, `show_load_pdf_button`, `unit_field`, and `origin_field` set to `false` overrides resolver defaults in both form building and view options. Preset `fixed_url` added to the test form factory. [TESTING](TESTING.md) updated (121 tests, coverage note for named config merge).
+
+For upgrade steps from 1.5.0, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [1.5.0] - 2026-02-10
 
 ### Added
@@ -204,7 +223,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.1
 [1.5.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.0
 [1.4.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.1
 [1.4.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.0

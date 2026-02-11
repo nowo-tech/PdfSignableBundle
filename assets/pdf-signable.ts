@@ -213,7 +213,7 @@ function run(): void {
    * @returns The selected unit string (default 'mm')
    */
   function getSelectedUnit(): string {
-    return unitSelector?.value ?? 'mm';
+    return unitSelector?.value ?? widget?.dataset.unitDefault ?? 'mm';
   }
 
   /**
@@ -222,7 +222,7 @@ function run(): void {
    * @returns The selected origin string (default 'bottom_left')
    */
   function getSelectedOrigin(): string {
-    return originSelector?.value ?? 'bottom_left';
+    return originSelector?.value ?? widget?.dataset.originDefault ?? 'bottom_left';
   }
 
   /**

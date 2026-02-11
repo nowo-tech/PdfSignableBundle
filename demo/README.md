@@ -1,14 +1,16 @@
 # PdfSignable Bundle demos
 
-Dockerized demos (Symfony 7 and Symfony 8) to try the bundle. Nineteen demo pages cover: no config, default/fixed_url/overridden config, URL as dropdown, limited boxes, same signer multiple locations, unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, rotation (enable_rotation), defaults-by-name (box_defaults_by_name), **snap-to-grid** (snap_to_grid + snap_to_boxes), **guides-and-grid** (show_grid + grid_step), **viewer lazy-load** (IntersectionObserver), latest features (combined, including snap), predefined boxes; plus signing (draw, upload, legal disclaimer, predefined boxes — sign only, signing options). The sidebar highlights the current demo. Touch: pinch zoom and two-finger pan work in the viewer on all demos. Demos include **Web Profiler**, **Xdebug**, and **pnpm** for building the bundle assets.
+Dockerized demos (Symfony 7 and Symfony 8) to try the bundle. They run with **FrankenPHP** (Caddy + PHP) and are served over **HTTPS** on localhost. Nineteen demo pages cover: no config, default/fixed_url/overridden config, URL as dropdown, limited boxes, same signer multiple locations, unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, rotation (enable_rotation), defaults-by-name (box_defaults_by_name), **snap-to-grid** (snap_to_grid + snap_to_boxes), **guides-and-grid** (show_grid + grid_step), **viewer lazy-load** (IntersectionObserver), latest features (combined, including snap), predefined boxes; plus signing (draw, upload, legal disclaimer, predefined boxes — sign only, signing options). The sidebar highlights the current demo. Touch: pinch zoom and two-finger pan work in the viewer on all demos. Demos include **Web Profiler**, **Xdebug**, and **pnpm** for building the bundle assets.
 
 Screenshots (demo home and signature coordinates form) are in the [main README](../README.md#screenshots) and in [docs/img/](../docs/img/) (`demo-home.png`, `demo-signature-form.png`).
 
 ## Start
 
+The demos use **HTTPS** on localhost (self-signed certificate). The browser will show a security warning; accept the certificate to access the app.
+
 ```bash
-make run-symfony7   # http://localhost:8000
-make run-symfony8   # http://localhost:8001
+make run-symfony7   # https://localhost:8001
+make run-symfony8   # https://localhost:8002
 ```
 
 From inside a demo:

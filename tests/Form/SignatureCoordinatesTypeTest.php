@@ -36,6 +36,15 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
                 'unit_default' => SignatureCoordinatesModel::UNIT_PT,
                 'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
             ],
+            'fixed_url' => [
+                'pdf_url' => 'https://example.com/fixed.pdf',
+                'url_field' => false,
+                'show_load_pdf_button' => false,
+                'unit_field' => false,
+                'origin_field' => false,
+                'unit_default' => SignatureCoordinatesModel::UNIT_MM,
+                'origin_default' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            ],
         ]);
         $validator = Validation::createValidator();
 
@@ -449,6 +458,21 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertSame('https://example.com/fixed.pdf', $pdfUrlField->getConfig()->getData());
     }
 
+    /** show_load_pdf_button is passed to view; default true, can be false (e.g. fixed-URL config). */
+    public function testShowLoadPdfButtonPassedToView(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model);
+        $view = $form->createView();
+        $opts = $view->vars['signature_coordinates_options'];
+        self::assertArrayHasKey('show_load_pdf_button', $opts);
+        self::assertTrue($opts['show_load_pdf_button']);
+
+        $form2 = $this->factory->create(SignatureCoordinatesType::class, $model, ['show_load_pdf_button' => false]);
+        $view2 = $form2->createView();
+        self::assertFalse($view2->vars['signature_coordinates_options']['show_load_pdf_button']);
+    }
+
     /** When url_mode is choice and url_choices non-empty, pdfUrl is ChoiceType. */
     public function testUrlModeChoiceRendersPdfUrlAsChoiceType(): void
     {
@@ -458,6 +482,32 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'url_choices' => ['Document A' => 'https://a.com/a.pdf', 'Document B' => 'https://b.com/b.pdf'],
         ]);
         self::assertInstanceOf(ChoiceType::class, $form->get('pdfUrl')->getConfig()->getType()->getInnerType());
+    }
+
+    /** When unit_field is false, unit is HiddenType with unit_default. */
+    public function testUnitFieldFalseRendersUnitAsHidden(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'unit_field' => false,
+            'unit_default' => SignatureCoordinatesModel::UNIT_PT,
+        ]);
+        $unitField = $form->get('unit');
+        self::assertInstanceOf(HiddenType::class, $unitField->getConfig()->getType()->getInnerType());
+        self::assertSame(SignatureCoordinatesModel::UNIT_PT, $unitField->getConfig()->getData());
+    }
+
+    /** When origin_field is false, origin is HiddenType with origin_default. */
+    public function testOriginFieldFalseRendersOriginAsHidden(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'origin_field' => false,
+            'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+        ]);
+        $originField = $form->get('origin');
+        self::assertInstanceOf(HiddenType::class, $originField->getConfig()->getType()->getInnerType());
+        self::assertSame(SignatureCoordinatesModel::ORIGIN_TOP_LEFT, $originField->getConfig()->getData());
     }
 
     /** When unit_mode is input, unit field is TextType. */
@@ -553,6 +603,24 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $this->factory->create(SignatureCoordinatesType::class, new SignatureCoordinatesModel(), [
             'allowed_pages' => [1, 0],
         ]);
+    }
+
+    /** When named config has url_field/unit_field/origin_field false, they override resolver defaults (merge order). */
+    public function testNamedConfigWithHiddenFieldsOverridesDefaults(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'config' => 'fixed_url',
+        ]);
+        self::assertInstanceOf(HiddenType::class, $form->get('pdfUrl')->getConfig()->getType()->getInnerType());
+        self::assertInstanceOf(HiddenType::class, $form->get('unit')->getConfig()->getType()->getInnerType());
+        self::assertInstanceOf(HiddenType::class, $form->get('origin')->getConfig()->getType()->getInnerType());
+        $view = $form->createView();
+        $opts = $view->vars['signature_coordinates_options'];
+        self::assertFalse($opts['url_field'], 'Named config url_field: false must override default');
+        self::assertFalse($opts['show_load_pdf_button'], 'Named config show_load_pdf_button: false must override default');
+        self::assertFalse($opts['unit_field'], 'Named config unit_field: false must override default');
+        self::assertFalse($opts['origin_field'], 'Named config origin_field: false must override default');
     }
 
     /** When config name is not in namedConfigs, mergeNamedConfig returns options unchanged (no merge). */

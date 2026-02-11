@@ -8,11 +8,17 @@
     "packages": [
         {
             "name": "nowo-tech/pdf-signable-bundle",
-            "version": "dev-main",
+            "version": "v1.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nowo-tech/PdfSignableBundle.git",
+                "reference": "cb00e8ad7f79ca244d22a767927f5b2a85c86941"
+            },
             "dist": {
-                "type": "path",
-                "url": "../..",
-                "reference": "320ca706be10dea72044a546f0b96570edd03fae"
+                "type": "zip",
+                "url": "https://api.github.com/repos/nowo-tech/PdfSignableBundle/zipball/cb00e8ad7f79ca244d22a767927f5b2a85c86941",
+                "reference": "cb00e8ad7f79ca244d22a767927f5b2a85c86941",
+                "shasum": ""
             },
             "require": {
                 "php": ">=8.1",
@@ -21,11 +27,15 @@
                 "symfony/http-client": "^6.1 || ^7.0 || ^8.0",
                 "symfony/translation": "^6.1 || ^7.0 || ^8.0",
                 "symfony/twig-bundle": "^6.1 || ^7.0 || ^8.0",
+                "symfony/validator": "^6.1 || ^7.0 || ^8.0",
                 "symfony/yaml": "^6.1 || ^7.0 || ^8.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.0",
                 "phpunit/phpunit": "^10.0"
+            },
+            "suggest": {
+                "ext-yaml": "For faster YAML parsing (optional; Symfony Yaml is used)"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -33,26 +43,7 @@
                     "Nowo\\PdfSignableBundle\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Nowo\\PdfSignableBundle\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit"
-                ],
-                "cs-check": [
-                    "php-cs-fixer fix --dry-run --diff"
-                ],
-                "cs-fix": [
-                    "php-cs-fixer fix"
-                ],
-                "qa": [
-                    "@cs-check",
-                    "@test"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -68,23 +59,29 @@
                     "homepage": "https://nowo.tech"
                 }
             ],
-            "description": "Symfony bundle for PDF signable form field: render PDF from URL, define signature coordinates by click.",
-            "homepage": "https://github.com/nowo-tech/pdf-signable-bundle",
+            "description": "Define signature box coordinates on PDFs in Symfony: form type with PDF.js viewer, drag-and-drop placement, validation, and signing hooks.",
+            "homepage": "https://github.com/nowo-tech/pdfSignableBundle",
             "keywords": [
                 "coordinates",
+                "document-signing",
+                "eidas",
                 "form",
+                "form-type",
                 "pdf",
+                "pdf-viewer",
+                "pdfjs",
                 "signature",
+                "signature-coordinates",
+                "signing",
                 "symfony",
                 "symfony-bundle"
             ],
             "support": {
-                "issues": "https://github.com/nowo-tech/pdf-signable-bundle/issues",
-                "source": "https://github.com/nowo-tech/pdf-signable-bundle"
+                "docs": "https://github.com/nowo-tech/pdfSignableBundle/tree/main/docs",
+                "issues": "https://github.com/nowo-tech/pdfSignableBundle/issues",
+                "source": "https://github.com/nowo-tech/pdfSignableBundle"
             },
-            "transport-options": {
-                "relative": true
-            }
+            "time": "2026-02-10T12:23:38+00:00"
         },
         {
             "name": "psr/cache",
@@ -3918,16 +3915,16 @@
     "packages-dev": [
         {
             "name": "nowo-tech/twig-inspector-bundle",
-            "version": "v1.0.9",
+            "version": "v1.0.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nowo-tech/TwigInspectorBundle.git",
-                "reference": "368f2978c19a42eadd07a7794993bb2237d2d5c5"
+                "reference": "ec6ea755d600e304f3ce6b0c1f36a6c9d428bb66"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nowo-tech/TwigInspectorBundle/zipball/368f2978c19a42eadd07a7794993bb2237d2d5c5",
-                "reference": "368f2978c19a42eadd07a7794993bb2237d2d5c5",
+                "url": "https://api.github.com/repos/nowo-tech/TwigInspectorBundle/zipball/ec6ea755d600e304f3ce6b0c1f36a6c9d428bb66",
+                "reference": "ec6ea755d600e304f3ce6b0c1f36a6c9d428bb66",
                 "shasum": ""
             },
             "require": {
@@ -3946,6 +3943,9 @@
                 "friendsofphp/php-cs-fixer": "^3.0",
                 "phpunit/phpunit": "^10.0",
                 "symfony/yaml": "^6.0 || ^7.0 || ^8.0"
+            },
+            "suggest": {
+                "symfony/flex": "For automatic recipe installation (config and routes)"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -3969,7 +3969,7 @@
                     "homepage": "https://nowo.tech"
                 }
             ],
-            "description": "Symfony bundle for debugging and inspecting Twig templates in the browser. Visual overlay showing which templates render HTML elements, click to open in IDE, Web Profiler integration, development tool",
+            "description": "Debug Twig templates in the browser: visual overlay, click-to-open in IDE, Web Profiler. Symfony 6|7|8.",
             "homepage": "https://github.com/nowo-tech/twig-inspector-bundle",
             "keywords": [
                 "block-inspector",
@@ -3982,6 +3982,7 @@
                 "inspect",
                 "inspector",
                 "symfony",
+                "symfony-flex",
                 "symfony-profiler",
                 "template",
                 "template-finder",
@@ -3994,6 +3995,8 @@
                 "web-profiler"
             ],
             "support": {
+                "changelog": "https://github.com/nowo-tech/twig-inspector-bundle/blob/main/docs/CHANGELOG.md",
+                "docs": "https://github.com/nowo-tech/twig-inspector-bundle/tree/main/docs",
                 "issues": "https://github.com/nowo-tech/twig-inspector-bundle/issues",
                 "source": "https://github.com/nowo-tech/twig-inspector-bundle"
             },
@@ -4003,7 +4006,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-01-26T07:09:18+00:00"
+            "time": "2026-02-11T14:47:26+00:00"
         },
         {
             "name": "symfony/debug-bundle",

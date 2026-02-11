@@ -39,7 +39,10 @@
   "repositories": [
     {
       "type": "path",
-      "url": "../.."
+      "url": "../..",
+      "options": {
+        "symlink": true
+      }
     }
   ],
   "minimum-stability": "stable",

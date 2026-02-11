@@ -37,6 +37,23 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 1.5.1
+
+**Release date**: 2026-02-11
+
+#### What's new (no breaking changes)
+
+- **Named config merge fix**: When you use a named config (e.g. `config: 'fixed_url'` in your form), the config’s values now correctly **override** the form type’s defaults. If your named config sets `url_field: false`, `show_load_pdf_button: false`, `unit_field: false`, or `origin_field: false`, those options now take effect (URL row, Load PDF button, and unit/origin selectors are hidden).
+- **Form theme**: Visibility of the URL row, Load PDF button, and unit/origin row now correctly respects the above options when they are `false`.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Clear cache: `php bin/console cache:clear`.
+3. If you use a named config with `url_field`, `unit_field`, or `origin_field` set to `false`, verify that the form now hides those elements as intended.
+
+---
+
 ### Upgrading to 1.5.0
 
 **Release date**: 2026-02-10
@@ -236,7 +253,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | Guides and grid (show_grid, grid_step), viewer lazy load (viewer_lazy_load), advanced signing (audit, events, batch_sign_enabled), single asset inclusion, larger handles, rotated box drag fix, 19 demos. |
+| 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | Guides and grid (show_grid, grid_step), viewer lazy load (viewer_lazy_load), advanced signing (audit, events, batch_sign_enabled), single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix (url_field/unit_field/origin_field/show_load_pdf_button from config now override defaults), demo uses bundle via symlink. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |
 | 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |
 | 1.2.x          | 6.1+, 7.x, 8.x | 8.1+ | Optional rotation (enable_rotation), box_defaults_by_name, 16 demos. |

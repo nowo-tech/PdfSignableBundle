@@ -157,7 +157,11 @@ final class SignatureCoordinatesType extends AbstractType
         }
 
         // --- Unit ---
-        if (self::UNIT_MODE_INPUT === $options['unit_mode']) {
+        if (!$options['unit_field']) {
+            $builder->add('unit', HiddenType::class, [
+                'data' => $options['unit_default'],
+            ]);
+        } elseif (self::UNIT_MODE_INPUT === $options['unit_mode']) {
             $builder->add('unit', TextType::class, [
                 'label' => $options['unit_label'],
                 'attr' => ['class' => 'unit-selector form-control form-control-sm'],
@@ -174,7 +178,11 @@ final class SignatureCoordinatesType extends AbstractType
         }
 
         // --- Origin ---
-        if (self::ORIGIN_MODE_INPUT === $options['origin_mode']) {
+        if (!$options['origin_field']) {
+            $builder->add('origin', HiddenType::class, [
+                'data' => $options['origin_default'],
+            ]);
+        } elseif (self::ORIGIN_MODE_INPUT === $options['origin_mode']) {
             $builder->add('origin', TextType::class, [
                 'label' => $options['origin_label'],
                 'attr' => ['class' => 'origin-selector form-control form-control-sm'],
@@ -343,10 +351,13 @@ final class SignatureCoordinatesType extends AbstractType
         }
         $view->vars['signature_coordinates_options'] = [
             'pdf_url' => $pdfUrl,
-            'url_field' => $options['url_field'],
+            'url_field' => (bool) ($options['url_field'] ?? true),
+            'show_load_pdf_button' => (bool) ($options['show_load_pdf_button'] ?? true),
             'url_mode' => $options['url_mode'],
             'unit_default' => $options['unit_default'],
+            'unit_field' => (bool) ($options['unit_field'] ?? true),
             'origin_default' => $options['origin_default'],
+            'origin_field' => (bool) ($options['origin_field'] ?? true),
             'min_entries' => $options['min_entries'],
             'max_entries' => $options['max_entries'],
             'allowed_pages' => $options['allowed_pages'] ?? null,
@@ -387,6 +398,7 @@ final class SignatureCoordinatesType extends AbstractType
             // URL (null = use bundle example_pdf_url when set)
             'pdf_url' => null,
             'url_field' => true,
+            'show_load_pdf_button' => true,
             'url_mode' => self::URL_MODE_INPUT,
             'url_choices' => [],
             'url_label' => 'signature_coordinates_type.pdf_url.label',
@@ -395,12 +407,14 @@ final class SignatureCoordinatesType extends AbstractType
             // Unit
             'units' => null,
             'unit_default' => SignatureCoordinatesModel::UNIT_MM,
+            'unit_field' => true,
             'unit_mode' => self::UNIT_MODE_CHOICE,
             'unit_label' => 'signature_coordinates_type.unit.label',
 
             // Origin
             'origins' => null,
             'origin_default' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'origin_field' => true,
             'origin_mode' => self::ORIGIN_MODE_CHOICE,
             'origin_label' => 'signature_coordinates_type.origin.label',
 
@@ -443,10 +457,13 @@ final class SignatureCoordinatesType extends AbstractType
 
         $resolver->setAllowedTypes('pdf_url', ['string', 'null']);
         $resolver->setAllowedTypes('url_field', 'bool');
+        $resolver->setAllowedTypes('show_load_pdf_button', 'bool');
         $resolver->setAllowedValues('url_mode', [self::URL_MODE_INPUT, self::URL_MODE_CHOICE]);
         $resolver->setAllowedTypes('url_choices', 'array');
         $resolver->setAllowedTypes('units', ['array', 'null']);
+        $resolver->setAllowedTypes('unit_field', 'bool');
         $resolver->setAllowedTypes('origins', ['array', 'null']);
+        $resolver->setAllowedTypes('origin_field', 'bool');
         $resolver->setAllowedValues('unit_mode', [self::UNIT_MODE_CHOICE, self::UNIT_MODE_INPUT]);
         $resolver->setAllowedValues('origin_mode', [self::ORIGIN_MODE_CHOICE, self::ORIGIN_MODE_INPUT]);
         $resolver->setAllowedTypes('min_entries', 'int');
@@ -561,7 +578,8 @@ final class SignatureCoordinatesType extends AbstractType
         if (null === $name || '' === $name || !isset($this->namedConfigs[$name]) || !is_array($this->namedConfigs[$name])) {
             return $options;
         }
-        $merged = array_merge($this->namedConfigs[$name], $options);
+        // Named config overrides resolver defaults; options passed when creating the form override the named config
+        $merged = array_merge($options, $this->namedConfigs[$name]);
         unset($merged['config']);
 
         return $merged;

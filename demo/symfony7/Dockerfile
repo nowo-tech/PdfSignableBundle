@@ -1,36 +1,41 @@
-FROM php:8.4-fpm
+# FrankenPHP (Dunglas) — Symfony 7 demo, HTTPS on localhost
+# https://frankenphp.dev/docs/docker/
+FROM node:22-alpine AS node
+RUN npm install -g pnpm@10
 
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    libzip-dev \
-    curl \
-    && docker-php-ext-install zip \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && rm -rf /var/lib/apt/lists/* /tmp/pear
+FROM dunglas/frankenphp:1-php8.4-alpine
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# System deps
+RUN apk add --no-cache git unzip bash
 
-# Install Node.js and pnpm (required for bundle assets build)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get update \
-    && apt-get install -y nodejs \
-    && corepack enable \
-    && corepack prepare pnpm@9.15.0 --activate \
-    && rm -rf /var/lib/apt/lists/*
+# PHP extensions (script provided by base image)
+RUN install-php-extensions zip xdebug
 
-# Xdebug: default config (client_host is overridden via env in docker-compose)
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Node + pnpm (full prefix so npm/pnpm resolve)
+COPY --from=node /usr/local /opt/node
+ENV PATH="/opt/node/bin:$PATH"
+
+RUN git config --global --add safe.directory /var/pdf-signable-bundle && \
+    git config --global --add safe.directory /app
+
+WORKDIR /app
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+# Xdebug (IDE on port 9003)
 RUN echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-ENV COMPOSER_ALLOW_SUPERUSER=1
+# Entrypoint: var dirs + run FrankenPHP (absolute paths like TwigInspector)
+RUN echo '#!/bin/sh' > /usr/local/bin/docker-entrypoint.sh && \
+    echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /app/var/cache /app/var/log' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'chmod -R 777 /app/var' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'exec frankenphp run --config /etc/frankenphp/Caddyfile --adapter caddyfile' >> /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Entrypoint crea var/cache y var/log y ajusta permisos para el volumen montado
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
-
-WORKDIR /workspace/demo/symfony7
-CMD ["php-fpm", "-F"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

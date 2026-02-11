@@ -104,10 +104,13 @@ If `config` is set, the named config is merged first; any option you pass when c
 |-----------------|--------|---------|-------------|
 | `pdf_url`       | string \| null | `null` | Initial PDF URL. When set, the field is pre-filled (or used as the only value when the URL field is hidden). |
 | `url_field`     | bool   | `true`  | Whether to show the URL field. If `false` and `pdf_url` is set, the URL is fixed (hidden input) and the viewer loads that PDF. |
+| `show_load_pdf_button` | bool | `true` | When `true`, the "Load PDF" button is shown next to the URL input (only applies when `url_field` is true). Set to `false` in fixed-URL configs to hide the button. |
 | `url_mode`      | string | `'input'` | `'input'` = text input (UrlType); `'choice'` = dropdown (ChoiceType) with `url_choices`. |
 | `url_choices`   | array  | `[]`    | For `url_mode: 'choice'`: map of label => URL (e.g. `['Document A' => 'https://example.com/a.pdf']`). |
 | `url_label`     | string | (trans) | Label for the URL field. |
 | `url_placeholder`| string | (trans) | Placeholder for the URL input (when `url_mode` is `'input'`); or placeholder option for the select (when `'choice'`). |
+| `unit_field`      | bool   | `true`  | When `false`, the unit selector is hidden and the value is fixed to `unit_default` (submitted as a hidden input). Use in locked/config-only setups. |
+| `origin_field`    | bool   | `true`  | When `false`, the origin selector is hidden and the value is fixed to `origin_default` (submitted as a hidden input). Use in locked/config-only setups. |
 
 ### Unit
 

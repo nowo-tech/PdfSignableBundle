@@ -20,4 +20,5 @@ nowo_pdf_signable:
     #     fixed_url:
     #         pdf_url: '%env(EXAMPLE_PDF_URL)%'
     #         url_field: false
+    #         show_load_pdf_button: false
     configs: {}
