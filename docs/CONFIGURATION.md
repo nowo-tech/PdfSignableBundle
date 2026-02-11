@@ -189,4 +189,4 @@ $builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
 ]);
 ```
 
-See [USAGE](USAGE.md) for the full option tables and [SIGNING_ADVANCED](SIGNING_ADVANCED.md) for audit, TSA and PKI integration.
+See [USAGE](USAGE.md) for the full option tables and [SIGNING_ADVANCED](SIGNING_ADVANCED.md) for audit, TSA and PKI integration. To override the form theme or other bundle templates, see [USAGE — Overriding bundle templates](USAGE.md#overriding-bundle-templates).

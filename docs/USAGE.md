@@ -407,6 +407,33 @@ $form = $this->createForm(SignatureCoordinatesType::class, $model, [
 ]);
 ```
 
+## Overriding bundle templates
+
+You can override any Twig template provided by the bundle by placing a file with the **same path** inside your project’s `templates/bundles/` directory. Symfony will use your template instead of the bundle’s.
+
+### Bundle template paths
+
+The bundle’s views live under `Resources/views/`. To override them, create the same path under `templates/bundles/NowoPdfSignableBundle/`:
+
+| Bundle path (relative to `Resources/views/`) | Override in your project |
+|---------------------------------------------|---------------------------|
+| `form/theme.html.twig` | `templates/bundles/NowoPdfSignableBundle/form/theme.html.twig` |
+| `form/_signature_box_type_widget.html.twig` | `templates/bundles/NowoPdfSignableBundle/form/_signature_box_type_widget.html.twig` |
+| `signature/index.html.twig` | `templates/bundles/NowoPdfSignableBundle/signature/index.html.twig` |
+
+### Overriding the form theme
+
+You do **not** need to register the overridden theme anywhere (e.g. in `config/packages/twig.yaml` under `form_themes`). The bundle already prepends `@NowoPdfSignable/form/theme.html.twig` to the form themes; when you place your copy in `templates/bundles/NowoPdfSignableBundle/form/theme.html.twig`, Symfony resolves that path to your file and uses it automatically.
+
+- **Full override:** Copy `form/theme.html.twig` from the bundle (or from the bundle repo) to `templates/bundles/NowoPdfSignableBundle/form/theme.html.twig` and edit it. The theme defines the blocks `signature_coordinates_widget`, `signature_box_widget`, `signature_box_row`, `form_row`, and `form_errors`. If you change `signature_coordinates_widget`, keep the same root element class (`.nowo-pdf-signable-widget`), data attributes, and element IDs (`#pdf-viewer-container`, `#loadPdfBtn`, `#signature-boxes-list`, etc.) so the bundled JavaScript keeps working. Include the viewer CSS and JS once per request using the Twig function `nowo_pdf_signable_include_assets()` — see [CONTRIBUTING](CONTRIBUTING.md#form-theme-and-assets).
+- **Block override only:** To change only the layout of each signature box (or a single block), use a custom form theme that extends or redefines the bundle blocks, and apply it with `{% form_theme form 'form/signature_theme.html.twig' %}` (and keep `@NowoPdfSignable/form/theme.html.twig` in the theme list). See [Reusable SignatureBoxType layout](#reusable-signatureboxtype-layout) below.
+
+### Overriding the signature index view
+
+If you use the bundle’s built-in page (route `/pdf-signable` or as configured), the controller renders `@NowoPdfSignable/signature/index.html.twig`. To customize that page, copy the template from the bundle to `templates/bundles/NowoPdfSignableBundle/signature/index.html.twig` and adjust it. It expects the variables `form`, and optionally `page_title` and `config_explanation`.
+
+---
+
 ## Reusable SignatureBoxType layout
 
 The bundle provides a default Twig layout for **SignatureBoxType** (each box: name, page, width, height, x, y, angle) that you can reuse or override like any bundle theme.
