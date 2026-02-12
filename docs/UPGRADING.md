@@ -37,6 +37,23 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 1.5.3
+
+**Release date**: 2026-02-10
+
+#### What's new (no breaking changes)
+
+- **Box item fallback**: Overridden themes that use only the class `.signature-box-item` (without `data-pdf-signable="box-item"`) are now supported; the viewer still finds box rows and draws overlays correctly.
+- **Debug logging**: With `nowo_pdf_signable.debug: true`, the viewer logs more detail (DOM resolution, overlay updates, add/remove box, signature pads init, PDF DOM) to help detect missing or wrong elements in overridden templates.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Rebuild assets if you use the bundle’s JS: `make assets` or `pnpm run build`; then `php bin/console cache:clear`.
+3. Optional: set `debug: true` in config when debugging template overrides; check the browser console for `[PdfSignable]` messages.
+
+---
+
 ### Upgrading to 1.5.2
 
 **Release date**: 2026-02-12
@@ -273,7 +290,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. |
+| 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging for template/override issues. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |
 | 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |
 | 1.2.x          | 6.1+, 7.x, 8.x | 8.1+ | Optional rotation (enable_rotation), box_defaults_by_name, 16 demos. |

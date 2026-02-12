@@ -448,7 +448,7 @@ When you override the form theme or the signature box widget, **keep these attri
 | `pdf-url` | PDF URL input | Load PDF from form value |
 | `overlay` | Each overlay div (set by JS) | Drag/resize/rotate target |
 
-The form types already add these attributes to the inputs. If you render fields manually (e.g. `form_widget(form.page, { attr: { class: 'my-class' } })`), **merge** or keep the attribute: e.g. `attr: { class: 'my-class', 'data-pdf-signable': 'page' }`. The page field also supports a fallback by `name` (input/select whose `name` ends with `[page]`) if the attribute is missing.
+The form types already add these attributes to the inputs. If you render fields manually (e.g. `form_widget(form.page, { attr: { class: 'my-class' } })`), **merge** or keep the attribute: e.g. `attr: { class: 'my-class', 'data-pdf-signable': 'page' }`. The page field also supports a fallback by `name` (input/select whose `name` ends with `[page]`) if the attribute is missing. For **box rows**, the script also accepts the class `.signature-box-item` if the attribute is not present (e.g. in older overrides).
 
 ### Overriding the form theme
 

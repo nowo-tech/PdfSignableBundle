@@ -34,13 +34,13 @@
 
 ---
 
-## Ready for v1.5.2 (2026-02-12)
+## Ready for v1.5.3 (2026-02-10)
 
-- [x] CHANGELOG: [1.5.2] with date; [Unreleased] at top; links updated.
-- [x] UPGRADING: “Upgrading to 1.5.2” with release date and upgrade steps; version table includes 1.5.2.
-- [x] RELEASE: this checklist for v1.5.2.
+- [x] CHANGELOG: [1.5.3] with date; [Unreleased] at top; links updated.
+- [x] UPGRADING: “Upgrading to 1.5.3” with release date and upgrade steps; version table includes 1.5.3.
+- [x] RELEASE: this checklist for v1.5.3.
 - [ ] Run `make test` and `make cs-check`.
 - [ ] Run `make assets` (bundle JS built).
 - [ ] Run `make validate-translations`.
-- [ ] Commit and push: `git add -A && git commit -m "Prepare v1.5.2 release" && git push origin HEAD`
-- [ ] Create and push tag: `git tag -a v1.5.2 -m "Release v1.5.2"` then `git push origin v1.5.2`.
+- [ ] Commit and push: `git add -A && git commit -m "Prepare v1.5.3 release" && git push origin HEAD`
+- [ ] Create and push tag: `git tag -a v1.5.3 -m "Release v1.5.3"` then `git push origin v1.5.3`.

@@ -21,6 +21,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.3] - 2026-02-10
+
+### Added
+
+- **Extended debug logging**: When `nowo_pdf_signable.debug` is `true`, the viewer script now logs more detail to the browser console to help detect template/override issues: DOM resolution (widget, boxes list, prototype, key elements), overlay updates (box item count, missing page/coordinate fields, missing overlay container per page), add box (empty prototype, missing root or page/coordinate inputs), remove box (index and remaining count; warning if clicked item is not a direct box-item), signature pads init (canvas count; warnings when box item or signature-data input is missing), and PDF DOM built (pages and overlay containers). See [CONFIGURATION](CONFIGURATION.md) for the `debug` option.
+
+### Fixed
+
+- **Box item fallback**: The script finds box rows by `[data-pdf-signable="box-item"]` with fallback to `.signature-box-item`, so overridden themes that only use the class (e.g. `.signature-box-item`) without the attribute still work and overlays are drawn correctly. [USAGE](USAGE.md) notes the fallback.
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 1.5.3.
+
+For upgrade steps from 1.5.2, see [UPGRADING](docs/UPGRADING.md).
+
+---
+
 ## [1.5.2] - 2026-02-12
 
 ### Added
@@ -249,7 +267,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.5.2...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.5.3...HEAD
+[1.5.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.3
 [1.5.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.2
 [1.5.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.1
 [1.5.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.0
