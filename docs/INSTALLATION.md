@@ -62,4 +62,4 @@ The bundle views extend `base.html.twig` by default. Ensure your application has
 ## See also
 
 - [Configuration](CONFIGURATION.md) — Proxy, example URL, named configs, audit and signing placeholders.
-- [Usage](USAGE.md) — Form options and examples; [overriding bundle templates](USAGE.md#overriding-bundle-templates) (form theme, signature index).
+- [Usage](USAGE.md) — Form options and examples; [overriding bundle templates](USAGE.md#overriding-bundle-templates) (form theme, signature index). Use directory `templates/bundles/NowoPdfSignable/` (name without the `Bundle` suffix).
