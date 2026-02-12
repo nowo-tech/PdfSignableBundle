@@ -21,6 +21,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.2] - 2026-02-12
+
+### Added
+
+- **Workflow documentation**: [WORKFLOW.md](docs/WORKFLOW.md) with Mermaid diagrams for architecture, page load and init, load PDF, add signature box, drag/resize overlay, coordinate sync, and form submit. Linked from [USAGE](docs/USAGE.md) and [README](README.md).
+- **Data attributes for overrides**: The viewer script finds elements by `data-pdf-signable` attributes (e.g. `data-pdf-signable="widget"`, `"page"`, `"x"`) instead of CSS classes, so you can change or remove classes in overridden templates for styling without breaking the JS. Form types and theme add these attributes; [USAGE](docs/USAGE.md) documents the full table and override notes.
+- **Recipe**: `.symfony/recipe` config file is a complete example with all options commented and explained in English.
+
+### Changed
+
+- **Override form theme**: [USAGE](docs/USAGE.md) now explains that if the overridden form theme is not applied (form fields still from bundle), add the theme explicitly in `config/packages/twig.yaml` under `form_themes` so Twig uses your overridden template.
+
+### Fixed
+
+- **Widget init**: Script finds the widget by `[data-pdf-signable="widget"]` with fallback to `.nowo-pdf-signable-widget`, so overridden themes that do not add the attribute still work.
+- **Page field on add box**: When the page field is an input and the template override omits the expected class, the script now finds it by `[data-pdf-signable="page"]` or by input/select whose `name` ends with `[page]`, so the page number is set correctly when clicking on the PDF.
+- **Mermaid diagrams**: [WORKFLOW.md](docs/WORKFLOW.md) sequence diagram labels simplified (no commas or special characters in arrow text) so Mermaid parsers accept them.
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 1.5.2.
+
+For upgrade steps from 1.5.1, see [UPGRADING](docs/UPGRADING.md).
+
+---
+
 ## [1.5.1] - 2026-02-11
 
 ### Fixed
@@ -223,7 +249,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.5.2...HEAD
+[1.5.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.2
 [1.5.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.1
 [1.5.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.0
 [1.4.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.1

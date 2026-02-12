@@ -37,6 +37,26 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 1.5.2
+
+**Release date**: 2026-02-12
+
+#### What's new (no breaking changes)
+
+- **Data attributes**: The viewer script finds elements by `data-pdf-signable` attributes instead of CSS classes. Form types and the bundle theme add these automatically. When overriding templates, keep these attributes on the same elements (see [USAGE](USAGE.md#data-attributes-required-when-overriding)); you can change classes for styling.
+- **Widget fallback**: If your override does not add `data-pdf-signable="widget"` to the root div, the script still finds the widget by the class `.nowo-pdf-signable-widget`.
+- **Page field**: The script finds the page input by `data-pdf-signable="page"` or by `name` ending with `[page]`, so the page number is set when adding a box even if your template override changed the field’s class.
+- **Form theme override**: If your overridden form theme is not applied (only the page layout changes), add the theme in `config/packages/twig.yaml` under `form_themes` (see [USAGE](USAGE.md#overriding-the-form-theme)).
+- **Workflow doc**: [WORKFLOW.md](WORKFLOW.md) describes init, load PDF, add/drag box, coordinate sync, and submit with Mermaid diagrams.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. If you override the form theme or signature box widget, add the `data-pdf-signable` attributes to the same elements (or rely on the widget/page fallbacks). See [USAGE](USAGE.md#data-attributes-required-when-overriding).
+3. Rebuild assets if you use the bundle’s JS: `make assets` or `pnpm run build`; then `php bin/console cache:clear`.
+
+---
+
 ### Upgrading to 1.5.1
 
 **Release date**: 2026-02-11
@@ -253,7 +273,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | Guides and grid (show_grid, grid_step), viewer lazy load (viewer_lazy_load), advanced signing (audit, events, batch_sign_enabled), single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix (url_field/unit_field/origin_field/show_load_pdf_button from config now override defaults), demo uses bundle via symlink. |
+| 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |
 | 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |
 | 1.2.x          | 6.1+, 7.x, 8.x | 8.1+ | Optional rotation (enable_rotation), box_defaults_by_name, 16 demos. |
