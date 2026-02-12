@@ -13,7 +13,7 @@ nowo_pdf_signable:
         default:
             units: ['mm', 'cm', 'pt']
             unit_default: 'mm'
-            origin_default: 'bottom_left'
+            origin_default: 'top_left'
         fixed_url:
             pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
             url_field: false

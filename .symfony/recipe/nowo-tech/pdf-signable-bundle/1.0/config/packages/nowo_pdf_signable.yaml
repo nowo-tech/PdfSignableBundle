@@ -1,17 +1,25 @@
 # PdfSignable Bundle - default configuration
 # https://github.com/nowo-tech/pdfSignableBundle
+#
+# This file shows all available options. Uncomment and adjust as needed.
+# See docs/CONFIGURATION.md for details.
 
 nowo_pdf_signable:
-    # Enable proxy endpoint to load external PDFs (avoids CORS)
+    # Enable the proxy endpoint so the browser can load external PDFs without CORS.
     proxy_enabled: true
 
-    # Example PDF URL for form preload (leave empty to not preload)
-    example_pdf_url: ''
+    # When non-empty, the proxy only fetches URLs matching at least one entry.
+    # Each entry: substring of URL, or regex if prefixed with # (e.g. #^https://example\.com/#).
+    # proxy_url_allowlist: []
 
-    # Enable console logging in the browser dev tools (PDF viewer and signature boxes)
+    # Default PDF URL for form preload. Leave empty to not preload any URL.
+    # example_pdf_url: ''
+
+    # When true, the viewer script logs to the browser console (load PDF, add/remove box, errors). Useful in development.
     # debug: false
 
-    # Optional: named configs for SignatureCoordinatesType (use form option config: "name" to apply)
+    # Named configs for SignatureCoordinatesType. Use form option config: "name" to apply a preset.
+    # Full example (replace configs: {} with the block below and adjust):
     # configs:
     #     default:
     #         units: ['mm', 'cm', 'pt']
@@ -21,4 +29,18 @@ nowo_pdf_signable:
     #         pdf_url: '%env(EXAMPLE_PDF_URL)%'
     #         url_field: false
     #         show_load_pdf_button: false
+    #         unit_field: false
+    #         origin_field: false
+    #         unit_default: 'mm'
+    #         origin_default: 'bottom_left'
     configs: {}
+
+    # Audit metadata: when true, the controller merges IP, user_agent and submitted_at into the model before dispatching SIGNATURE_COORDINATES_SUBMITTED.
+    audit:
+        fill_from_request: true
+
+    # Optional: your RFC 3161 TSA URL. The bundle does not call it; use in a listener to get a timestamp token and set it in audit_metadata.
+    # tsa_url: null
+
+    # Optional: your PKI/PAdES signing or HSM service ID. The bundle does not use it; reference in a listener to perform signing.
+    # signing_service_id: null
