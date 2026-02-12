@@ -8,6 +8,8 @@ nowo_pdf_signable:
     # Example PDF URL for form preload (widely accessible test PDF)
     example_pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
 
+    debug: true
+
     # Named configs for SignatureCoordinatesType (use form option config: "name" to apply)
     configs:
         default:

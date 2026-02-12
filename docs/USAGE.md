@@ -1,5 +1,7 @@
 # Usage
 
+For a high-level description of how the form, viewer and script interact (with diagrams), see [WORKFLOW](WORKFLOW.md).
+
 ## Form type that renders the view
 
 The bundle provides a **Form Type** (`SignatureCoordinatesType`) that:
@@ -425,6 +427,29 @@ The bundle’s views live under `Resources/views/`. To override them, create the
 | `form/_signature_box_type_widget.html.twig` | `templates/bundles/NowoPdfSignable/form/_signature_box_type_widget.html.twig` |
 | `signature/index.html.twig` | `templates/bundles/NowoPdfSignable/signature/index.html.twig` |
 
+### Data attributes (required when overriding)
+
+The viewer script finds elements by **data attributes** `data-pdf-signable="..."`, not by CSS class. That way you can change or remove classes for styling without breaking the JS.
+
+When you override the form theme or the signature box widget, **keep these attributes** on the same elements (you can change classes and layout):
+
+| Attribute value | Element | Used for |
+|-----------------|---------|----------|
+| `widget` | Root div of the coordinates widget | Init; PDF viewer + boxes list container |
+| `boxes-list` | Container of the list of signature boxes (e.g. `#signature-boxes-list`) | Add/remove boxes; read prototype |
+| `box-item` | Each signature box row (wrapper of name, page, x, y, …) | Index overlay ↔ form row; remove box |
+| `page` | Page field (input or select) | Set/read page number |
+| `name` | Name field | Label on overlay; default name on add |
+| `x`, `y`, `width`, `height` | Coordinate inputs | Position/size; drag and resize sync |
+| `angle` | Angle input (if rotation enabled) | Rotate overlay; drag |
+| `signature-data`, `signed-at` | Hidden inputs for signature capture | Pad/upload sync |
+| `unit` | Unit selector | Current unit for conversions |
+| `origin` | Origin selector | Coordinate origin (bottom_left, etc.) |
+| `pdf-url` | PDF URL input | Load PDF from form value |
+| `overlay` | Each overlay div (set by JS) | Drag/resize/rotate target |
+
+The form types already add these attributes to the inputs. If you render fields manually (e.g. `form_widget(form.page, { attr: { class: 'my-class' } })`), **merge** or keep the attribute: e.g. `attr: { class: 'my-class', 'data-pdf-signable': 'page' }`. The page field also supports a fallback by `name` (input/select whose `name` ends with `[page]`) if the attribute is missing.
+
 ### Overriding the form theme
 
 The bundle prepends `@NowoPdfSignable/form/theme.html.twig` to the form themes. When you place your copy in `templates/bundles/NowoPdfSignable/form/theme.html.twig`, Symfony will normally resolve that path to your file. **If the form fields still render with the bundle’s theme** (only the page layout is overridden), add the theme explicitly in `config/packages/twig.yaml` so that Twig uses your overridden template for the form:
@@ -439,7 +464,7 @@ twig:
 
 With that in place, the namespace `@NowoPdfSignable` resolves to your `templates/bundles/NowoPdfSignable/` copy and the form fields will use your overridden theme.
 
-- **Full override:** Copy `form/theme.html.twig` from the bundle (or from the bundle repo) to `templates/bundles/NowoPdfSignable/form/theme.html.twig` and edit it. The theme defines the blocks `signature_coordinates_widget`, `signature_box_widget`, `signature_box_row`, `form_row`, and `form_errors`. If you change `signature_coordinates_widget`, keep the same root element class (`.nowo-pdf-signable-widget`), data attributes, and element IDs (`#pdf-viewer-container`, `#loadPdfBtn`, `#signature-boxes-list`, etc.) so the bundled JavaScript keeps working. Include the viewer CSS and JS once per request using the Twig function `nowo_pdf_signable_include_assets()` — see [CONTRIBUTING](CONTRIBUTING.md#form-theme-and-assets).
+- **Full override:** Copy `form/theme.html.twig` from the bundle (or from the bundle repo) to `templates/bundles/NowoPdfSignable/form/theme.html.twig` and edit it. The theme defines the blocks `signature_coordinates_widget`, `signature_box_widget`, `signature_box_row`, `form_row`, and `form_errors`. If you change `signature_coordinates_widget`, keep the **data-pdf-signable** attributes on the root (`widget`), the list (`boxes-list`), and each box row (`box-item`) so the bundled JavaScript can find them; you can change CSS classes. Keep element IDs such as `#pdf-viewer-container`, `#loadPdfBtn`, `#signature-boxes-list` if the script or assets depend on them. Include the viewer CSS and JS once per request using the Twig function `nowo_pdf_signable_include_assets()` — see [CONTRIBUTING](CONTRIBUTING.md#form-theme-and-assets).
 - **Block override only:** To change only the layout of each signature box (or a single block), use a custom form theme that extends or redefines the bundle blocks, and apply it with `{% form_theme form 'form/signature_theme.html.twig' %}` (and keep `@NowoPdfSignable/form/theme.html.twig` in the theme list). See [Reusable SignatureBoxType layout](#reusable-signatureboxtype-layout) below.
 
 ### Overriding the signature index view
@@ -455,7 +480,7 @@ The bundle provides a default Twig layout for **SignatureBoxType** (each box: na
 ### Default usage
 
 - The layout is in the bundle form theme (`@NowoPdfSignable/form/theme.html.twig`), which is registered automatically.
-- The concrete fragment is at `@NowoPdfSignable/form/_signature_box_type_widget.html.twig`: two rows (name + page; width, height, x, y, angle) with the Bootstrap classes the viewer JS expects (`.signature-box-name`, `.signature-box-page`, `.signature-box-angle`, etc.). The overlay is drawn with CSS `transform: rotate(angle deg)`.
+- The concrete fragment is at `@NowoPdfSignable/form/_signature_box_type_widget.html.twig`: two rows (name + page; width, height, x, y, angle). The viewer JS finds inputs by **data-pdf-signable** (e.g. `data-pdf-signable="page"`, `"x"`, `"y"`); the form types add these automatically. You can change CSS classes for styling. The overlay is drawn with CSS `transform: rotate(angle deg)`.
 
 ### Reusing the fragment
 
@@ -510,7 +535,7 @@ twig:
     - '@NowoPdfSignable/form/theme.html.twig'
 ```
 
-Important: keep the CSS classes the viewer JS uses (`.signature-box-name`, `.signature-box-page`, `.signature-box-width`, `.signature-box-height`, `.signature-box-x`, `.signature-box-y`) on the inputs, or adapt the script if you change the structure.
+**Important:** keep the **data-pdf-signable** attributes on the inputs (page, name, x, y, width, height, angle, etc.) so the viewer JS can sync coordinates when you add boxes, drag or resize. The form types add them by default; if you pass custom `attr` in `form_row`/`form_widget`, merge in `'data-pdf-signable': 'page'` (or the right value) so the attribute is not lost. See [Data attributes (required when overriding)](#data-attributes-required-when-overriding) above.
 
 ## Form submit behavior
 

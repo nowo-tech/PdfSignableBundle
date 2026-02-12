@@ -31,10 +31,12 @@ function run(): void {
     if (debugMode) console.warn('[PdfSignable]', ...args);
   };
 
-  const widget = document.querySelector<HTMLElement>('.nowo-pdf-signable-widget');
+  const widget =
+    document.querySelector<HTMLElement>('[data-pdf-signable="widget"]') ??
+    document.querySelector<HTMLElement>('.nowo-pdf-signable-widget');
   const form = widget?.closest('form');
-  if (!form) {
-    debugWarn('.nowo-pdf-signable-widget or form not found, skipping init');
+  if (!form || !widget) {
+    debugWarn('Widget or form not found, skipping init');
     return;
   }
   const preventBoxOverlap = widget?.dataset.preventBoxOverlap === '1';
@@ -52,16 +54,22 @@ function run(): void {
   const gridStep = Math.max(0, parseFloat(widget?.dataset.gridStep ?? '10') || 0);
   const SNAP_THRESHOLD_PX = 10;
 
+  /** Finds the page field (input or select) in a box item. Uses data-pdf-signable="page" or name fallback. */
+  const getPageField = (container: Element): HTMLInputElement | HTMLSelectElement | null =>
+    container.querySelector<HTMLInputElement | HTMLSelectElement>('[data-pdf-signable="page"]') ??
+    container.querySelector<HTMLInputElement | HTMLSelectElement>('input[name$="[page]"], select[name$="[page]"]');
+
   debugLog('Initialized');
 
-  const pdfUrlInput = form.querySelector<HTMLInputElement>('.pdf-url-input');
+  const pdfUrlInput = form.querySelector<HTMLInputElement>('[data-pdf-signable="pdf-url"]');
   const loadPdfBtn = document.getElementById('loadPdfBtn');
   const pdfPlaceholder = document.getElementById('pdf-placeholder');
   const pdfCanvasWrapper = document.getElementById('pdf-canvas-wrapper');
-  const signatureBoxesList = document.getElementById('signature-boxes-list');
+  const signatureBoxesList =
+    (widget?.querySelector<HTMLElement>('[data-pdf-signable="boxes-list"]') ?? document.getElementById('signature-boxes-list')) as HTMLElement | null;
   const addBoxBtn = document.getElementById('addBoxBtn');
-  const unitSelector = form.querySelector<HTMLSelectElement>('.unit-selector');
-  const originSelector = form.querySelector<HTMLSelectElement>('.origin-selector');
+  const unitSelector = form.querySelector<HTMLSelectElement>('[data-pdf-signable="unit"]');
+  const originSelector = form.querySelector<HTMLSelectElement>('[data-pdf-signable="origin"]');
   const pdfViewerContainer = document.getElementById('pdf-viewer-container');
   const pdfZoomValue = document.getElementById('pdfZoomValue');
 
@@ -551,32 +559,29 @@ function run(): void {
       el.innerHTML = '';
     });
 
-    const items = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item');
+    const items = boxesList.querySelectorAll<HTMLElement>(':scope > [data-pdf-signable="box-item"]');
     const namesSoFar: Record<string, number> = {};
     const nameToColorIndex: Record<string, number> = {};
     let nextColorIndex = 0;
     items.forEach((item, boxIndex) => {
-      const pageNum = parseInt(
-        item.querySelector<HTMLInputElement>('.signature-box-page')?.value ?? '1',
-        10
-      );
+      const pageNum = parseInt(getPageField(item)?.value ?? '1', 10);
       const xVal = parseFloat(
-        item.querySelector<HTMLInputElement>('.signature-box-x')?.value ?? '0'
+        item.querySelector<HTMLInputElement>('[data-pdf-signable="x"]')?.value ?? '0'
       );
       const yVal = parseFloat(
-        item.querySelector<HTMLInputElement>('.signature-box-y')?.value ?? '0'
+        item.querySelector<HTMLInputElement>('[data-pdf-signable="y"]')?.value ?? '0'
       );
       const wVal = parseFloat(
-        item.querySelector<HTMLInputElement>('.signature-box-width')?.value ?? '150'
+        item.querySelector<HTMLInputElement>('[data-pdf-signable="width"]')?.value ?? '150'
       );
       const hVal = parseFloat(
-        item.querySelector<HTMLInputElement>('.signature-box-height')?.value ?? '40'
+        item.querySelector<HTMLInputElement>('[data-pdf-signable="height"]')?.value ?? '40'
       );
-      const angleEl = item.querySelector<HTMLInputElement>('.signature-box-angle');
+      const angleEl = item.querySelector<HTMLInputElement>('[data-pdf-signable="angle"]');
       const angleVal = enableRotation && angleEl ? parseFloat(angleEl.value ?? '0') : 0;
-      const signatureDataEl = item.querySelector<HTMLInputElement>('.signature-box-signature-data');
+      const signatureDataEl = item.querySelector<HTMLInputElement>('[data-pdf-signable="signature-data"]');
       const signatureData = signatureDataEl?.value?.trim();
-      const nameEl = item.querySelector<HTMLInputElement | HTMLSelectElement>('.signature-box-name');
+      const nameEl = item.querySelector<HTMLInputElement | HTMLSelectElement>('[data-pdf-signable="name"]');
       const name = (nameEl?.value ?? '').trim();
       const nameKey = name === '' ? '__empty__' : name;
       if (!(nameKey in nameToColorIndex)) {
@@ -605,6 +610,7 @@ function run(): void {
 
       const overlay = document.createElement('div');
       overlay.className = 'signature-box-overlay';
+      overlay.dataset.pdfSignable = 'overlay';
       overlay.dataset.boxIndex = String(boxIndex);
       overlay.style.left = v.vpX + 'px';
       overlay.style.top = v.vpY + 'px';
@@ -638,7 +644,7 @@ function run(): void {
       overlaysDiv.appendChild(overlay);
     });
     if (selectedBoxIndex !== null) {
-      const sel = canvasWrapper.querySelector(`.signature-box-overlay[data-box-index="${selectedBoxIndex}"]`);
+      const sel = canvasWrapper.querySelector(`[data-pdf-signable="overlay"][data-box-index="${selectedBoxIndex}"]`);
       if (sel) sel.classList.add('selected');
     }
   }
@@ -668,12 +674,12 @@ function run(): void {
    * Uses display-sized canvas for sharp rendering, smooth curves and pressure-based line width (touch/mouse).
    */
   function initSignaturePads(): void {
-    const root = document.querySelector('.nowo-pdf-signable-widget');
+    const root = document.querySelector('[data-pdf-signable="widget"]');
     if (!root) return;
     root.querySelectorAll<HTMLCanvasElement>('.signature-pad-canvas').forEach((canvas) => {
       if (canvas.dataset.padInited === '1') return;
-      const item = canvas.closest('.signature-box-item');
-      const input = item?.querySelector<HTMLInputElement>('.signature-box-signature-data');
+      const item = canvas.closest('[data-pdf-signable="box-item"]');
+      const input = item?.querySelector<HTMLInputElement>('[data-pdf-signable="signature-data"]');
       const clearBtn = canvas.closest('.signature-pad-wrapper')?.querySelector<HTMLButtonElement>('.signature-pad-clear');
       const fileInput = item?.querySelector<HTMLInputElement>('.signature-upload-input');
       if (!input) return;
@@ -772,7 +778,7 @@ function run(): void {
         if (canvas.width > 0 && canvas.height > 0) {
           input.value = canvas.toDataURL('image/png');
         }
-        const signedAtEl = item?.querySelector<HTMLInputElement>('.signature-box-signed-at');
+        const signedAtEl = item?.querySelector<HTMLInputElement>('[data-pdf-signable="signed-at"]');
         if (signedAtEl) signedAtEl.value = new Date().toISOString();
         updateOverlays();
       };
@@ -790,7 +796,7 @@ function run(): void {
           const h = canvas.height;
           ctx.clearRect(0, 0, w, h);
           input.value = '';
-          const signedAtEl = item?.querySelector<HTMLInputElement>('.signature-box-signed-at');
+          const signedAtEl = item?.querySelector<HTMLInputElement>('[data-pdf-signable="signed-at"]');
           if (signedAtEl) signedAtEl.value = '';
           updateOverlays();
         });
@@ -803,7 +809,7 @@ function run(): void {
           reader.onload = () => {
             if (typeof reader.result === 'string') {
               input.value = reader.result;
-              const signedAtEl = item?.querySelector<HTMLInputElement>('.signature-box-signed-at');
+              const signedAtEl = item?.querySelector<HTMLInputElement>('[data-pdf-signable="signed-at"]');
               if (signedAtEl) signedAtEl.value = new Date().toISOString();
               updateOverlays();
             }
@@ -829,7 +835,7 @@ function run(): void {
   function updateAddButtonVisibility(): void {
     if (!addBoxBtn) return;
     const max = getMaxEntries();
-    const count = boxesList.querySelectorAll(':scope > .signature-box-item').length;
+    const count = boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]').length;
     if (max !== null && count >= max) {
       addBoxBtn.style.display = 'none';
     } else {
@@ -853,7 +859,7 @@ function run(): void {
     height?: number
   ): void {
     const max = getMaxEntries();
-    const currentCount = boxesList.querySelectorAll(':scope > .signature-box-item').length;
+    const currentCount = boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]').length;
     if (max !== null && currentCount >= max) {
       debugLog('Box add skipped: max_entries reached', { max, currentCount });
       return;
@@ -865,11 +871,11 @@ function run(): void {
     if (emptyEl) emptyEl.classList.add('d-none');
 
     const prototype = boxesList.dataset.prototype ?? '';
-    const index = boxesList.querySelectorAll(':scope > .signature-box-item').length;
+    const index = boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]').length;
     const html = prototype.replace(/__name__/g, String(index));
 
-    // Append the prototype root element only (it already has .signature-box-item).
-    // Do not wrap in another div, otherwise we get two .signature-box-item per box
+    // Append the prototype root element only (it already has data-pdf-signable="box-item").
+    // Do not wrap in another div, otherwise we get two box items per box
     // and on remove only the inner one is removed, leaving an empty shell that draws a box at (0,0).
     const temp = document.createElement('div');
     temp.innerHTML = html;
@@ -877,8 +883,19 @@ function run(): void {
     if (!div) return;
     div.dataset.index = String(index);
 
-    const pageInput = div.querySelector<HTMLInputElement>('.signature-box-page');
-    if (pageInput) pageInput.value = String(page);
+    const pageStr = String(page);
+    const pageInput = getPageField(div);
+    if (pageInput) {
+      if (pageInput instanceof HTMLSelectElement) {
+        if (!Array.from(pageInput.options).some((o) => o.value === pageStr)) {
+          const opt = document.createElement('option');
+          opt.value = pageStr;
+          opt.textContent = pageStr;
+          pageInput.appendChild(opt);
+        }
+      }
+      pageInput.value = pageStr;
+    }
 
     const viewport = pageViewports[page];
     const unit = getSelectedUnit();
@@ -909,16 +926,16 @@ function run(): void {
     }
 
     const round = (v: number): number => Math.round(v * 100) / 100;
-    const nameInput = div.querySelector<HTMLInputElement | HTMLSelectElement>('.signature-box-name');
+    const nameInput = div.querySelector<HTMLInputElement | HTMLSelectElement>('[data-pdf-signable="name"]');
     for (const f of ['x', 'y', 'width', 'height']) {
-      const inp = div.querySelector<HTMLInputElement>('.signature-box-' + f);
+      const inp = div.querySelector<HTMLInputElement>(`[data-pdf-signable="${f}"]`);
       if (!inp) continue;
       if (f === 'x') inp.value = String(round(ptToUnit(xForm, unit)));
       else if (f === 'y') inp.value = String(round(ptToUnit(yForm, unit)));
       else if (f === 'width') inp.value = String(round(ptToUnit(wPt, unit)));
       else if (f === 'height') inp.value = String(round(ptToUnit(hPt, unit)));
     }
-    const angleInp = div.querySelector<HTMLInputElement>('.signature-box-angle');
+    const angleInp = div.querySelector<HTMLInputElement>('[data-pdf-signable="angle"]');
     if (angleInp) angleInp.value = '0';
     if (nameInput) nameInput.value = strings.default_box_name;
 
@@ -954,9 +971,9 @@ function run(): void {
       const oldUnit = currentDisplayUnit;
       const newUnit = getSelectedUnit();
       updateUnitBadge();
-      boxesList.querySelectorAll(':scope > .signature-box-item').forEach((item) => {
+      boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]').forEach((item) => {
         for (const f of ['x', 'y', 'width', 'height']) {
-          const inp = item.querySelector<HTMLInputElement>('.signature-box-' + f);
+          const inp = item.querySelector<HTMLInputElement>(`[data-pdf-signable="${f}"]`);
           if (inp?.value) {
             const v = parseFloat(inp.value);
             inp.value = String(
@@ -972,14 +989,14 @@ function run(): void {
 
   boxesList.addEventListener('input', updateOverlays);
   boxesList.addEventListener('change', (e) => {
-    const target = (e.target as HTMLElement).closest('.signature-box-item');
-    const nameEl = target?.querySelector<HTMLInputElement | HTMLSelectElement>('.signature-box-name');
+    const target = (e.target as HTMLElement).closest('[data-pdf-signable="box-item"]');
+    const nameEl = target?.querySelector<HTMLInputElement | HTMLSelectElement>('[data-pdf-signable="name"]');
     if (nameEl && e.target === nameEl && Object.keys(boxDefaultsByName).length > 0) {
       const name = (nameEl.value ?? '').trim();
       const def = name ? boxDefaultsByName[name] : null;
       if (def) {
         const set = (cls: string, val: number | undefined): void => {
-          const inp = target?.querySelector<HTMLInputElement>('.signature-box-' + cls);
+          const inp = target?.querySelector<HTMLInputElement>(`[data-pdf-signable="${cls}"]`);
           if (inp && val !== undefined) inp.value = String(val);
         };
         set('width', def.width);
@@ -995,21 +1012,21 @@ function run(): void {
 
   boxesList.addEventListener('click', (e) => {
     if (!(e.target as HTMLElement).closest('.remove-box')) return;
-    const item = (e.target as HTMLElement).closest('.signature-box-item') as HTMLElement | null;
+    const item = (e.target as HTMLElement).closest('[data-pdf-signable="box-item"]') as HTMLElement | null;
     if (item) {
-      // Remove the top-level .signature-box-item (direct child of list) so we don't leave
+      // Remove the top-level box item (direct child of list, data-pdf-signable="box-item") so we don't leave
       // an empty wrapper that would be drawn as a box at (0,0).
       let topLevel: HTMLElement | null = item;
       while (topLevel?.parentElement && topLevel.parentElement !== boxesList) {
         topLevel = topLevel.parentElement as HTMLElement;
       }
       if (topLevel) {
-        const idx = Array.from(boxesList.querySelectorAll(':scope > .signature-box-item')).indexOf(topLevel);
+        const idx = Array.from(boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]')).indexOf(topLevel);
         topLevel.remove();
         debugLog('Box removed', { index: idx });
       }
     }
-    if (boxesList.querySelectorAll(':scope > .signature-box-item').length === 0) {
+    if (boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]').length === 0) {
       const emptyEl = document.getElementById('signature-boxes-empty');
       if (emptyEl) emptyEl.classList.remove('d-none');
     }
@@ -1063,7 +1080,7 @@ function run(): void {
   }
 
   canvasWrapper.addEventListener('click', (e) => {
-    if ((e.target as HTMLElement).closest('.signature-box-overlay')) return;
+    if ((e.target as HTMLElement).closest('[data-pdf-signable="overlay"]')) return;
     setSelectedBoxIndex(null);
     const wrapper = (e.target as HTMLElement).closest('.pdf-page-wrapper');
     const canvas = wrapper?.querySelector<HTMLCanvasElement>('canvas');
@@ -1109,15 +1126,14 @@ function run(): void {
    * Reads all signature box bounds from the form (page, x, y, width, height in current unit).
    */
   function getBoxesFromForm(): BoxBounds[] {
-    const items = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item');
+    const items = boxesList.querySelectorAll<HTMLElement>(':scope > [data-pdf-signable="box-item"]');
     const result: BoxBounds[] = [];
     items.forEach((item) => {
-      const pageEl = item.querySelector<HTMLSelectElement>('.signature-box-page');
-      const page = parseInt(pageEl?.value ?? '1', 10);
-      const x = parseFloat(item.querySelector<HTMLInputElement>('.signature-box-x')?.value ?? '0');
-      const y = parseFloat(item.querySelector<HTMLInputElement>('.signature-box-y')?.value ?? '0');
-      const w = parseFloat(item.querySelector<HTMLInputElement>('.signature-box-width')?.value ?? '150');
-      const h = parseFloat(item.querySelector<HTMLInputElement>('.signature-box-height')?.value ?? '40');
+      const page = parseInt(getPageField(item)?.value ?? '1', 10);
+      const x = parseFloat(item.querySelector<HTMLInputElement>('[data-pdf-signable="x"]')?.value ?? '0');
+      const y = parseFloat(item.querySelector<HTMLInputElement>('[data-pdf-signable="y"]')?.value ?? '0');
+      const w = parseFloat(item.querySelector<HTMLInputElement>('[data-pdf-signable="width"]')?.value ?? '150');
+      const h = parseFloat(item.querySelector<HTMLInputElement>('[data-pdf-signable="height"]')?.value ?? '40');
       result.push({ page, x, y, w, h });
     });
     return result;
@@ -1194,9 +1210,9 @@ function run(): void {
 
   function setSelectedBoxIndex(idx: number | null): void {
     selectedBoxIndex = idx;
-    canvasWrapper.querySelectorAll('.signature-box-overlay.selected').forEach((el) => el.classList.remove('selected'));
+    canvasWrapper.querySelectorAll('[data-pdf-signable="overlay"].selected').forEach((el) => el.classList.remove('selected'));
     if (idx !== null) {
-      const overlay = canvasWrapper.querySelector(`.signature-box-overlay[data-box-index="${idx}"]`);
+      const overlay = canvasWrapper.querySelector(`[data-pdf-signable="overlay"][data-box-index="${idx}"]`);
       if (overlay) overlay.classList.add('selected');
     }
   }
@@ -1219,7 +1235,7 @@ function run(): void {
     let newAngle = startAngle + deltaDeg;
     while (newAngle > 180) newAngle -= 360;
     while (newAngle < -180) newAngle += 360;
-    const angleInp = item.querySelector<HTMLInputElement>('.signature-box-angle');
+    const angleInp = item.querySelector<HTMLInputElement>('[data-pdf-signable="angle"]');
     if (angleInp) angleInp.value = String(Math.round(newAngle * 100) / 100);
     overlay.style.transform = `rotate(${newAngle}deg)`;
   }
@@ -1237,7 +1253,7 @@ function run(): void {
    * Attaches mousemove and mouseup listeners.
    */
   function onOverlayMouseDown(e: MouseEvent): void {
-    const overlay = (e.target as HTMLElement).closest('.signature-box-overlay') as HTMLElement | null;
+    const overlay = (e.target as HTMLElement).closest('[data-pdf-signable="overlay"]') as HTMLElement | null;
     if (!overlay?.dataset?.boxIndex) return;
     e.preventDefault();
     e.stopPropagation();
@@ -1245,9 +1261,9 @@ function run(): void {
     const rotateHandle = (e.target as HTMLElement).closest('.rotate-handle');
     if (enableRotation && rotateHandle) {
       const boxIndex = parseInt(overlay.dataset.boxIndex, 10);
-      const item = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item')[boxIndex];
+      const item = boxesList.querySelectorAll<HTMLElement>(':scope > [data-pdf-signable="box-item"]')[boxIndex];
       if (!item) return;
-      const angleInp = item.querySelector<HTMLInputElement>('.signature-box-angle');
+      const angleInp = item.querySelector<HTMLInputElement>('[data-pdf-signable="angle"]');
       if (!angleInp) return;
       const rect = overlay.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
@@ -1262,7 +1278,7 @@ function run(): void {
 
     const handleEl = (e.target as HTMLElement).closest('.resize-handle');
     const boxIndex = parseInt(overlay.dataset.boxIndex, 10);
-    const item = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item')[
+    const item = boxesList.querySelectorAll<HTMLElement>(':scope > [data-pdf-signable="box-item"]')[
       boxIndex
     ];
     if (!item) return;
@@ -1277,10 +1293,10 @@ function run(): void {
     const overlayH = parseFloat(overlay.style.height) || 14;
     const left = parseFloat(overlay.style.left) || 0;
     const top = parseFloat(overlay.style.top) || 0;
-    const xIn = item.querySelector<HTMLInputElement>('.signature-box-x');
-    const yIn = item.querySelector<HTMLInputElement>('.signature-box-y');
-    const wIn = item.querySelector<HTMLInputElement>('.signature-box-width');
-    const hIn = item.querySelector<HTMLInputElement>('.signature-box-height');
+    const xIn = item.querySelector<HTMLInputElement>('[data-pdf-signable="x"]');
+    const yIn = item.querySelector<HTMLInputElement>('[data-pdf-signable="y"]');
+    const wIn = item.querySelector<HTMLInputElement>('[data-pdf-signable="width"]');
+    const hIn = item.querySelector<HTMLInputElement>('[data-pdf-signable="height"]');
     dragState = {
       mode: handleEl ? 'resize' : 'move',
       handle: handleEl ? (handleEl as HTMLElement).dataset.handle ?? null : null,
@@ -1321,7 +1337,7 @@ function run(): void {
     if (dragState.mode === 'move') {
       const moveW = sr - sl;
       const moveH = sb - st;
-      const angleInp = dragState.item.querySelector<HTMLInputElement>('.signature-box-angle');
+      const angleInp = dragState.item.querySelector<HTMLInputElement>('[data-pdf-signable="angle"]');
       const angleDeg = enableRotation && angleInp ? parseFloat(angleInp.value) || 0 : 0;
       const { aabbW, aabbH } = getRotatedAabbSize(moveW, moveH, angleDeg);
       // Allow overlay left/top to be negative so the rotated AABB can touch page edges (e.g. left edge at -90°).
@@ -1426,10 +1442,10 @@ function run(): void {
     const coord = viewportToForm(vp, newLeft, newTop, wPt, hPt, getSelectedOrigin());
     const unit = getSelectedUnit();
     const round = (v: number): number => Math.round(v * 100) / 100;
-    const xIn = dragState.item.querySelector<HTMLInputElement>('.signature-box-x');
-    const yIn = dragState.item.querySelector<HTMLInputElement>('.signature-box-y');
-    const wIn = dragState.item.querySelector<HTMLInputElement>('.signature-box-width');
-    const hIn = dragState.item.querySelector<HTMLInputElement>('.signature-box-height');
+    const xIn = dragState.item.querySelector<HTMLInputElement>('[data-pdf-signable="x"]');
+    const yIn = dragState.item.querySelector<HTMLInputElement>('[data-pdf-signable="y"]');
+    const wIn = dragState.item.querySelector<HTMLInputElement>('[data-pdf-signable="width"]');
+    const hIn = dragState.item.querySelector<HTMLInputElement>('[data-pdf-signable="height"]');
     if (xIn) xIn.value = String(round(ptToUnit(coord.xPt, unit)));
     if (yIn) yIn.value = String(round(ptToUnit(coord.yPt, unit)));
     if (wIn) wIn.value = String(round(ptToUnit(wPt, unit)));
@@ -1452,10 +1468,10 @@ function run(): void {
         const overlapsOther = boxes.some((b, i) => i !== state.boxIndex && boxesOverlap(current, b));
         if (overlapsOther) {
           const round = (v: number): number => Math.round(v * 100) / 100;
-          const xIn = state.item.querySelector<HTMLInputElement>('.signature-box-x');
-          const yIn = state.item.querySelector<HTMLInputElement>('.signature-box-y');
-          const wIn = state.item.querySelector<HTMLInputElement>('.signature-box-width');
-          const hIn = state.item.querySelector<HTMLInputElement>('.signature-box-height');
+          const xIn = state.item.querySelector<HTMLInputElement>('[data-pdf-signable="x"]');
+          const yIn = state.item.querySelector<HTMLInputElement>('[data-pdf-signable="y"]');
+          const wIn = state.item.querySelector<HTMLInputElement>('[data-pdf-signable="width"]');
+          const hIn = state.item.querySelector<HTMLInputElement>('[data-pdf-signable="height"]');
           if (xIn) xIn.value = String(round(state.startFormX));
           if (yIn) yIn.value = String(round(state.startFormY));
           if (wIn) wIn.value = String(round(state.startFormW));
@@ -1485,14 +1501,14 @@ function run(): void {
 
     if (e.ctrlKey && e.key === 'z') {
       e.preventDefault();
-      const items = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item');
+      const items = boxesList.querySelectorAll<HTMLElement>(':scope > [data-pdf-signable="box-item"]');
       if (items.length > 0) {
         const last = items[items.length - 1];
-        const idx = Array.from(boxesList.querySelectorAll(':scope > .signature-box-item')).indexOf(last);
+        const idx = Array.from(boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]')).indexOf(last);
         last.remove();
         if (selectedBoxIndex === idx) setSelectedBoxIndex(null);
         else if (selectedBoxIndex !== null && selectedBoxIndex > idx) setSelectedBoxIndex(selectedBoxIndex - 1);
-        if (boxesList.querySelectorAll(':scope > .signature-box-item').length === 0) {
+        if (boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]').length === 0) {
           const emptyEl = document.getElementById('signature-boxes-empty');
           if (emptyEl) emptyEl.classList.remove('d-none');
         }
@@ -1504,13 +1520,13 @@ function run(): void {
 
     if (e.key === 'Delete' || e.key === 'Backspace') {
       if (selectedBoxIndex === null) return;
-      const items = boxesList.querySelectorAll<HTMLElement>(':scope > .signature-box-item');
+      const items = boxesList.querySelectorAll<HTMLElement>(':scope > [data-pdf-signable="box-item"]');
       const toRemove = items[selectedBoxIndex];
       if (toRemove) {
         e.preventDefault();
         toRemove.remove();
         setSelectedBoxIndex(null);
-        if (boxesList.querySelectorAll(':scope > .signature-box-item').length === 0) {
+        if (boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]').length === 0) {
           const emptyEl = document.getElementById('signature-boxes-empty');
           if (emptyEl) emptyEl.classList.remove('d-none');
         }
@@ -1538,7 +1554,7 @@ function run(): void {
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const items = boxesList.querySelectorAll(':scope > .signature-box-item');
+    const items = boxesList.querySelectorAll(':scope > [data-pdf-signable="box-item"]');
     items.forEach((item, i) => {
       item.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input, select, textarea').forEach((input) => {
         input.name = input.name.replace(/(\])\[\d+\](\[)/, `$1[${i}]$2`);

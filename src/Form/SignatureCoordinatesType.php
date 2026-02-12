@@ -132,7 +132,7 @@ final class SignatureCoordinatesType extends AbstractType
             $builder->add('pdfUrl', HiddenType::class, [
                 'data' => $pdfUrl,
                 'empty_data' => $pdfUrl,
-                'attr' => ['class' => 'pdf-url-input'],
+                'attr' => ['class' => 'pdf-url-input', 'data-pdf-signable' => 'pdf-url'],
             ]);
         } else {
             if (self::URL_MODE_CHOICE === $options['url_mode'] && [] !== $options['url_choices']) {
@@ -140,7 +140,7 @@ final class SignatureCoordinatesType extends AbstractType
                     'label' => $options['url_label'],
                     'choices' => $options['url_choices'],
                     'required' => true,
-                    'attr' => ['class' => 'pdf-url-input form-control form-select'],
+                    'attr' => ['class' => 'pdf-url-input form-control form-select', 'data-pdf-signable' => 'pdf-url'],
                     'placeholder' => $options['url_placeholder'],
                 ]);
             } else {
@@ -151,6 +151,7 @@ final class SignatureCoordinatesType extends AbstractType
                     'attr' => [
                         'placeholder' => $options['url_placeholder'],
                         'class' => 'pdf-url-input form-control',
+                        'data-pdf-signable' => 'pdf-url',
                     ],
                 ]);
             }
@@ -164,7 +165,7 @@ final class SignatureCoordinatesType extends AbstractType
         } elseif (self::UNIT_MODE_INPUT === $options['unit_mode']) {
             $builder->add('unit', TextType::class, [
                 'label' => $options['unit_label'],
-                'attr' => ['class' => 'unit-selector form-control form-control-sm'],
+                'attr' => ['class' => 'unit-selector form-control form-control-sm', 'data-pdf-signable' => 'unit'],
                 'data' => $options['unit_default'],
                 'constraints' => [new Choice(['choices' => $units])],
             ]);
@@ -173,7 +174,7 @@ final class SignatureCoordinatesType extends AbstractType
                 'label' => $options['unit_label'],
                 'choices' => $unitChoices,
                 'data' => $options['unit_default'],
-                'attr' => ['class' => 'unit-selector form-select form-select-sm'],
+                'attr' => ['class' => 'unit-selector form-select form-select-sm', 'data-pdf-signable' => 'unit'],
             ]);
         }
 
@@ -185,7 +186,7 @@ final class SignatureCoordinatesType extends AbstractType
         } elseif (self::ORIGIN_MODE_INPUT === $options['origin_mode']) {
             $builder->add('origin', TextType::class, [
                 'label' => $options['origin_label'],
-                'attr' => ['class' => 'origin-selector form-control form-control-sm'],
+                'attr' => ['class' => 'origin-selector form-control form-control-sm', 'data-pdf-signable' => 'origin'],
                 'data' => $options['origin_default'],
                 'constraints' => [new Choice(['choices' => $origins])],
             ]);
@@ -194,7 +195,7 @@ final class SignatureCoordinatesType extends AbstractType
                 'label' => $options['origin_label'],
                 'choices' => $originChoices,
                 'data' => $options['origin_default'],
-                'attr' => ['class' => 'origin-selector form-select form-select-sm'],
+                'attr' => ['class' => 'origin-selector form-select form-select-sm', 'data-pdf-signable' => 'origin'],
             ]);
         }
 

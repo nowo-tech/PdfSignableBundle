@@ -153,6 +153,7 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 - [Installation](docs/INSTALLATION.md) — Step-by-step installation and route registration
 - [Configuration](docs/CONFIGURATION.md) — Proxy, example URL, named configs
 - [Usage](docs/USAGE.md) — Form options, named configs, customization
+- [Workflow](docs/WORKFLOW.md) — Flows and diagrams: init, load PDF, add/drag box, coordinate sync, submit
 - [Events](docs/EVENTS.md) — Proxy, submission, batch sign and PDF sign request events
 - [Advanced signing](docs/SIGNING_ADVANCED.md) — PKI/PAdES, timestamp, audit trail, batch (structure; you add keys and services)
 - [Styles](docs/STYLES.md) — PDF viewer CSS, handle sizes, single-inclusion

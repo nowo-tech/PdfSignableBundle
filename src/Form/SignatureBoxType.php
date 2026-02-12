@@ -62,6 +62,7 @@ final class SignatureBoxType extends AbstractType
                 'constraints' => [new NotBlank(message: 'signature_box_type.name.required')],
                 'attr' => [
                     'class' => 'signature-box-name form-control form-control-sm form-select',
+                    'data-pdf-signable' => 'name',
                     'required' => 'required',
                 ],
                 'row_attr' => ['class' => 'col-8 col-md-9 col-lg-10 mb-2'],
@@ -75,6 +76,7 @@ final class SignatureBoxType extends AbstractType
                 'attr' => [
                     'placeholder' => $options['name_placeholder'],
                     'class' => 'signature-box-name form-control form-control-sm',
+                    'data-pdf-signable' => 'name',
                     'required' => 'required',
                 ],
                 'row_attr' => ['class' => 'col-8 col-md-9 col-lg-10 mb-2'],
@@ -90,14 +92,14 @@ final class SignatureBoxType extends AbstractType
                 'label' => 'signature_box_type.page.label',
                 'choices' => $pageChoices,
                 'required' => true,
-                'attr' => ['class' => 'signature-box-page form-control form-control-sm form-select'],
+                'attr' => ['class' => 'signature-box-page form-control form-control-sm form-select', 'data-pdf-signable' => 'page'],
                 'constraints' => [new Choice(choices: $allowedPages, message: 'signature_box_type.page.not_allowed')],
                 'row_attr' => ['class' => 'col-4 col-md-3 col-lg-2 mb-2'],
             ]);
         } else {
             $builder->add('page', IntegerType::class, [
                 'label' => 'signature_box_type.page.label',
-                'attr' => ['min' => 1, 'step' => 1, 'class' => 'signature-box-page form-control form-control-sm'],
+                'attr' => ['min' => 1, 'step' => 1, 'class' => 'signature-box-page form-control form-control-sm', 'data-pdf-signable' => 'page'],
                 'required' => true,
                 'row_attr' => ['class' => 'col-4 col-md-3 col-lg-2 mb-2'],
             ]);
@@ -106,40 +108,40 @@ final class SignatureBoxType extends AbstractType
         $builder
             ->add('width', NumberType::class, [
                 'label' => 'signature_box_type.width.label',
-                'attr' => ['min' => 10, 'step' => '0.01', 'class' => 'signature-box-width form-control form-control-sm'],
+                'attr' => ['min' => 10, 'step' => '0.01', 'class' => 'signature-box-width form-control form-control-sm', 'data-pdf-signable' => 'width'],
                 'row_attr' => ['class' => 'col mb-2'],
             ])
             ->add('height', NumberType::class, [
                 'label' => 'signature_box_type.height.label',
-                'attr' => ['min' => 10, 'step' => '0.01', 'class' => 'signature-box-height form-control form-control-sm'],
+                'attr' => ['min' => 10, 'step' => '0.01', 'class' => 'signature-box-height form-control form-control-sm', 'data-pdf-signable' => 'height'],
                 'row_attr' => ['class' => 'col mb-2'],
             ])
             ->add('x', NumberType::class, [
                 'label' => 'signature_box_type.x.label',
-                'attr' => ['min' => 0, 'step' => '0.01', 'class' => 'signature-box-x form-control form-control-sm'],
+                'attr' => ['min' => 0, 'step' => '0.01', 'class' => 'signature-box-x form-control form-control-sm', 'data-pdf-signable' => 'x'],
                 'row_attr' => ['class' => 'col mb-2'],
             ])
             ->add('y', NumberType::class, [
                 'label' => 'signature_box_type.y.label',
-                'attr' => ['min' => 0, 'step' => '0.01', 'class' => 'signature-box-y form-control form-control-sm'],
+                'attr' => ['min' => 0, 'step' => '0.01', 'class' => 'signature-box-y form-control form-control-sm', 'data-pdf-signable' => 'y'],
                 'row_attr' => ['class' => 'col mb-2'],
             ]);
         if ($options['angle_enabled']) {
             $builder->add('angle', NumberType::class, [
                 'label' => 'signature_box_type.angle.label',
                 'empty_data' => 0,
-                'attr' => ['min' => -180, 'max' => 180, 'step' => '0.1', 'class' => 'signature-box-angle form-control form-control-sm'],
+                'attr' => ['min' => -180, 'max' => 180, 'step' => '0.1', 'class' => 'signature-box-angle form-control form-control-sm', 'data-pdf-signable' => 'angle'],
                 'row_attr' => ['class' => 'col mb-2'],
             ]);
         }
         if ($options['enable_signature_capture'] || $options['enable_signature_upload']) {
             $builder->add('signatureData', HiddenType::class, [
                 'required' => false,
-                'attr' => ['class' => 'signature-box-signature-data'],
+                'attr' => ['class' => 'signature-box-signature-data', 'data-pdf-signable' => 'signature-data'],
             ]);
             $builder->add('signedAt', HiddenType::class, [
                 'required' => false,
-                'attr' => ['class' => 'signature-box-signed-at'],
+                'attr' => ['class' => 'signature-box-signed-at', 'data-pdf-signable' => 'signed-at'],
             ]);
         }
     }

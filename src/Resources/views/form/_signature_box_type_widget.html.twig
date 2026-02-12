@@ -3,11 +3,12 @@
   When enable_rotation is false, form.angle is not defined and no angle row is rendered.
   When enable_signature_capture or enable_signature_upload, form.signatureData is present and we show pad/upload.
   When signing_only is true, only the box name (read-only) and signature capture are shown; coordinates are hidden but submitted.
-  DOM structure expected by pdf-signable.js:
-  - .signature-box-name, .signature-box-page
-  - .signature-box-width, .signature-box-height, .signature-box-x, .signature-box-y
-  - .signature-box-angle (only when rotation is enabled)
-  - .signature-box-signature-data (hidden), .signature-pad-container (canvas + clear), .signature-upload-input (optional)
+  DOM structure expected by pdf-signable.js (elements are found by data-pdf-signable, not by class):
+  - data-pdf-signable="name", data-pdf-signable="page", data-pdf-signable="width", data-pdf-signable="height"
+  - data-pdf-signable="x", data-pdf-signable="y", data-pdf-signable="angle" (when rotation enabled)
+  - data-pdf-signable="signature-data", data-pdf-signable="signed-at" (hidden)
+  - .signature-pad-container (canvas + clear), .signature-upload-input (optional)
+  When overriding: keep these data attributes on the same inputs so the JS can sync coordinates. Classes can be changed for styling.
   Override: {% block signature_box_widget %} ... {% endblock %} in form theme.
 #}
 {% if form.vars.signing_only|default(false) %}
