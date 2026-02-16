@@ -902,6 +902,44 @@ final class AcroFormOverridesControllerTest extends TestCase
         }
     }
 
+    /** When Accept does not contain application/pdf, process returns 200 with JSON body. */
+    public function testProcessWhenAcceptJsonReturns200WithJsonBody(): void
+    {
+        $script = sys_get_temp_dir().'/pdfsignable_process_copy_json_'.getmypid().'.py';
+        file_put_contents(
+            $script,
+            <<<'PY'
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--input')
+parser.add_argument('--output')
+args = parser.parse_args()
+with open(args.input, 'rb') as f:
+    data = f.read()
+with open(args.output, 'wb') as f:
+    f.write(data)
+PY
+        );
+        try {
+            $controller = $this->createController(processScript: $script);
+            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
+            ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $response = $controller->process($request);
+
+            self::assertSame(Response::HTTP_OK, $response->getStatusCode(), $response->getContent());
+            self::assertStringContainsString('application/json', $response->headers->get('Content-Type'));
+            $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertTrue($data['success']);
+            self::assertArrayHasKey('document_key', $data);
+            self::assertNull($data['document_key']);
+        } finally {
+            @unlink($script);
+        }
+    }
+
     public function testApplyPdfUrlEmptyReturns400(): void
     {
         $controller = $this->createController(allowPdfModify: true);

@@ -225,6 +225,15 @@ final class SignatureBoxTypeTest extends TypeTestCase
         ]);
     }
 
+    /** allowed_pages must be array or null; non-array triggers OptionsResolver. */
+    public function testAllowedPagesNonArrayThrows(): void
+    {
+        $this->expectException(InvalidOptionsException::class);
+        $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
+            'allowed_pages' => 'not-an-array',
+        ]);
+    }
+
     /** When name_mode is choice but name_choices is empty, name field is TextType (same as input mode). */
     public function testNameModeChoiceWithEmptyChoicesUsesTextType(): void
     {

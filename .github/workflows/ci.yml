@@ -96,10 +96,15 @@ jobs:
           }
 
           \$percentage = (\$coveredElements / \$elements) * 100;
+          \$minCoverage = 90;
 
           echo \"Coverage: \$coveredElements/\$elements (\$percentage%)\n\";
 
-          echo \"✅ Coverage report generated successfully\n\";
+          if (\$percentage < \$minCoverage) {
+              echo \"❌ Coverage \$percentage% is below minimum \$minCoverage%\n\";
+              exit(1);
+          }
+          echo \"✅ Coverage report generated successfully (>= \$minCoverage%)\n\";
           "
 
   build-assets:
@@ -257,10 +262,15 @@ jobs:
           }
 
           \$percentage = (\$coveredElements / \$elements) * 100;
+          \$minCoverage = 90;
 
           echo \"Coverage: \$coveredElements/\$elements (\$percentage%)\n\";
 
-          echo \"✅ Coverage report generated successfully\n\";
+          if (\$percentage < \$minCoverage) {
+              echo \"❌ Coverage \$percentage% is below minimum \$minCoverage%\n\";
+              exit(1);
+          }
+          echo \"✅ Coverage report generated successfully (>= \$minCoverage%)\n\";
           "
 
       - name: Upload coverage to Codecov
