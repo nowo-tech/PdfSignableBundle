@@ -46,6 +46,25 @@
 
         <main class="flex-grow-1 overflow-auto py-4 px-3 px-lg-4">
             <div class="container-fluid">
+                {% set _prev_next = demos_prev_next() %}
+                {% if _prev_next.prev or _prev_next.next %}
+                <nav class="d-flex justify-content-between align-items-center small text-muted mb-3 py-2 border-bottom" aria-label="Previous/next demo">
+                    <span>
+                        {% if _prev_next.prev %}
+                            <a href="{{ path(_prev_next.prev.route) }}">&larr; {{ _prev_next.prev.label }}</a>
+                        {% else %}
+                            <span class="text-muted">&larr; —</span>
+                        {% endif %}
+                    </span>
+                    <span>
+                        {% if _prev_next.next %}
+                            <a href="{{ path(_prev_next.next.route) }}">{{ _prev_next.next.label }} &rarr;</a>
+                        {% else %}
+                            <span class="text-muted">— &rarr;</span>
+                        {% endif %}
+                    </span>
+                </nav>
+                {% endif %}
                 {% for message in app.flashes('success') %}
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ message|raw }}

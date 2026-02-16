@@ -78,6 +78,12 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertCount(4, $origins);
     }
 
+    public function testGetBlockPrefix(): void
+    {
+        $type = new SignatureCoordinatesType('', []);
+        self::assertSame('signature_coordinates', $type->getBlockPrefix());
+    }
+
     public function testFormWithNamedConfigMergesOptions(): void
     {
         $model = new SignatureCoordinatesModel();
@@ -255,6 +261,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertFalse($opts2['signing_require_consent']);
         self::assertSame('signing.consent_label', $opts2['signing_consent_label']);
         self::assertFalse($opts2['signing_only']);
+        self::assertFalse($opts2['hide_coordinate_fields']);
 
         $form3 = $this->factory->create(SignatureCoordinatesType::class, $model, [
             'signing_require_consent' => true,
@@ -295,6 +302,61 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $view4 = $form4->createView();
         $opts4 = $view4->vars['signature_coordinates_options'];
         self::assertTrue($opts4['signing_only']);
+
+        $form5 = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'hide_coordinate_fields' => true,
+        ]);
+        $view5 = $form5->createView();
+        $opts5 = $view5->vars['signature_coordinates_options'];
+        self::assertTrue($opts5['hide_coordinate_fields']);
+
+        $form6 = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'default_box_width' => 150.0,
+            'default_box_height' => 40.0,
+            'lock_box_width' => true,
+            'lock_box_height' => true,
+        ]);
+        $view6 = $form6->createView();
+        $opts6 = $view6->vars['signature_coordinates_options'];
+        self::assertSame(150.0, $opts6['default_box_width']);
+        self::assertSame(40.0, $opts6['default_box_height']);
+        self::assertTrue($opts6['lock_box_width']);
+        self::assertTrue($opts6['lock_box_height']);
+
+        $form7 = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'min_box_width' => 25.0,
+            'min_box_height' => 15.0,
+        ]);
+        $view7 = $form7->createView();
+        $opts7 = $view7->vars['signature_coordinates_options'];
+        self::assertSame(25.0, $opts7['min_box_width']);
+        self::assertSame(15.0, $opts7['min_box_height']);
+    }
+
+    public function testLockBoxWidthHeightForcesValuesOnSubmit(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $model->setUnit(SignatureCoordinatesModel::UNIT_MM);
+        $model->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT);
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'default_box_width' => 120.0,
+            'default_box_height' => 35.0,
+            'lock_box_width' => true,
+            'lock_box_height' => true,
+        ]);
+        $form->submit([
+            'pdfUrl' => 'https://example.com/doc.pdf',
+            'unit' => SignatureCoordinatesModel::UNIT_MM,
+            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signatureBoxes' => [
+                0 => ['name' => 's1', 'page' => 1, 'width' => '999', 'height' => '888', 'x' => '10', 'y' => '20'],
+            ],
+        ]);
+        self::assertTrue($form->isValid());
+        $box = $form->getData()->getSignatureBoxes()[0];
+        self::assertSame(120.0, $box->getWidth(), 'lock_box_width must force width to default_box_width');
+        self::assertSame(35.0, $box->getHeight(), 'lock_box_height must force height to default_box_height');
     }
 
     public function testSortBoxesReordersOnSubmit(): void

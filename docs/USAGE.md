@@ -57,25 +57,108 @@ Render the form in your template. **Important**: add the form theme so the widge
 
 The bundle theme is prepended automatically, but when embedding in a custom form you may need to add it explicitly if the widget does not display.
 
+### Recovering coordinates and signature data on POST
+
+When the user submits the form (POST), you receive a `SignatureCoordinatesModel` bound to the form. In your controller (or service), after `$form->handleRequest($request)` and `$form->isValid()`, get the model and read all submitted data:
+
+**Example: controller that processes the submitted coordinates and optional signing data**
+
+```php
+use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
+use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
+use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+
+// In your controller action:
+$model = new SignatureCoordinatesModel();
+$form = $this->createForm(SignatureCoordinatesType::class, $model);
+$form->handleRequest($request);
+
+if ($form->isSubmitted() && $form->isValid()) {
+    /** @var SignatureCoordinatesModel $coords */
+    $coords = $form->getData();
+
+    // PDF URL and coordinate system
+    $pdfUrl = $coords->getPdfUrl();
+    $unit = $coords->getUnit();   // e.g. 'mm', 'pt'
+    $origin = $coords->getOrigin(); // e.g. 'bottom_left'
+
+    // Iterate each signature box: position, size, name, and optional signing data
+    foreach ($coords->getSignatureBoxes() as $box) {
+        $name = $box->getName();
+        $page = $box->getPage();
+        $x = $box->getX();
+        $y = $box->getY();
+        $width = $box->getWidth();
+        $height = $box->getHeight();
+        $angle = $box->getAngle();
+
+        // When enable_signature_capture or enable_signature_upload is true:
+        // base64 data URL of the signature image (e.g. data:image/png;base64,...)
+        $signatureData = $box->getSignatureData();
+        // Optional ISO 8601 timestamp when the user drew/uploaded (client or server)
+        $signedAt = $box->getSignedAt();
+
+        // Persist or use: e.g. save to DB, pass to a signing service, store coordinates for later PDF signing
+        // $this->signingService->addSignatureZone($pdfUrl, $name, $page, $x, $y, $width, $height, $angle, $signatureData);
+    }
+
+    // When signing_require_consent is true: user accepted the legal disclaimer
+    $consent = $coords->getSigningConsent();
+
+    // Audit metadata (if your listener or controller set it before dispatch): IP, user_agent, submitted_at, etc.
+    $auditMetadata = $coords->getAuditMetadata();
+
+    // Optional: export to array/JSON for storage or API
+    $export = $coords->toArray();
+    // $export = ['pdf_url' => ..., 'unit' => ..., 'origin' => ..., 'signature_boxes' => [
+    //   ['name' => ..., 'page' => ..., 'x' => ..., 'y' => ..., 'width' => ..., 'height' => ..., 'angle' => ..., 'signature_data' => ..., 'signed_at' => ...],
+    //   ...
+    // ], 'audit_metadata' => ...];
+
+    $this->addFlash('success', 'Coordinates and signatures saved.');
+    return $this->redirectToRoute('app_document_list');
+}
+
+return $this->render('document/signature_form.html.twig', ['form' => $form]);
+```
+
+Summary of what you can read from the model:
+
+| Data | Method / source |
+|------|------------------|
+| PDF URL | `$coords->getPdfUrl()` |
+| Unit, origin | `$coords->getUnit()`, `$coords->getOrigin()` |
+| Boxes list | `$coords->getSignatureBoxes()` → each `SignatureBoxModel` |
+| Per box: name, page, x, y, width, height, angle | `$box->getName()`, `getPage()`, `getX()`, `getY()`, `getWidth()`, `getHeight()`, `getAngle()` |
+| Per box: signature image (draw/upload) | `$box->getSignatureData()` (base64 data URL, or null) |
+| Per box: signed-at timestamp | `$box->getSignedAt()` (ISO 8601, or null) |
+| Consent checkbox | `$coords->getSigningConsent()` |
+| Audit metadata | `$coords->getAuditMetadata()` |
+| Full export | `$coords->toArray()` (includes `signature_boxes` with `signature_data`, `signed_at`, and `audit_metadata`) |
+
+You can persist `toArray()` to a database or send it to an API; restore later with `SignatureCoordinatesModel::fromArray($data)`.
+
 ## Named configurations
 
-You can define **named configs** in `nowo_pdf_signable.configs` and reference them when adding the form type so you don’t repeat the same options everywhere.
+You can define **named configs** in `nowo_pdf_signable.signature.configs` and reference them when adding the form type so you don’t repeat the same options everywhere.
 
 **1. Define configs** in `config/packages/nowo_pdf_signable.yaml`:
 
 ```yaml
 nowo_pdf_signable:
-    configs:
-        fixed_url:
-            pdf_url: 'https://example.com/template.pdf'
-            url_field: false
-            units: ['mm', 'pt']
-        limited:
-            min_entries: 1
-            max_entries: 4
-            signature_box_options:
-                name_mode: choice
-                name_choices: { 'Signer 1': signer_1, 'Witness': witness }
+    signature:
+        configs:
+            default: {}
+            fixed_url:
+                pdf_url: 'https://example.com/template.pdf'
+                url_field: false
+                units: ['mm', 'pt']
+            limited:
+                min_entries: 1
+                max_entries: 4
+                signature_box_options:
+                    name_mode: choice
+                    name_choices: { 'Signer 1': signer_1, 'Witness': witness }
 ```
 
 **2. Use a named config** with the `config` option (options passed here override the config):
@@ -98,7 +181,7 @@ If `config` is set, the named config is merged first; any option you pass when c
 
 | Option   | Type   | Default | Description |
 |----------|--------|---------|-------------|
-| `config` | string \| null | `null` | Name of a config from `nowo_pdf_signable.configs`. That config is merged with the options passed here (passed options win). |
+| `config` | string \| null | `null` | Alias of a config from `nowo_pdf_signable.signature.configs`. That config is merged with the options passed here (passed options win). When null, the default alias (`signature.default_config_alias`, e.g. `default`) is used. |
 
 ### URL
 
@@ -152,6 +235,8 @@ If `config` is set, the named config is merged first; any option you pass when c
 | `show_grid`             | bool   | `false` | When `true`, a grid overlay is drawn on the PDF (step given by `grid_step` in the form unit) to help align boxes. |
 | `grid_step`             | float  | `10`    | Grid step in form unit for the visual grid (e.g. `10` for 10 mm). Used when `show_grid` is `true`. |
 | `viewer_lazy_load`      | bool   | `false` | When `true`, PDF.js and the viewer script load only when the coordinates block is visible (IntersectionObserver). Use on long pages to reduce initial load. |
+| `show_acroform`         | bool   | `true`  | When `true`, the viewer draws an outline over **AcroForm fields** (PDF form fields) so they are visible on the page. Uses PDF.js `getAnnotations()`. Set to `false` to hide them. |
+| `acroform_interactive`  | bool   | `true`  | When `true` (and `show_acroform` is true), **text fields** (Tx) are rendered as editable `<input>`/`<textarea>` so the user can type in the PDF form. Values are kept in memory (and in PDF.js `annotationStorage` when available). Checkboxes and dropdowns are not yet rendered as interactive controls. Clicks on empty PDF area still add signature boxes. |
 | `enable_signature_capture` | bool | `false` | When `true`, each box shows a draw pad (canvas); image stored in `SignatureBoxModel::signatureData`. Low legal validity. See ROADMAP. |
 | `enable_signature_upload`  | bool | `false` | When `true`, each box shows a file input to upload a signature image (same `signatureData`). |
 | `signing_legal_disclaimer` | string \| null | `null` | Optional text shown above the PDF viewer. |
@@ -159,7 +244,18 @@ If `config` is set, the named config is merged first; any option you pass when c
 | `signing_require_consent` | bool | `false` | When `true`, a required checkbox is shown (e.g. "I accept the legal effect of this signature"); user must check it to submit. Stored in `SignatureCoordinatesModel::getSigningConsent()`. |
 | `signing_consent_label` | string \| null | `'signing.consent_label'` | Label for the consent checkbox (translation key or literal string). |
 | `signing_only` | bool | `false` | When `true`, each signature box row shows only the **box name** (read-only) and the **signature capture** (draw/upload). Coordinate fields (page, x, y, width, height, angle) and unit/origin selectors are hidden (values are still submitted). Use for predefined boxes where the user only signs. |
+| `hide_coordinate_fields` | bool | `false` | When `true`, the **width**, **height**, **x**, **y** (and **angle** if rotation is enabled) fields are hidden in the UI for each box. Values are still submitted (e.g. from the PDF overlay when the user places or resizes boxes). Use to save vertical space while keeping full coordinate capture. |
+| `default_box_width` | float \| null | from config | Default width for new boxes (form unit). Set in `nowo_pdf_signable.signature.default_box_width` (YAML) or override when creating the form. When `lock_box_width` is true, this value is used and the field is hidden. |
+| `default_box_height` | float \| null | from config | Default height for new boxes (form unit). Set in `nowo_pdf_signable.signature.default_box_height` (YAML) or override when creating the form. When `lock_box_height` is true, this value is used and the field is hidden. |
+| `lock_box_width` | bool | from config | When `true`, width is fixed to `default_box_width` and the width field is hidden. Set in `nowo_pdf_signable.signature.lock_box_width` (YAML) or override when creating the form. |
+| `lock_box_height` | bool | from config | When `true`, height is fixed to `default_box_height` and the height field is hidden. Set in `nowo_pdf_signable.signature.lock_box_height` (YAML) or override when creating the form. |
+| `min_box_width` | float \| null | from config | Minimum width for signature boxes (form unit). When set, the frontend enforces this minimum when resizing and the width input uses it as `min`. Set in `nowo_pdf_signable.signature.min_box_width` (YAML) or override when creating the form. |
+| `min_box_height` | float \| null | from config | Minimum height for signature boxes (form unit). When set, the frontend enforces this minimum when resizing and the height input uses it as `min`. Set in `nowo_pdf_signable.signature.min_box_height` (YAML) or override when creating the form. |
+| `hide_position_fields` | bool | `false` | When `true`, the **x** and **y** fields are hidden in the UI for each box. Values are still submitted (e.g. from the PDF overlay). Use with `lock_box_width`/`lock_box_height` for minimal visible fields. |
+| `show_signature_boxes` | bool | `true` | When `false`, the signature boxes card (unit, origin, list, add/remove) is hidden. Use for AcroForm-only flows (e.g. overrides editor). Unit, origin and boxes are still rendered hidden so the form submits. |
 | `batch_sign_enabled` | bool | `false` | When `true`, a **Sign all** button is shown; submitting with that button sends `batch_sign=1` and the bundle dispatches **`BATCH_SIGN_REQUESTED`**. Your listener performs the actual batch signing. See [SIGNING_ADVANCED](SIGNING_ADVANCED.md). |
+| `pdfjs_source` | string | `'npm'` | How to load PDF.js: `'npm'` = dynamic import from pdfjs-dist (same version as worker); `'cdn'` = script tag 3.x (legacy). |
+| `pdfjs_worker_url` | string \| null | `null` | When `pdfjs_source` is `'npm'`, worker script URL (e.g. bundle asset after `pnpm run copy-worker`). `null` = theme default asset. |
 
 Predefined elements: set the model’s `signatureBoxes` (e.g. with existing `SignatureBoxModel` instances) before creating the form; the collection will render those entries. The same `SignatureCoordinatesModel` / array structure is returned on submit.
 
@@ -300,6 +396,22 @@ $builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
     'sort_boxes' => true,
 ]);
 ```
+
+### Example: minimum signature box size
+
+Enforce a minimum width and height when users resize boxes (e.g. 30 mm × 15 mm):
+
+```php
+$builder->add('signatureCoordinates', SignatureCoordinatesType::class, [
+    'min_box_width' => 30.0,
+    'min_box_height' => 15.0,
+    'unit_default' => 'mm',
+    'min_entries' => 0,
+    'max_entries' => 6,
+]);
+```
+
+The frontend blocks resize below these values and the width/height inputs use the same minimum.
 
 ### Example: no overlapping boxes
 
@@ -470,6 +582,10 @@ With that in place, the namespace `@NowoPdfSignable` resolves to your `templates
 ### Overriding the signature index view
 
 If you use the bundle’s built-in page (route `/pdf-signable` or as configured), the controller renders `@NowoPdfSignable/signature/index.html.twig`. To customize that page, copy the template from the bundle to `templates/bundles/NowoPdfSignable/signature/index.html.twig` and adjust it. It expects the variables `form`, and optionally `page_title` and `config_explanation`.
+
+### Translations
+
+All user-facing strings in the bundle’s Twig views and form theme use the translation domain **`nowo_pdf_signable`**. Keys are grouped (e.g. `page.*`, `signature_coordinates_type.*`, `signature_box_type.*`, `js.*`). To override or add a locale, place YAML files in your app’s `translations/` directory with the same domain (`nowo_pdf_signable.en.yaml`, etc.) or use the bundle’s files under `Resources/translations/` as reference. The **AcroForm editor** panel (demo and any custom view that reuses it) uses keys under **`acroform_editor.*`** (e.g. `acroform_editor.panel_title`, `acroform_editor.load_btn`); ensure your locale files include these keys if you use that panel.
 
 ---
 

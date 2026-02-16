@@ -1,0 +1,61 @@
+{#
+  Reusable PDF viewer card: URL row (optional), Load button (optional), legal disclaimer (optional),
+  signing consent (optional), zoom toolbar, placeholder and canvas wrapper.
+  Used by signature_coordinates_widget and acroform_editor_widget.
+
+  Variables:
+  - pdf_url_form: FormView for the PDF URL field (e.g. form.pdfUrl). Must have widget and errors.
+  - show_url_row: bool — show the URL input row (default true)
+  - show_load_btn: bool — show the Load PDF button (default true)
+  - signing_legal_disclaimer: string|null — HTML for legal disclaimer above viewer
+  - signing_legal_disclaimer_url: string|null — URL for terms link in disclaimer
+  - signing_consent_form: FormView|null — optional consent checkbox form row
+#}
+{% set show_url_row = show_url_row|default(true) %}
+{% set show_load_btn = show_load_btn|default(true) %}
+<div class="card h-100">
+  <div class="card-header py-3">
+    <h6 class="card-title mb-0">{{ 'page.pdf_viewer'|trans({}, 'nowo_pdf_signable') }}</h6>
+  </div>
+  <div class="card-body">
+    {% if show_url_row %}
+      <label class="form-label small text-uppercase fw-semibold text-muted mb-2">{{ pdf_url_form.vars.label is defined ? pdf_url_form.vars.label : ('page.url_label'|trans({}, 'nowo_pdf_signable')) }}</label>
+      <div class="input-group input-group-lg mb-3">
+        {{ form_widget(pdf_url_form, { attr: { class: (pdf_url_form.vars.attr.class|default('') ~ (pdf_url_form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
+        {% if show_load_btn %}<button type="button" class="btn btn-primary px-4" id="loadPdfBtn">{{ 'page.load'|trans({}, 'nowo_pdf_signable') }}</button>{% endif %}
+      </div>
+      {{ form_errors(pdf_url_form) }}
+    {% else %}
+      {{ form_widget(pdf_url_form, { attr: { class: (pdf_url_form.vars.attr.class|default('') ~ (pdf_url_form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
+      {{ form_errors(pdf_url_form) }}
+    {% endif %}
+    {% if signing_legal_disclaimer is defined and signing_legal_disclaimer is not null and signing_legal_disclaimer != '' %}
+    <div class="signing-legal-disclaimer alert alert-info small py-2 mb-3" role="note">
+      {{ signing_legal_disclaimer|raw }}
+      {% if signing_legal_disclaimer_url is defined and signing_legal_disclaimer_url is not null and signing_legal_disclaimer_url != '' %}
+      <a href="{{ signing_legal_disclaimer_url }}" target="_blank" rel="noopener noreferrer" class="alert-link">{{ 'signing.terms_link'|trans({}, 'nowo_pdf_signable') }}</a>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if signing_consent_form is defined and signing_consent_form is not null %}
+    <div class="signing-consent-row mb-3">
+      {{ form_row(signing_consent_form) }}
+    </div>
+    {% endif %}
+    <div class="pdf-viewer-outer">
+      <div id="pdf-viewer-container">
+        <div class="pdf-zoom-toolbar" role="toolbar" aria-label="{{ 'js.zoom_fit'|trans({}, 'nowo_pdf_signable') }}">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="pdfZoomOut" title="{{ 'js.zoom_out'|trans({}, 'nowo_pdf_signable') }}" aria-label="{{ 'js.zoom_out'|trans({}, 'nowo_pdf_signable') }}">−</button>
+          <span class="pdf-zoom-value small text-muted" id="pdfZoomValue">100%</span>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="pdfZoomIn" title="{{ 'js.zoom_in'|trans({}, 'nowo_pdf_signable') }}" aria-label="{{ 'js.zoom_in'|trans({}, 'nowo_pdf_signable') }}">+</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="pdfFitWidth" title="{{ 'js.fit_width'|trans({}, 'nowo_pdf_signable') }}" aria-label="{{ 'js.fit_width'|trans({}, 'nowo_pdf_signable') }}">{{ 'js.fit_width'|trans({}, 'nowo_pdf_signable') }}</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="pdfFitPage" title="{{ 'js.fit_page'|trans({}, 'nowo_pdf_signable') }}" aria-label="{{ 'js.fit_page'|trans({}, 'nowo_pdf_signable') }}">{{ 'js.fit_page'|trans({}, 'nowo_pdf_signable') }}</button>
+        </div>
+        <div id="pdf-placeholder" class="text-center text-muted py-5">
+          <p class="mb-0">{{ 'page.placeholder_intro'|trans({}, 'nowo_pdf_signable') }}</p>
+        </div>
+        <div id="pdf-canvas-wrapper" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+</div>

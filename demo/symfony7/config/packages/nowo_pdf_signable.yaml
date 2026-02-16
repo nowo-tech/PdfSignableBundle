@@ -1,24 +1,84 @@
-# PdfSignable Bundle - demo configuration (Symfony 7)
+# PdfSignable Bundle – demo (Symfony 7)
 # https://github.com/nowo-tech/pdfSignableBundle
+#
+# All bundle options are listed below. Active values are set; the rest are commented with explanations.
 
 nowo_pdf_signable:
-    # Enable proxy endpoint to load external PDFs (avoids CORS)
+    # Enable the proxy endpoint so the browser can load external PDFs without CORS.
     proxy_enabled: true
 
-    # Example PDF URL for form preload (widely accessible test PDF)
+    # When non-empty, the proxy only fetches URLs matching one entry. Each entry: substring of URL, or regex if prefixed with # (e.g. #^https://example\.com/#).
+    # proxy_url_allowlist: []
+
+    # Default PDF URL for form preload / demo. Leave empty to not preload.
     example_pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
 
-    # Named configs for SignatureCoordinatesType (use form option config: "name" to apply)
-    configs:
-        default:
-            units: ['mm', 'cm', 'pt']
-            unit_default: 'mm'
-            origin_default: 'bottom_left'
-        fixed_url:
-            pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
-            url_field: false
-            show_load_pdf_button: false
-            unit_field: false
-            origin_field: false
-            unit_default: 'mm'
-            origin_default: 'bottom_left'
+    # When true, the PDF viewer and signature boxes emit console.log/warn in the browser (useful for development).
+    debug: true
+
+    # Signature: global defaults (box dimensions, lock) and configs by alias. Default alias is "default".
+    signature:
+    #     default_config_alias: default
+    #     default_box_width: null
+    #     default_box_height: null
+    #     lock_box_width: false
+    #     lock_box_height: false
+    #     min_box_width: null
+    #     min_box_height: null
+        configs:
+            default:
+                units: ['mm', 'cm', 'pt']
+                unit_default: 'mm'
+                # Symfony 8 demo uses origin_default: 'top_left' here if you prefer top-left origin.
+                origin_default: 'bottom_left'
+                show_acroform: true
+            fixed_url:
+                pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
+                url_field: false
+                show_load_pdf_button: false
+                unit_field: false
+                origin_field: false
+                unit_default: 'mm'
+                origin_default: 'bottom_left'
+                show_acroform: true
+
+    # AcroForm: platform settings (enabled, scripts, storage) and configs by alias. Default alias is "default".
+    acroform:
+        enabled: true
+        fields_extractor_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/scripts/extract_acroform_fields.py'
+        allow_pdf_modify: true
+        apply_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/scripts/apply_acroform_patches.py'
+        apply_script_command: '/usr/bin/python3'
+        process_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/scripts/process_modified_pdf.py'
+        process_script_command: '/usr/bin/python3'
+    #     default_config_alias: default
+    #     label_mode: input
+    #     label_choices: []
+    #     font_sizes: []
+    #     font_families: []
+        configs:
+            default: {}
+            label_dropdown:
+                label_mode: choice
+                label_choices: ['Nombre', 'Apellidos', 'DNI', 'Fecha', 'Firma']
+                label_other_text: 'Otro'
+            with_fonts:
+                font_sizes: [8, 10, 11, 12, 14, 18]
+                font_families: ['sans-serif', 'Arial', 'Times New Roman|Times New Roman', 'Courier New|Courier New']
+            all_options:
+                label_mode: choice
+                label_choices: ['Nombre', 'Apellidos', 'DNI', 'Fecha', 'Firma']
+                label_other_text: 'Otro'
+                show_field_rect: false
+                font_sizes: [8, 10, 11, 12, 14, 18]
+                font_families: ['sans-serif', 'Arial', 'Times New Roman|Times New Roman', 'Courier New|Courier New']
+
+    # Audit metadata: the controller merges IP, user_agent and submitted_at into the model before dispatching SIGNATURE_COORDINATES_SUBMITTED.
+    # audit:
+    #     fill_from_request: true
+
+    # Optional TSA URL for RFC 3161 timestamps. The bundle does not call it; use in your listener and set the token in audit_metadata.
+    # tsa_url: null
+
+    # Optional service ID for PKI/PAdES signing. The bundle does not use it; reference in your listener to call your signing service or HSM.
+    # signing_service_id: null

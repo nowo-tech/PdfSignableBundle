@@ -7,6 +7,8 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+      # Anonymous volume so node_modules is installed inside the container (correct Rollup native binary for Linux).
+      - node_modules:/app/node_modules
       - composer-cache:/root/.composer/cache
     environment:
       - COMPOSER_ALLOW_SUPERUSER=1
@@ -16,6 +18,8 @@ services:
 
 volumes:
   composer-cache:
+    driver: local
+  node_modules:
     driver: local
 
 networks:

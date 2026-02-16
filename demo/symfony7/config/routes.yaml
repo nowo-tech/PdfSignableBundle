@@ -4,9 +4,12 @@ controllers:
         namespace: App\Controller
     type: attribute
 
+
+# PdfSignableBundle: signature + AcroForm (single directory resource)
 nowo_pdf_signable:
-    resource: '@NowoPdfSignableBundle/Resources/config/routes.yaml'
-    prefix: /
+    resource: '@NowoPdfSignableBundle/Controller'
+    type: attribute
+    prefix: '/demo/pdf-signable'
 
 # Web Profiler (dev)
 _web_profiler:

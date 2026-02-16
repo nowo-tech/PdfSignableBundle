@@ -57,15 +57,38 @@
   {{ form_row(form.name) }}
   {{ form_row(form.page) }}
 </div>
-<div class="row g-2 align-items-end">
+{% if form.vars.hide_coordinate_fields|default(false) %}
+{# Hidden but submitted: width, height, x, y, angle (values from PDF overlay or defaults) #}
+<div class="d-none" aria-hidden="true">
   {{ form_row(form.width) }}
   {{ form_row(form.height) }}
   {{ form_row(form.x) }}
   {{ form_row(form.y) }}
+  {% if form.angle is defined %}{{ form_row(form.angle) }}{% endif %}
+</div>
+{% else %}
+<div class="row g-2 align-items-end">
+  {% if form.vars.lock_box_width|default(false) %}
+  <div class="d-none" aria-hidden="true">{{ form_row(form.width) }}</div>
+  {% else %}
+  {{ form_row(form.width) }}
+  {% endif %}
+  {% if form.vars.lock_box_height|default(false) %}
+  <div class="d-none" aria-hidden="true">{{ form_row(form.height) }}</div>
+  {% else %}
+  {{ form_row(form.height) }}
+  {% endif %}
+  {% if form.vars.hide_position_fields|default(false) %}
+  <div class="d-none" aria-hidden="true">{{ form_row(form.x) }}{{ form_row(form.y) }}</div>
+  {% else %}
+  {{ form_row(form.x) }}
+  {{ form_row(form.y) }}
+  {% endif %}
   {% if form.angle is defined %}
   {{ form_row(form.angle) }}
   {% endif %}
 </div>
+{% endif %}
 {% if form.signatureData is defined and (form.vars.enable_signature_capture or form.vars.enable_signature_upload) %}
 <div class="signature-capture-row w-100 mb-2">
   <label class="form-label small">{{ 'signature_box_type.signature.label'|trans({}, 'nowo_pdf_signable') }}</label>

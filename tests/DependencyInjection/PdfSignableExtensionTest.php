@@ -30,13 +30,38 @@ final class PdfSignableExtensionTest extends TestCase
             [
                 'proxy_enabled' => false,
                 'example_pdf_url' => 'https://example.com/default.pdf',
-                'configs' => ['preset' => ['unit_default' => 'pt']],
+                'signature' => ['configs' => ['preset' => ['unit_default' => 'pt']]],
             ],
         ], $container);
 
         self::assertFalse($container->getParameter('nowo_pdf_signable.proxy_enabled'));
         self::assertSame('https://example.com/default.pdf', $container->getParameter('nowo_pdf_signable.example_pdf_url'));
-        self::assertSame(['preset' => ['unit_default' => 'pt']], $container->getParameter('nowo_pdf_signable.configs'));
+        self::assertSame(['preset' => ['unit_default' => 'pt']], $container->getParameter('nowo_pdf_signable.signature.configs'));
+        self::assertNull($container->getParameter('nowo_pdf_signable.signature.default_box_width'));
+        self::assertNull($container->getParameter('nowo_pdf_signable.signature.default_box_height'));
+        self::assertFalse($container->getParameter('nowo_pdf_signable.signature.lock_box_width'));
+        self::assertFalse($container->getParameter('nowo_pdf_signable.signature.lock_box_height'));
+    }
+
+    public function testLoadSetsBoxDimensionParameters(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new PdfSignableExtension();
+        $extension->load([
+            [
+                'signature' => [
+                    'default_box_width' => 150.0,
+                    'default_box_height' => 40.0,
+                    'lock_box_width' => true,
+                    'lock_box_height' => true,
+                ],
+            ],
+        ], $container);
+
+        self::assertSame(150.0, $container->getParameter('nowo_pdf_signable.signature.default_box_width'));
+        self::assertSame(40.0, $container->getParameter('nowo_pdf_signable.signature.default_box_height'));
+        self::assertTrue($container->getParameter('nowo_pdf_signable.signature.lock_box_width'));
+        self::assertTrue($container->getParameter('nowo_pdf_signable.signature.lock_box_height'));
     }
 
     public function testLoadSetsProxyUrlAllowlistParameter(): void
@@ -46,6 +71,58 @@ final class PdfSignableExtensionTest extends TestCase
         $extension->load([['proxy_url_allowlist' => ['https://cdn.example.com/']]], $container);
 
         self::assertSame(['https://cdn.example.com/'], $container->getParameter('nowo_pdf_signable.proxy_url_allowlist'));
+    }
+
+    public function testLoadSetsMinBoxParameters(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new PdfSignableExtension();
+        $extension->load([], $container);
+
+        self::assertNull($container->getParameter('nowo_pdf_signable.signature.min_box_width'));
+        self::assertNull($container->getParameter('nowo_pdf_signable.signature.min_box_height'));
+
+        $container2 = new ContainerBuilder();
+        $extension->load([
+            [
+                'signature' => [
+                    'min_box_width' => 30.0,
+                    'min_box_height' => 20.0,
+                ],
+            ],
+        ], $container2);
+
+        self::assertSame(30.0, $container2->getParameter('nowo_pdf_signable.signature.min_box_width'));
+        self::assertSame(20.0, $container2->getParameter('nowo_pdf_signable.signature.min_box_height'));
+    }
+
+    public function testLoadSetsAcroformScriptAndMinFieldParameters(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new PdfSignableExtension();
+        $extension->load([], $container);
+
+        self::assertSame('python3', $container->getParameter('nowo_pdf_signable.acroform.apply_script_command'));
+        self::assertSame('python3', $container->getParameter('nowo_pdf_signable.acroform.process_script_command'));
+        self::assertSame(12.0, $container->getParameter('nowo_pdf_signable.acroform.min_field_width'));
+        self::assertSame(12.0, $container->getParameter('nowo_pdf_signable.acroform.min_field_height'));
+
+        $container2 = new ContainerBuilder();
+        $extension->load([
+            [
+                'acroform' => [
+                    'apply_script_command' => 'python',
+                    'process_script_command' => '/usr/bin/python3.12',
+                    'min_field_width' => 25.0,
+                    'min_field_height' => 18.0,
+                ],
+            ],
+        ], $container2);
+
+        self::assertSame('python', $container2->getParameter('nowo_pdf_signable.acroform.apply_script_command'));
+        self::assertSame('/usr/bin/python3.12', $container2->getParameter('nowo_pdf_signable.acroform.process_script_command'));
+        self::assertSame(25.0, $container2->getParameter('nowo_pdf_signable.acroform.min_field_width'));
+        self::assertSame(18.0, $container2->getParameter('nowo_pdf_signable.acroform.min_field_height'));
     }
 
     /**
@@ -91,5 +168,19 @@ final class PdfSignableExtensionTest extends TestCase
         self::assertNotEmpty($frameworkConfigs);
         self::assertArrayHasKey('translator', $frameworkConfigs[0]);
         self::assertArrayHasKey('paths', $frameworkConfigs[0]['translator']);
+    }
+
+    /**
+     * Prepend does not fail when twig and framework extensions are not registered.
+     */
+    public function testPrependWithEmptyContainerDoesNotFail(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new PdfSignableExtension();
+
+        $extension->prepend($container);
+
+        self::assertFalse($container->hasExtension('twig'));
+        self::assertFalse($container->hasExtension('framework'));
     }
 }

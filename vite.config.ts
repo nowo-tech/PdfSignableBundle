@@ -1,17 +1,25 @@
 import { defineConfig } from 'vite';
 
 /**
- * Vite config for the bundle: builds assets/pdf-signable.ts to an IIFE (pdf-signable.js) in src/Resources/public/js.
+ * Single entry per build (Vite 5 does not accept config array; Rollup does not allow IIFE + code-splitting).
+ * Run twice: vite build (pdf-signable) and VITE_ENTRY=acroform-editor vite build.
+ * CSS is built separately via `pnpm run build:css` (Sass).
  */
+const entry = process.env.VITE_ENTRY || 'pdf-signable';
+const isPdf = entry === 'pdf-signable';
+
 export default defineConfig({
   build: {
     outDir: 'src/Resources/public/js',
-    emptyOutDir: true,
+    emptyOutDir: isPdf,
     rollupOptions: {
-      input: 'assets/pdf-signable.ts',
+      input: isPdf
+        ? { 'pdf-signable': 'assets/signable-editor.ts' }
+        : { 'acroform-editor': 'assets/acroform-editor.ts' },
       output: {
         format: 'iife',
-        entryFileNames: 'pdf-signable.js',
+        ...(isPdf ? { inlineDynamicImports: true } : {}),
+        entryFileNames: '[name].js',
         assetFileNames: '[name][extname]',
       },
     },

@@ -16,3 +16,6 @@
 .phpunit.result.cache
 ###< phpunit/phpunit ###
 /.data/
+
+/.pnpm-store/
+/node_modules/

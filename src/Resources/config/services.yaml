@@ -1,32 +1,62 @@
+# NowoPdfSignableBundle services.
+# - Controllers: SignatureController (resource + autowire), AcroFormOverridesController (explicit below).
+# - Form types: SignatureCoordinatesType, SignatureBoxType; extension SignatureCoordinatesTypeExtension.
+# - Twig: NowoPdfSignableTwigExtension.
+
 services:
     _defaults:
         autowire: true
         autoconfigure: true
         public: false
 
-    Nowo\PdfSignableBundle\Controller\SignatureController:
-        arguments:
-            $proxyEnabled: '%nowo_pdf_signable.proxy_enabled%'
-            $proxyUrlAllowlist: '%nowo_pdf_signable.proxy_url_allowlist%'
-            $examplePdfUrl: '%nowo_pdf_signable.example_pdf_url%'
-            $auditFillFromRequest: '%nowo_pdf_signable.audit.fill_from_request%'
-        tags: ['controller.service_arguments']
-
+    # Controllers: SignatureController via resource; AcroFormOverridesController excluded and defined explicitly below.
     Nowo\PdfSignableBundle\Controller\:
         resource: '../../Controller/*'
-        exclude: '../../Controller/SignatureController.php'
+        exclude: '../../Controller/AcroFormOverridesController.php'
         tags: ['controller.service_arguments']
 
+    Nowo\PdfSignableBundle\Controller\AcroFormOverridesController:
+        class: Nowo\PdfSignableBundle\Controller\AcroFormOverridesController
+        arguments:
+            $enabled: '%nowo_pdf_signable.acroform.enabled%'
+            $storage: '@Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface'
+            $allowPdfModify: '%nowo_pdf_signable.acroform.allow_pdf_modify%'
+            $editor: null
+            $eventDispatcher: '@event_dispatcher'
+            $translator: '@translator'
+            $proxyUrlAllowlist: '%nowo_pdf_signable.proxy_url_allowlist%'
+            $maxPdfSize: '%nowo_pdf_signable.acroform.max_pdf_size%'
+            $maxPatches: '%nowo_pdf_signable.acroform.max_patches%'
+            $fieldsExtractorScript: '%nowo_pdf_signable.acroform.fields_extractor_script%'
+            $processScript: '%nowo_pdf_signable.acroform.process_script%'
+            $processScriptCommand: '%nowo_pdf_signable.acroform.process_script_command%'
+            $debug: '%nowo_pdf_signable.debug%'
+            $logger: '@?Psr\Log\LoggerInterface'
+        tags: ['controller.service_arguments']
+        public: true
+
+    Nowo\PdfSignableBundle\EventListener\AcroFormApplyScriptListener:
+        arguments:
+            $applyScript: '%nowo_pdf_signable.acroform.apply_script%'
+            $applyScriptCommand: '%nowo_pdf_signable.acroform.apply_script_command%'
+        tags:
+            - { name: kernel.event_listener, event: nowo_pdf_signable.acroform_apply_request, method: __invoke, priority: -100 }
+
+    # AcroForm storage: SessionAcroFormOverridesStorage discovered here; #[AsAlias] on the class aliases the interface.
+    # Extension overrides the alias only when overrides_storage is a custom service id.
+    Nowo\PdfSignableBundle\AcroForm\Storage\:
+        resource: '../../AcroForm/Storage/*'
+        exclude: '../../AcroForm/Storage/AcroFormOverridesStorageInterface.php'
+
+    # Form types
     Nowo\PdfSignableBundle\Form\:
         resource: '../../Form/*'
+        exclude: '../../Form/Extension/*'
         tags: ['form.type']
 
-    Nowo\PdfSignableBundle\Form\SignatureCoordinatesType:
-        arguments:
-            $examplePdfUrl: '%nowo_pdf_signable.example_pdf_url%'
-            $namedConfigs: '%nowo_pdf_signable.configs%'
-            $debug: '%nowo_pdf_signable.debug%'
-        tags: ['form.type']
+    Nowo\PdfSignableBundle\Form\Extension\SignatureCoordinatesTypeExtension:
+        tags: ['form.type_extension']
 
+    # Twig
     Nowo\PdfSignableBundle\Twig\NowoPdfSignableTwigExtension:
         tags: ['twig.extension']

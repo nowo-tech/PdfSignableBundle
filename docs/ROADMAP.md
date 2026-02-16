@@ -33,6 +33,34 @@ The bundle today focuses on **defining where** signature boxes go (coordinates).
 
 ---
 
+## AcroForm (PDF form fields editor)
+
+- **Field list and overrides** *(implemented)*  
+  Panel with list of AcroForm fields (from PDF or extractor), Load/Save/Clear overrides, and draft in memory. Overrides (defaultValue, label, controlType, rect, hidden, font, checkbox) are persisted via backend (e.g. session or DB). See [ACROFORM](ACROFORM.md) and [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md).
+
+- **Edit field modal** *(implemented)*  
+  Modal to edit type, label, default value, position/size (rect), options (select), font (size, family, auto-size), checkbox (on/off value, icon). Config: label_mode (free text or choice list), show_field_rect, font_sizes, font_families. See [ACROFORM](ACROFORM.md#5-modal-and-editor-configuration).
+
+- **Move/resize on PDF** *(implemented)*  
+  Per-field cross button opens an overlay on the PDF to drag or resize; rect is written to overrides. Single active context (overlay or modal). See [ACROFORM_FLOWS](ACROFORM_FLOWS.md).
+
+- **Add new field** *(implemented)*  
+  Click on empty area of the PDF creates override with id `new-*` and opens edit modal. Fields exist in overrides until Apply writes them to the PDF.
+
+- **Apply to PDF (Layer 2)** *(implemented)*  
+  Endpoint accepts PDF + patches; bundle can run Python script or dispatch `AcroFormApplyRequestEvent` for custom implementation (e.g. SetaPDF). Returns modified PDF. See [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md).
+
+- **Process modified PDF** *(implemented)*  
+  Endpoint to send last applied PDF to a script or listener (`AcroFormModifiedPdfProcessedEvent`) for fill/sign or storage.
+
+- **Extensibility of the editor** *(proposal)*  
+  Form type for edit-field modal, Twig templates overridable, Symfony translations. See [PROPOSAL_ACROFORM_EDITOR_EXTENSIBILITY](PROPOSAL_ACROFORM_EDITOR_EXTENSIBILITY.md).
+
+- **AcroForm E2E or integration tests**  
+  Automated tests for load overrides → edit field → save → apply flow (browser or API).
+
+---
+
 ## Form and coordinates functionality
 
 - **Default values per box name** *(implemented)*  
@@ -138,17 +166,20 @@ Key idea: **Multiple views (thumbnails)** — thumbnail panel for pages to jump 
 
 ## Documentation
 
+- **Unified AcroForm docs** *(implemented)*  
+  [ACROFORM](ACROFORM.md) (unified guide), [ACROFORM_FLOWS](ACROFORM_FLOWS.md) (diagrams and sequences), [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md) (backend). Index in [docs/README](README.md).
+
 - **Quick start video or GIF**  
   Show the full flow in the README in 1–2 minutes.
 
 - **Recipes / examples by use case**  
-  Short examples: “fixed URL only”, “multiple signers with unique names”, “same signer multiple positions”, “predefine boxes from DB”.
+  Short examples: “fixed URL only”, “multiple signers with unique names”, “same signer multiple positions”, “predefine boxes from DB”, “AcroForm editor with custom storage”.
 
 - **Form type options reference**  
-  Table or reference of all options for `SignatureCoordinatesType` and `SignatureBoxType` (in USAGE or a separate doc).
+  Table or reference of all options for `SignatureCoordinatesType`, `SignatureBoxType`, and AcroForm types (in USAGE or a separate doc).
 
 - **Accessibility guide** *(implemented)*  
-  [ACCESSIBILITY.md](ACCESSIBILITY.md): keyboard shortcuts, focus order, screen readers (ARIA, loading overlay), contrast and visibility recommendations for the viewer and form controls.
+  [ACCESSIBILITY](ACCESSIBILITY.md): keyboard shortcuts, focus order, screen readers (ARIA, loading overlay), contrast and visibility recommendations for the viewer and form controls.
 
 ---
 

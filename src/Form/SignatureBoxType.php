@@ -105,15 +105,41 @@ final class SignatureBoxType extends AbstractType
             ]);
         }
 
+        $defaultWidth = $options['default_box_width'] !== null ? (float) $options['default_box_width'] : null;
+        $defaultHeight = $options['default_box_height'] !== null ? (float) $options['default_box_height'] : null;
+        $lockWidth = $options['lock_box_width'];
+        $lockHeight = $options['lock_box_height'];
+        $minWidth = $options['min_box_width'] !== null ? (float) $options['min_box_width'] : 10;
+        $minHeight = $options['min_box_height'] !== null ? (float) $options['min_box_height'] : 10;
+
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($defaultWidth, $defaultHeight, $lockWidth, $lockHeight): void {
+            $data = $event->getData();
+            if (!$data instanceof SignatureBoxModel) {
+                return;
+            }
+            if ($lockWidth && $defaultWidth !== null) {
+                $data->setWidth($defaultWidth);
+            } elseif ($data->getWidth() === null && $defaultWidth !== null) {
+                $data->setWidth($defaultWidth);
+            }
+            if ($lockHeight && $defaultHeight !== null) {
+                $data->setHeight($defaultHeight);
+            } elseif ($data->getHeight() === null && $defaultHeight !== null) {
+                $data->setHeight($defaultHeight);
+            }
+        });
+
         $builder
             ->add('width', NumberType::class, [
                 'label' => 'signature_box_type.width.label',
-                'attr' => ['min' => 10, 'step' => '0.01', 'class' => 'signature-box-width form-control form-control-sm', 'data-pdf-signable' => 'width'],
+                'empty_data' => $defaultWidth,
+                'attr' => ['min' => $minWidth, 'step' => '0.01', 'class' => 'signature-box-width form-control form-control-sm', 'data-pdf-signable' => 'width'],
                 'row_attr' => ['class' => 'col mb-2'],
             ])
             ->add('height', NumberType::class, [
                 'label' => 'signature_box_type.height.label',
-                'attr' => ['min' => 10, 'step' => '0.01', 'class' => 'signature-box-height form-control form-control-sm', 'data-pdf-signable' => 'height'],
+                'empty_data' => $defaultHeight,
+                'attr' => ['min' => $minHeight, 'step' => '0.01', 'class' => 'signature-box-height form-control form-control-sm', 'data-pdf-signable' => 'height'],
                 'row_attr' => ['class' => 'col mb-2'],
             ])
             ->add('x', NumberType::class, [
@@ -151,13 +177,21 @@ final class SignatureBoxType extends AbstractType
      *
      * @param FormView      $view    The form view
      * @param FormInterface $form    The form
-     * @param array         $options Resolved options
+     * @param array<string, mixed> $options Resolved options (enable_signature_capture, signing_only, lock_box_*, etc.)
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $view->vars['enable_signature_capture'] = $options['enable_signature_capture'];
         $view->vars['enable_signature_upload'] = $options['enable_signature_upload'];
         $view->vars['signing_only'] = $options['signing_only'];
+        $view->vars['hide_coordinate_fields'] = $options['hide_coordinate_fields'];
+        $view->vars['default_box_width'] = $options['default_box_width'];
+        $view->vars['default_box_height'] = $options['default_box_height'];
+        $view->vars['lock_box_width'] = $options['lock_box_width'];
+        $view->vars['lock_box_height'] = $options['lock_box_height'];
+        $view->vars['min_box_width'] = $options['min_box_width'];
+        $view->vars['min_box_height'] = $options['min_box_height'];
+        $view->vars['hide_position_fields'] = $options['hide_position_fields'];
     }
 
     /**
@@ -187,6 +221,18 @@ final class SignatureBoxType extends AbstractType
             'enable_signature_upload' => false,
             /* When true, hide coordinate fields and show only box name (read-only) and signature capture (for predefined sign-only flows). */
             'signing_only' => false,
+            /* When true, hide width, height, x, y (and angle) fields in the UI; values are still submitted (e.g. from PDF overlay). */
+            'hide_coordinate_fields' => false,
+            /* Default width/height for new boxes (form unit). When lock_box_* is true, the field is hidden and this value is used. */
+            'default_box_width' => null,
+            'default_box_height' => null,
+            'lock_box_width' => false,
+            'lock_box_height' => false,
+            /* Minimum width/height for signature boxes (form unit). Null = use 10 in HTML and no client clamp. */
+            'min_box_width' => null,
+            'min_box_height' => null,
+            /* When true, hide x and y fields in the UI; values are still submitted (e.g. from PDF overlay). */
+            'hide_position_fields' => false,
             /* Additional constraints on the whole box (SignatureBoxModel); e.g. Callback for custom validation */
             'constraints' => [],
         ]);
@@ -197,6 +243,14 @@ final class SignatureBoxType extends AbstractType
         $resolver->setAllowedTypes('enable_signature_capture', 'bool');
         $resolver->setAllowedTypes('enable_signature_upload', 'bool');
         $resolver->setAllowedTypes('signing_only', 'bool');
+        $resolver->setAllowedTypes('hide_coordinate_fields', 'bool');
+        $resolver->setAllowedTypes('default_box_width', ['float', 'int', 'null']);
+        $resolver->setAllowedTypes('default_box_height', ['float', 'int', 'null']);
+        $resolver->setAllowedTypes('lock_box_width', 'bool');
+        $resolver->setAllowedTypes('lock_box_height', 'bool');
+        $resolver->setAllowedTypes('min_box_width', ['float', 'int', 'null']);
+        $resolver->setAllowedTypes('min_box_height', ['float', 'int', 'null']);
+        $resolver->setAllowedTypes('hide_position_fields', 'bool');
         $resolver->setAllowedTypes('name_choices', 'array');
         $resolver->setAllowedTypes('choice_placeholder', ['bool', 'string']);
         $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);

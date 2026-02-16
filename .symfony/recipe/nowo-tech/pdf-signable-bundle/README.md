@@ -5,7 +5,7 @@ This folder contains the **Symfony Flex recipe** (version `1.0`) used when insta
 ## Contents
 
 - **1.0/manifest.json** — Registers the bundle, copies recipe config into the app, and shows a post-install message for `assets:install`.
-- **1.0/config/packages/nowo_pdf_signable.yaml** — Default bundle configuration (proxy, example URL, empty configs).
+- **1.0/config/packages/nowo_pdf_signable.yaml** — Bundle configuration with **all options documented** (proxy, example URL, debug; **signature** node with global box defaults and named configs by alias; audit, TSA/signing placeholders; **acroform** node with platform settings and named configs by alias). Includes example signature configs (default active; fixed_url, limited_boxes, snap_and_grid, signing_boxes, full_reference commented) and commented acroform configs. See `docs/CONFIGURATION.md` for full reference.
 - **1.0/config/routes/nowo_pdf_signable.yaml** — Imports the bundle routes (`/pdf-signable` and `/pdf-signable/proxy`).
 
 ## No tag yet

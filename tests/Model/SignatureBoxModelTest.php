@@ -110,4 +110,21 @@ final class SignatureBoxModelTest extends TestCase
         $result = $model->setName('test')->setPage(1);
         self::assertSame($model, $result);
     }
+
+    public function testFromArrayWithEmptySignatureDataAndSignedAtTreatsAsNull(): void
+    {
+        $arr = [
+            'name' => 's1',
+            'page' => 1,
+            'x' => 0,
+            'y' => 0,
+            'width' => 100,
+            'height' => 30,
+            'signature_data' => '',
+            'signed_at' => '',
+        ];
+        $model = SignatureBoxModel::fromArray($arr);
+        self::assertNull($model->getSignatureData());
+        self::assertNull($model->getSignedAt());
+    }
 }

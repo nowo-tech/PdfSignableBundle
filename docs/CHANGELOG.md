@@ -21,6 +21,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.0] - 2026-02-16
+
+### Breaking
+
+- **Configuration structure:** Signature config must be under the `signature` node (global box options + `configs` by alias). AcroForm config must be under a single `acroform` node (replacing `acroform_editor` and `acroform_configs`). Container parameters are renamed: `nowo_pdf_signable.default_box_*`, `.configs` → `nowo_pdf_signable.signature.*`; `nowo_pdf_signable.acroform_editor.*`, `nowo_pdf_signable.acroform_configs` → `nowo_pdf_signable.acroform.*`, `nowo_pdf_signable.acroform.configs`. See [UPGRADING](UPGRADING.md) for migration steps and examples.
+
+### Added
+
+- **Signature config under `signature` node:** Global box defaults and named configs by alias (default alias `default`). Use form option `config: 'alias'` to apply. Container parameters: `nowo_pdf_signable.signature.*` and `nowo_pdf_signable.signature.configs`. See [UPGRADING](UPGRADING.md).
+- **AcroForm config under single `acroform` node:** Replaces `acroform_editor` and `acroform_configs`. Platform options, editor defaults, `default_config_alias`, and `configs` by alias. Container parameters: `nowo_pdf_signable.acroform.*` and `nowo_pdf_signable.acroform.configs`. See [UPGRADING](UPGRADING.md).
+- **AcroForm editor translations**: All UI strings in the AcroForm editor panel (demo templates) are now translatable. New translation keys under `acroform_editor.*` (domain `nowo_pdf_signable`): page title, config header, form errors intro, close aria, panel title, draft intro (with HTML), document key label/placeholder, fields label, fields from PDF, refresh button, draft label/placeholder/title, load/save/clear buttons. Translations added for all 12 locales (EN, ES, FR, DE, CA, IT, NL, PT, CS, PL, RU, TR). Demo templates `acroform_editor.html.twig` (Symfony 7 and 8) use `|trans({}, 'nowo_pdf_signable')` for every user-facing string.
+- **AcroForm editor config (Type)**: New options under the **`acroform`** node to control the edit-field modal from the bundle config:
+  - `label_mode` (`'input'` \| `'choice'`): label as free text or select with predefined options plus "Other".
+  - `label_choices` (string[]): list of label options when `label_mode` is `'choice'` (each entry: string or `"value|Label"`).
+  - `label_other_text` (string): text for the "Other" option in the label select (default `'Other'`).
+  - `show_field_rect` (bool, default `true`): when `false`, the coordinates (rect) input is hidden in the edit-field modal.
+  - `font_sizes` (int[]): allowed font sizes in pt; empty = number input (1–72); non-empty = select with these values.
+  - `font_families` (string[]): allowed font families; empty = built-in list; non-empty = select with these options (each entry: string or `"value|Label"`).
+  See [CONFIGURATION](CONFIGURATION.md) and [ACROFORM](ACROFORM.md).
+- **Demo — AcroForm section**: New dedicated "AcroForm" section in the demo nav and home index (Symfony 7 and 8) with six demos: AcroForm editor (default), AcroForm editor — Label as dropdown, AcroForm editor — Coordinates hidden, AcroForm editor — Custom font options, AcroForm editor — All options, AcroForm editor (min field size 24 pt).
+- **AcroForm apply — font family in PDF**: The edit-field modal allows editing font size and font family for text/textarea fields. These values are now sent in the patch payload when applying to the PDF; `AcroFormFieldPatch` includes `fontFamily`; the Python apply script (`apply_acroform_patches.py`) sets the default appearance (/DA) with both font size and family, mapping common names (Arial, Helvetica, Times New Roman, Courier New, sans-serif, serif, monospace) to standard PDF fonts. See [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md) and [ACROFORM](ACROFORM.md).
+
+### Changed
+
+- (None.)
+
+### Fixed
+
+- (None.)
+
+### Documentation
+
+- **Unified AcroForm docs:** Single [ACROFORM](ACROFORM.md) guide; [ACROFORM_FLOWS](ACROFORM_FLOWS.md) for flow diagrams; [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md) for backend. Removed redundant ACROFORM_EDITOR.md and ACROFORM_EDITOR_UX.md.
+- **Documentation in English:** [README](README.md), [ACROFORM](ACROFORM.md), [ACROFORM_FLOWS](ACROFORM_FLOWS.md), and [EVENTS](EVENTS.md) frontend section translated to English; [ROADMAP](ROADMAP.md) updated with AcroForm section and doc links.
+- **Code comments in English:** Spanish comments in `assets/acroform-editor.ts`, `assets/pdf-signable.scss`, and `scripts/PoC/run_poc.py` translated to English.
+
+For upgrade steps from 1.5.x, see [UPGRADING](UPGRADING.md).
+
+---
+
+## [1.5.4] - 2026-02-11
+
+### Added
+
+- **Show AcroForm option** (`show_acroform`): Form option (default `true`) to draw an outline overlay over **AcroForm/PDF form fields** so they are visible in the viewer. Uses PDF.js `getAnnotations()`; outlines are non-interactive (clicks still add signature boxes). Set `show_acroform: false` to hide them. See [USAGE](docs/USAGE.md) and [STYLES](docs/STYLES.md) (`.pdf-annotation-layer`, `.acroform-field-outline`).
+- **Demo**: Recipe and demo named configs (`default`, `fixed_url`) and demo base options include `show_acroform: true` by default.
+
+### Changed
+
+- **Default configs**: Recipe example and demo configs (Symfony 7 and 8) set `show_acroform: true` in named configs and in the demo form base options so AcroForm fields are visible by default everywhere.
+
+### Developer
+
+- CHANGELOG, UPGRADING, RELEASE checklist updated for 1.5.4.
+
+For upgrade steps from 1.5.3, see [UPGRADING](docs/UPGRADING.md).
+
+---
+
 ## [1.5.3] - 2026-02-10
 
 ### Added
@@ -39,7 +98,7 @@ For upgrade steps from 1.5.2, see [UPGRADING](docs/UPGRADING.md).
 
 ---
 
-## [1.5.2] - 2026-02-12
+## [1.5.2] - 2026-02-10
 
 ### Added
 
@@ -237,7 +296,7 @@ First stable release.
 - **Configuration**
   - `nowo_pdf_signable`: `proxy_enabled` for external PDFs (avoids CORS), `example_pdf_url` for form preload, optional `configs` (named presets).
 - **Named configurations**
-  - Define preset options in `nowo_pdf_signable.configs` and reference with form option `config: 'name'`. See [CONFIGURATION.md](CONFIGURATION.md) and [USAGE.md](USAGE.md).
+  - Define preset options in `nowo_pdf_signable.signature.configs` and reference with form option `config: 'name'`. See [CONFIGURATION.md](CONFIGURATION.md) and [USAGE.md](USAGE.md).
 - **Optional proxy**
   - Route and controller to proxy external PDFs (`/pdf-signable/proxy`). Events: `PdfProxyRequestEvent`, `PdfProxyResponseEvent`. See [EVENTS.md](EVENTS.md).
 - **Form theme**
@@ -267,7 +326,9 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v1.5.3...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.0
+[1.5.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.4
 [1.5.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.3
 [1.5.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.2
 [1.5.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.1

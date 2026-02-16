@@ -1,5 +1,5 @@
 # Makefile for PdfSignable Bundle demos (Symfony 7 and 8) - Docker
-.PHONY: help list up-all down-all run-symfony7 run-symfony8 down-symfony7 down-symfony8 setup-symfony7 setup-symfony8 clean-all
+.PHONY: help list up-all down-all run-symfony7 run-symfony8 down-symfony7 down-symfony8 setup-symfony7 setup-symfony8 update-bundle-symfony7 update-bundle-symfony8 update-bundle-all clean-all
 
 DEMOS := symfony7 symfony8
 
@@ -8,15 +8,18 @@ help:
 	@echo ""
 	@echo "Usage: make <target>"
 	@echo ""
-	@echo "  run-symfony7    Start Symfony 7 demo (Docker) → https://localhost:8001"
-	@echo "  run-symfony8    Start Symfony 8 demo (Docker) → https://localhost:8002"
-	@echo "  down-symfony7   Stop Symfony 7 demo"
-	@echo "  down-symfony8   Stop Symfony 8 demo"
-	@echo "  setup-symfony7  install + cache:clear only (containers already up)"
-	@echo "  setup-symfony8  install + cache:clear only (containers already up)"
-	@echo "  up-all          Start all demos (symfony7 + symfony8)"
-	@echo "  down-all        Stop all demos"
-	@echo "  clean-all       Stop and clean vendor/var in all"
+	@echo "  run-symfony7         Start Symfony 7 demo (Docker) → https://localhost:8001"
+	@echo "  run-symfony8        Start Symfony 8 demo (Docker) → https://localhost:8002"
+	@echo "  down-symfony7       Stop Symfony 7 demo"
+	@echo "  down-symfony8       Stop Symfony 8 demo"
+	@echo "  setup-symfony7      install + cache:clear only (containers already up)"
+	@echo "  setup-symfony8      install + cache:clear only (containers already up)"
+	@echo "  update-bundle-symfony7  Rebuild bundle assets and refresh demo 7 (after changing bundle code)"
+	@echo "  update-bundle-symfony8  Rebuild bundle assets and refresh demo 8"
+	@echo "  update-bundle-all   update-bundle in both demos"
+	@echo "  up-all              Start all demos (symfony7 + symfony8)"
+	@echo "  down-all            Stop all demos"
+	@echo "  clean-all           Stop and clean vendor/var in all"
 	@echo ""
 	@echo "Example: make run-symfony7   → then open https://localhost:8001"
 
@@ -61,6 +64,17 @@ setup-symfony7:
 
 setup-symfony8:
 	$(MAKE) -C symfony8 setup
+
+update-bundle-symfony7:
+	$(MAKE) -C symfony7 update-bundle
+
+update-bundle-symfony8:
+	$(MAKE) -C symfony8 update-bundle
+
+update-bundle-all:
+	@$(MAKE) -C symfony7 update-bundle
+	@$(MAKE) -C symfony8 update-bundle
+	@echo "✅ Bundle code updated in both demos"
 
 clean-all:
 	@for d in $(DEMOS); do $(MAKE) -C $$d clean; done

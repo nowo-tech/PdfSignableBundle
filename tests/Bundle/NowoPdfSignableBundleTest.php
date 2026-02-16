@@ -32,4 +32,15 @@ final class NowoPdfSignableBundleTest extends TestCase
 
         self::assertSame($first, $second);
     }
+
+    public function testGetPathReturnsBundleDirectory(): void
+    {
+        $bundle = new NowoPdfSignableBundle();
+        $path = $bundle->getPath();
+
+        self::assertIsString($path);
+        self::assertNotEmpty($path);
+        self::assertDirectoryExists($path);
+        self::assertFileExists($path.'/Resources/config/services.yaml');
+    }
 }

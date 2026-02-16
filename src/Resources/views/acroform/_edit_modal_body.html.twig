@@ -1,0 +1,166 @@
+{#
+  AcroForm edit-field modal body. Override via templates/bundles/NowoPdfSignable/acroform/_edit_modal_body.html.twig.
+  When acroform_edit_form is passed (Symfony Form from AcroFormFieldEditType), the form is rendered here with the same IDs.
+  Otherwise the static HTML is used. Required IDs: acroform-edit-modal-title, acroform-edit-field-id,
+  acroform-edit-field-name or acroform-edit-field-name-select (and acroform-edit-field-name-other if field_name_other_text set),
+  acroform-edit-control-type, acroform-edit-rect (if show_field_rect), acroform-edit-max-len, acroform-edit-hidden,
+  acroform-edit-create-if-missing, acroform-edit-options, acroform-edit-default-value, acroform-edit-default-checked,
+  acroform-edit-checkbox-value-on/off, acroform-edit-checkbox-icon, acroform-edit-font-size, acroform-edit-font-family,
+  acroform-edit-font-auto-size, acroform-edit-cancel, acroform-edit-save.
+#}
+{% block acroform_edit_modal_body %}
+<div class="modal-header py-2">
+  <h6 class="modal-title" id="acroform-edit-modal-title">{{ 'acroform_editor.modal_edit_title'|trans({}, 'nowo_pdf_signable') }}</h6>
+  <button type="button" class="btn-close btn-close-sm" id="acroform-edit-close" aria-label="{{ 'acroform_editor.modal_cancel'|trans({}, 'nowo_pdf_signable') }}"></button>
+</div>
+<div class="modal-body">
+{% if acroform_edit_form is defined and acroform_edit_form is not null %}
+  {% form_theme acroform_edit_form '@NowoPdfSignable/form/theme.html.twig' %}
+  {{ form_start(acroform_edit_form, { attr: { id: 'acroform-edit-form', class: 'acroform-edit-form' }, render_rest: false }) }}
+  {{ form_widget(acroform_edit_form) }}
+  {{ form_end(acroform_edit_form, { render_rest: false }) }}
+{% else %}
+  <input type="hidden" id="acroform-edit-field-id">
+
+{% if config.field_name_mode|default('input') == 'choice' and config.field_name_choices is defined and config.field_name_choices|length > 0 %}
+<div class="mb-2 acroform-edit-group acroform-edit-group-field-name">
+  <label class="form-label small" for="acroform-edit-field-name-select">{{ 'acroform_editor.modal_field_name'|trans({}, 'nowo_pdf_signable') }}</label>
+  <select id="acroform-edit-field-name-select" class="form-select form-select-sm">
+    {% for item in config.field_name_choices %}
+    {% if item.value is defined %}
+    <option value="{{ (item.value ?? '')|e('html_attr') }}">{{ (item.label ?? item.value ?? '')|e }}</option>
+    {% else %}
+    {% set p = item|split('|', 2) %}
+    <option value="{{ (p[0] ?? item)|e('html_attr') }}">{{ (p[1] ?? p[0] ?? item)|e }}</option>
+    {% endif %}
+    {% endfor %}
+    {% if config.field_name_other_text|default('')|trim is not empty %}
+    <option value="__other__">{{ config.field_name_other_text|e }}</option>
+    {% endif %}
+  </select>
+  {% if config.field_name_other_text|default('')|trim is not empty %}
+  <input type="text" id="acroform-edit-field-name-other" class="form-control form-control-sm mt-1" placeholder="{{ 'acroform_editor.modal_field_name_placeholder'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}" style="display:none" autocomplete="off">
+  {% endif %}
+</div>
+{% else %}
+<div class="mb-2 acroform-edit-group acroform-edit-group-field-name">
+  <label class="form-label small" for="acroform-edit-field-name">{{ 'acroform_editor.modal_field_name'|trans({}, 'nowo_pdf_signable') }}</label>
+  <input type="text" id="acroform-edit-field-name" class="form-control form-control-sm" placeholder="{{ 'acroform_editor.modal_field_name_placeholder'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}" autocomplete="off">
+</div>
+{% endif %}
+
+<div class="mb-2 acroform-edit-group acroform-edit-group-control-type">
+  <label class="form-label small" for="acroform-edit-control-type">{{ 'acroform_editor.modal_control_type'|trans({}, 'nowo_pdf_signable') }}</label>
+  <select id="acroform-edit-control-type" class="form-select form-select-sm">
+    <option value="text">text</option>
+    <option value="textarea">textarea</option>
+    <option value="checkbox">checkbox</option>
+    <option value="select">select</option>
+    <option value="choice">choice</option>
+  </select>
+</div>
+
+{% if config.show_field_rect|default(true) %}
+<div class="mb-2 acroform-edit-group acroform-edit-group-rect">
+  <label class="form-label small" for="acroform-edit-rect">{{ 'acroform_editor.modal_rect_label'|trans({}, 'nowo_pdf_signable') }}</label>
+  <input type="text" id="acroform-edit-rect" class="form-control form-control-sm" placeholder="{{ 'acroform_editor.modal_rect_placeholder'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}">
+</div>
+{% endif %}
+
+<div class="mb-2 acroform-edit-group acroform-edit-group-max-len" style="display:none;">
+  <label class="form-label small" for="acroform-edit-max-len">{{ 'acroform_editor.modal_max_len'|trans({}, 'nowo_pdf_signable') }}</label>
+  <input type="number" id="acroform-edit-max-len" class="form-control form-control-sm" min="0" placeholder="{{ 'acroform_editor.modal_max_len_placeholder'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}">
+</div>
+
+<div class="mb-2 acroform-edit-group acroform-edit-group-flags">
+  <div class="form-check">
+    <input type="checkbox" id="acroform-edit-hidden" class="form-check-input">
+    <label class="form-check-label small" for="acroform-edit-hidden">{{ 'acroform_editor.modal_hidden'|trans({}, 'nowo_pdf_signable') }}</label>
+  </div>
+  <div class="form-check mt-1">
+    <input type="checkbox" id="acroform-edit-create-if-missing" class="form-check-input">
+    <label class="form-check-label small" for="acroform-edit-create-if-missing">{{ 'acroform_editor.modal_create_if_missing'|trans({}, 'nowo_pdf_signable') }}</label>
+  </div>
+</div>
+
+<div class="mb-2 acroform-edit-group acroform-edit-group-options" style="display:none;">
+  <label class="form-label small" for="acroform-edit-options">{{ 'acroform_editor.modal_options_label'|trans({}, 'nowo_pdf_signable') }}</label>
+  <textarea id="acroform-edit-options" class="form-control form-control-sm" rows="3" placeholder="{{ 'acroform_editor.modal_options_placeholder'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}"></textarea>
+</div>
+
+<div class="mb-2 acroform-edit-group acroform-edit-group-default-text" style="display:none;">
+  <label class="form-label small" for="acroform-edit-default-value">{{ 'acroform_editor.modal_default_value'|trans({}, 'nowo_pdf_signable') }}</label>
+  <input type="text" id="acroform-edit-default-value" class="form-control form-control-sm" placeholder="{{ 'acroform_editor.modal_default_value_placeholder'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}">
+</div>
+
+<div class="mb-2 acroform-edit-group acroform-edit-group-default-checkbox" style="display:none;">
+  <div class="form-check">
+    <input type="checkbox" id="acroform-edit-default-checked" class="form-check-input">
+    <label class="form-check-label small" for="acroform-edit-default-checked">{{ 'acroform_editor.modal_default_checked'|trans({}, 'nowo_pdf_signable') }}</label>
+  </div>
+</div>
+
+<div class="mb-2 acroform-edit-group acroform-edit-group-checkbox-options" style="display:none;">
+  <label class="form-label small" for="acroform-edit-checkbox-value-on">{{ 'acroform_editor.modal_checkbox_value_on'|trans({}, 'nowo_pdf_signable') }}</label>
+  <input type="text" id="acroform-edit-checkbox-value-on" class="form-control form-control-sm mb-1" placeholder="1">
+  <label class="form-label small" for="acroform-edit-checkbox-value-off">{{ 'acroform_editor.modal_checkbox_value_off'|trans({}, 'nowo_pdf_signable') }}</label>
+  <input type="text" id="acroform-edit-checkbox-value-off" class="form-control form-control-sm mb-1" placeholder="0">
+  <label class="form-label small" for="acroform-edit-checkbox-icon">{{ 'acroform_editor.modal_checkbox_icon'|trans({}, 'nowo_pdf_signable') }}</label>
+  <select id="acroform-edit-checkbox-icon" class="form-select form-select-sm">
+    <option value="check">{{ 'acroform_editor.modal_checkbox_icon_check'|trans({}, 'nowo_pdf_signable') }}</option>
+    <option value="cross">{{ 'acroform_editor.modal_checkbox_icon_cross'|trans({}, 'nowo_pdf_signable') }}</option>
+    <option value="dot">{{ 'acroform_editor.modal_checkbox_icon_dot'|trans({}, 'nowo_pdf_signable') }}</option>
+  </select>
+</div>
+
+<div class="mb-2 acroform-edit-group acroform-edit-group-font" style="display:none;">
+  <label class="form-label small">{{ 'acroform_editor.modal_font_label'|trans({}, 'nowo_pdf_signable') }}</label>
+  <div class="row g-2 mb-1">
+    <div class="col-6">
+      <label class="form-label small mb-0" for="acroform-edit-font-size">{{ 'acroform_editor.modal_font_size'|trans({}, 'nowo_pdf_signable') }}</label>
+      {% if config.font_sizes is defined and config.font_sizes|length > 0 %}
+      <select id="acroform-edit-font-size" class="form-select form-select-sm" required>
+        {% for sz in config.font_sizes %}
+        <option value="{{ sz }}">{{ sz }}</option>
+        {% endfor %}
+      </select>
+      {% else %}
+      <input type="number" id="acroform-edit-font-size" class="form-control form-control-sm" min="1" max="72" step="1" required value="11">
+      {% endif %}
+    </div>
+    <div class="col-6">
+      <label class="form-label small mb-0" for="acroform-edit-font-family">{{ 'acroform_editor.modal_font_family'|trans({}, 'nowo_pdf_signable') }}</label>
+      <select id="acroform-edit-font-family" class="form-select form-select-sm" required>
+        {% if config.font_families is defined and config.font_families|length > 0 %}
+        {% for item in config.font_families %}
+        {% if item.value is defined %}
+        <option value="{{ (item.value ?? '')|e('html_attr') }}">{{ (item.label ?? item.value ?? '')|e }}</option>
+        {% else %}
+        {% set fp = item|split('|', 2) %}
+        <option value="{{ (fp[0] ?? item)|e('html_attr') }}">{{ (fp[1] ?? fp[0] ?? item)|e }}</option>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <option value="sans-serif">sans-serif</option>
+        <option value="Arial">Arial</option>
+        <option value="Helvetica">Helvetica</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Courier New">Courier New</option>
+        <option value="serif">serif</option>
+        <option value="monospace">monospace</option>
+        {% endif %}
+      </select>
+    </div>
+  </div>
+  <div class="form-check mt-1">
+    <input type="checkbox" id="acroform-edit-font-auto-size" class="form-check-input">
+    <label class="form-check-label small" for="acroform-edit-font-auto-size">{{ 'acroform_editor.modal_font_auto_size'|trans({}, 'nowo_pdf_signable') }}</label>
+  </div>
+</div>
+{% endif %}
+</div>
+<div class="modal-footer py-2">
+  <button type="button" class="btn btn-sm btn-outline-secondary" id="acroform-edit-cancel">{{ 'acroform_editor.modal_cancel'|trans({}, 'nowo_pdf_signable') }}</button>
+  <button type="button" class="btn btn-sm btn-primary" id="acroform-edit-save">{{ 'acroform_editor.modal_save'|trans({}, 'nowo_pdf_signable') }}</button>
+</div>
+{% endblock %}

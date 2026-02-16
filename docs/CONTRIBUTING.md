@@ -29,7 +29,7 @@ Thank you for considering contributing.
 ## Code style
 
 - PHP: [PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer) with the bundled config (Symfony rules, strict types). Run `composer cs-fix` to fix.
-- TypeScript: follow the existing style in `assets/pdf-signable.ts`.
+- TypeScript: follow the existing style in `assets/signable-editor.ts`.
 - Documentation: English for code comments, PHPDoc, JSDoc and docs in `docs/`.
 
 ## Form theme and assets

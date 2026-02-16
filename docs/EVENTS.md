@@ -11,6 +11,8 @@ The bundle dispatches events at key moments so you can extend behavior without m
 | `PdfSignRequestEvent` | When your code requests a digital (PKI) signature | Call your signing service/HSM, set signed PDF or custom response |
 | `PdfProxyRequestEvent` | Before the PDF proxy fetches an external URL | Change URL, serve from cache, short-circuit with custom response |
 | `PdfProxyResponseEvent` | After the proxy successfully fetches the PDF | Modify response (headers, content), log |
+| `AcroFormApplyRequestEvent` | When POST `/pdf-signable/acroform/apply` is called with PDF + patches | Set modified PDF or error; implement PDF rewrite (e.g. with SetaPDF) without the bundle depending on it. See [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md). |
+| `AcroFormModifiedPdfProcessedEvent` | After the process script (e.g. fill/sign) runs when POST `/pdf-signable/acroform/process` is used | Save the processed PDF, send it elsewhere, or update your app state. See [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md). |
 
 ---
 
@@ -169,6 +171,44 @@ class PdfProxyHeaderListener
 
 ---
 
+## AcroFormModifiedPdfProcessedEvent
+
+**Name:** `nowo_pdf_signable.acroform_modified_pdf_processed`
+
+Dispatched after the AcroForm process script (config `acroform.process_script`) runs successfully. Use it to save the processed PDF or send it to another service.
+
+### Payload
+
+- `getProcessedPdfContents(): string` — the processed PDF bytes (script output).
+- `getDocumentKey(): ?string` — document key from the request, if provided.
+- `getRequest(): Request` — the current request.
+
+### Example
+
+See [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md). Register a listener to persist the PDF or trigger a download.
+
+---
+
+## Frontend (browser) custom events — AcroForm editor ↔ viewer
+
+The AcroForm editor (panel) and the PDF viewer coordinate via **CustomEvent** on `window`. These are browser events, not Symfony. For full flows and diagrams see [ACROFORM_FLOWS](ACROFORM_FLOWS.md).
+
+| Event | Source | Target | Effect |
+|-------|--------|--------|--------|
+| `pdf-signable-acroform-move-resize` | Editor | Viewer | Shows move/resize overlay for the given field. |
+| `pdf-signable-acroform-move-resize-close` | Editor | Viewer | Removes the overlay and clears move/resize state. |
+| `pdf-signable-acroform-move-resize-opened` | Viewer | Editor | Notifies that the overlay is visible; the editor closes the modal (single active context). |
+| `pdf-signable-acroform-overrides-updated` | Editor | Viewer | Re-renders the PDF with current overrides; restores overlay if one was active. |
+| `pdf-signable-acroform-rect-changed` | Viewer | Editor | Updates `draftOverrides[fieldId].rect` after drag/release on the overlay. |
+| `pdf-signable-acroform-add-field-place` | Viewer | Editor | Click on empty PDF area: creates override for new field and opens modal. |
+| `pdf-signable-acroform-field-focused` | Viewer | Editor | Highlights outline and row when focusing an input on the PDF. |
+| `pdf-signable-acroform-fields-updated` | Viewer | Editor | PDF field list updated. |
+| `pdf-signable-acroform-edit-mode` | Editor | Viewer | Toggles edit mode class on the widget. |
+
+**Global variables** (`window`): `__pdfSignableAcroFormOverrides`, `__pdfSignableAcroFormFields`, `__pdfSignableAcroFormEditMode`, `__pdfSignableAcroFormMoveResizeFieldId`, `__pdfSignableAcroFormMoveResizePage`. Details in [ACROFORM_FLOWS](ACROFORM_FLOWS.md#9-frontend-events-editor--viewer).
+
+---
+
 ## Event classes reference
 
 - `Nowo\PdfSignableBundle\Event\PdfSignableEvents` — event name constants.
@@ -177,5 +217,7 @@ class PdfProxyHeaderListener
 - `Nowo\PdfSignableBundle\Event\PdfSignRequestEvent`
 - `Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent`
 - `Nowo\PdfSignableBundle\Event\PdfProxyResponseEvent`
+- `Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent` — `ACROFORM_APPLY_REQUEST`; set `setModifiedPdf()` or `setError()` to respond.
+- `Nowo\PdfSignableBundle\Event\AcroFormModifiedPdfProcessedEvent` — `ACROFORM_MODIFIED_PDF_PROCESSED`; payload: `getProcessedPdfContents()`, `getDocumentKey()`, `getRequest()`.
 
 Listeners can be registered as services with the `kernel.event_listener` tag or using the `#[AsEventListener]` attribute (Symfony 6.3+).

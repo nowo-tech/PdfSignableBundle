@@ -6,6 +6,7 @@ namespace Nowo\PdfSignableBundle\Form;
 
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -34,13 +35,19 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 final class SignatureCoordinatesType extends AbstractType
 {
     /**
-     * @param string               $examplePdfUrl Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array> $namedConfigs  Named configs from nowo_pdf_signable.configs (option keys => values)
-     * @param bool                 $debug         When true, the frontend emits console logs (browser dev tools)
+     * @param string               $examplePdfUrl     Fallback PDF URL when pdf_url option is not set
+     * @param array<string, array> $namedConfigs      Configs by alias from nowo_pdf_signable.signature.configs
+     * @param string               $defaultConfigAlias Default alias when form option config is not set (e.g. "default")
+     * @param bool                 $debug             When true, the frontend emits console logs (browser dev tools)
      */
     public function __construct(
+        #[Autowire(param: 'nowo_pdf_signable.example_pdf_url')]
         private readonly string $examplePdfUrl = '',
+        #[Autowire(param: 'nowo_pdf_signable.signature.configs')]
         private readonly array $namedConfigs = [],
+        #[Autowire(param: 'nowo_pdf_signable.signature.default_config_alias')]
+        private readonly string $defaultConfigAlias = 'default',
+        #[Autowire(param: 'nowo_pdf_signable.debug')]
         private readonly bool $debug = false,
     ) {
     }
@@ -210,6 +217,14 @@ final class SignatureCoordinatesType extends AbstractType
         $entryOptions['enable_signature_capture'] = $options['enable_signature_capture'];
         $entryOptions['enable_signature_upload'] = $options['enable_signature_upload'];
         $entryOptions['signing_only'] = $options['signing_only'];
+        $entryOptions['hide_coordinate_fields'] = $options['hide_coordinate_fields'];
+        $entryOptions['default_box_width'] = $options['default_box_width'];
+        $entryOptions['default_box_height'] = $options['default_box_height'];
+        $entryOptions['lock_box_width'] = $options['lock_box_width'];
+        $entryOptions['lock_box_height'] = $options['lock_box_height'];
+        $entryOptions['min_box_width'] = $options['min_box_width'];
+        $entryOptions['min_box_height'] = $options['min_box_height'];
+        $entryOptions['hide_position_fields'] = $options['hide_position_fields'];
         $boxConstraints = $options['box_constraints'] ?? [];
         if ([] !== $boxConstraints) {
             $entryOptions['constraints'] = array_merge($entryOptions['constraints'] ?? [], $boxConstraints);
@@ -238,6 +253,36 @@ final class SignatureCoordinatesType extends AbstractType
                     return $xA <=> $xB;
                 });
                 $data['signatureBoxes'] = array_values($boxes);
+                $event->setData($data);
+            });
+        }
+        if ($options['lock_box_width'] && $options['default_box_width'] !== null) {
+            $defaultW = (float) $options['default_box_width'];
+            $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) use ($defaultW): void {
+                $data = $event->getData();
+                if (!is_array($data) || !isset($data['signatureBoxes']) || !is_array($data['signatureBoxes'])) {
+                    return;
+                }
+                foreach ($data['signatureBoxes'] as &$box) {
+                    if (is_array($box)) {
+                        $box['width'] = (string) $defaultW;
+                    }
+                }
+                $event->setData($data);
+            });
+        }
+        if ($options['lock_box_height'] && $options['default_box_height'] !== null) {
+            $defaultH = (float) $options['default_box_height'];
+            $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) use ($defaultH): void {
+                $data = $event->getData();
+                if (!is_array($data) || !isset($data['signatureBoxes']) || !is_array($data['signatureBoxes'])) {
+                    return;
+                }
+                foreach ($data['signatureBoxes'] as &$box) {
+                    if (is_array($box)) {
+                        $box['height'] = (string) $defaultH;
+                    }
+                }
                 $event->setData($data);
             });
         }
@@ -370,6 +415,8 @@ final class SignatureCoordinatesType extends AbstractType
             'show_grid' => $options['show_grid'],
             'grid_step' => $options['grid_step'],
             'viewer_lazy_load' => $options['viewer_lazy_load'],
+            'show_acroform' => $options['show_acroform'],
+            'acroform_interactive' => $options['acroform_interactive'],
             'enable_signature_capture' => $options['enable_signature_capture'],
             'enable_signature_upload' => $options['enable_signature_upload'],
             'signing_legal_disclaimer' => $options['signing_legal_disclaimer'],
@@ -377,7 +424,18 @@ final class SignatureCoordinatesType extends AbstractType
             'signing_require_consent' => $options['signing_require_consent'],
             'signing_consent_label' => $options['signing_consent_label'],
             'signing_only' => $options['signing_only'],
+            'hide_coordinate_fields' => $options['hide_coordinate_fields'],
+            'default_box_width' => $options['default_box_width'],
+            'default_box_height' => $options['default_box_height'],
+            'lock_box_width' => $options['lock_box_width'],
+            'lock_box_height' => $options['lock_box_height'],
+            'min_box_width' => $options['min_box_width'],
+            'min_box_height' => $options['min_box_height'],
+            'hide_position_fields' => $options['hide_position_fields'],
             'batch_sign_enabled' => $options['batch_sign_enabled'],
+            'show_signature_boxes' => $options['show_signature_boxes'],
+            'pdfjs_source' => $options['pdfjs_source'],
+            'pdfjs_worker_url' => $options['pdfjs_worker_url'],
             'debug' => $this->debug,
         ];
     }
@@ -393,7 +451,7 @@ final class SignatureCoordinatesType extends AbstractType
             'data_class' => SignatureCoordinatesModel::class,
             'translation_domain' => 'nowo_pdf_signable',
 
-            // Named config from nowo_pdf_signable.configs (options merged; passed options override)
+            // Named config from nowo_pdf_signable.signature.configs (options merged; passed options override; default alias = default_config_alias)
             'config' => null,
 
             // URL (null = use bundle example_pdf_url when set)
@@ -445,6 +503,8 @@ final class SignatureCoordinatesType extends AbstractType
             'show_grid' => false,
             'grid_step' => 10.0,
             'viewer_lazy_load' => false,
+            'show_acroform' => true,
+            'acroform_interactive' => true,
             'enable_signature_capture' => false,
             'enable_signature_upload' => false,
             'signing_legal_disclaimer' => null,
@@ -452,8 +512,29 @@ final class SignatureCoordinatesType extends AbstractType
             'signing_require_consent' => false,
             'signing_consent_label' => 'signing.consent_label',
             'signing_only' => false,
+            /* When true, hide width, height, x, y (and angle) fields in the UI but keep them in the form so values are still submitted (e.g. from PDF overlay). */
+            'hide_coordinate_fields' => false,
+            /* Default width for new boxes (form unit). When lock_box_width is true, this value is used and the field is hidden. */
+            'default_box_width' => null,
+            /* Default height for new boxes (form unit). When lock_box_height is true, this value is used and the field is hidden. */
+            'default_box_height' => null,
+            /* When true, width is fixed to default_box_width and the field is hidden. */
+            'lock_box_width' => false,
+            /* When true, height is fixed to default_box_height and the field is hidden. */
+            'lock_box_height' => false,
+            /* Minimum width/height for signature boxes (form unit). Null = no minimum in frontend; form still uses HTML min=10. */
+            'min_box_width' => null,
+            'min_box_height' => null,
+            /* When true, hide x and y fields in the UI; values are still submitted (e.g. from PDF overlay). */
+            'hide_position_fields' => false,
             /* When true, show a "Sign all" button that submits with batch_sign=1; BATCH_SIGN_REQUESTED is then dispatched. */
             'batch_sign_enabled' => false,
+            /* When false, hide the signature boxes card (unit/origin, list, add/remove, save). Use for AcroForm-only flows (e.g. overrides editor). Unit, origin and boxes are still rendered hidden so the form submits. */
+            'show_signature_boxes' => true,
+            /* PDF.js source: "npm" = dynamic import from pdfjs-dist (default, same version as worker). "cdn" = script tag 3.x (legacy). */
+            'pdfjs_source' => 'npm',
+            /* When pdfjs_source is "npm", worker URL (bundle asset after pnpm run copy-worker). Null = theme uses default asset. */
+            'pdfjs_worker_url' => null,
         ]);
 
         $resolver->setAllowedTypes('pdf_url', ['string', 'null']);
@@ -485,7 +566,18 @@ final class SignatureCoordinatesType extends AbstractType
         $resolver->setAllowedTypes('signing_require_consent', 'bool');
         $resolver->setAllowedTypes('signing_consent_label', ['string', 'null']);
         $resolver->setAllowedTypes('signing_only', 'bool');
+        $resolver->setAllowedTypes('hide_coordinate_fields', 'bool');
+        $resolver->setAllowedTypes('default_box_width', ['float', 'int', 'null']);
+        $resolver->setAllowedTypes('default_box_height', ['float', 'int', 'null']);
+        $resolver->setAllowedTypes('lock_box_width', 'bool');
+        $resolver->setAllowedTypes('lock_box_height', 'bool');
+        $resolver->setAllowedTypes('min_box_width', ['float', 'int', 'null']);
+        $resolver->setAllowedTypes('min_box_height', ['float', 'int', 'null']);
+        $resolver->setAllowedTypes('hide_position_fields', 'bool');
         $resolver->setAllowedTypes('batch_sign_enabled', 'bool');
+        $resolver->setAllowedTypes('show_signature_boxes', 'bool');
+        $resolver->setAllowedValues('pdfjs_source', ['cdn', 'npm']);
+        $resolver->setAllowedTypes('pdfjs_worker_url', ['string', 'null']);
         $resolver->setAllowedTypes('config', ['string', 'null']);
         $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);
         $resolver->setAllowedValues('allowed_pages', static function ($value): bool {
@@ -515,6 +607,8 @@ final class SignatureCoordinatesType extends AbstractType
         $resolver->setAllowedTypes('show_grid', 'bool');
         $resolver->setAllowedTypes('grid_step', ['int', 'float']);
         $resolver->setAllowedTypes('viewer_lazy_load', 'bool');
+        $resolver->setAllowedTypes('show_acroform', 'bool');
+        $resolver->setAllowedTypes('acroform_interactive', 'bool');
     }
 
     /**
@@ -576,11 +670,14 @@ final class SignatureCoordinatesType extends AbstractType
     private function mergeNamedConfig(array $options): array
     {
         $name = $options['config'] ?? null;
-        if (null === $name || '' === $name || !isset($this->namedConfigs[$name]) || !is_array($this->namedConfigs[$name])) {
-            return $options;
+        $alias = (null !== $name && '' !== $name) ? $name : $this->defaultConfigAlias;
+        if ('' === $alias || !isset($this->namedConfigs[$alias]) || !\is_array($this->namedConfigs[$alias])) {
+            $merged = $options;
+            unset($merged['config']);
+            return $merged;
         }
         // Named config overrides resolver defaults; options passed when creating the form override the named config
-        $merged = array_merge($options, $this->namedConfigs[$name]);
+        $merged = array_merge($options, $this->namedConfigs[$alias]);
         unset($merged['config']);
 
         return $merged;

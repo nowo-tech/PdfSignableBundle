@@ -1,46 +1,235 @@
-# PdfSignable Bundle - default configuration
+# PdfSignable Bundle - Configuration
 # https://github.com/nowo-tech/pdfSignableBundle
 #
-# This file shows all available options. Uncomment and adjust as needed.
-# See docs/CONFIGURATION.md for details.
+# This file documents all available options with defaults and short descriptions.
+# Full reference: docs/CONFIGURATION.md and docs/USAGE.md in the bundle.
 
 nowo_pdf_signable:
-    # Enable the proxy endpoint so the browser can load external PDFs without CORS.
+    # ─── Proxy (external PDFs) ─────────────────────────────────────────────
+    # Enables the /pdf-signable/proxy route so the browser can load external PDFs without CORS.
     proxy_enabled: true
 
-    # When non-empty, the proxy only fetches URLs matching at least one entry.
+    # Optional allowlist: when non-empty, the proxy only fetches URLs matching at least one entry.
     # Each entry: substring of URL, or regex if prefixed with # (e.g. #^https://example\.com/#).
     # proxy_url_allowlist: []
 
-    # Default PDF URL for form preload. Leave empty to not preload any URL.
-    # example_pdf_url: ''
+    # Example allowlist (uncomment and adjust to your domains):
+    # proxy_url_allowlist:
+    #     - 'https://cdn.example.com/'
+    #     - 'transportes.gob.es'
+    #     - '#^https://internal\.corp/#'
 
-    # When true, the viewer script logs to the browser console (load PDF, add/remove box, errors). Useful in development.
+    # ─── Default PDF and debug ─────────────────────────────────────────────
+    # Default PDF URL used when the form has no pdf_url and no config sets it. Set '' to disable preload.
+    example_pdf_url: 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
+
+    # When true, the viewer script logs to the browser console (load, add/remove box, overlay, errors). Useful in development.
     # debug: false
 
-    # Named configs for SignatureCoordinatesType. Use form option config: "name" to apply a preset.
-    # Full example (replace configs: {} with the block below and adjust):
-    # configs:
-    #     default:
-    #         units: ['mm', 'cm', 'pt']
-    #         unit_default: 'mm'
-    #         origin_default: 'bottom_left'
-    #     fixed_url:
-    #         pdf_url: '%env(EXAMPLE_PDF_URL)%'
-    #         url_field: false
-    #         show_load_pdf_button: false
-    #         unit_field: false
-    #         origin_field: false
-    #         unit_default: 'mm'
-    #         origin_default: 'bottom_left'
-    configs: {}
+    # ─── Signature (coordinates + boxes) ───────────────────────────────────
+    # Signature config is under a single "signature" node: global defaults (box dimensions, lock) and named configs by alias.
+    # Use form option config: "alias" to apply a config. Default alias when not set is "default" (see default_config_alias).
+    signature:
+        # Alias used when the form is created without config option. Must exist in signature.configs below.
+        # default_config_alias: default
 
-    # Audit metadata: when true, the controller merges IP, user_agent and submitted_at into the model before dispatching SIGNATURE_COORDINATES_SUBMITTED.
+        # Default width for new signature boxes (in form unit). Overridable per config alias or when creating the form.
+        # When lock_box_width is true, this value is used and the width field is hidden.
+        # default_box_width: null
+
+        # Default height for new signature boxes (in form unit). Overridable per config alias or when creating the form.
+        # When lock_box_height is true, this value is used and the height field is hidden.
+        # default_box_height: null
+
+        # When true, width is fixed to default_box_width and the width field is hidden. Overridable per config or form options.
+        # lock_box_width: false
+
+        # When true, height is fixed to default_box_height and the height field is hidden. Overridable per config or form options.
+        # lock_box_height: false
+
+        # Minimum width/height for signature boxes (form unit). When set, resize and form inputs enforce this minimum.
+        # min_box_width: null
+        # min_box_height: null
+
+        # Named configs (presets) for SignatureCoordinatesType. Keys are aliases; reference with form option config: "alias".
+        # Each value is a map of form-type options (units, pdf_url, box options, etc.). See docs/USAGE.md for the full list.
+        # You can override the global box defaults above per config (e.g. default_box_width, lock_box_width).
+        configs:
+            # Minimal preset: units and origin only. Use as config: "default" in the form.
+            default:
+                units: ['mm', 'cm', 'pt']
+                unit_default: 'mm'
+                origin_default: 'bottom_left'
+
+            # Example: fixed box size (overrides global default_box_* and lock_box_* for this alias only).
+            # fixed_box_size:
+            #     default_box_width: 150
+            #     default_box_height: 40
+            #     lock_box_width: true
+            #     lock_box_height: true
+
+            # Example: single fixed PDF URL (no URL field, no Load button).
+            # fixed_url:
+            #     pdf_url: '%env(EXAMPLE_PDF_URL)%'
+            #     url_field: false
+            #     show_load_pdf_button: false
+            #     unit_field: false
+            #     origin_field: false
+            #     unit_default: 'mm'
+            #     origin_default: 'bottom_left'
+
+            # Example: limited number of boxes with predefined names.
+            # limited_boxes:
+            #     min_entries: 1
+            #     max_entries: 4
+            #     signature_box_options:
+            #         name_mode: choice
+            #         name_choices: { 'Signer 1': signer_1, 'Signer 2': signer_2, 'Witness': witness }
+
+            # Example: snap and grid (align boxes to a grid).
+            # snap_and_grid:
+            #     snap_to_grid: 5
+            #     show_grid: true
+            #     grid_step: 10.0
+
+            # Example: signing inside boxes (draw pad and/or file upload).
+            # signing_boxes:
+            #     enable_signature_capture: true
+            #     enable_signature_upload: true
+            #     signing_require_consent: true
+
+            # Full reference (all form options). Uncomment and trim as needed; see docs/CONFIGURATION.md.
+            # full_reference:
+            #     pdf_url: null
+            #     url_field: true
+            #     show_load_pdf_button: true
+            #     url_mode: 'input'
+            #     url_choices: []
+            #     units: null
+            #     unit_default: 'mm'
+            #     unit_field: true
+            #     unit_mode: 'choice'
+            #     origins: null
+            #     origin_default: 'bottom_left'
+            #     origin_field: true
+            #     origin_mode: 'choice'
+            #     min_entries: 0
+            #     max_entries: null
+            #     unique_box_names: false
+            #     allowed_pages: null
+            #     sort_boxes: false
+            #     prevent_box_overlap: true
+            #     enable_rotation: false
+            #     box_defaults_by_name: {}
+            #     signature_box_options: {}
+            #     default_box_width: null
+            #     default_box_height: null
+            #     lock_box_width: false
+            #     lock_box_height: false
+            #     snap_to_grid: 0
+            #     snap_to_boxes: true
+            #     show_grid: false
+            #     grid_step: 10.0
+            #     viewer_lazy_load: false
+            #     show_acroform: true
+            #     acroform_interactive: true
+            #     hide_coordinate_fields: false
+            #     hide_position_fields: false
+            #     show_signature_boxes: true
+            #     enable_signature_capture: false
+            #     enable_signature_upload: false
+            #     signing_legal_disclaimer: null
+            #     signing_legal_disclaimer_url: null
+            #     signing_require_consent: false
+            #     signing_consent_label: 'signing.consent_label'
+            #     signing_only: false
+            #     batch_sign_enabled: false
+
+    # ─── Audit and signing (bundle-level) ─────────────────────────────────
+    # When true, the controller merges submitted_at, ip and user_agent into the model audit_metadata before dispatching SIGNATURE_COORDINATES_SUBMITTED.
     audit:
         fill_from_request: true
 
-    # Optional: your RFC 3161 TSA URL. The bundle does not call it; use in a listener to get a timestamp token and set it in audit_metadata.
+    # Placeholder: your RFC 3161 TSA URL. The bundle does not call it; use in a listener to obtain a timestamp token and set it in audit_metadata.
     # tsa_url: null
 
-    # Optional: your PKI/PAdES signing or HSM service ID. The bundle does not use it; reference in a listener to perform signing.
+    # Placeholder: your PKI/PAdES signing or HSM service ID. The bundle does not use it; reference in a listener to perform signing.
     # signing_service_id: null
+
+    # ─── AcroForm (overrides and PDF apply) ─────────────────────────────────
+    # AcroForm config is under a single "acroform" node: platform settings (enabled, scripts, storage) and named configs by alias.
+    # Enable when you need to persist AcroForm overrides (default value, label, type, rect per field) or apply patches to the PDF.
+    # See docs/CONFIGURATION.md and docs/ACROFORM_BACKEND_EXTENSION.md.
+    acroform:
+        # When true, exposes GET/POST/DELETE /pdf-signable/acroform/overrides for saving/loading overrides by document_key.
+        enabled: false
+
+        # Storage for overrides: 'session' or a service id implementing AcroFormOverridesStorageInterface.
+        # overrides_storage: 'session'
+
+        # How document_key is obtained: 'request' = client sends document_key only; 'derive_from_url' = allow pdf_url and derive key from allowlisted URL.
+        # document_key_mode: 'request'
+
+        # When true, exposes POST /pdf-signable/acroform/apply to return a modified PDF. Requires editor service, event listener, or apply_script.
+        # allow_pdf_modify: false
+
+        # Optional service id implementing PdfAcroFormEditorInterface (e.g. SetaPDF) to apply patches in PHP.
+        # editor_service_id: null
+
+        # Max PDF size in bytes (base64 decoded) for the apply endpoint. Default: 20971520 (20 MiB).
+        # max_pdf_size: 20971520
+
+        # Max number of patches per apply request.
+        # max_patches: 500
+
+        # Optional path to Python script that extracts AcroForm fields from a PDF. Receives PDF path as first argument; stdout = JSON array of field descriptors.
+        # When set, POST /pdf-signable/acroform/fields/extract is available.
+        # fields_extractor_script: null
+
+        # Optional path to Python script that applies AcroForm patches to a PDF. Receives --pdf <path> --patches <path-to-json>; stdout = modified PDF.
+        # When set, POST /acroform/apply can return the modified PDF via this script.
+        # apply_script: null
+
+        # Executable used to run the apply_script (e.g. python3, python, /usr/bin/python3). Used only when apply_script is set.
+        # apply_script_command: 'python3'
+
+        # Optional path to Python script that processes the modified PDF (e.g. fill, sign). Receives --input <path> [--document-key <key>]; writes result to --output <path>.
+        # When set, POST /pdf-signable/acroform/process is available; after the script runs, an event is dispatched so the app can save the result.
+        # process_script: null
+
+        # Executable used to run the process_script (e.g. python3, python). Used only when process_script is set.
+        # process_script_command: 'python3'
+
+        # Alias used when the AcroForm form is created without config option. Must exist in acroform.configs below.
+        # default_config_alias: default
+
+        # Editor defaults (overridable per config alias): minimum field size, label mode, fonts, etc.
+        # Minimum width/height for AcroForm fields when moving/resizing in the editor overlay (PDF points).
+        # min_field_width: 12
+        # min_field_height: 12
+
+        # When editing a field, label can be: 'input' (free text) or 'choice' (select from label_choices plus optional "Other" free text).
+        # label_mode: 'input'
+
+        # List of label options when label_mode is 'choice'. Each entry: string (value and display) or "value|Display label".
+        # label_choices: []
+
+        # Text for the "Other" option in the label select when label_mode is 'choice' (e.g. "Other", "Otro").
+        # label_other_text: 'Other'
+
+        # When editing a field, show the coordinates (rect) input in the modal. Set false to hide position/size editing.
+        # show_field_rect: true
+
+        # Allowed font sizes (pt) in the edit-field modal. Empty = number input (1–72). Non-empty = select with these values.
+        # font_sizes: []
+
+        # Allowed font families in the edit-field modal. Each entry: string (value and label) or "value|Label". Empty = use built-in list.
+        # font_families: []
+
+        # Named configs (presets) for the AcroForm editor. Keys are aliases; reference with form option config: "alias".
+        # configs:
+        #     default: {}
+        #     label_dropdown:
+        #         label_mode: choice
+        #         label_choices: ['Name', 'Date', 'Signature']
+        #         label_other_text: 'Other'

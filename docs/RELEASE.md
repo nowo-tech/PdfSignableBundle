@@ -34,13 +34,24 @@
 
 ---
 
-## Ready for v1.5.3 (2026-02-10)
+## Ready for v1.5.4 (2026-02-11)
 
-- [x] CHANGELOG: [1.5.3] with date; [Unreleased] at top; links updated.
-- [x] UPGRADING: “Upgrading to 1.5.3” with release date and upgrade steps; version table includes 1.5.3.
-- [x] RELEASE: this checklist for v1.5.3.
+- [x] CHANGELOG: [1.5.4] with date; [Unreleased] at top; links updated.
+- [x] UPGRADING: “Upgrading to 1.5.4” with release date and upgrade steps; version table includes 1.5.4.
+- [x] RELEASE: this checklist for v1.5.4.
+- [x] Demos: AcroForm demo page and nav/home links (Symfony 7 and 8).
 - [ ] Run `make test` and `make cs-check`.
 - [ ] Run `make assets` (bundle JS built).
 - [ ] Run `make validate-translations`.
-- [ ] Commit and push: `git add -A && git commit -m "Prepare v1.5.3 release" && git push origin HEAD`
-- [ ] Create and push tag: `git tag -a v1.5.3 -m "Release v1.5.3"` then `git push origin v1.5.3`.
+- [ ] Commit and push: `git add -A && git commit -m "Prepare v1.5.4 release" && git push origin HEAD`
+- [ ] Create and push tag: `git tag -a v1.5.4 -m "Release v1.5.4"` then `git push origin v1.5.4`.
+
+---
+
+## Next release (e.g. v1.5.5)
+
+- [ ] CHANGELOG: Move [Unreleased] entries into `[X.Y.Z]` with date; add new empty [Unreleased] at top; update version links at bottom.
+- [ ] UPGRADING: Add section "Upgrading to X.Y.Z" with release date, what's new, breaking changes (if any), and upgrade steps; update version compatibility table.
+- [ ] RELEASE: Replace "Next release" checklist with "Ready for vX.Y.Z" and complete the steps above.
+- [ ] Run `make test`, `make cs-check`, `make assets`, `make validate-translations`.
+- [ ] Tag and push; create GitHub Release if workflow is configured.

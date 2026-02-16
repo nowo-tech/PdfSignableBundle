@@ -29,6 +29,8 @@ The following use the **same values** as PdfTemplateBundle so both viewers look 
 - Scrollbar styling (`.pdf-viewer-scroll::-webkit-scrollbar`, `#pdf-thumbnails-strip::-webkit-scrollbar`).
 - `.signature-overlays`, `.signature-box-overlay` (with `--box-color`, `--box-bg`), `.resize-handle`, `.rotate-handle`, `.signature-box-overlay.selected`. Resize handles: 12×12 px (corners). Rotate handle: 16×16 px, centered above the box.
 - `.pdf-grid-overlay` — when `show_grid` is true, a canvas overlay per page with grid lines (step from `grid_step`, in form unit); positioned above the PDF, below signature overlays; `pointer-events: none`.
+- `.pdf-annotation-layer`, `.acroform-field-outline` — when `show_acroform` is true, a div overlay per page listing AcroForm/annotation rectangles; each field is an outline (dashed border, light fill). Non-interactive (`pointer-events: none`). You can override `.acroform-field-outline` to change border/background.
+- `.pdf-annotation-inputs-layer`, `.acroform-field-input` — when `acroform_interactive` is true, text fields (Tx) are rendered as editable inputs on top of the outlines; layer has `pointer-events: none`, each input has `pointer-events: auto`. Override `.acroform-field-input` for font, padding, border.
 - `.signature-box-item`, `#signature-boxes-list`, `.signature-pad-wrapper`, `.signature-pad-canvas`.
 
 ## Other views

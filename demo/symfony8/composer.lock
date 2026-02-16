@@ -4,27 +4,22 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fce08be09645cd7bc13b40d59d6b43d7",
+    "content-hash": "53836fd567b87ba17a5d77127bd2f403",
     "packages": [
         {
             "name": "nowo-tech/pdf-signable-bundle",
-            "version": "v1.5.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nowo-tech/PdfSignableBundle.git",
-                "reference": "cb00e8ad7f79ca244d22a767927f5b2a85c86941"
-            },
+            "version": "dev-master",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nowo-tech/PdfSignableBundle/zipball/cb00e8ad7f79ca244d22a767927f5b2a85c86941",
-                "reference": "cb00e8ad7f79ca244d22a767927f5b2a85c86941",
-                "shasum": ""
+                "type": "path",
+                "url": "/var/pdf-signable-bundle",
+                "reference": "0963d87627fafa24dc477dca1860e6027933d632"
             },
             "require": {
                 "php": ">=8.1",
                 "symfony/form": "^6.1 || ^7.0 || ^8.0",
                 "symfony/framework-bundle": "^6.1 || ^7.0 || ^8.0",
                 "symfony/http-client": "^6.1 || ^7.0 || ^8.0",
+                "symfony/process": "^6.1 || ^7.0 || ^8.0",
                 "symfony/translation": "^6.1 || ^7.0 || ^8.0",
                 "symfony/twig-bundle": "^6.1 || ^7.0 || ^8.0",
                 "symfony/validator": "^6.1 || ^7.0 || ^8.0",
@@ -43,7 +38,32 @@
                     "Nowo\\PdfSignableBundle\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Nowo\\PdfSignableBundle\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ],
+                "test-coverage": [
+                    "phpunit --coverage-text --coverage-html coverage --coverage-clover coverage.xml"
+                ],
+                "cs-check": [
+                    "php-cs-fixer fix --dry-run --diff"
+                ],
+                "cs-fix": [
+                    "php-cs-fixer fix"
+                ],
+                "qa": [
+                    "@cs-check",
+                    "@test"
+                ],
+                "validate-translations": [
+                    "php scripts/validate-translations-yaml.php"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -77,11 +97,13 @@
                 "symfony-bundle"
             ],
             "support": {
-                "docs": "https://github.com/nowo-tech/pdfSignableBundle/tree/main/docs",
                 "issues": "https://github.com/nowo-tech/pdfSignableBundle/issues",
-                "source": "https://github.com/nowo-tech/pdfSignableBundle"
+                "source": "https://github.com/nowo-tech/pdfSignableBundle",
+                "docs": "https://github.com/nowo-tech/pdfSignableBundle/tree/main/docs"
             },
-            "time": "2026-02-10T12:23:38+00:00"
+            "transport-options": {
+                "relative": false
+            }
         },
         {
             "name": "psr/cache",
@@ -2540,6 +2562,71 @@
                 }
             ],
             "time": "2025-06-23T16:12:55+00:00"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v8.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "b5f3aa6762e33fd95efbaa2ec4f4bc9fdd16d674"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/b5f3aa6762e33fd95efbaa2ec4f4bc9fdd16d674",
+                "reference": "b5f3aa6762e33fd95efbaa2ec4f4bc9fdd16d674",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Process\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Executes commands in sub-processes",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/process/tree/v8.0.5"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-01-26T15:08:38+00:00"
         },
         {
             "name": "symfony/property-access",

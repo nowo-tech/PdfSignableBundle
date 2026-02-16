@@ -11,63 +11,46 @@ use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Demo controller: multiple pages with different SignatureCoordinatesType configurations.
- *
- * @see demo/symfony8/src/Controller/SignatureController.php
+ * Demo controller: Signature / Define areas (configs, boxes, snap, grid, predefined).
  */
 class SignatureController extends AbstractController
 {
-    /**
-     * @param string|null $examplePdfUrl From nowo_pdf_signable.example_pdf_url config
-     */
+    use DemoSignatureTrait;
+
     public function __construct(
+        #[Autowire(param: 'nowo_pdf_signable.example_pdf_url')]
         private readonly ?string $examplePdfUrl = null,
     ) {
     }
 
-    /**
-     * No named config: all options passed in code (form baseOptions only).
-     */
     #[Route('/demo-signature', name: 'app_signature', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li>No <code>config</code> passed to the type</li><li>Units, origin and example URL from form baseOptions + bundle <code>example_pdf_url</code></li><li>Nothing from <code>nowo_pdf_signable.configs</code></li></ul>';
+        $explanation = '<ul class="mb-0"><li>No <code>config</code> passed to the type</li><li>Units, origin and example URL from form baseOptions + bundle <code>example_pdf_url</code></li><li>Nothing from <code>nowo_pdf_signable.signature.configs</code></li></ul>';
         return $this->signaturePage($request, 'No config (inline options only)', [], $explanation);
     }
 
-    /**
-     * Uses named config "default" from nowo_pdf_signable.configs.
-     */
     #[Route('/demo-signature/default-config', name: 'app_signature_default_config', methods: ['GET', 'POST'])]
     public function defaultConfig(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><code>config: \'default\'</code></li><li><code>units</code>, <code>unit_default</code>, <code>origin_default</code> from <code>configs.default</code></li><li>Options passed in code override the config</li></ul>';
-        return $this->signaturePage($request, 'Default config (from YAML)', [
-            'config' => 'default',
-        ], $explanation);
+        return $this->signaturePage($request, 'Default config (from YAML)', ['config' => 'default'], $explanation);
     }
 
-    /**
-     * Uses named config "fixed_url" from nowo_pdf_signable.configs.
-     */
     #[Route('/demo-signature/fixed-url', name: 'app_signature_fixed_url', methods: ['GET', 'POST'])]
     public function fixedUrl(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><code>config: \'fixed_url\'</code></li><li><code>url_field: false</code>, <code>show_load_pdf_button: false</code> — URL and Load PDF button hidden</li><li><code>unit_field: false</code>, <code>origin_field: false</code> — unit and origin hidden (fixed to default)</li><li>Single document; only signature boxes form visible</li></ul>';
-        return $this->signaturePage($request, 'Fixed URL config (from YAML)', [
-            'config' => 'fixed_url',
-        ], $explanation);
+        return $this->signaturePage($request, 'Fixed URL config (from YAML)', ['config' => 'fixed_url'], $explanation);
     }
 
-    /**
-     * Uses named config "fixed_url" but overrides unit_default in code.
-     */
     #[Route('/demo-signature/fixed-url-overridden', name: 'app_signature_fixed_url_overridden', methods: ['GET', 'POST'])]
     public function fixedUrlOverridden(Request $request): Response
     {
@@ -78,9 +61,6 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * URL as dropdown: user selects document from a list.
-     */
     #[Route('/demo-signature/url-choice', name: 'app_signature_url_choice', methods: ['GET', 'POST'])]
     public function urlChoice(Request $request): Response
     {
@@ -97,9 +77,6 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * Limited boxes: min 1, max 4; name as dropdown; all names must be unique.
-     */
     #[Route('/demo-signature/limited-boxes', name: 'app_signature_limited_boxes', methods: ['GET', 'POST'])]
     public function limitedBoxes(Request $request): Response
     {
@@ -110,18 +87,11 @@ class SignatureController extends AbstractController
             'unique_box_names' => true,
             'signature_box_options' => [
                 'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
-                'name_choices' => [
-                    'Signer 1' => 'signer_1',
-                    'Signer 2' => 'signer_2',
-                    'Witness' => 'witness',
-                ],
+                'name_choices' => ['Signer 1' => 'signer_1', 'Signer 2' => 'signer_2', 'Witness' => 'witness'],
             ],
         ], $explanation);
     }
 
-    /**
-     * Same signer (name) can have multiple boxes (multiple locations); duplicate names allowed.
-     */
     #[Route('/demo-signature/same-signer-multiple', name: 'app_signature_same_signer_multiple', methods: ['GET', 'POST'])]
     public function sameSignerMultiple(Request $request): Response
     {
@@ -132,18 +102,11 @@ class SignatureController extends AbstractController
             'unique_box_names' => false,
             'signature_box_options' => [
                 'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
-                'name_choices' => [
-                    'Signer 1' => 'signer_1',
-                    'Signer 2' => 'signer_2',
-                    'Witness' => 'witness',
-                ],
+                'name_choices' => ['Signer 1' => 'signer_1', 'Signer 2' => 'signer_2', 'Witness' => 'witness'],
             ],
         ], $explanation);
     }
 
-    /**
-     * Only certain names must be unique; others may repeat (unique_box_names as array).
-     */
     #[Route('/demo-signature/unique-per-name', name: 'app_signature_unique_per_name', methods: ['GET', 'POST'])]
     public function uniquePerName(Request $request): Response
     {
@@ -154,18 +117,11 @@ class SignatureController extends AbstractController
             'unique_box_names' => ['signer_1', 'witness'],
             'signature_box_options' => [
                 'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
-                'name_choices' => [
-                    'Signer 1' => 'signer_1',
-                    'Signer 2' => 'signer_2',
-                    'Witness' => 'witness',
-                ],
+                'name_choices' => ['Signer 1' => 'signer_1', 'Signer 2' => 'signer_2', 'Witness' => 'witness'],
             ],
         ], $explanation);
     }
 
-    /**
-     * Page restriction: boxes can only be placed on allowed pages (e.g. page 1 only).
-     */
     #[Route('/demo-signature/page-restriction', name: 'app_signature_page_restriction', methods: ['GET', 'POST'])]
     public function pageRestriction(Request $request): Response
     {
@@ -177,9 +133,6 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * Sorted boxes: on submit, boxes are ordered by page, then Y, then X.
-     */
     #[Route('/demo-signature/sorted-boxes', name: 'app_signature_sorted_boxes', methods: ['GET', 'POST'])]
     public function sortedBoxes(Request $request): Response
     {
@@ -191,9 +144,6 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * No overlapping boxes: validation rejects when two boxes on the same page overlap.
-     */
     #[Route('/demo-signature/no-overlap', name: 'app_signature_no_overlap', methods: ['GET', 'POST'])]
     public function noOverlap(Request $request): Response
     {
@@ -205,9 +155,6 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * Rotation enabled: each box has an angle field and the viewer shows a rotate handle.
-     */
     #[Route('/demo-signature/rotation', name: 'app_signature_rotation', methods: ['GET', 'POST'])]
     public function rotation(Request $request): Response
     {
@@ -219,13 +166,10 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * Default dimensions per box name: when the user selects a name, width/height/x/y/angle are filled from the map.
-     */
     #[Route('/demo-signature/defaults-by-name', name: 'app_signature_defaults_by_name', methods: ['GET', 'POST'])]
     public function defaultsByName(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li><code>box_defaults_by_name</code> — map of name to default <code>width</code>, <code>height</code>, <code>x</code>, <code>y</code>, <code>angle</code></li><li>When the user selects a name (dropdown or input), the frontend fills in those fields</li><li><code>name_mode: choice</code> with Signer 1, Signer 2, Witness; each has different default size/position</li></ul>';
+        $explanation = '<ul class="mb-0"><li><code>box_defaults_by_name</code> — map of name to default <code>width</code>, <code>height</code>, <code>x</code>, <code>y</code>, <code>angle</code></li><li>When the user selects a name (dropdown or input), the frontend fills in those fields</li></ul>';
         return $this->signaturePage($request, 'Default values per box name', [
             'box_defaults_by_name' => [
                 'signer_1' => ['width' => 180, 'height' => 45, 'x' => 80, 'y' => 700, 'angle' => 0],
@@ -234,11 +178,7 @@ class SignatureController extends AbstractController
             ],
             'signature_box_options' => [
                 'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
-                'name_choices' => [
-                    'Signer 1' => 'signer_1',
-                    'Signer 2' => 'signer_2',
-                    'Witness' => 'witness',
-                ],
+                'name_choices' => ['Signer 1' => 'signer_1', 'Signer 2' => 'signer_2', 'Witness' => 'witness'],
             ],
             'unit_default' => SignatureCoordinatesModel::UNIT_PT,
             'min_entries' => 0,
@@ -246,13 +186,39 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * Overlap allowed: prevent_box_overlap false — boxes on the same page may overlap (e.g. for testing or special layouts).
-     */
+    #[Route('/demo-signature/fixed-size-boxes', name: 'app_signature_fixed_size_boxes', methods: ['GET', 'POST'])]
+    public function fixedSizeBoxes(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>default_box_width: 150</code>, <code>default_box_height: 40</code> (in mm)</li><li><code>lock_box_width: true</code>, <code>lock_box_height: true</code> — width and height fields hidden; all boxes use 150×40</li><li><code>hide_position_fields: true</code> — x and y fields hidden</li></ul>';
+        return $this->signaturePage($request, 'Fixed size boxes (width/height/position hidden)', [
+            'default_box_width' => 150.0,
+            'default_box_height' => 40.0,
+            'lock_box_width' => true,
+            'lock_box_height' => true,
+            'hide_position_fields' => true,
+            'unit_default' => SignatureCoordinatesModel::UNIT_MM,
+            'min_entries' => 0,
+            'max_entries' => 8,
+        ], $explanation);
+    }
+
+    #[Route('/demo-signature/min-size-boxes', name: 'app_signature_min_size_boxes', methods: ['GET', 'POST'])]
+    public function minSizeBoxes(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><code>min_box_width: 30</code>, <code>min_box_height: 15</code> (in mm)</li><li>When resizing boxes, width and height cannot go below these values</li></ul>';
+        return $this->signaturePage($request, 'Minimum signature box size (30×15 mm)', [
+            'min_box_width' => 30.0,
+            'min_box_height' => 15.0,
+            'unit_default' => SignatureCoordinatesModel::UNIT_MM,
+            'min_entries' => 0,
+            'max_entries' => 6,
+        ], $explanation);
+    }
+
     #[Route('/demo-signature/allow-overlap', name: 'app_signature_allow_overlap', methods: ['GET', 'POST'])]
     public function allowOverlap(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li><code>prevent_box_overlap: false</code> — overlapping boxes on the same page are <strong>allowed</strong></li><li>No frontend revert; no validation error on submit</li><li>Use case: testing, or layouts where overlap is intentional</li></ul>';
+        $explanation = '<ul class="mb-0"><li><code>prevent_box_overlap: false</code> — overlapping boxes are <strong>allowed</strong></li><li>Use case: testing or layouts where overlap is intentional</li></ul>';
         return $this->signaturePage($request, 'Allow overlapping boxes', [
             'prevent_box_overlap' => false,
             'min_entries' => 0,
@@ -260,9 +226,6 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * Snap to grid + snap to boxes: coarse grid (10 mm), two pre-placed boxes so snap is obvious.
-     */
     #[Route('/demo-signature/snap-to-grid', name: 'app_signature_snap_to_grid', methods: ['GET', 'POST'])]
     public function snapToGrid(Request $request): Response
     {
@@ -313,7 +276,7 @@ class SignatureController extends AbstractController
             }
         }
 
-        $explanation = '<ul class="mb-0"><li><strong>Two boxes are pre-placed.</strong> Drag one near the other — edges snap to align (snap to boxes).</li><li><code>snap_to_grid: 10</code> — position and size snap to a <strong>10 mm</strong> grid; move any box to see it jump to the grid.</li><li><code>snap_to_boxes: true</code> — when within ~10 px of another box edge, the box snaps to it.</li><li>Fixed PDF URL so the document loads automatically.</li></ul>';
+        $explanation = '<ul class="mb-0"><li><strong>Two boxes pre-placed.</strong> Drag one near the other — edges snap. <code>snap_to_grid: 10</code>, <code>snap_to_boxes: true</code></li></ul>';
         return $this->render('signature/index.html.twig', [
             'form' => $form,
             'page_title' => 'Snap to grid + snap to boxes',
@@ -321,13 +284,10 @@ class SignatureController extends AbstractController
         ]);
     }
 
-    /**
-     * Guides and grid: show a visual grid on the PDF (e.g. every 10 mm) to align boxes.
-     */
     #[Route('/demo-signature/guides-and-grid', name: 'app_signature_guides_and_grid', methods: ['GET', 'POST'])]
     public function guidesAndGrid(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li><code>show_grid: true</code> — a grid overlay is drawn on the PDF</li><li><code>grid_step: 10</code> — grid lines every 10 mm (in the form unit)</li><li>Use case: align signature boxes to a visible grid</li></ul>';
+        $explanation = '<ul class="mb-0"><li><code>show_grid: true</code> — grid overlay on the PDF</li><li><code>grid_step: 10</code> — grid lines every 10 mm</li></ul>';
         return $this->signaturePage($request, 'Guides and grid (show_grid + grid_step)', [
             'show_grid' => true,
             'grid_step' => 10.0,
@@ -337,13 +297,10 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * Viewer lazy load: PDF.js and the viewer script load only when the coordinates block is visible (IntersectionObserver).
-     */
     #[Route('/demo-signature/lazy-load', name: 'app_signature_lazy_load', methods: ['GET', 'POST'])]
     public function lazyLoad(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li><code>viewer_lazy_load: true</code> — PDF.js and pdf-signable.js are loaded only when the widget enters the viewport</li><li>Uses <strong>IntersectionObserver</strong> with a small rootMargin so scripts load just before the block is visible</li><li>Use case: long pages or multiple widgets; reduces initial load when the form is below the fold</li></ul>';
+        $explanation = '<ul class="mb-0"><li><code>viewer_lazy_load: true</code> — PDF.js and pdf-signable.js load when widget enters viewport</li><li>Uses IntersectionObserver</li></ul>';
         return $this->signaturePage($request, 'Viewer lazy load (IntersectionObserver)', [
             'viewer_lazy_load' => true,
             'min_entries' => 0,
@@ -351,13 +308,10 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * Latest features combined: page restriction, sorted boxes, no overlap, snap options.
-     */
     #[Route('/demo-signature/latest-features', name: 'app_signature_latest_features', methods: ['GET', 'POST'])]
     public function latestFeatures(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li><code>allowed_pages: [1]</code> — boxes only on page 1</li><li><code>sort_boxes: true</code> — saved order by page, Y, X</li><li><code>prevent_box_overlap: true</code> — no overlapping; frontend reverts invalid drag/resize</li><li><code>snap_to_grid: 5</code>, <code>snap_to_boxes: true</code> — snap while dragging</li><li>Combined demo for the latest form options</li></ul>';
+        $explanation = '<ul class="mb-0"><li><code>allowed_pages: [1]</code>, <code>sort_boxes: true</code>, <code>prevent_box_overlap: true</code></li><li><code>snap_to_grid: 5</code>, <code>snap_to_boxes: true</code></li></ul>';
         return $this->signaturePage($request, 'Latest features (page restriction + sort + no overlap + snap)', [
             'allowed_pages' => [1],
             'sort_boxes' => true,
@@ -369,67 +323,16 @@ class SignatureController extends AbstractController
         ], $explanation);
     }
 
-    /**
-     * Predefined boxes demo: model pre-filled with two boxes, fixed URL, max 5 boxes.
-     */
-    /**
-     * Draw signature in box: each box has a canvas to draw (or finger); image shown in overlay. Low legal validity.
-     */
-    #[Route('/demo-signing/draw', name: 'app_signing_draw', methods: ['GET', 'POST'])]
-    public function signingDraw(Request $request): Response
-    {
-        $explanation = '<ul class="mb-0"><li><code>enable_signature_capture: true</code> — draw pad per box</li><li>Draw with mouse or finger; image in overlay. Low legal validity.</li></ul>';
-        return $this->signaturePage($request, 'Draw signature in box', [
-            'enable_signature_capture' => true,
-            'min_entries' => 0,
-            'max_entries' => 4,
-        ], $explanation);
-    }
-
-    /**
-     * Draw or upload signature image per box.
-     */
-    #[Route('/demo-signing/upload', name: 'app_signing_upload', methods: ['GET', 'POST'])]
-    public function signingUpload(Request $request): Response
-    {
-        $explanation = '<ul class="mb-0"><li><code>enable_signature_capture</code> + <code>enable_signature_upload: true</code></li><li>Draw or upload image per box</li></ul>';
-        return $this->signaturePage($request, 'Draw or upload signature image', [
-            'enable_signature_capture' => true,
-            'enable_signature_upload' => true,
-            'min_entries' => 0,
-            'max_entries' => 4,
-        ], $explanation);
-    }
-
-    /**
-     * Legal disclaimer text and optional URL above the viewer.
-     */
-    #[Route('/demo-signing/legal-disclaimer', name: 'app_signing_legal_disclaimer', methods: ['GET', 'POST'])]
-    public function signingLegalDisclaimer(Request $request): Response
-    {
-        $explanation = '<ul class="mb-0"><li><code>signing_legal_disclaimer</code> + optional URL</li><li>Inform users about legal effect</li></ul>';
-        return $this->signaturePage($request, 'Legal disclaimer (signing)', [
-            'signing_legal_disclaimer' => 'This is a <strong>simple signature</strong> (draw or image). It has no qualified legal validity.',
-            'signing_legal_disclaimer_url' => '#',
-            'min_entries' => 0,
-            'max_entries' => 4,
-        ], $explanation);
-    }
-
-    /**
-     * Predefined boxes for signing only: boxes already placed, user only draws or uploads signature in each.
-     */
-    #[Route('/demo-signing/predefined-boxes', name: 'app_signing_predefined_boxes', methods: ['GET', 'POST'])]
-    public function signingPredefinedBoxes(Request $request): Response
+    #[Route('/demo-signature/predefined', name: 'app_signature_predefined', methods: ['GET', 'POST'])]
+    public function predefinedBoxes(Request $request): Response
     {
         $model = new SignaturePageModel();
-        $defaultPdfUrl = $this->examplePdfUrl ?? 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf';
 
         if (!$request->isMethod('POST')) {
             $coords = $model->getSignatureCoordinates();
+            $defaultPdfUrl = $this->examplePdfUrl ?? 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf';
             $coords->setPdfUrl($defaultPdfUrl);
             $coords->setUnit(SignatureCoordinatesModel::UNIT_PT);
-            $coords->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT);
             $coords->addSignatureBox(
                 (new SignatureBoxModel())->setName('signer_1')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(700)
             );
@@ -440,94 +343,31 @@ class SignatureController extends AbstractController
 
         $form = $this->createForm(SignaturePageType::class, $model, [
             'signature_options' => [
-                'pdf_url' => $defaultPdfUrl,
-                'url_field' => false,
-                'unit_default' => SignatureCoordinatesModel::UNIT_PT,
-                'min_entries' => 2,
-                'max_entries' => 2,
-                'enable_signature_capture' => true,
-                'enable_signature_upload' => true,
-                'signing_only' => true,
-                'signature_box_options' => [
-                    'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
-                    'name_choices' => ['Signer 1' => 'signer_1', 'Signer 2' => 'signer_2'],
-                ],
-            ],
-        ]);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $model = $form->getData();
-            if ($this->wantsJson($request)) {
-                $coords = $model->getSignatureCoordinates();
-                return new JsonResponse([
-                    'success' => true,
-                    'coordinates' => $this->formatCoordinates($coords),
-                    'unit' => $coords->getUnit(),
-                    'origin' => $coords->getOrigin(),
-                ]);
-            }
-            $coords = $model->getSignatureCoordinates();
-            $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($coords));
-        }
-        if ($form->isSubmitted() && !$form->isValid()) {
-            $this->addFlash('error', 'Please correct the errors in the form below.');
-        }
-
-        $explanation = '<ul class="mb-0"><li><strong>Boxes already placed</strong> — two fixed positions (Signer 1, Signer 2) on page 1</li><li><code>min_entries: 2</code>, <code>max_entries: 2</code> — cannot add or remove boxes</li><li>User only <strong>draws or uploads</strong> the signature in each box</li></ul>';
-
-        return $this->render('signature/index.html.twig', [
-            'form' => $form,
-            'page_title' => 'Predefined boxes — sign only (draw or upload)',
-            'config_explanation' => $explanation,
-        ]);
-    }
-
-    /**
-     * Info page: signing options, AutoFirma, qualified signatures and legal validity.
-     */
-    #[Route('/demo-signing/options', name: 'app_signing_options', methods: ['GET'])]
-    public function signingOptions(): Response
-    {
-        return $this->render('signature/signing_options.html.twig');
-    }
-
-    #[Route('/demo-signature/predefined', name: 'app_signature_predefined', methods: ['GET', 'POST'])]
-    public function predefinedBoxes(Request $request): Response
-    {
-        $model = new SignaturePageModel();
-        $model->getSignatureCoordinates()->setPdfUrl(
-            $this->examplePdfUrl ?? 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf'
-        );
-        $model->getSignatureCoordinates()->addSignatureBox(
-            (new SignatureBoxModel())->setName('signer_1')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(700)
-        );
-        $model->getSignatureCoordinates()->addSignatureBox(
-            (new SignatureBoxModel())->setName('signer_2')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(650)
-        );
-
-        $form = $this->createForm(SignaturePageType::class, $model, [
-            'signature_options' => [
                 'url_field' => false,
                 'max_entries' => 5,
+                'unit_default' => SignatureCoordinatesModel::UNIT_PT,
             ],
         ]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $model = $form->getData();
-            if ($this->wantsJson($request)) {
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $model = $form->getData();
+                if ($this->wantsJson($request)) {
+                    $coords = $model->getSignatureCoordinates();
+                    return new JsonResponse([
+                        'success' => true,
+                        'coordinates' => $this->formatCoordinates($coords),
+                        'unit' => $coords->getUnit(),
+                        'origin' => $coords->getOrigin(),
+                    ]);
+                }
                 $coords = $model->getSignatureCoordinates();
-                return new JsonResponse([
-                    'success' => true,
-                    'coordinates' => $this->formatCoordinates($coords),
-                    'unit' => $coords->getUnit(),
-                    'origin' => $coords->getOrigin(),
-                ]);
+                $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($coords));
             }
-            $coords = $model->getSignatureCoordinates();
-            $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($coords));
-            // return $this->redirectToRoute('app_signature_predefined');
+            if (!$form->isValid()) {
+                $this->addFlash('error', 'Please correct the errors in the form below.');
+            }
         }
 
         $explanation = '<ul class="mb-0"><li>Model pre-filled with two boxes (<code>signer_1</code>, <code>signer_2</code> on page 1)</li><li><code>url_field: false</code>, <code>max_entries: 5</code></li><li>User can move/resize existing boxes and add up to 3 more</li></ul>';
@@ -537,117 +377,5 @@ class SignatureController extends AbstractController
             'page_title' => 'Predefined boxes (2 initial boxes, max 5)',
             'config_explanation' => $explanation,
         ]);
-    }
-
-    /**
-     * Renders a signature demo page with the given options and configuration explanation.
-     *
-     * @param Request               $request           The HTTP request (GET or POST)
-     * @param string                $pageTitle         Title for the page
-     * @param array<string, mixed>  $signatureOptions  Options passed to SignatureCoordinatesType
-     * @param string                $configExplanation HTML explanation of the demo config
-     *
-     * @return Response The rendered page or redirect/JSON on success
-     */
-    private function signaturePage(Request $request, string $pageTitle, array $signatureOptions, string $configExplanation): Response
-    {
-        $model = new SignaturePageModel();
-        $form = $this->createForm(SignaturePageType::class, $model, [
-            'signature_options' => $signatureOptions,
-        ]);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $model = $form->getData();
-            if ($this->wantsJson($request)) {
-                $coords = $model->getSignatureCoordinates();
-                return new JsonResponse([
-                    'success' => true,
-                    'coordinates' => $this->formatCoordinates($coords),
-                    'unit' => $coords->getUnit(),
-                    'origin' => $coords->getOrigin(),
-                ]);
-            }
-            $coords = $model->getSignatureCoordinates();
-            $this->addFlash('success', 'Coordinates saved (demo). ' . $this->formatCoordinatesForFlash($coords));
-            // return $this->redirectToRoute($request->attributes->get('_route'));
-        }
-
-        return $this->render('signature/index.html.twig', [
-            'form' => $form,
-            'page_title' => $pageTitle,
-            'config_explanation' => $configExplanation,
-        ]);
-    }
-
-    /**
-     * Returns whether the request prefers a JSON response (Accept: application/json or X-Requested-With: XMLHttpRequest).
-     *
-     * @param Request $request The HTTP request
-     *
-     * @return bool True if the client expects JSON
-     */
-    private function wantsJson(Request $request): bool
-    {
-        return $request->isXmlHttpRequest()
-            || str_contains($request->headers->get('Accept', ''), 'application/json');
-    }
-
-    /**
-     * Formats the coordinates model as an array of box data for JSON output.
-     *
-     * @param SignatureCoordinatesModel $model The coordinates model
-     *
-     * @return array<int, array{name: string, page: int, x: float, y: float, width: float, height: float, angle: float}>
-     */
-    private function formatCoordinates(SignatureCoordinatesModel $model): array
-    {
-        $out = [];
-        foreach ($model->getSignatureBoxes() as $box) {
-            $out[] = [
-                'name' => $box->getName(),
-                'page' => $box->getPage(),
-                'x' => $box->getX(),
-                'y' => $box->getY(),
-                'width' => $box->getWidth(),
-                'height' => $box->getHeight(),
-                'angle' => $box->getAngle(),
-            ];
-        }
-        return $out;
-    }
-
-    /**
-     * Formats the signature coordinates model as HTML for flash messages (bullets, name first).
-     *
-     * @param SignatureCoordinatesModel $model The coordinates model
-     *
-     * @return string HTML fragment (unit, origin and list of boxes)
-     */
-    private function formatCoordinatesForFlash(SignatureCoordinatesModel $model): string
-    {
-        $boxes = $this->formatCoordinates($model);
-        $unit = $model->getUnit();
-        $origin = $model->getOrigin();
-        $intro = sprintf('Unit: %s, origin: %s.', $unit, $origin);
-        if ($boxes === []) {
-            return $intro . ' No boxes.';
-        }
-        $items = array_map(static function (array $b) use ($unit): string {
-            $name = htmlspecialchars($b['name'], ENT_QUOTES, 'UTF-8');
-            $angle = isset($b['angle']) ? (float) $b['angle'] : 0.0;
-            return sprintf(
-                '<li><strong>%s</strong>: page %d, x=%s, y=%s, %s×%s (%s), angle=%s°</li>',
-                $name,
-                $b['page'],
-                (string) $b['x'],
-                (string) $b['y'],
-                (string) $b['width'],
-                (string) $b['height'],
-                $unit,
-                (string) $angle
-            );
-        }, $boxes);
-        return $intro . ' <ul class="mb-0 mt-1">' . implode('', $items) . '</ul>';
     }
 }

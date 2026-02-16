@@ -2,6 +2,8 @@
 
 This guide explains how to upgrade the PdfSignable Bundle between versions. For a list of changes in each version, see [CHANGELOG.md](CHANGELOG.md).
 
+**Note:** Version **2.0.0** is a **breaking** release for configuration: the YAML structure changes (signature under `signature`, AcroForm under a single `acroform` node). If you are on 1.5.x or earlier, read the [Upgrading to 2.0.0](#upgrading-to-200-2026-02-16) section before updating.
+
 ## General upgrade process
 
 1. **Back up configuration**  
@@ -20,7 +22,7 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
    If the new version introduces or changes config options, update your config accordingly (see version-specific sections below).
 
 5. **Rebuild frontend assets (if you use the bundle’s assets)**  
-   If your app uses the bundle’s Vite/TS entry (e.g. `pdf-signable.ts`), run your build again:
+   If your app uses the bundle’s Vite/TS entry (e.g. `signable-editor.ts`), run your build again:
    ```bash
    pnpm run build
    ```
@@ -36,6 +38,126 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 ---
 
 ## Upgrading by version
+
+### Upgrading to 2.0.0 (2026-02-16)
+
+**Release date**: 2026-02-16
+
+**Breaking release:** This version changes the configuration structure. Signature options move under a `signature` node; AcroForm options are merged into a single `acroform` node (replacing `acroform_editor` and `acroform_configs`). You must migrate your YAML and any PHP that reads container parameters. Form types, models, events and Twig APIs are unchanged. See sections and examples below.
+
+#### Container parameter renames (if you inject or read parameters in PHP)
+
+- **Signature:** `nowo_pdf_signable.default_box_width` → `nowo_pdf_signable.signature.default_box_width` (and same for `default_box_height`, `lock_box_width`, `lock_box_height`, `min_box_width`, `min_box_height`). `nowo_pdf_signable.configs` → `nowo_pdf_signable.signature.configs`.
+- **AcroForm:** `nowo_pdf_signable.acroform_editor.<key>` → `nowo_pdf_signable.acroform.<key>` (e.g. `acroform_editor.enabled` → `acroform.enabled`). `nowo_pdf_signable.acroform_configs` → `nowo_pdf_signable.acroform.configs`.
+
+#### Breaking: Signature config under `signature` node (global + configs by alias)
+
+- **Before:** Top-level keys: `default_box_width`, `default_box_height`, `lock_box_width`, `lock_box_height`, `min_box_width`, `min_box_height`, and `configs` (named presets for the signature form).
+- **After:** A single **`signature`** node containing:
+  - **`default_config_alias`** (string, default `'default'`): alias used when form option `config` is not set; resolved from `signature.configs[alias]`.
+  - **Global box options:** `default_box_width`, `default_box_height`, `lock_box_width`, `lock_box_height`, `min_box_width`, `min_box_height` (same meaning as before).
+  - **`configs`** (map alias → form options): named configs (e.g. `default: {}`, `fixed_url: { pdf_url: ... }`). Use form option `config: 'alias'` to apply.
+
+**Migration:** Move the six box options and `configs` under `signature`:
+
+```yaml
+# Before
+nowo_pdf_signable:
+  default_box_width: null
+  default_box_height: null
+  lock_box_width: false
+  lock_box_height: false
+  min_box_width: null
+  min_box_height: null
+  configs:
+    default: {}
+    fixed_url: { pdf_url: '%env(EXAMPLE_PDF_URL)%', ... }
+
+# After
+nowo_pdf_signable:
+  signature:
+    default_config_alias: default   # optional
+    default_box_width: null
+    default_box_height: null
+    lock_box_width: false
+    lock_box_height: false
+    min_box_width: null
+    min_box_height: null
+    configs:
+      default: {}
+      fixed_url: { pdf_url: '%env(EXAMPLE_PDF_URL)%', ... }
+```
+
+- **Container parameters:** All `nowo_pdf_signable.default_box_*`, `nowo_pdf_signable.lock_box_*`, `nowo_pdf_signable.min_box_*` and `nowo_pdf_signable.configs` become `nowo_pdf_signable.signature.default_box_*`, `nowo_pdf_signable.signature.lock_box_*`, `nowo_pdf_signable.signature.min_box_*` and `nowo_pdf_signable.signature.configs`. If you read these in PHP, update the parameter names.
+
+#### Breaking: AcroForm config merged into single `acroform` node
+
+- **Before:** Two top-level keys: `acroform_editor` (platform + editor defaults) and `acroform_configs` (named configs).
+- **After:** A single **`acroform`** node containing:
+  - **Platform / global** (not per-alias): `enabled`, `overrides_storage`, `document_key_mode`, `allow_pdf_modify`, `editor_service_id`, `max_pdf_size`, `max_patches`, `fields_extractor_script`, `apply_script`, `apply_script_command`, `process_script`, `process_script_command`.
+  - **Editor defaults** (global; overridable per config alias): `min_field_width`, `min_field_height`, `label_mode`, `label_choices`, `label_other_text`, `show_field_rect`, `font_sizes`, `font_families`.
+  - **`default_config_alias`** (string, default `'default'`): alias used when form option `config` is not set; resolved from `acroform.configs[alias]`.
+  - **`configs`** (map alias → options): named configs (e.g. `default: {}`, `label_dropdown: { label_mode: choice, ... }`, `with_fonts: { font_sizes: [...] }`). Use form option `config: 'alias'` to apply.
+
+**Migration:** Replace `acroform_editor:` and `acroform_configs:` with one block:
+
+```yaml
+# Before
+nowo_pdf_signable:
+  acroform_editor:
+    enabled: true
+    label_mode: input
+    # ...
+  acroform_configs:
+    label_dropdown: { label_mode: choice, ... }
+
+# After
+nowo_pdf_signable:
+  acroform:
+    enabled: true
+    # platform: fields_extractor_script, apply_script, process_script, ...
+    # default_config_alias: default   # optional
+    label_mode: input
+    # ... (editor defaults)
+    configs:
+      default: {}
+      label_dropdown: { label_mode: choice, ... }
+```
+
+- **Container parameters:** All `nowo_pdf_signable.acroform_editor.*` and `nowo_pdf_signable.acroform_configs` become `nowo_pdf_signable.acroform.*` and `nowo_pdf_signable.acroform.configs`. If you read these in PHP (e.g. in a controller), update the parameter names.
+
+#### What's new (no breaking changes besides config)
+
+- **AcroForm apply — font family in PDF**: When applying patches to the PDF, `fontSize` and `fontFamily` are now sent in the payload and written to the PDF default appearance (/DA) by the Python apply script. `AcroFormFieldPatch` includes `fontFamily`.
+- **Demo AcroForm section**: Dedicated "AcroForm" section in the demo nav with seven demos showcasing the new options.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. **Migrate signature config:** Move top-level `default_box_width`, `default_box_height`, `lock_box_width`, `lock_box_height`, `min_box_width`, `min_box_height` and `configs` under a `signature:` node as shown above. If you read these in PHP, update parameter names to `nowo_pdf_signable.signature.*` and `nowo_pdf_signable.signature.configs`.
+3. **Migrate AcroForm config:** Replace `acroform_editor` and `acroform_configs` with a single `acroform` node as shown above. Ensure `configs` includes at least a `default` entry if you rely on the default alias. Update parameter names: `nowo_pdf_signable.acroform_editor.*` → `nowo_pdf_signable.acroform.*`, `nowo_pdf_signable.acroform_configs` → `nowo_pdf_signable.acroform.configs`.
+4. Rebuild assets if you use the bundle's JS; then `php bin/console cache:clear`.
+
+For the full list of options in the new structure, see [CONFIGURATION.md](CONFIGURATION.md). For the full list of changes in this version, see [CHANGELOG.md](CHANGELOG.md).
+
+---
+
+### Upgrading to 1.5.4
+
+**Release date**: 2026-02-11
+
+#### What's new (no breaking changes)
+
+- **Show AcroForm** (`show_acroform`): New form option (default `true`). When enabled, the viewer draws an outline over PDF AcroForm/form fields so they are visible. Uses PDF.js `getAnnotations()`; outlines do not block clicks (you can still add signature boxes). Set `show_acroform: false` to hide them. See [USAGE](USAGE.md).
+- **Defaults**: Recipe example and demo named configs include `show_acroform: true` so AcroForm visibility is on by default when using those presets.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Rebuild assets if you use the bundle’s JS: `make assets` or `pnpm run build`; then `php bin/console cache:clear`.
+3. Optional: set `show_acroform: false` on your form or in a named config if you do not want AcroForm outlines.
+
+---
 
 ### Upgrading to 1.5.3
 
@@ -171,6 +293,29 @@ None.
 
 ---
 
+### Upgrading to 1.2.0
+
+**Release date**: 2026-02-10
+
+#### What’s new
+
+- **Optional rotation** (`enable_rotation`): form option (default `false`). When `true`, each box has an **angle** field and the viewer shows a rotate handle above each overlay; when `false`, the angle field is not rendered and boxes are not rotatable. See [USAGE](USAGE.md).
+- **Default values per box name** (`box_defaults_by_name`): form option to pre-fill width, height, x, y, angle when the user selects a name (dropdown or input). See [USAGE](USAGE.md).
+- **Demos**: rotation, defaults-by-name, and allow-overlap demo pages (16 demo pages in total for Symfony 7 and 8).
+
+#### Breaking changes
+
+None.
+
+#### Upgrade steps
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. If you use the bundle’s assets, run `pnpm run build` (or `make assets`) and `php bin/console assets:install`.
+3. Clear cache: `php bin/console cache:clear`.
+4. Optional: set `'enable_rotation' => true` and/or `box_defaults_by_name` on your form if you want rotation or name-based defaults.
+
+---
+
 ### Upgrading to 1.1.0
 
 **Release date**: 2026-02-10
@@ -231,30 +376,7 @@ If you were using `dev-main` or `dev-master`:
 
 ---
 
-### Upgrading to 1.2.0
-
-**Release date**: 2026-02-10
-
-#### What’s new
-
-- **Optional rotation** (`enable_rotation`): form option (default `false`). When `true`, each box has an **angle** field and the viewer shows a rotate handle above each overlay; when `false`, the angle field is not rendered and boxes are not rotatable. See [USAGE](USAGE.md).
-- **Default values per box name** (`box_defaults_by_name`): form option to pre-fill width, height, x, y, angle when the user selects a name (dropdown or input). See [USAGE](USAGE.md).
-- **Demos**: rotation, defaults-by-name, and allow-overlap demo pages (16 demo pages in total for Symfony 7 and 8).
-
-#### Breaking changes
-
-None.
-
-#### Upgrade steps
-
-1. Run `composer update nowo-tech/pdf-signable-bundle`.
-2. If you use the bundle’s assets, run `pnpm run build` (or `make assets`) and `php bin/console assets:install`.
-3. Clear cache: `php bin/console cache:clear`.
-4. Optional: set `'enable_rotation' => true` and/or `box_defaults_by_name` on your form if you want rotation or name-based defaults.
-
----
-
-### Upgrading to a future version (e.g. 1.6.0)
+### Upgrading to a future version (e.g. 2.0.0)
 
 When a new version is released, a new subsection will be added here with:
 
@@ -290,7 +412,8 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging for template/override issues. |
+| 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **Breaking:** Signature config under `signature` node (global + configs by alias). AcroForm config under single `acroform` node (was `acroform_editor` + `acroform_configs`). See upgrade steps above. |
+| 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging. 1.5.4: show_acroform option (default true), AcroForm outline overlay; recipe and demos set show_acroform: true in signature.configs / acroform.configs. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |
 | 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |
 | 1.2.x          | 6.1+, 7.x, 8.x | 8.1+ | Optional rotation (enable_rotation), box_defaults_by_name, 16 demos. |

@@ -13,6 +13,7 @@ use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\AuditMetadata;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
+use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -42,14 +44,20 @@ final class SignatureController extends AbstractController
      * @param list<string>             $proxyUrlAllowlist    When non-empty, proxy only allows these URL patterns
      * @param string                   $examplePdfUrl        Default PDF URL for form preload when not POST
      * @param bool                     $auditFillFromRequest When true, merge IP, user_agent, submitted_at into model audit before dispatch
+     * @param LoggerInterface          $logger               Logger; proxy fetch failures are logged for debugging (502 cause)
      */
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly TranslatorInterface $translator,
+        #[Autowire(param: 'nowo_pdf_signable.proxy_enabled')]
         private readonly bool $proxyEnabled = true,
+        #[Autowire(param: 'nowo_pdf_signable.proxy_url_allowlist')]
         private readonly array $proxyUrlAllowlist = [],
+        #[Autowire(param: 'nowo_pdf_signable.example_pdf_url')]
         private readonly string $examplePdfUrl = '',
+        #[Autowire(param: 'nowo_pdf_signable.audit.fill_from_request')]
         private readonly bool $auditFillFromRequest = true,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -214,6 +222,11 @@ final class SignatureController extends AbstractController
 
             return $responseEvent->getResponse();
         } catch (ExceptionInterface|\Throwable $e) {
+            $this->logger->warning('PDF proxy could not fetch URL: {url}. Reason: {reason}', [
+                'url' => $url,
+                'reason' => $e->getMessage(),
+                'exception' => $e,
+            ]);
             // Do not expose exception message to the client (information disclosure)
             return new Response(
                 $this->translator->trans('proxy.error_load', [], 'nowo_pdf_signable'),

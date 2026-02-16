@@ -37,6 +37,7 @@ final class SignaturePageType extends AbstractType
             'units' => ['mm', 'cm', 'pt'],
             'unit_default' => 'mm',
             'origin_default' => 'bottom_left',
+            'show_acroform' => true,
         ];
         if ($this->examplePdfUrl !== null && $this->examplePdfUrl !== '') {
             $baseOptions['pdf_url'] = $this->examplePdfUrl;

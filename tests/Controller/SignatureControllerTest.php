@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nowo\PdfSignableBundle\Tests\Controller;
 
 use Nowo\PdfSignableBundle\Controller\SignatureController;
+use Nowo\PdfSignableBundle\Event\BatchSignRequestedEvent;
 use Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent;
 use Nowo\PdfSignableBundle\Event\SignatureCoordinatesSubmittedEvent;
 use Nowo\PdfSignableBundle\Form\SignatureBoxType;
@@ -12,6 +13,7 @@ use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
@@ -49,8 +51,9 @@ final class SignatureControllerTest extends TestCase
         $dispatcher->method('dispatch')->willReturnArgument(0);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
+        $logger = $this->createMock(LoggerInterface::class);
 
-        return new SignatureController($dispatcher, $translator, $proxyEnabled, $proxyUrlAllowlist, $examplePdfUrl);
+        return new SignatureController($dispatcher, $translator, $proxyEnabled, $proxyUrlAllowlist, $examplePdfUrl, true, $logger);
     }
 
     /**
@@ -158,7 +161,8 @@ final class SignatureControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '');
+        $logger = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
         $session = new Session(new MockArraySessionStorage());
         $request = Request::create('/pdf-signable', 'POST', [
             'signature_coordinates' => [
@@ -183,13 +187,106 @@ final class SignatureControllerTest extends TestCase
         self::assertSame('flash.save.success', $flashes[0]);
     }
 
+    public function testIndexPostValidWithAuditFillFromRequestFalseRedirectsWithoutMergingAudit(): void
+    {
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnArgument(0);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $logger = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, [], '', false, $logger);
+        $session = new Session(new MockArraySessionStorage());
+        $request = Request::create('/pdf-signable', 'POST', [
+            'signature_coordinates' => [
+                'pdfUrl' => 'https://example.com/doc.pdf',
+                'unit' => SignatureCoordinatesModel::UNIT_MM,
+                'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'signatureBoxes' => [
+                    0 => ['name' => 's1', 'page' => 1, 'width' => 100.0, 'height' => 30.0, 'x' => 0.0, 'y' => 0.0],
+                ],
+            ],
+        ]);
+        $request->setSession($session);
+        $controller->setContainer($this->createContainerForIndex($request, $session));
+
+        $response = $controller->index($request);
+
+        self::assertInstanceOf(RedirectResponse::class, $response);
+        self::assertSame(302, $response->getStatusCode());
+    }
+
+    public function testIndexPostValidWithBatchSignDispatchesBatchSignRequestedEvent(): void
+    {
+        $batchEventDispatched = false;
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(function (object $event) use (&$batchEventDispatched): object {
+            if ($event instanceof BatchSignRequestedEvent) {
+                $batchEventDispatched = true;
+            }
+
+            return $event;
+        });
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $logger = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
+        $session = new Session(new MockArraySessionStorage());
+        $request = Request::create('/pdf-signable', 'POST', [
+            'signature_coordinates' => [
+                'pdfUrl' => 'https://example.com/doc.pdf',
+                'unit' => SignatureCoordinatesModel::UNIT_MM,
+                'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'signatureBoxes' => [
+                    0 => ['name' => 'signer_1', 'page' => 1, 'width' => 150.0, 'height' => 40.0, 'x' => 50.0, 'y' => 100.0],
+                ],
+            ],
+            'batch_sign' => '1',
+        ]);
+        $request->setSession($session);
+        $controller->setContainer($this->createContainerForIndex($request, $session));
+
+        $controller->index($request);
+
+        self::assertTrue($batchEventDispatched, 'BatchSignRequestedEvent should be dispatched when batch_sign=1');
+    }
+
+    public function testIndexPostValidReturnsJsonWhenXRequestedWithXmlHttpRequest(): void
+    {
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnArgument(0);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $logger = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
+        $request = Request::create('/pdf-signable', 'POST', [
+            'signature_coordinates' => [
+                'pdfUrl' => 'https://example.com/doc.pdf',
+                'unit' => SignatureCoordinatesModel::UNIT_MM,
+                'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'signatureBoxes' => [
+                    0 => ['name' => 's1', 'page' => 1, 'width' => 100.0, 'height' => 30.0, 'x' => 0.0, 'y' => 0.0],
+                ],
+            ],
+        ]);
+        $request->headers->set('X-Requested-With', 'XMLHttpRequest');
+        $controller->setContainer($this->createContainerForIndex($request));
+
+        $response = $controller->index($request);
+
+        self::assertInstanceOf(\Symfony\Component\HttpFoundation\JsonResponse::class, $response);
+        self::assertSame(200, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertTrue($data['success']);
+    }
+
     public function testIndexPostValidReturnsJsonWhenWantsJson(): void
     {
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
         $dispatcher->method('dispatch')->willReturnArgument(0);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '');
+        $logger = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
         $request = Request::create('/pdf-signable', 'POST', [
             'signature_coordinates' => [
                 'pdfUrl' => 'https://example.com/doc.pdf',
@@ -265,7 +362,8 @@ final class SignatureControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '');
+        $logger = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
 
         $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
         $response = $controller->proxyPdf($request);
@@ -353,7 +451,8 @@ final class SignatureControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $controller = new SignatureController($dispatcher, $translator, true, ['example.com'], '');
+        $logger = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, ['example.com'], '', true, $logger);
 
         $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
         $response = $controller->proxyPdf($request);
@@ -376,7 +475,8 @@ final class SignatureControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $controller = new SignatureController($dispatcher, $translator, true, ['#^https://allowed\.example\.com/#'], '');
+        $logger = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, ['#^https://allowed\.example\.com/#'], '', true, $logger);
 
         $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://allowed.example.com/doc.pdf']);
         $response = $controller->proxyPdf($request);

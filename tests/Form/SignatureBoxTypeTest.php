@@ -67,6 +67,12 @@ final class SignatureBoxTypeTest extends TypeTestCase
         self::assertInstanceOf(SignatureBoxType::class, $form->getConfig()->getType()->getInnerType());
     }
 
+    public function testGetBlockPrefix(): void
+    {
+        $type = new SignatureBoxType();
+        self::assertSame('signature_box', $type->getBlockPrefix());
+    }
+
     /** PRE_SET_DATA listener pre-fills name with first choice when model name is empty. */
     public function testPreSetDataSelectsFirstChoiceWhenNameEmpty(): void
     {
@@ -228,4 +234,65 @@ final class SignatureBoxTypeTest extends TypeTestCase
         ]);
         self::assertInstanceOf(TextType::class, $form->get('name')->getConfig()->getType()->getInnerType());
     }
+
+    public function testMinBoxWidthHeightPassedToViewAndFieldAttr(): void
+    {
+        $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel());
+        $view = $form->createView();
+        self::assertNull($view->vars['min_box_width']);
+        self::assertNull($view->vars['min_box_height']);
+        self::assertSame(10, $form->get('width')->getConfig()->getOption('attr')['min']);
+        self::assertSame(10, $form->get('height')->getConfig()->getOption('attr')['min']);
+
+        $form2 = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
+            'min_box_width' => 30.0,
+            'min_box_height' => 20.0,
+        ]);
+        $view2 = $form2->createView();
+        self::assertSame(30.0, $view2->vars['min_box_width']);
+        self::assertSame(20.0, $view2->vars['min_box_height']);
+        self::assertSame(30.0, $form2->get('width')->getConfig()->getOption('attr')['min']);
+        self::assertSame(20.0, $form2->get('height')->getConfig()->getOption('attr')['min']);
+    }
+
+    /** buildView passes signing_only, hide_coordinate_fields, hide_position_fields to the widget. */
+    public function testBuildViewPassesWidgetOptions(): void
+    {
+        $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
+            'signing_only' => true,
+            'hide_coordinate_fields' => true,
+            'hide_position_fields' => true,
+            'lock_box_width' => true,
+            'lock_box_height' => true,
+            'default_box_width' => 100.0,
+            'default_box_height' => 30.0,
+        ]);
+        $view = $form->createView();
+
+        self::assertTrue($view->vars['signing_only']);
+        self::assertTrue($view->vars['hide_coordinate_fields']);
+        self::assertTrue($view->vars['hide_position_fields']);
+        self::assertTrue($view->vars['lock_box_width']);
+        self::assertTrue($view->vars['lock_box_height']);
+        self::assertSame(100.0, $view->vars['default_box_width']);
+        self::assertSame(30.0, $view->vars['default_box_height']);
+    }
+
+    /** PRE_SET_DATA applies lock_box_width/height with default values. */
+    public function testPreSetDataLockBoxWidthHeight(): void
+    {
+        $model = new SignatureBoxModel();
+        $model->setWidth(200.0)->setHeight(50.0);
+
+        $this->factory->create(SignatureBoxType::class, $model, [
+            'lock_box_width' => true,
+            'lock_box_height' => true,
+            'default_box_width' => 120.0,
+            'default_box_height' => 25.0,
+        ]);
+
+        self::assertSame(120.0, $model->getWidth());
+        self::assertSame(25.0, $model->getHeight());
+    }
+
 }

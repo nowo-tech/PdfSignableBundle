@@ -1,0 +1,14 @@
+{#
+  AcroForm edit-field modal. Bootstrap structure. Override via templates/bundles/NowoPdfSignable/acroform/_edit_modal.html.twig.
+  Must be rendered inside #acroform-editor-root.
+#}
+{% block acroform_edit_modal %}
+<div class="modal-backdrop acroform-edit-modal-backdrop fade" style="display:none;" role="presentation"></div>
+<div class="modal fade" id="acroform-edit-modal" tabindex="-1" role="dialog" aria-labelledby="acroform-edit-modal-title" aria-hidden="true" style="display:none;">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      {% include '@NowoPdfSignable/acroform/_edit_modal_body.html.twig' with { config: acroform_config|default({}), acroform_edit_form: acroform_edit_form|default(null) } %}
+    </div>
+  </div>
+</div>
+{% endblock %}

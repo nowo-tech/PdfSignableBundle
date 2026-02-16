@@ -5,8 +5,12 @@ RUN npm install -g pnpm@10
 
 FROM dunglas/frankenphp:1-php8.4-alpine
 
-# System deps
-RUN apk add --no-cache git unzip bash
+# System deps + Python (for AcroForm apply/process scripts)
+# Prefer apk py3-pypdf so Python finds it regardless of subprocess env (e.g. under FrankenPHP).
+RUN apk add --no-cache git unzip bash python3 && \
+    (apk add --no-cache py3-pypdf || \
+     (apk add --no-cache py3-pip && python3 -m pip install --break-system-packages --no-cache-dir pypdf)) && \
+    python3 -c "from pypdf import PdfReader, PdfWriter; print('pypdf OK')"
 
 # PHP extensions (script provided by base image)
 RUN install-php-extensions zip xdebug

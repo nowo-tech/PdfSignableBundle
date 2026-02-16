@@ -1,4 +1,8 @@
-nowo_pdf_signable:
-    resource: '@NowoPdfSignableBundle/Controller/'
-    type: attribute
-    prefix: /pdf-signable
+# Bundle routes: signature + AcroForm. Import this file once and set prefix, e.g. prefix: /pdf-signable
+# Single resource = bundle getPath() + /Controller (src/Controller). Registers route names:
+#   nowo_pdf_signable_index, nowo_pdf_signable_proxy, nowo_pdf_signable_acroform_overrides,
+#   nowo_pdf_signable_acroform_overrides_save, nowo_pdf_signable_acroform_overrides_remove, nowo_pdf_signable_acroform_apply
+#nowo_pdf_signable:
+#    resource: '@NowoPdfSignableBundle/Controller'
+#    type: attribute
+#    prefix: ''

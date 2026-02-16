@@ -36,14 +36,15 @@ return [
 
 ## Routes
 
-Import the bundle routes in `config/routes.yaml` (or `config/routes/`):
+Import the bundle routes in `config/routes.yaml` (or `config/routes/`) and set your prefix (e.g. `/pdf-signable`). One import registers both signature and AcroForm routes:
 
 ```yaml
 nowo_pdf_signable:
     resource: '@NowoPdfSignableBundle/Resources/config/routes.yaml'
+    prefix: /pdf-signable
 ```
 
-The bundle defines the prefix `/pdf-signable`; routes are `/pdf-signable` (form page) and `/pdf-signable/proxy` (PDF proxy).
+Resulting routes (with `prefix: /pdf-signable`): form page and proxy under that prefix; with AcroForm enabled, also `/pdf-signable/acroform/overrides` (GET/POST/DELETE), optionally `/pdf-signable/acroform/apply` (POST) when `allow_pdf_modify` is true, and optionally `/pdf-signable/acroform/process` (POST) when `process_script` is set.
 
 ## Assets
 
@@ -53,7 +54,7 @@ The bundle ships a built JavaScript file (PDF viewer and signature boxes). Insta
 php bin/console assets:install
 ```
 
-This copies `Resources/public/js/pdf-signable.js` to `public/bundles/nowopdfsignable/js/`.
+This copies `Resources/public/js/pdf-signable.js` (and `acroform-editor.js` when using the AcroForm editor) to `public/bundles/nowopdfsignable/js/`.
 
 ## Base template
 

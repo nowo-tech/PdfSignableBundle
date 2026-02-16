@@ -10,6 +10,11 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-enable pcov \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y python3 python3-pip \
+    && python3 -m pip install --break-system-packages --no-cache-dir pypdf pytest \
+    && python3 -c "from pypdf import PdfReader, PdfWriter; print('pypdf OK')" \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install Node.js and pnpm (corepack)

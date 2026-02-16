@@ -115,6 +115,16 @@
     }
   }
 
+  &.acroform-edit-mode {
+    #pdf-canvas-wrapper canvas {
+      cursor: crosshair;
+    }
+    .acroform-field-outline {
+      pointer-events: auto;
+      cursor: move;
+    }
+  }
+
   .pdf-page-wrapper {
     position: relative;
     display: inline-block;
@@ -126,6 +136,133 @@
     left: 0;
     top: 0;
     pointer-events: none;
+  }
+
+  .pdf-annotation-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .acroform-field-outline {
+    position: absolute;
+    border: 1px dashed rgba(13, 110, 253, 0.6);
+    background: rgba(13, 110, 253, 0.08);
+    box-sizing: border-box;
+    pointer-events: none;
+    transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+
+    /* Selected / highlighted: red tint */
+    &.acroform-field-outline--highlight {
+      border: 2px solid #dc3545;
+      background: rgba(220, 53, 69, 0.25);
+      box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.35);
+    }
+  }
+
+  .pdf-annotation-inputs-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .acroform-field-input {
+    position: absolute;
+    pointer-events: auto;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 2px 4px;
+    border: 1px solid rgba(13, 110, 253, 0.5);
+    background: rgba(255, 255, 255, 0.95);
+    font: inherit;
+    font-size: 11px;
+    line-height: 1.2;
+    resize: none;
+  }
+
+  /* Field highlighted (focus): red tint */
+  .acroform-field-input:focus {
+    border-color: rgba(220, 53, 69, 0.6);
+    outline: 2px solid rgba(220, 53, 69, 0.7);
+    outline-offset: 0;
+  }
+
+  /* Layer and overlay for AcroForm field move/resize on PDF */
+  .acroform-move-resize-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 15;
+  }
+  .acroform-move-resize-overlay {
+    position: absolute;
+    pointer-events: auto;
+    box-sizing: border-box;
+    border: 2px solid #dc3545;
+    background: rgba(220, 53, 69, 0.2);
+    cursor: move;
+    user-select: none;
+    .resize-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #dc3545;
+      border: 1px solid #fff;
+      border-radius: 2px;
+      pointer-events: auto;
+      z-index: 1;
+      &.nw {
+        top: -5px;
+        left: -5px;
+        cursor: nwse-resize;
+      }
+      &.ne {
+        top: -5px;
+        right: -5px;
+        cursor: nesw-resize;
+      }
+      &.sw {
+        bottom: -5px;
+        left: -5px;
+        cursor: nesw-resize;
+      }
+      &.se {
+        bottom: -5px;
+        right: -5px;
+        cursor: nwse-resize;
+      }
+    }
+  }
+
+  /* Checkbox with custom check icon (appearance:none + background when checked) */
+  .acroform-field-input[type='checkbox'] {
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: rgba(255, 255, 255, 0.95);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 65% 65%;
+  }
+  .acroform-field-input[type='checkbox'].acroform-checkbox-icon-check:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d6efd' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  }
+  .acroform-field-input[type='checkbox'].acroform-checkbox-icon-cross:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d6efd' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
+  }
+  .acroform-field-input[type='checkbox'].acroform-checkbox-icon-dot:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230d6efd'%3E%3Ccircle cx='12' cy='12' r='6'/%3E%3C/svg%3E");
   }
 
   .signature-overlays {

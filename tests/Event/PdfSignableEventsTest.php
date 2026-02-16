@@ -36,4 +36,20 @@ final class PdfSignableEventsTest extends TestCase
     {
         self::assertSame('nowo_pdf_signable.pdf_sign_request', PdfSignableEvents::PDF_SIGN_REQUEST);
     }
+
+    public function testAcroFormApplyRequestConstant(): void
+    {
+        self::assertSame('nowo_pdf_signable.acroform_apply_request', PdfSignableEvents::ACROFORM_APPLY_REQUEST);
+    }
+
+    public function testAcroFormModifiedPdfProcessedConstant(): void
+    {
+        self::assertSame('nowo_pdf_signable.acroform_modified_pdf_processed', PdfSignableEvents::ACROFORM_MODIFIED_PDF_PROCESSED);
+    }
+
+    public function testClassIsNotInstantiable(): void
+    {
+        $ref = new \ReflectionClass(PdfSignableEvents::class);
+        self::assertTrue($ref->getConstructor()->isPrivate());
+    }
 }

@@ -19,6 +19,15 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 final class NowoPdfSignableBundle extends Bundle
 {
     /**
+     * Bundle path: directory containing this class (src/).
+     * Ensures @NowoPdfSignableBundle/Resources/... resolves in all environments (e.g. Docker, path repo).
+     */
+    public function getPath(): string
+    {
+        return __DIR__;
+    }
+
+    /**
      * Returns the container extension (PdfSignableExtension).
      *
      * @return ExtensionInterface|null The bundle extension instance

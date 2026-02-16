@@ -39,10 +39,7 @@
   "repositories": [
     {
       "type": "path",
-      "url": "../..",
-      "options": {
-        "symlink": true
-      }
+      "url": "/var/pdf-signable-bundle"
     }
   ],
   "minimum-stability": "stable",

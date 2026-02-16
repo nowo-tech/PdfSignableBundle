@@ -1,0 +1,3 @@
+# Dependencies for scripts/extract_acroform_fields.py
+# Install with: pip install -r scripts/requirements-extract.txt
+pypdf>=3.0

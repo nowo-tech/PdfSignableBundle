@@ -26,9 +26,9 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Form type** — `SignatureCoordinatesType` with PDF URL, units (mm, cm, pt, px, in), coordinate origin (corners) and collection of signature boxes
 - ✅ **PDF viewer** — In-browser viewer (PDF.js) with overlays for each box; click to add, drag to move, drag corners to resize
 - ✅ **Optional proxy** — Load external PDFs without CORS; configurable via `nowo_pdf_signable.proxy_enabled`
-- ✅ **Named configurations** — Define presets in `nowo_pdf_signable.configs` and use `config: 'name'` when adding the form type
+- ✅ **Named configurations** — Define presets in `nowo_pdf_signable.signature.configs` (or `acroform.configs`) and use `config: 'alias'` when adding the form type
 - ✅ **URL modes** — Free-text URL input or dropdown choice (`url_mode: choice`, `url_choices`)
-- ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation; **page restriction** (`allowed_pages`); **sort order** on submit (`sort_boxes`); **no overlapping boxes** (`prevent_box_overlap`, default true); **optional rotation** (`enable_rotation`); **default values per name** (`box_defaults_by_name`); **snap to grid** (`snap_to_grid`) and **snap to other boxes** (`snap_to_boxes`, default true); **guides and grid** (`show_grid`, `grid_step`); **viewer lazy load** (`viewer_lazy_load`); **batch signing** (`batch_sign_enabled`, “Sign all” button). **Audit**: optional fill from request (`audit.fill_from_request`), placeholders for TSA and signing service (see [SIGNING_ADVANCED](docs/SIGNING_ADVANCED.md))
+- ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation; **page restriction** (`allowed_pages`); **sort order** on submit (`sort_boxes`); **no overlapping boxes** (`prevent_box_overlap`, default true); **minimum box size** (`min_box_width`, `min_box_height`); **optional rotation** (`enable_rotation`); **default values per name** (`box_defaults_by_name`); **snap to grid** (`snap_to_grid`) and **snap to other boxes** (`snap_to_boxes`, default true); **guides and grid** (`show_grid`, `grid_step`); **viewer lazy load** (`viewer_lazy_load`); **batch signing** (`batch_sign_enabled`, “Sign all” button). **Audit**: optional fill from request (`audit.fill_from_request`), placeholders for TSA and signing service (see [SIGNING_ADVANCED](docs/SIGNING_ADVANCED.md))
 - ✅ **Viewer** — **Thumbnails**: page strip to jump to a page; **Zoom**: toolbar (zoom in, zoom out, fit width, translated); **Touch**: pinch to zoom, two-finger pan on tablets
 - ✅ **Validation** — Required box name (NotBlank); `unique_box_names` global (`true`/`false`) or per-name (array) to enforce unique box names
 - ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent`, `BatchSignRequestedEvent`, `PdfSignRequestEvent` for integration (see [EVENTS](docs/EVENTS.md) and [SIGNING_ADVANCED](docs/SIGNING_ADVANCED.md))
@@ -96,7 +96,8 @@ The bundle works with default settings. Create or edit `config/packages/nowo_pdf
 nowo_pdf_signable:
     proxy_enabled: true                    # Enable proxy for external PDFs (avoids CORS)
     example_pdf_url: ''                    # Optional default URL for form preload
-    configs: {}                            # Optional named configs (see CONFIGURATION.md)
+    signature:
+        configs: {}                        # Optional named configs (see CONFIGURATION.md)
 ```
 
 See [CONFIGURATION.md](docs/CONFIGURATION.md) for detailed options and named configs.
@@ -111,7 +112,7 @@ make run-symfony7   # → https://localhost:8001
 make run-symfony8   # → https://localhost:8002
 ```
 
-Nineteen demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, rotation, defaults-by-name, snap-to-grid, **guides-and-grid**, **viewer lazy-load**, latest features (combined), predefined boxes; plus signing (draw, upload, legal disclaimer, predefined boxes — sign only, signing options). See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
+Twenty-plus demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, **min-size-boxes**, rotation, defaults-by-name, snap-to-grid, **guides-and-grid**, **viewer lazy-load**, **AcroForm editor**, **AcroForm editor min-size**, latest features (combined), predefined boxes; plus signing (draw, upload, legal disclaimer, predefined boxes — sign only, signing options). See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
 
 ### Xdebug
 
@@ -152,8 +153,9 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 
 - [Installation](docs/INSTALLATION.md) — Step-by-step installation and route registration
 - [Configuration](docs/CONFIGURATION.md) — Proxy, example URL, named configs
-- [Usage](docs/USAGE.md) — Form options, named configs, customization
+- [Usage](docs/USAGE.md) — Form options, named configs, customization; **recovering coordinates and signature data on POST** (with example controller)
 - [Workflow](docs/WORKFLOW.md) — Flows and diagrams: init, load PDF, add/drag box, coordinate sync, submit
+- [AcroForm backend](docs/ACROFORM_BACKEND_EXTENSION.md) — Overrides, apply endpoint, process script; **transforming the PDF and uploading to storage (e.g. Amazon S3)**
 - [Events](docs/EVENTS.md) — Proxy, submission, batch sign and PDF sign request events
 - [Advanced signing](docs/SIGNING_ADVANCED.md) — PKI/PAdES, timestamp, audit trail, batch (structure; you add keys and services)
 - [Styles](docs/STYLES.md) — PDF viewer CSS, handle sizes, single-inclusion
