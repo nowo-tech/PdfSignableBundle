@@ -24,6 +24,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 {
     /**
      * @param array<string> $proxyUrlAllowlist When non-empty, pdf_url must match one entry (substring or regex #...)
+     * @param int|null      $maxPdfSize        Max PDF size in bytes; default 20MB (use a small value in tests for "too large" to avoid memory exhaustion)
      */
     private function createController(
         bool $enabled = true,
@@ -32,6 +33,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         ?PdfAcroFormEditorInterface $editor = null,
         ?EventDispatcherInterface $eventDispatcher = null,
         array $proxyUrlAllowlist = [],
+        ?int $maxPdfSize = null,
         int $maxPatches = 500,
         ?string $fieldsExtractorScript = null,
         ?string $processScript = null,
@@ -56,7 +58,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $dispatcher,
             $translator,
             $proxyUrlAllowlist,
-            20 * 1024 * 1024,
+            $maxPdfSize ?? 20 * 1024 * 1024,
             $maxPatches,
             $fieldsExtractorScript,
             $processScript,
@@ -1013,8 +1015,8 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testApplyPdfTooLargeReturns400(): void
     {
-        $controller = $this->createController(allowPdfModify: true);
-        $largeContent = str_repeat('x', 21 * 1024 * 1024);
+        $controller = $this->createController(allowPdfModify: true, maxPdfSize: 100);
+        $largeContent = str_repeat('x', 101);
         $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
@@ -1047,8 +1049,8 @@ final class AcroFormOverridesControllerTest extends TestCase
     {
         $existingFile = __DIR__.'/../../composer.json';
         self::assertFileExists($existingFile);
-        $controller = $this->createController(fieldsExtractorScript: $existingFile);
-        $largeContent = str_repeat('x', 21 * 1024 * 1024);
+        $controller = $this->createController(fieldsExtractorScript: $existingFile, maxPdfSize: 100);
+        $largeContent = str_repeat('x', 101);
         $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode($largeContent)], JSON_THROW_ON_ERROR));

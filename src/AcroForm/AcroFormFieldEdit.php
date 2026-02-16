@@ -24,7 +24,8 @@ final class AcroFormFieldEdit
         public string $fieldName = '',
         /** Options for select/choice: one per line, optional "value|label". Form may submit null when empty. */
         public ?string $options = null,
-        public string $defaultValue = '',
+        /** Default value; form may submit null when empty. */
+        public ?string $defaultValue = '',
         public bool $defaultChecked = false,
         public string $checkboxValueOn = '1',
         public string $checkboxValueOff = '0',

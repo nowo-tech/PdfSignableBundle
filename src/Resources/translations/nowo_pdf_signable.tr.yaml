@@ -112,6 +112,9 @@ acroform_editor:
   load_btn: 'Load fields + config'
   save_btn: 'Save overrides'
   clear_btn: 'Clear'
+  add_field_mode_btn: 'Alan ekle'
+  add_field_mode_btn_done: 'Tamam'
+  add_field_mode_title: "Yeni alan eklemek için PDF'ye tıklayın (boyutlandırılabilir ve taşınabilir). Çıkmak için tekrar tıklayın."
   msg_draft_updated: 'Draft updated with current input values.'
   msg_enter_document_key: 'Enter document key.'
   msg_load_pdf_first_load: 'Load a PDF (URL) in the form before loading overrides.'

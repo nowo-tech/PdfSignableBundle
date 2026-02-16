@@ -23,6 +23,7 @@ final class AcroFormEditorTypeTest extends TypeTestCase
             examplePdfUrl: 'https://example.com/default.pdf',
             acroformConfigs: [
                 'default' => [
+                    'label_mode' => 'choice',
                     'field_name_mode' => 'choice',
                     'font_sizes' => [10, 12, 14],
                 ],

@@ -112,6 +112,9 @@ acroform_editor:
   load_btn: 'Charger champs + config'
   save_btn: 'Enregistrer overrides'
   clear_btn: 'Effacer'
+  add_field_mode_btn: 'Ajouter un champ'
+  add_field_mode_btn_done: 'Terminé'
+  add_field_mode_title: "Cliquez sur le PDF pour placer un nouveau champ (redimensionnable et déplaçable). Cliquez à nouveau pour quitter."
   msg_draft_updated: 'Brouillon mis à jour avec les valeurs actuelles des champs.'
   msg_enter_document_key: 'Saisissez la clé du document.'
   msg_load_pdf_first_load: 'Chargez un PDF (URL) dans le formulaire avant de charger les overrides.'
