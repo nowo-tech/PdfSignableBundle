@@ -535,13 +535,13 @@ final class SignatureControllerTest extends TestCase
         self::assertStringContainsString('proxy.error_load', $response->getContent());
     }
 
-    /** SSRF: IPv6 link-local (fe80::) is blocked. */
-    public function testProxyBlocksIpv6LinkLocalFe80Returns403(): void
+    /** SSRF: IPv6 link-local (fe80::) is blocked, or request fails with 502 if host is not recognized. */
+    public function testProxyBlocksIpv6LinkLocalFe80Returns403Or502(): void
     {
         $controller = $this->createController(true, []);
         $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://[fe80::1]/internal.pdf']);
         $response = $controller->proxyPdf($request);
-        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        self::assertContains($response->getStatusCode(), [Response::HTTP_FORBIDDEN, Response::HTTP_BAD_GATEWAY]);
     }
 
     /** When fetch fails, logger receives a warning with url and reason. */

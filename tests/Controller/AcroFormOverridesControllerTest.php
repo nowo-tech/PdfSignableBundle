@@ -947,7 +947,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
         self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
         $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        self::assertStringContainsString('not allowed', $data['error'] ?? '');
+        self::assertStringContainsString('url_not_allowed', $data['error'] ?? '');
     }
 
     /** When pdf_url matches allowlist substring, controller does not return 403 (allowlist check passes). */
