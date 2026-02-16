@@ -105,26 +105,26 @@ final class SignatureBoxType extends AbstractType
             ]);
         }
 
-        $defaultWidth = $options['default_box_width'] !== null ? (float) $options['default_box_width'] : null;
-        $defaultHeight = $options['default_box_height'] !== null ? (float) $options['default_box_height'] : null;
+        $defaultWidth = null !== $options['default_box_width'] ? (float) $options['default_box_width'] : null;
+        $defaultHeight = null !== $options['default_box_height'] ? (float) $options['default_box_height'] : null;
         $lockWidth = $options['lock_box_width'];
         $lockHeight = $options['lock_box_height'];
-        $minWidth = $options['min_box_width'] !== null ? (float) $options['min_box_width'] : 10;
-        $minHeight = $options['min_box_height'] !== null ? (float) $options['min_box_height'] : 10;
+        $minWidth = null !== $options['min_box_width'] ? (float) $options['min_box_width'] : 10;
+        $minHeight = null !== $options['min_box_height'] ? (float) $options['min_box_height'] : 10;
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($defaultWidth, $defaultHeight, $lockWidth, $lockHeight): void {
             $data = $event->getData();
             if (!$data instanceof SignatureBoxModel) {
                 return;
             }
-            if ($lockWidth && $defaultWidth !== null) {
+            if ($lockWidth && null !== $defaultWidth) {
                 $data->setWidth($defaultWidth);
-            } elseif ($data->getWidth() === null && $defaultWidth !== null) {
+            } elseif (null === $data->getWidth() && null !== $defaultWidth) {
                 $data->setWidth($defaultWidth);
             }
-            if ($lockHeight && $defaultHeight !== null) {
+            if ($lockHeight && null !== $defaultHeight) {
                 $data->setHeight($defaultHeight);
-            } elseif ($data->getHeight() === null && $defaultHeight !== null) {
+            } elseif (null === $data->getHeight() && null !== $defaultHeight) {
                 $data->setHeight($defaultHeight);
             }
         });
@@ -175,8 +175,8 @@ final class SignatureBoxType extends AbstractType
     /**
      * Passes signature capture options to the view for the widget (draw pad / upload).
      *
-     * @param FormView      $view    The form view
-     * @param FormInterface $form    The form
+     * @param FormView             $view    The form view
+     * @param FormInterface        $form    The form
      * @param array<string, mixed> $options Resolved options (enable_signature_capture, signing_only, lock_box_*, etc.)
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void

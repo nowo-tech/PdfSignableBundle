@@ -13,8 +13,8 @@ namespace Nowo\PdfSignableBundle\AcroForm;
 final class AcroFormOverrides
 {
     /**
-     * @param array<string, array<string, mixed>> $overrides Map fieldId → override data
-     * @param array<int, array<string, mixed>>|null $fields   Optional list of PDF field definitions (id, rect, fieldType, page, value?)
+     * @param array<string, array<string, mixed>>   $overrides Map fieldId → override data
+     * @param array<int, array<string, mixed>>|null $fields    Optional list of PDF field definitions (id, rect, fieldType, page, value?)
      */
     public function __construct(
         public readonly array $overrides,
@@ -37,7 +37,7 @@ final class AcroFormOverrides
             $documentKey = null;
         }
         $fields = $data['fields'] ?? null;
-        if ($fields !== null && !\is_array($fields)) {
+        if (null !== $fields && !\is_array($fields)) {
             $fields = null;
         }
 
@@ -53,7 +53,7 @@ final class AcroFormOverrides
         if (null !== $this->documentKey) {
             $out['document_key'] = $this->documentKey;
         }
-        if (null !== $this->fields && $this->fields !== []) {
+        if (null !== $this->fields && [] !== $this->fields) {
             $out['fields'] = $this->fields;
         }
 

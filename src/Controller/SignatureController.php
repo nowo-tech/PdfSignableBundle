@@ -12,6 +12,7 @@ use Nowo\PdfSignableBundle\Event\SignatureCoordinatesSubmittedEvent;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\AuditMetadata;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -21,7 +22,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
-use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -227,6 +227,7 @@ final class SignatureController extends AbstractController
                 'reason' => $e->getMessage(),
                 'exception' => $e,
             ]);
+
             // Do not expose exception message to the client (information disclosure)
             return new Response(
                 $this->translator->trans('proxy.error_load', [], 'nowo_pdf_signable'),

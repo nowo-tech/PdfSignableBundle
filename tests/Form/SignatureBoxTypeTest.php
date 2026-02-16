@@ -294,5 +294,4 @@ final class SignatureBoxTypeTest extends TypeTestCase
         self::assertSame(120.0, $model->getWidth());
         self::assertSame(25.0, $model->getHeight());
     }
-
 }

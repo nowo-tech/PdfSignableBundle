@@ -9,8 +9,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormView;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
@@ -24,21 +24,21 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 final class AcroFormEditorType extends AbstractType
 {
     /**
-     * @param string               $examplePdfUrl     Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array> $acroformConfigs   Configs by alias from nowo_pdf_signable.acroform.configs
+     * @param string               $examplePdfUrl      Fallback PDF URL when pdf_url option is not set
+     * @param array<string, array> $acroformConfigs    Configs by alias from nowo_pdf_signable.acroform.configs
      * @param string               $defaultConfigAlias Default alias when config option is null (e.g. "default")
-     * @param bool                 $debug             When true, the frontend emits console logs
-     * @param string               $labelMode         acroform.label_mode (deprecated)
-     * @param array<int, string>   $labelChoices      acroform.label_choices (deprecated)
-     * @param string               $labelOtherText    acroform.label_other_text (deprecated)
-     * @param string               $fieldNameMode     acroform.field_name_mode default
-     * @param array<int, string>   $fieldNameChoices  acroform.field_name_choices default
+     * @param bool                 $debug              When true, the frontend emits console logs
+     * @param string               $labelMode          acroform.label_mode (deprecated)
+     * @param array<int, string>   $labelChoices       acroform.label_choices (deprecated)
+     * @param string               $labelOtherText     acroform.label_other_text (deprecated)
+     * @param string               $fieldNameMode      acroform.field_name_mode default
+     * @param array<int, string>   $fieldNameChoices   acroform.field_name_choices default
      * @param string               $fieldNameOtherText acroform.field_name_other_text default
-     * @param bool                 $showFieldRect     acroform.show_field_rect default
-     * @param array<int, int>      $fontSizes         acroform.font_sizes default
-     * @param array<int, string>   $fontFamilies      acroform.font_families default
-     * @param float                $minFieldWidth     acroform.min_field_width default
-     * @param float                $minFieldHeight    acroform.min_field_height default
+     * @param bool                 $showFieldRect      acroform.show_field_rect default
+     * @param array<int, int>      $fontSizes          acroform.font_sizes default
+     * @param array<int, string>   $fontFamilies       acroform.font_families default
+     * @param float                $minFieldWidth      acroform.min_field_width default
+     * @param float                $minFieldHeight     acroform.min_field_height default
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.example_pdf_url')]
@@ -148,6 +148,7 @@ final class AcroFormEditorType extends AbstractType
 
     /**
      * @param array<string, mixed> $options
+     *
      * @return array<string, mixed>
      */
     private function resolveOptions(array $options): array

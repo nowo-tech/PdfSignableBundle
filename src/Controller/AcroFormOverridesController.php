@@ -6,13 +6,14 @@ namespace Nowo\PdfSignableBundle\Controller;
 
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides;
-use Nowo\PdfSignableBundle\AcroForm\PythonProcessEnv;
 use Nowo\PdfSignableBundle\AcroForm\Exception\AcroFormEditorException;
 use Nowo\PdfSignableBundle\AcroForm\PdfAcroFormEditorInterface;
+use Nowo\PdfSignableBundle\AcroForm\PythonProcessEnv;
 use Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
 use Nowo\PdfSignableBundle\Event\AcroFormModifiedPdfProcessedEvent;
 use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -25,7 +26,6 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * AcroForm overrides and PDF apply/process REST controller.
@@ -51,20 +51,20 @@ final class AcroFormOverridesController extends AbstractController
     private const DOCUMENT_KEY_MAX_LENGTH = 256;
 
     /**
-     * @param bool                     $enabled                Whether the AcroForm editor endpoints are enabled
-     * @param AcroFormOverridesStorageInterface $storage       Storage for overrides (session or custom service)
-     * @param bool                     $allowPdfModify        Whether POST /acroform/apply is allowed
-     * @param PdfAcroFormEditorInterface|null $editor         Optional PHP-based editor to apply patches
-     * @param EventDispatcherInterface $eventDispatcher       Dispatcher for ACROFORM_APPLY_REQUEST and ACROFORM_MODIFIED_PDF_PROCESSED
-     * @param TranslatorInterface      $translator            Used for error messages
-     * @param list<string>             $proxyUrlAllowlist      URL allowlist for pdf_url (when fetching PDFs)
-     * @param int                      $maxPdfSize            Max PDF size in bytes for apply/process
-     * @param int                      $maxPatches            Max number of patches per apply request
-     * @param string|null              $fieldsExtractorScript Path to Python script to extract AcroForm fields
-     * @param string|null              $processScript         Path to Python script to process modified PDF
-     * @param string                   $processScriptCommand  Executable to run process_script (e.g. python3)
-     * @param bool                     $debug                 When true, allow validate_only in apply (dry-run)
-     * @param LoggerInterface|null    $logger                Optional logger for apply debug (when debug=true)
+     * @param bool                              $enabled               Whether the AcroForm editor endpoints are enabled
+     * @param AcroFormOverridesStorageInterface $storage               Storage for overrides (session or custom service)
+     * @param bool                              $allowPdfModify        Whether POST /acroform/apply is allowed
+     * @param PdfAcroFormEditorInterface|null   $editor                Optional PHP-based editor to apply patches
+     * @param EventDispatcherInterface          $eventDispatcher       Dispatcher for ACROFORM_APPLY_REQUEST and ACROFORM_MODIFIED_PDF_PROCESSED
+     * @param TranslatorInterface               $translator            Used for error messages
+     * @param list<string>                      $proxyUrlAllowlist     URL allowlist for pdf_url (when fetching PDFs)
+     * @param int                               $maxPdfSize            Max PDF size in bytes for apply/process
+     * @param int                               $maxPatches            Max number of patches per apply request
+     * @param string|null                       $fieldsExtractorScript Path to Python script to extract AcroForm fields
+     * @param string|null                       $processScript         Path to Python script to process modified PDF
+     * @param string                            $processScriptCommand  Executable to run process_script (e.g. python3)
+     * @param bool                              $debug                 When true, allow validate_only in apply (dry-run)
+     * @param LoggerInterface|null              $logger                Optional logger for apply debug (when debug=true)
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.acroform.enabled')]
@@ -99,6 +99,7 @@ final class AcroFormOverridesController extends AbstractController
      * document_key can be passed as query parameter or (for consistency) in the request body.
      *
      * @param Request $request Request containing document_key (query or body)
+     *
      * @return Response JSON with overrides and document_key, or 400 if document_key missing/invalid, 404 if not found
      */
     #[Route('/acroform/overrides', name: 'nowo_pdf_signable_acroform_overrides', methods: ['GET'])]
@@ -129,6 +130,7 @@ final class AcroFormOverridesController extends AbstractController
      * - If extraction fails, response includes fields_extractor_error (message only; overrides still returned).
      *
      * @param Request $request Request body must contain document_key; may contain pdf_url, pdf_content, or fields
+     *
      * @return Response JSON with overrides, document_key, and optionally fields and fields_extractor_error
      */
     #[Route('/acroform/overrides/load', name: 'nowo_pdf_signable_acroform_overrides_load', methods: ['POST'])]
@@ -231,6 +233,7 @@ final class AcroFormOverridesController extends AbstractController
      * Overrides are stored per document_key; existing value is replaced.
      *
      * @param Request $request Request body with document_key, overrides, and optionally fields
+     *
      * @return Response JSON with saved overrides and document_key, or 400 if document_key missing/invalid
      */
     #[Route('/acroform/overrides', name: 'nowo_pdf_signable_acroform_overrides_save', methods: ['POST'])]
@@ -250,7 +253,7 @@ final class AcroFormOverridesController extends AbstractController
             $overridesData = [];
         }
         $fields = $data['fields'] ?? null;
-        if ($fields !== null && !\is_array($fields)) {
+        if (null !== $fields && !\is_array($fields)) {
             $fields = null;
         }
         $overrides = new AcroFormOverrides($overridesData, $documentKey, $fields);
@@ -266,6 +269,7 @@ final class AcroFormOverridesController extends AbstractController
      * The script is invoked with a single argument (path to a temporary PDF file); stdout must be JSON array.
      *
      * @param Request $request Request body with pdf_url or pdf_content
+     *
      * @return Response JSON with "fields" array of field descriptors, or 400/404/503 on error
      */
     #[Route('/acroform/fields/extract', name: 'nowo_pdf_signable_acroform_fields_extract', methods: ['POST'])]
@@ -329,6 +333,7 @@ final class AcroFormOverridesController extends AbstractController
      * No error is returned if no overrides existed for that key.
      *
      * @param Request $request Request containing document_key (query or body)
+     *
      * @return Response 204 No Content on success, or 400 if document_key missing/invalid
      */
     #[Route('/acroform/overrides', name: 'nowo_pdf_signable_acroform_overrides_remove', methods: ['DELETE'])]
@@ -358,6 +363,7 @@ final class AcroFormOverridesController extends AbstractController
      * provides a PDF, returns 501 Not Implemented.
      *
      * @param Request $request Request body with patches and pdf_url or pdf_content; optional validate_only when debug
+     *
      * @return Response application/pdf with modified PDF, or JSON (validation/error), or 501 with plain text
      */
     #[Route('/acroform/apply', name: 'nowo_pdf_signable_acroform_apply', methods: ['POST'])]
@@ -430,7 +436,7 @@ final class AcroFormOverridesController extends AbstractController
         }
 
         $validateOnly = $this->debug && !empty($data['validate_only']);
-        if ($this->debug && $this->logger !== null) {
+        if ($this->debug && null !== $this->logger) {
             $this->logger->info('AcroForm apply request', [
                 'has_pdf_content' => isset($data['pdf_content']),
                 'has_pdf_url' => isset($data['pdf_url']),
@@ -444,9 +450,10 @@ final class AcroFormOverridesController extends AbstractController
         $this->eventDispatcher->dispatch($event, PdfSignableEvents::ACROFORM_APPLY_REQUEST);
 
         if (null !== $event->getValidationResult()) {
-            if ($this->debug && $this->logger !== null) {
+            if ($this->debug && null !== $this->logger) {
                 $this->logger->info('AcroForm apply response: validation_result (JSON)');
             }
+
             return new JsonResponse($event->getValidationResult(), Response::HTTP_OK);
         }
         if (null !== $event->getError()) {
@@ -454,16 +461,18 @@ final class AcroFormOverridesController extends AbstractController
             if (null !== $event->getErrorDetail()) {
                 $payload['detail'] = $event->getErrorDetail();
             }
-            if ($this->debug && $this->logger !== null) {
+            if ($this->debug && null !== $this->logger) {
                 $this->logger->warning('AcroForm apply response: error', ['error' => $payload['error'], 'detail' => $payload['detail'] ?? null]);
             }
+
             return new JsonResponse($payload, Response::HTTP_BAD_REQUEST);
         }
         if (null !== $event->getModifiedPdf()) {
             $modified = $event->getModifiedPdf();
-            if ($this->debug && $this->logger !== null) {
+            if ($this->debug && null !== $this->logger) {
                 $this->logger->info('AcroForm apply response: modified PDF', ['pdf_output_bytes' => \strlen($modified)]);
             }
+
             return new Response($modified, Response::HTTP_OK, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="document.pdf"',
@@ -493,9 +502,10 @@ final class AcroFormOverridesController extends AbstractController
             }
         }
 
-        if ($this->debug && $this->logger !== null) {
+        if ($this->debug && null !== $this->logger) {
             $this->logger->warning('AcroForm apply response: 501 No editor configured and event did not set modified PDF');
         }
+
         return new Response('No editor configured', Response::HTTP_NOT_IMPLEMENTED);
     }
 
@@ -507,6 +517,7 @@ final class AcroFormOverridesController extends AbstractController
      * processed PDF to the output path. Then ACROFORM_MODIFIED_PDF_PROCESSED is dispatched with the result.
      *
      * @param Request $request Request body with pdf_content (base64), optional document_key
+     *
      * @return Response 200 JSON { success: true, document_key?: string }, or application/pdf if Accept header requests it
      */
     #[Route('/acroform/process', name: 'nowo_pdf_signable_acroform_process', methods: ['POST'])]
@@ -558,6 +569,7 @@ final class AcroFormOverridesController extends AbstractController
             if (!$proc->isSuccessful()) {
                 $err = $proc->getErrorOutput()."\n".$proc->getOutput();
                 $isPythonNotFound = str_contains(strtolower($err), 'not found') && str_contains(strtolower($err), 'python');
+
                 return new JsonResponse([
                     'error' => $isPythonNotFound
                         ? 'Process script failed: Python 3 is not installed or not in PATH. Install python3 on the server or set process_script_command to the full path of your Python executable.'
@@ -601,6 +613,7 @@ final class AcroFormOverridesController extends AbstractController
      * or pdf_content (base64-decoded). Uses the same allowlist and SSRF rules as the apply endpoint.
      *
      * @param Request $request Request whose body may contain pdf_url or pdf_content
+     *
      * @return string|null PDF binary content, or null if missing, invalid, or URL not allowed
      */
     private function resolvePdfContentsFromRequest(Request $request): ?string
@@ -647,8 +660,9 @@ final class AcroFormOverridesController extends AbstractController
      *
      * Prefer body['document_key'] when body is provided; otherwise query or request parameter.
      *
-     * @param Request $request Request to read document_key from
-     * @param array<string, mixed>|null $body Optional pre-parsed body (e.g. from $request->toArray())
+     * @param Request                   $request Request to read document_key from
+     * @param array<string, mixed>|null $body    Optional pre-parsed body (e.g. from $request->toArray())
+     *
      * @return string|null The document key if present and valid, null otherwise
      */
     private function resolveDocumentKey(Request $request, ?array $body): ?string
@@ -670,6 +684,7 @@ final class AcroFormOverridesController extends AbstractController
      * Allowed: non-empty, length <= DOCUMENT_KEY_MAX_LENGTH, characters [a-zA-Z0-9_.-].
      *
      * @param string $documentKey The document key to validate
+     *
      * @return bool True if the key is valid
      */
     private function isValidDocumentKey(string $documentKey): bool
@@ -687,6 +702,7 @@ final class AcroFormOverridesController extends AbstractController
      * Blocks: localhost, ::1, 127.0.0.0/8, 10.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16, and IPv6 link-local (fe80::).
      *
      * @param string $url Full URL (e.g. https://example.com/doc.pdf)
+     *
      * @return bool True if the URL should be blocked
      */
     private function isUrlBlockedForSsrf(string $url): bool
@@ -732,6 +748,7 @@ final class AcroFormOverridesController extends AbstractController
      * Each allowlist entry is either a substring (URL must contain it) or a regex if prefixed with '#'.
      *
      * @param string $url Full URL to check
+     *
      * @return bool True if the URL matches at least one allowlist entry
      */
     private function isUrlAllowedByAllowlist(string $url): bool

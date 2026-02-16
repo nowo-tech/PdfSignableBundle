@@ -45,19 +45,19 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
     ];
 
     /**
-     * @param RequestStack       $requestStack Request stack for asset inclusion
-     * @param TranslatorInterface $translator   Translator for AcroForm strings
-     * @param string             $labelMode    acroform.label_mode (deprecated)
-     * @param array<int, string> $labelChoices acroform.label_choices (deprecated)
-     * @param string             $labelOtherText acroform.label_other_text (deprecated)
-     * @param string             $fieldNameMode acroform.field_name_mode
-     * @param array<int, string> $fieldNameChoices acroform.field_name_choices
-     * @param string             $fieldNameOtherText acroform.field_name_other_text
-     * @param bool               $showFieldRect acroform.show_field_rect
-     * @param array<int, int>    $fontSizes    acroform.font_sizes
-     * @param array<int, string> $fontFamilies acroform.font_families
-     * @param float              $minFieldWidth acroform.min_field_width
-     * @param float              $minFieldHeight acroform.min_field_height
+     * @param RequestStack        $requestStack       Request stack for asset inclusion
+     * @param TranslatorInterface $translator         Translator for AcroForm strings
+     * @param string              $labelMode          acroform.label_mode (deprecated)
+     * @param array<int, string>  $labelChoices       acroform.label_choices (deprecated)
+     * @param string              $labelOtherText     acroform.label_other_text (deprecated)
+     * @param string              $fieldNameMode      acroform.field_name_mode
+     * @param array<int, string>  $fieldNameChoices   acroform.field_name_choices
+     * @param string              $fieldNameOtherText acroform.field_name_other_text
+     * @param bool                $showFieldRect      acroform.show_field_rect
+     * @param array<int, int>     $fontSizes          acroform.font_sizes
+     * @param array<int, string>  $fontFamilies       acroform.font_families
+     * @param float               $minFieldWidth      acroform.min_field_width
+     * @param float               $minFieldHeight     acroform.min_field_height
      */
     public function __construct(
         private readonly RequestStack $requestStack,

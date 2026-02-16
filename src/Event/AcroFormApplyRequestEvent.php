@@ -30,9 +30,9 @@ final class AcroFormApplyRequestEvent extends Event
     private ?array $validationResult = null;
 
     /**
-     * @param string                $pdfContents Original PDF bytes
-     * @param list<AcroFormFieldPatch> $patches   Patches to apply
-     * @param bool                  $validateOnly When true, listener may run dry-run and set validationResult instead of modifiedPdf
+     * @param string                   $pdfContents  Original PDF bytes
+     * @param list<AcroFormFieldPatch> $patches      Patches to apply
+     * @param bool                     $validateOnly When true, listener may run dry-run and set validationResult instead of modifiedPdf
      */
     public function __construct(
         private readonly string $pdfContents,

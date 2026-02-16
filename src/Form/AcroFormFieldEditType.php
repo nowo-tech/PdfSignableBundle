@@ -14,8 +14,8 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormView;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
@@ -75,7 +75,7 @@ final class AcroFormFieldEditType extends AbstractType
             ->add('page', HiddenType::class, ['attr' => ['id' => 'acroform-edit-page'], 'required' => false])
             ->add('fieldName', $this->getFieldNameFieldType($fieldNameMode, $fieldNameChoices), array_merge($this->getFieldNameFieldOptions($fieldNameMode, $fieldNameChoices, $fieldNameOtherText), $rowFieldName));
 
-        if ($fieldNameMode === 'choice' && $fieldNameChoices !== [] && $fieldNameOtherText !== '') {
+        if ('choice' === $fieldNameMode && [] !== $fieldNameChoices && '' !== $fieldNameOtherText) {
             $builder->add('fieldNameOther', TextType::class, array_merge([
                 'mapped' => false,
                 'required' => false,
@@ -86,16 +86,16 @@ final class AcroFormFieldEditType extends AbstractType
 
         $builder
         ->add('controlType', ChoiceType::class, array_merge([
-                'choices' => [
-                    'text' => 'text',
-                    'textarea' => 'textarea',
-                    'checkbox' => 'checkbox',
-                    'select' => 'select',
-                    'choice' => 'choice',
-                ],
-                'attr' => ['id' => 'acroform-edit-control-type', 'class' => 'form-select form-select-sm'],
-                'label_attr' => ['class' => 'form-label small'],
-            ], $rowControlType));
+            'choices' => [
+                'text' => 'text',
+                'textarea' => 'textarea',
+                'checkbox' => 'checkbox',
+                'select' => 'select',
+                'choice' => 'choice',
+            ],
+            'attr' => ['id' => 'acroform-edit-control-type', 'class' => 'form-select form-select-sm'],
+            'label_attr' => ['class' => 'form-label small'],
+        ], $rowControlType));
 
         if ($showFieldRect) {
             $builder->add('rect', TextType::class, array_merge([
@@ -160,7 +160,7 @@ final class AcroFormFieldEditType extends AbstractType
             'attr' => ['id' => 'acroform-edit-font-size', 'class' => 'form-control form-control-sm', 'min' => 1, 'max' => 72],
             'label_attr' => ['class' => 'form-label small mb-0'],
         ];
-        if ($fontSizes !== []) {
+        if ([] !== $fontSizes) {
             $builder->add('fontSize', ChoiceType::class, array_merge($fontSizeOptions, $rowFont, [
                 'choices' => array_combine($fontSizes, $fontSizes),
                 'attr' => ['id' => 'acroform-edit-font-size', 'class' => 'form-select form-select-sm', 'required' => true],
@@ -216,31 +216,33 @@ final class AcroFormFieldEditType extends AbstractType
 
     private function getFieldNameFieldType(string $fieldNameMode, array $fieldNameChoices): string
     {
-        if ($fieldNameMode === 'choice' && $fieldNameChoices !== []) {
+        if ('choice' === $fieldNameMode && [] !== $fieldNameChoices) {
             return ChoiceType::class;
         }
+
         return TextType::class;
     }
 
     private function getFieldNameFieldOptions(string $fieldNameMode, array $fieldNameChoices, string $fieldNameOtherText): array
     {
-        if ($fieldNameMode === 'choice' && $fieldNameChoices !== []) {
+        if ('choice' === $fieldNameMode && [] !== $fieldNameChoices) {
             $choices = [];
             foreach ($fieldNameChoices as $item) {
                 if (\is_array($item) && isset($item['value'])) {
                     $choices[$item['label'] ?? $item['value']] = $item['value'];
                 } elseif (\is_string($item)) {
                     $pipe = strpos($item, '|');
-                    if ($pipe !== false) {
+                    if (false !== $pipe) {
                         $choices[trim(substr($item, $pipe + 1))] = trim(substr($item, 0, $pipe));
                     } else {
                         $choices[$item] = $item;
                     }
                 }
             }
-            if ($fieldNameOtherText !== '') {
+            if ('' !== $fieldNameOtherText) {
                 $choices[$fieldNameOtherText] = '__other__';
             }
+
             return [
                 'choices' => $choices,
                 'required' => true,
@@ -250,6 +252,7 @@ final class AcroFormFieldEditType extends AbstractType
                 'label_attr' => ['class' => 'form-label small'],
             ];
         }
+
         return [
             'required' => false,
             'label' => 'acroform_editor.modal_field_name',
@@ -260,11 +263,12 @@ final class AcroFormFieldEditType extends AbstractType
 
     /**
      * @param array<int, string|array{value: string, label?: string}> $fontFamilies
+     *
      * @return array<string, string>
      */
     private function normalizeFontFamilies(array $fontFamilies): array
     {
-        if ($fontFamilies === []) {
+        if ([] === $fontFamilies) {
             return [
                 'sans-serif' => 'sans-serif',
                 'Arial' => 'Arial',
@@ -281,13 +285,14 @@ final class AcroFormFieldEditType extends AbstractType
                 $out[$item['label'] ?? $item['value']] = $item['value'];
             } elseif (\is_string($item)) {
                 $pipe = strpos($item, '|');
-                if ($pipe !== false) {
+                if (false !== $pipe) {
                     $out[trim(substr($item, $pipe + 1))] = trim(substr($item, 0, $pipe));
                 } else {
                     $out[$item] = $item;
                 }
             }
         }
+
         return $out;
     }
 }
