@@ -13,7 +13,7 @@ final class SignatureCoordinatesTypeExtensionTest extends TestCase
     public function testGetExtendedTypes(): void
     {
         $types = SignatureCoordinatesTypeExtension::getExtendedTypes();
-        $arr = iterator_to_array($types);
+        $arr = \is_array($types) ? $types : iterator_to_array($types);
 
         self::assertCount(1, $arr);
         self::assertSame('Nowo\PdfSignableBundle\Form\SignatureCoordinatesType', $arr[0]);
