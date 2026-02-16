@@ -148,11 +148,13 @@ final class AcroFormApplyScriptListenerTest extends TestCase
     public function testSetsErrorWhenScriptOutputNotPdf(): void
     {
         $script = sys_get_temp_dir().'/pdf_apply_text_'.getmypid().'.py';
-        file_put_contents($script, <<<'PY'
-import sys
-# Simulate script that prints text instead of PDF
-print("Hello world", file=sys.stdout)
-PY
+        file_put_contents(
+            $script,
+            <<<'PY'
+                import sys
+                # Simulate script that prints text instead of PDF
+                print("Hello world", file=sys.stdout)
+                PY
         );
         try {
             $listener = new AcroFormApplyScriptListener($script, 'python3');
@@ -171,11 +173,13 @@ PY
     public function testSetsValidationResultWhenValidateOnlyAndScriptReturnsJson(): void
     {
         $script = sys_get_temp_dir().'/pdf_apply_dry_'.getmypid().'.py';
-        file_put_contents($script, <<<'PY'
-import sys, json
-# Dry-run: output JSON
-json.dump({"success": True, "patches_count": 0}, sys.stdout)
-PY
+        file_put_contents(
+            $script,
+            <<<'PY'
+                import sys, json
+                # Dry-run: output JSON
+                json.dump({"success": True, "patches_count": 0}, sys.stdout)
+                PY
         );
         try {
             $listener = new AcroFormApplyScriptListener($script, 'python3');

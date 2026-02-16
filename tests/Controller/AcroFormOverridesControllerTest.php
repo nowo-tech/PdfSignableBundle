@@ -544,7 +544,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->expects(self::once())->method('set')->with('doc1', self::callback(function (AcroFormOverrides $o): bool {
-            return $o->documentKey === 'doc1' && $o->overrides === [] && $o->fields === null;
+            return 'doc1' === $o->documentKey && [] === $o->overrides && null === $o->fields;
         }));
         $controller = $this->createController(storage: $storage);
         $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
@@ -803,7 +803,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When process script runs but exits non-zero, controller returns 400. */
     public function testProcessWhenScriptExitsNonZeroReturns400(): void
     {
-        $script = sys_get_temp_dir() . '/pdfsignable_process_exit1_' . getmypid() . '.py';
+        $script = sys_get_temp_dir().'/pdfsignable_process_exit1_'.getmypid().'.py';
         file_put_contents($script, "import sys\nsys.exit(1)\n");
         try {
             $controller = $this->createController(processScript: $script);
@@ -824,7 +824,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When process script command is not in PATH, response includes Python install hint. */
     public function testProcessWhenProcessCommandNotFoundReturns400WithPythonMessage(): void
     {
-        $script = sys_get_temp_dir() . '/pdfsignable_process_dummy_' . getmypid() . '.py';
+        $script = sys_get_temp_dir().'/pdfsignable_process_dummy_'.getmypid().'.py';
         file_put_contents($script, "import sys\nsys.exit(0)\n");
         try {
             $controller = $this->createController(processScript: $script, processScriptCommand: 'python999nonexistent');
@@ -846,7 +846,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When process script does not write output file, controller returns 400. */
     public function testProcessWhenScriptProducesNoOutputFileReturns400(): void
     {
-        $script = sys_get_temp_dir() . '/pdfsignable_process_noout_' . getmypid() . '.py';
+        $script = sys_get_temp_dir().'/pdfsignable_process_noout_'.getmypid().'.py';
         file_put_contents($script, "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument('--input')\nparser.add_argument('--output')\nparser.parse_args()\n# do not write to output\nimport sys\nsys.exit(0)\n");
         try {
             $controller = $this->createController(processScript: $script);
@@ -867,18 +867,20 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When Accept header contains application/pdf, process returns 200 with PDF body. */
     public function testProcessWhenAcceptPdfReturns200WithPdfContent(): void
     {
-        $script = sys_get_temp_dir() . '/pdfsignable_process_copy_' . getmypid() . '.py';
-        file_put_contents($script, <<<'PY'
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('--input')
-parser.add_argument('--output')
-args = parser.parse_args()
-with open(args.input, 'rb') as f:
-    data = f.read()
-with open(args.output, 'wb') as f:
-    f.write(data)
-PY
+        $script = sys_get_temp_dir().'/pdfsignable_process_copy_'.getmypid().'.py';
+        file_put_contents(
+            $script,
+            <<<'PY'
+                import argparse
+                parser = argparse.ArgumentParser()
+                parser.add_argument('--input')
+                parser.add_argument('--output')
+                args = parser.parse_args()
+                with open(args.input, 'rb') as f:
+                    data = f.read()
+                with open(args.output, 'wb') as f:
+                    f.write(data)
+                PY
         );
         try {
             $controller = $this->createController(processScript: $script);
@@ -1043,7 +1045,7 @@ PY
 
     public function testExtractFieldsPdfTooLargeReturns400(): void
     {
-        $existingFile = __DIR__ . '/../../composer.json';
+        $existingFile = __DIR__.'/../../composer.json';
         self::assertFileExists($existingFile);
         $controller = $this->createController(fieldsExtractorScript: $existingFile);
         $largeContent = str_repeat('x', 21 * 1024 * 1024);
@@ -1061,7 +1063,7 @@ PY
     /** When extractor script exits non-zero, controller returns 500. */
     public function testExtractFieldsWhenExtractorScriptExitsNonZeroReturns500(): void
     {
-        $script = sys_get_temp_dir() . '/pdfsignable_extract_exit1_' . getmypid() . '.py';
+        $script = sys_get_temp_dir().'/pdfsignable_extract_exit1_'.getmypid().'.py';
         file_put_contents($script, "import sys\nsys.exit(1)\n");
         try {
             $controller = $this->createController(fieldsExtractorScript: $script);
@@ -1082,7 +1084,7 @@ PY
     /** When extractor script output is not a JSON array (e.g. null), controller returns 500. */
     public function testExtractFieldsWhenScriptOutputNotArrayReturns500(): void
     {
-        $script = sys_get_temp_dir() . '/pdfsignable_extract_invalid_' . getmypid() . '.py';
+        $script = sys_get_temp_dir().'/pdfsignable_extract_invalid_'.getmypid().'.py';
         file_put_contents($script, "print('null')\n");
         try {
             $controller = $this->createController(fieldsExtractorScript: $script);
