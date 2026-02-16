@@ -21,6 +21,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.1] - 2026-02-16
+
+### Added
+
+- **Tests:** More coverage for PDF.js loader (`getWorkerUrl` absolute URL conversion, protocol-relative and empty-string handling, `querySelector` fallback when `currentScript` is null; `getPdfJsLib` CDN path). PHP test for default `pdfjs_worker_url` null in `SignatureCoordinatesType`. Extra `url-and-scale` tests (empty proxy, `getScaleForFitPage` with null container).
+
+### Changed
+
+- **PDF.js worker:** Default worker asset is now **`pdf.worker.min.js`** (was `pdf.worker.min.mjs`) so typical servers serve it with `Content-Type: application/javascript`, avoiding “Failed to fetch dynamically imported module” and “Setting up fake worker” in development. Theme and loader default to `bundles/nowopdfsignable/js/pdf.worker.min.js`. Vite build copies the worker from `node_modules/pdfjs-dist/build` to the output dir; `copy-worker` script and `postinstall` still output the same file for installs without a full build.
+- **Worker URL resolution:** Relative worker URLs are converted to absolute (using `window.location.origin`) so the worker loads correctly in SPAs and when the script is served from a different base. Fallback: when `document.currentScript` has no `src` (e.g. lazy-loaded script), the loader looks for a script tag with `src` containing `pdf-signable.js` or `acroform-editor.js` and derives the worker path from it.
+
+### Fixed
+
+- **Translations:** Added missing AcroForm editor modal keys to 10 locales (ca, cs, de, fr, it, nl, pl, pt, ru, tr): `acroform_editor.modal_create_if_missing`, `modal_field_name`, `modal_field_name_placeholder`, `modal_hidden`, `modal_max_len`, `modal_max_len_placeholder`. Ensures `make validate-translations` passes.
+- **Turkish (tr) YAML:** Fixed invalid escape in single-quoted strings (`PDF\'deki` → `"PDF'deki alan adı"`) so the file parses correctly.
+
+### Documentation
+
+- [USAGE](USAGE.md): Default worker asset and MIME-type note for “Setting up fake worker” / “Failed to fetch dynamically imported module”.
+
+For upgrade steps from 2.0.0, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [2.0.0] - 2026-02-16
 
 ### Breaking
@@ -326,7 +350,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.1
 [2.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.0
 [1.5.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.4
 [1.5.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.3

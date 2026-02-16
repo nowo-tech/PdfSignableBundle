@@ -34,20 +34,20 @@
 
 ---
 
-## Ready for v2.0.0 (2026-02-16)
+## Ready for v2.0.1 (2026-02-16)
 
-- [x] CHANGELOG: [2.0.0] with date; [Unreleased] at top; links updated.
-- [x] UPGRADING: “Upgrading to 2.0.0” with release date and upgrade steps; version table includes 2.0.x.
-- [x] RELEASE: this checklist for v2.0.0.
+- [x] CHANGELOG: [2.0.1] with date; [Unreleased] at top; links updated.
+- [x] UPGRADING: “Upgrading to 2.0.1" with release date and upgrade steps; version table updated.
+- [x] RELEASE: this checklist for v2.0.1.
 - [ ] Run `make test` and `make cs-check`.
-- [ ] Run `make assets` (bundle JS built).
+- [ ] Run `make assets` (bundle JS + worker built).
 - [ ] Run `make validate-translations`.
-- [ ] Commit and push: `git add -A && git commit -m "Prepare v2.0.0 release" && git push origin HEAD`
-- [ ] Create and push tag: `git tag -a v2.0.0 -m "Release v2.0.0"` then `git push origin v2.0.0`
+- [ ] Commit and push: `git add -A && git commit -m "Prepare v2.0.1 release" && git push origin HEAD`
+- [ ] Create and push tag: `git tag -a v2.0.1 -m "Release v2.0.1"` then `git push origin v2.0.1`
 
 ---
 
-## Next release (e.g. v2.0.1)
+## Next release (e.g. v2.0.2)
 
 - [ ] CHANGELOG: Move [Unreleased] entries into `[X.Y.Z]` with date; add new empty [Unreleased] at top; update version links at bottom.
 - [ ] UPGRADING: Add section "Upgrading to X.Y.Z" with release date, what's new, breaking changes (if any), and upgrade steps; update version compatibility table.
