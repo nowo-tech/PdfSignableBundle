@@ -78,7 +78,7 @@ final class PythonProcessEnvTest extends TestCase
             self::assertStringStartsWith('/usr/local/bin:/usr/bin:/bin', $env['PATH']);
         } finally {
             if (false !== $originalPath) {
-                putenv('PATH=' . $originalPath);
+                putenv('PATH='.$originalPath);
             }
         }
     }

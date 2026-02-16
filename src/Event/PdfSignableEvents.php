@@ -13,7 +13,7 @@ final class PdfSignableEvents
      * Dispatched when the signature coordinates form is submitted and valid.
      * Listeners can persist the model, send to a signing service, or add data to the response.
      *
-     * @see \Nowo\PdfSignableBundle\Event\SignatureCoordinatesSubmittedEvent
+     * @see SignatureCoordinatesSubmittedEvent
      */
     public const SIGNATURE_COORDINATES_SUBMITTED = 'nowo_pdf_signable.signature_coordinates_submitted';
 
@@ -21,7 +21,7 @@ final class PdfSignableEvents
      * Dispatched before the PDF proxy fetches an external URL.
      * Listeners can modify the URL or set a custom Response to skip the fetch.
      *
-     * @see \Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent
+     * @see PdfProxyRequestEvent
      */
     public const PDF_PROXY_REQUEST = 'nowo_pdf_signable.pdf_proxy_request';
 
@@ -29,7 +29,7 @@ final class PdfSignableEvents
      * Dispatched after the PDF proxy successfully fetches the document.
      * Listeners can modify the Response (e.g. add headers, transform content).
      *
-     * @see \Nowo\PdfSignableBundle\Event\PdfProxyResponseEvent
+     * @see PdfProxyResponseEvent
      */
     public const PDF_PROXY_RESPONSE = 'nowo_pdf_signable.pdf_proxy_response';
 
@@ -37,7 +37,7 @@ final class PdfSignableEvents
      * Dispatched when the form is submitted with batch_sign=1 (e.g. "Sign all" button).
      * Listeners can perform batch signing (draw/upload or PKI) and redirect or return a response.
      *
-     * @see \Nowo\PdfSignableBundle\Event\BatchSignRequestedEvent
+     * @see BatchSignRequestedEvent
      */
     public const BATCH_SIGN_REQUESTED = 'nowo_pdf_signable.batch_sign_requested';
 
@@ -45,7 +45,7 @@ final class PdfSignableEvents
      * Dispatched when the app requests a digital (PKI/PAdES) signature.
      * Listeners call the signing service/HSM and set the result on the event.
      *
-     * @see \Nowo\PdfSignableBundle\Event\PdfSignRequestEvent
+     * @see PdfSignRequestEvent
      */
     public const PDF_SIGN_REQUEST = 'nowo_pdf_signable.pdf_sign_request';
 
@@ -53,7 +53,7 @@ final class PdfSignableEvents
      * Dispatched when POST /pdf-signable/acroform/apply is called with PDF and patches.
      * Listeners can set the modified PDF or an error; if none respond, the editor service is used when configured.
      *
-     * @see \Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent
+     * @see AcroFormApplyRequestEvent
      */
     public const ACROFORM_APPLY_REQUEST = 'nowo_pdf_signable.acroform_apply_request';
 
@@ -61,7 +61,7 @@ final class PdfSignableEvents
      * Dispatched after the AcroForm "process" script has run on the modified PDF.
      * Listeners can save the processed PDF, send it to storage, etc.
      *
-     * @see \Nowo\PdfSignableBundle\Event\AcroFormModifiedPdfProcessedEvent
+     * @see AcroFormModifiedPdfProcessedEvent
      */
     public const ACROFORM_MODIFIED_PDF_PROCESSED = 'nowo_pdf_signable.acroform_modified_pdf_processed';
 

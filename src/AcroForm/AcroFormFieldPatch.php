@@ -49,7 +49,7 @@ final class AcroFormFieldPatch
      * Supports both camelCase (fieldId, defaultValue, …) and snake_case (field_id, default_value, …) keys.
      *
      * @param array<string, mixed> $data Associative array with at least fieldId (or field_id)
-     * @return self
+     *
      * @throws \InvalidArgumentException If fieldId is missing or empty
      */
     public static function fromArray(array $data): self

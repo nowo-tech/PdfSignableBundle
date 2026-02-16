@@ -35,10 +35,10 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 final class SignatureCoordinatesType extends AbstractType
 {
     /**
-     * @param string               $examplePdfUrl     Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array> $namedConfigs      Configs by alias from nowo_pdf_signable.signature.configs
+     * @param string               $examplePdfUrl      Fallback PDF URL when pdf_url option is not set
+     * @param array<string, array> $namedConfigs       Configs by alias from nowo_pdf_signable.signature.configs
      * @param string               $defaultConfigAlias Default alias when form option config is not set (e.g. "default")
-     * @param bool                 $debug             When true, the frontend emits console logs (browser dev tools)
+     * @param bool                 $debug              When true, the frontend emits console logs (browser dev tools)
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.example_pdf_url')]
@@ -256,7 +256,7 @@ final class SignatureCoordinatesType extends AbstractType
                 $event->setData($data);
             });
         }
-        if ($options['lock_box_width'] && $options['default_box_width'] !== null) {
+        if ($options['lock_box_width'] && null !== $options['default_box_width']) {
             $defaultW = (float) $options['default_box_width'];
             $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) use ($defaultW): void {
                 $data = $event->getData();
@@ -271,7 +271,7 @@ final class SignatureCoordinatesType extends AbstractType
                 $event->setData($data);
             });
         }
-        if ($options['lock_box_height'] && $options['default_box_height'] !== null) {
+        if ($options['lock_box_height'] && null !== $options['default_box_height']) {
             $defaultH = (float) $options['default_box_height'];
             $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) use ($defaultH): void {
                 $data = $event->getData();
@@ -674,6 +674,7 @@ final class SignatureCoordinatesType extends AbstractType
         if ('' === $alias || !isset($this->namedConfigs[$alias]) || !\is_array($this->namedConfigs[$alias])) {
             $merged = $options;
             unset($merged['config']);
+
             return $merged;
         }
         // Named config overrides resolver defaults; options passed when creating the form override the named config

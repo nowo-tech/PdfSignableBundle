@@ -25,6 +25,7 @@ class AcroFormPageModel
     public function setPdfUrl(?string $pdfUrl): self
     {
         $this->pdfUrl = $pdfUrl;
+
         return $this;
     }
 
@@ -36,6 +37,7 @@ class AcroFormPageModel
     public function setDocumentKey(?string $documentKey): self
     {
         $this->documentKey = $documentKey;
+
         return $this;
     }
 }

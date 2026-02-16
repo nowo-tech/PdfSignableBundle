@@ -38,8 +38,6 @@ final class SignatureCoordinatesTypeExtension extends AbstractTypeExtension
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return iterable<int, class-string<SignatureCoordinatesType>>
      */
     public static function getExtendedTypes(): iterable

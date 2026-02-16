@@ -32,9 +32,9 @@ use Symfony\Component\Process\Process;
 final class AcroFormApplyScriptListener
 {
     /**
-     * @param string|null $applyScript        Absolute path to the Python script (from acroform.apply_script)
-     * @param string      $applyScriptCommand Executable to run the script (e.g. python3 or /usr/bin/python3)
-     * @param LoggerInterface|null $logger   Optional logger for apply flow (script run, success, stderr)
+     * @param string|null          $applyScript        Absolute path to the Python script (from acroform.apply_script)
+     * @param string               $applyScriptCommand Executable to run the script (e.g. python3 or /usr/bin/python3)
+     * @param LoggerInterface|null $logger             Optional logger for apply flow (script run, success, stderr)
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.acroform.apply_script')]
@@ -171,7 +171,7 @@ final class AcroFormApplyScriptListener
             $stderr = $proc->getErrorOutput();
             $this->logger?->info('AcroForm apply: script succeeded', [
                 'pdf_output_bytes' => \strlen($output),
-                'script_stderr' => $stderr !== '' ? trim($stderr) : null,
+                'script_stderr' => '' !== $stderr ? trim($stderr) : null,
             ]);
 
             $event->setModifiedPdf($output);

@@ -25,10 +25,10 @@ final class AuditMetadataTest extends TestCase
         ];
         foreach ($expected as $name) {
             self::assertTrue(
-                \defined(AuditMetadata::class . '::' . $name),
+                \defined(AuditMetadata::class.'::'.$name),
                 "Constant AuditMetadata::{$name} should be defined"
             );
-            $value = \constant(AuditMetadata::class . '::' . $name);
+            $value = \constant(AuditMetadata::class.'::'.$name);
             self::assertIsString($value, "AuditMetadata::{$name} should be string");
             self::assertNotSame('', $value, "AuditMetadata::{$name} should not be empty");
         }

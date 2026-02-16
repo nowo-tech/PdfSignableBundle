@@ -37,6 +37,6 @@ final class PythonProcessEnv
         );
         $env['PATH'] = '/usr/local/bin:/usr/bin:/bin'.(isset($env['PATH']) && '' !== $env['PATH'] ? ':'.$env['PATH'] : '');
 
-        return array_filter($env, static fn ($v): bool => $v !== false);
+        return array_filter($env, static fn ($v): bool => false !== $v);
     }
 }

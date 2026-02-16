@@ -60,7 +60,7 @@ final class AcroFormFieldEdit
             $lines = [];
             foreach ($data['options'] as $o) {
                 if (\is_array($o) && isset($o['value'])) {
-                    $lines[] = isset($o['label']) && $o['label'] !== $o['value'] ? $o['value'] . '|' . $o['label'] : $o['value'];
+                    $lines[] = isset($o['label']) && $o['label'] !== $o['value'] ? $o['value'].'|'.$o['label'] : $o['value'];
                 } elseif (\is_string($o)) {
                     $lines[] = $o;
                 }

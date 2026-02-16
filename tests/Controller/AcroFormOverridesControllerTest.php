@@ -10,7 +10,6 @@ use Nowo\PdfSignableBundle\AcroForm\PdfAcroFormEditorInterface;
 use Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface;
 use Nowo\PdfSignableBundle\Controller\AcroFormOverridesController;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
-use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -40,7 +39,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         bool $debug = false,
         ?LoggerInterface $logger = null,
     ): AcroFormOverridesController {
-        $storage = $storage ?? $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage ??= $this->createMock(AcroFormOverridesStorageInterface::class);
         /** @var EventDispatcherInterface&\PHPUnit\Framework\MockObject\MockObject $dispatcher */
         $dispatcher = $eventDispatcher ?? $this->createMock(EventDispatcherInterface::class);
         $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
@@ -150,7 +149,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->expects(self::once())->method('set')->with('doc1', self::callback(function (AcroFormOverrides $o): bool {
-            return $o->documentKey === 'doc1' && $o->overrides === ['f1' => ['label' => 'Field 1']];
+            return 'doc1' === $o->documentKey && $o->overrides === ['f1' => ['label' => 'Field 1']];
         }));
         $controller = $this->createController(storage: $storage);
         $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
@@ -490,7 +489,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->expects(self::once())->method('set')->with('doc1', self::callback(function (AcroFormOverrides $o): bool {
-            return $o->documentKey === 'doc1'
+            return 'doc1' === $o->documentKey
                 && $o->overrides === ['f1' => ['label' => 'x']]
                 && $o->fields === [['id' => 'f1', 'rect' => [0, 0, 100, 20]]];
         }));
@@ -514,7 +513,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->expects(self::once())->method('set')->with('doc1', self::callback(function (AcroFormOverrides $o): bool {
-            return $o->overrides === [];
+            return [] === $o->overrides;
         }));
         $controller = $this->createController(storage: $storage);
         $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
@@ -705,7 +704,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testExtractFieldsMissingPdfReturns400(): void
     {
-        $existingFile = __DIR__ . '/../../composer.json';
+        $existingFile = __DIR__.'/../../composer.json';
         self::assertFileExists($existingFile, 'composer.json must exist for this test');
         $controller = $this->createController(fieldsExtractorScript: $existingFile);
         $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
@@ -771,7 +770,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testProcessMissingPdfContentReturns400(): void
     {
-        $existingFile = __DIR__ . '/../../composer.json';
+        $existingFile = __DIR__.'/../../composer.json';
         self::assertFileExists($existingFile);
         $controller = $this->createController(processScript: $existingFile);
         $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
@@ -787,7 +786,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testProcessInvalidBase64Returns400(): void
     {
-        $existingFile = __DIR__ . '/../../composer.json';
+        $existingFile = __DIR__.'/../../composer.json';
         self::assertFileExists($existingFile);
         $controller = $this->createController(processScript: $existingFile);
         $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [

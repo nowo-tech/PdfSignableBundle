@@ -28,9 +28,6 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
     ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function get(string $documentKey): ?AcroFormOverrides
     {
         $session = $this->requestStack->getCurrentRequest()?->getSession();
@@ -46,9 +43,6 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
         return AcroFormOverrides::fromArray($data);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function set(string $documentKey, AcroFormOverrides $overrides): void
     {
         $session = $this->requestStack->getCurrentRequest()?->getSession();
@@ -59,9 +53,6 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
         $session->set($key, $overrides->toArray());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function remove(string $documentKey): void
     {
         $session = $this->requestStack->getCurrentRequest()?->getSession();
