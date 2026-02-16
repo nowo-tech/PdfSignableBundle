@@ -299,6 +299,7 @@ When you prefer **Python** to apply patches (e.g. with pypdf) instead of a PHP e
 
 After the user has applied changes and obtained the modified PDF, you can run a **process script** (e.g. fill, sign, flatten) and then let PHP save or use the result:
 
+- **Dependencies:** **Python 3.x** (or the executable you set in `process_script_command`). The bundled `scripts/process_modified_pdf.py` is a stub with no extra packages; replace it with your own script and install any Python dependencies you need.
 - **Config:** `acroform.process_script`: path to a Python script. `acroform.process_script_command`: executable to run it (default `python3`; use full path if not in PATH).
 - **Endpoint:** POST `/pdf-signable/acroform/process`. Body: `pdf_content` (base64, required), `document_key` (optional). The bundle writes the PDF to a temp file, runs the script with `--input <path>` and `--output <path>` (and `--document-key` if provided). The script must write the result to the output path. The bundle then dispatches **`AcroFormModifiedPdfProcessedEvent`** with the processed PDF bytes and the request; a listener in your app can save the file or send it elsewhere.
 - **Response:** 200 JSON `{ success: true, document_key?: string }`, or 200 `application/pdf` if the client sends `Accept: application/pdf`.

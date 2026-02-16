@@ -6,7 +6,7 @@
 - **Symfony** 6.1+, 7.x or 8.x
 - **PHP extensions:** form, http-client, twig, translation, validator, yaml
 
-**Optional — AcroForm Apply / Process (Python):** If you use the bundle’s **Apply to PDF** or **Process** endpoints with the included Python scripts (`scripts/apply_acroform_patches.py`, `scripts/process_modified_pdf.py`, or `scripts/extract_acroform_fields.py`), you need **Python 3.9+** and, for the apply script, the **pypdf** package (`pip install pypdf`). If you implement Apply or Process in PHP (e.g. via `AcroFormApplyRequestEvent` or a service implementing `PdfAcroFormEditorInterface`), no Python is required. See [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md) and [CONFIGURATION](CONFIGURATION.md#acroform).
+**Optional — AcroForm Apply / Process / Extract (Python):** If you use the bundle’s **Apply to PDF**, **Process**, or **fields extract** endpoints with the included Python scripts (`scripts/apply_acroform_patches.py`, `scripts/process_modified_pdf.py`, `scripts/extract_acroform_fields.py`), you need **Python 3.9+** and, for the apply and extract scripts, the **pypdf** package (`pip install pypdf`). The process script is a stub; replace it with your own and install any Python deps you need. If you implement Apply or Process in PHP (e.g. via `AcroFormApplyRequestEvent` or a service implementing `PdfAcroFormEditorInterface`), no Python is required. See [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md) and [CONFIGURATION](CONFIGURATION.md#acroform).
 
 ## Composer
 

@@ -7,7 +7,7 @@ The AcroForm editor lets you **list, edit and reposition** PDF form fields (Acro
 ## 1. Overview
 
 - **Frontend:** The viewer (PDF.js) renders the fields; the editor panel lets you load/save overrides, edit each field (type, label, default value, position/size) and add new fields. Overrides are applied in memory (`window.__pdfSignableAcroFormOverrides`); the PDF binary is unchanged.
-- **Backend:** Override persistence (session, DB, etc.) and optionally **Apply** (accepts PDF + patches and returns a modified PDF) and **Process** (script on the applied PDF). See [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md).
+- **Backend:** Override persistence (session, DB, etc.) and optionally **Apply** (accepts PDF + patches and returns a modified PDF) and **Process** (script on the applied PDF). Backend **PHP** requirements are the same as the bundle (see [INSTALLATION](INSTALLATION.md)). If you use the bundle’s **Python** scripts for Apply or Process, you need Python 3.9+ and, for the apply script, `pypdf`; see [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md) and [INSTALLATION](INSTALLATION.md#requirements).
 
 ---
 
