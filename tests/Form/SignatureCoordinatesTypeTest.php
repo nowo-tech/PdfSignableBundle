@@ -139,6 +139,19 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertSame('/assets/pdf.worker.js', $opts['pdfjs_worker_url']);
     }
 
+    /** buildView has pdfjs_worker_url null by default so the theme can use its default asset. */
+    public function testBuildViewPdfJsWorkerUrlDefaultNull(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model);
+        $view = $form->createView();
+        $opts = $view->vars['signature_coordinates_options'];
+
+        self::assertArrayHasKey('pdfjs_worker_url', $opts);
+        self::assertNull($opts['pdfjs_worker_url']);
+    }
+
     public function testFormWithNamedConfigMergesOptions(): void
     {
         $model = new SignatureCoordinatesModel();

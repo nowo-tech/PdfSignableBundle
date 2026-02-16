@@ -24,6 +24,11 @@ describe('getLoadUrl', () => {
     expect(r).toContain('url=');
     expect(r).toContain(encodeURIComponent('not-a-valid-url'));
   });
+
+  it('empty proxy base still produces query string for cross-origin', () => {
+    const r = getLoadUrl('', 'https://other.com/file.pdf');
+    expect(r).toBe('?url=' + encodeURIComponent('https://other.com/file.pdf'));
+  });
 });
 
 describe('getScaleForFitWidth', () => {
@@ -38,5 +43,13 @@ describe('getScaleForFitWidth', () => {
 describe('getScaleForFitPage', () => {
   it('null doc returns 1.5', async () => {
     expect(await getScaleForFitPage(null, null)).toBe(1.5);
+  });
+  it('null container returns 1.5', async () => {
+    const doc = {
+      getPage: vi.fn().mockResolvedValue({
+        getViewport: () => ({ width: 100, height: 200 }),
+      }),
+    };
+    expect(await getScaleForFitPage(doc as never, null)).toBe(1.5);
   });
 });
