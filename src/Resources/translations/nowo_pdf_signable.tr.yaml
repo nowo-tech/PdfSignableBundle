@@ -130,9 +130,15 @@ acroform_editor:
   modal_edit_title: 'Edit field'
   modal_label: 'Label'
   modal_label_placeholder: 'Field label'
+  modal_field_name: 'PDF alan adı (/T)'
+  modal_field_name_placeholder: "PDF'deki alan adı"
   modal_control_type: 'Control type'
   modal_rect_label: 'Rect (x, y, width, height) in PDF points'
   modal_rect_placeholder: '0, 0, 100, 20'
+  modal_max_len: 'Maks. uzunluk (metin/textarea)'
+  modal_max_len_placeholder: 'Boş = sınırsız'
+  modal_hidden: "Alanı PDF'de gizle"
+  modal_create_if_missing: 'Eksikse alan oluştur'
   modal_options_label: 'Options (select) — one per line, optional "value|label"'
   modal_options_placeholder: 'option1\noption2|Label 2'
   modal_default_value: 'Default value'

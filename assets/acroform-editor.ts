@@ -52,6 +52,7 @@ function initAcroFormEditor(root: HTMLElement): void {
   const loadBtn = root.querySelector<HTMLButtonElement>('#acroform-load-btn');
   const saveBtn = root.querySelector<HTMLButtonElement>('#acroform-save-btn');
   const clearBtn = root.querySelector<HTMLButtonElement>('#acroform-clear-btn');
+  const addFieldModeBtn = root.querySelector<HTMLButtonElement>('#acroform-add-field-mode-btn');
   const refreshInputsBtn = root.querySelector<HTMLButtonElement>('#acroform-refresh-inputs-btn');
 
   if (!docKeyEl || !jsonEl || !msgEl || !fieldsSection || !fieldsListEl || !loadBtn || !saveBtn || !clearBtn) {
@@ -66,7 +67,12 @@ function initAcroFormEditor(root: HTMLElement): void {
     refreshInputsBtn.style.display = 'none';
   }
 
-  (window as Window & { __pdfSignableAcroFormEditMode?: boolean }).__pdfSignableAcroFormEditMode = true;
+  const winGlobals = window as Window & {
+    __pdfSignableAcroFormEditMode?: boolean;
+    __pdfSignableAcroFormAddFieldMode?: boolean;
+  };
+  winGlobals.__pdfSignableAcroFormEditMode = true;
+  winGlobals.__pdfSignableAcroFormAddFieldMode = false;
   window.dispatchEvent(new CustomEvent('pdf-signable-acroform-edit-mode', { detail: { active: true } }));
 
   if (!root.querySelector('#acroform-editor-styles')) {
@@ -795,9 +801,12 @@ function initAcroFormEditor(root: HTMLElement): void {
     highlightFieldOnPdf(fieldId, page);
     const winMove = window as Window & { __pdfSignableAcroFormMoveResizeFieldId?: string };
     if (winMove.__pdfSignableAcroFormMoveResizeFieldId) return;
-    const fields = lastLoadedFields.length ? lastLoadedFields : getFieldsFromViewer();
-    const field = fields.find((f) => String(f.id) === fieldId);
-    if (field) openEditModal(field, draftOverrides[fieldId] ?? {});
+    // Modal opens only via the Edit (pencil) button, not on row click
+    _fieldsListEl.querySelectorAll('.acroform-list-row').forEach((r) => {
+      const el = r as HTMLElement;
+      if (el.dataset.fieldId === fieldId) el.classList.add('acroform-list-row--focused');
+      else el.classList.remove('acroform-list-row--focused');
+    });
   });
   _fieldsListEl.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -939,6 +948,28 @@ function initAcroFormEditor(root: HTMLElement): void {
     showMessage(str('msg_draft_cleared'), false);
     notifyViewerOverrides();
   });
+
+  let addFieldModeActive = false;
+  function setAddFieldMode(active: boolean): void {
+    addFieldModeActive = active;
+    winGlobals.__pdfSignableAcroFormAddFieldMode = active;
+    if (addFieldModeBtn) {
+      if (active) {
+        addFieldModeBtn.classList.remove('btn-outline-success');
+        addFieldModeBtn.classList.add('btn-success');
+        addFieldModeBtn.textContent = str('add_field_mode_btn_done');
+      } else {
+        addFieldModeBtn.classList.remove('btn-success');
+        addFieldModeBtn.classList.add('btn-outline-success');
+        addFieldModeBtn.textContent = str('add_field_mode_btn');
+      }
+    }
+  }
+  if (addFieldModeBtn) {
+    addFieldModeBtn.addEventListener('click', () => {
+      setAddFieldMode(!addFieldModeActive);
+    });
+  }
 
   let applyBtnRef: HTMLButtonElement | null = null;
   if (config.applyUrl) {
@@ -1157,9 +1188,13 @@ function initAcroFormEditor(root: HTMLElement): void {
     };
     setTimeout(() => {
       renderFieldsList(getFieldsFromViewer(), draftOverrides);
+      const newRow = _fieldsListEl.querySelector(`.acroform-list-row[data-field-id="${CSS.escape(newId)}"]`) as HTMLElement | null;
+      if (newRow) {
+        newRow.classList.add('acroform-list-row--focused');
+        newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }, 150);
-    const w = window as Window & { __pdfSignableAcroFormMoveResizeFieldId?: string };
-    if (!w.__pdfSignableAcroFormMoveResizeFieldId) openEditModal(syntheticField, draftOverrides[newId] as Record<string, unknown>);
+    // Modal opens only via Edit button in the list, not after placing a new field
   }) as EventListener);
 }
 

@@ -12,6 +12,16 @@ export type PdfJsLib = {
 const DEFAULT_PDFJS_WORKER_CDN =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+/**
+ * Returns an absolute URL for the worker so loading works from any base (SPA, CDN, etc.).
+ */
+function toAbsoluteWorkerUrl(url: string): string {
+  if (typeof window === 'undefined' || typeof URL === 'undefined') return url;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) return url;
+  const base = window.location.origin;
+  return url.startsWith('/') ? base + url : base + '/' + url;
+}
+
 export function getWorkerUrl(config: { pdfjsSource?: string; pdfjsWorkerUrl?: string }): string {
   const useNpm = config.pdfjsSource !== 'cdn';
   if (useNpm) {
@@ -22,14 +32,20 @@ export function getWorkerUrl(config: { pdfjsSource?: string; pdfjsWorkerUrl?: st
           '[PdfSignable] With pdfjs_source "npm" do not use the 3.11 CDN worker. Run pnpm run copy-worker and use the bundle asset.',
         );
       }
-      return config.pdfjsWorkerUrl!;
+      return toAbsoluteWorkerUrl(config.pdfjsWorkerUrl!);
     }
     const script = typeof document !== 'undefined' ? document.currentScript : null;
-    const scriptSrc =
+    let scriptSrc =
       script && 'src' in script && typeof (script as HTMLScriptElement).src === 'string'
         ? (script as HTMLScriptElement).src
         : '';
-    if (scriptSrc) return scriptSrc.replace(/\/[^/]*$/, '/pdf.worker.min.mjs');
+    if (!scriptSrc && typeof document !== 'undefined') {
+      const bundleScript = document.querySelector<HTMLScriptElement>(
+        'script[src*="pdf-signable.js"], script[src*="acroform-editor.js"]',
+      );
+      scriptSrc = bundleScript?.src ?? '';
+    }
+    if (scriptSrc) return toAbsoluteWorkerUrl(scriptSrc.replace(/\/[^/]*$/, '/pdf.worker.min.js'));
     throw new Error(
       '[PdfSignable] With pdfjsSource "npm" could not resolve worker URL. Set pdfjs_worker_url or run pnpm run copy-worker.',
     );

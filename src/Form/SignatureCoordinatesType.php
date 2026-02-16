@@ -533,7 +533,7 @@ final class SignatureCoordinatesType extends AbstractType
             'show_signature_boxes' => true,
             /* PDF.js source: "npm" = dynamic import from pdfjs-dist (default, same version as worker). "cdn" = script tag 3.x (legacy). */
             'pdfjs_source' => 'npm',
-            /* When pdfjs_source is "npm", worker URL (bundle asset after pnpm run copy-worker). Null = theme uses default asset. */
+            /* When pdfjs_source is "npm", worker URL (bundle asset; Vite build emits pdf.worker.min.js next to pdf-signable.js). Null = theme default. */
             'pdfjs_worker_url' => null,
         ]);
 

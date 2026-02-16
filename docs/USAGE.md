@@ -255,7 +255,7 @@ If `config` is set, the named config is merged first; any option you pass when c
 | `show_signature_boxes` | bool | `true` | When `false`, the signature boxes card (unit, origin, list, add/remove) is hidden. Use for AcroForm-only flows (e.g. overrides editor). Unit, origin and boxes are still rendered hidden so the form submits. |
 | `batch_sign_enabled` | bool | `false` | When `true`, a **Sign all** button is shown; submitting with that button sends `batch_sign=1` and the bundle dispatches **`BATCH_SIGN_REQUESTED`**. Your listener performs the actual batch signing. See [SIGNING_ADVANCED](SIGNING_ADVANCED.md). |
 | `pdfjs_source` | string | `'npm'` | How to load PDF.js: `'npm'` = dynamic import from pdfjs-dist (same version as worker); `'cdn'` = script tag 3.x (legacy). |
-| `pdfjs_worker_url` | string \| null | `null` | When `pdfjs_source` is `'npm'`, worker script URL (e.g. bundle asset after `pnpm run copy-worker`). `null` = theme default asset. |
+| `pdfjs_worker_url` | string \| null | `null` | When `pdfjs_source` is `'npm'`, worker script URL. `null` = theme default asset (`bundles/nowopdfsignable/js/pdf.worker.min.js`, emitted by Vite build). The bundle resolves relative URLs to absolute for SPAs. If you see "Setting up fake worker" or "Failed to fetch dynamically imported module", ensure the worker is served with `Content-Type: application/javascript` and is reachable. |
 
 Predefined elements: set the model’s `signatureBoxes` (e.g. with existing `SignatureBoxModel` instances) before creating the form; the collection will render those entries. The same `SignatureCoordinatesModel` / array structure is returned on submit.
 

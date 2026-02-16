@@ -186,6 +186,13 @@ final class AcroFormEditorType extends AbstractType
             $defaults = array_merge($defaults, $this->acroformConfigs[$alias]);
         }
 
-        return array_merge($defaults, array_intersect_key($options, $defaults));
+        $overrides = array_intersect_key($options, $defaults);
+        foreach ($overrides as $k => $v) {
+            if (null !== $v) {
+                $defaults[$k] = $v;
+            }
+        }
+
+        return $defaults;
     }
 }

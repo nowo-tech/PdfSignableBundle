@@ -22,7 +22,7 @@ describe('getWorkerUrl', () => {
   });
 
   it('returns custom pdfjsWorkerUrl when pdfjsSource is "npm" and url set (not 3.11 CDN)', () => {
-    const custom = '/bundles/nowopdfsignable/js/pdf.worker.min.mjs';
+    const custom = '/bundles/nowopdfsignable/js/pdf.worker.min.js';
     expect(getWorkerUrl({ pdfjsSource: 'npm', pdfjsWorkerUrl: custom })).toBe(custom);
   });
 
@@ -40,7 +40,7 @@ describe('getWorkerUrl', () => {
       src: 'https://example.com/assets/pdf-signable.js',
     };
     expect(getWorkerUrl({ pdfjsSource: 'npm' })).toBe(
-      'https://example.com/assets/pdf.worker.min.mjs'
+      'https://example.com/assets/pdf.worker.min.js'
     );
   });
 

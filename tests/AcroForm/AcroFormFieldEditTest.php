@@ -18,7 +18,7 @@ final class AcroFormFieldEditTest extends TestCase
         self::assertSame('text', $edit->controlType);
         self::assertSame('', $edit->rect);
         self::assertSame('', $edit->fieldName);
-        self::assertSame('', $edit->options);
+        self::assertNull($edit->options);
         self::assertSame('', $edit->defaultValue);
         self::assertFalse($edit->defaultChecked);
         self::assertSame('1', $edit->checkboxValueOn);

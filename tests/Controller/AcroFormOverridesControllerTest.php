@@ -12,6 +12,7 @@ use Nowo\PdfSignableBundle\Controller\AcroFormOverridesController;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
 use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,15 +23,22 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 final class AcroFormOverridesControllerTest extends TestCase
 {
+    /**
+     * @param array<string> $proxyUrlAllowlist When non-empty, pdf_url must match one entry (substring or regex #...)
+     */
     private function createController(
         bool $enabled = true,
         ?AcroFormOverridesStorageInterface $storage = null,
         bool $allowPdfModify = false,
         ?PdfAcroFormEditorInterface $editor = null,
         ?EventDispatcherInterface $eventDispatcher = null,
+        array $proxyUrlAllowlist = [],
         int $maxPatches = 500,
         ?string $fieldsExtractorScript = null,
         ?string $processScript = null,
+        string $processScriptCommand = 'python3',
+        bool $debug = false,
+        ?LoggerInterface $logger = null,
     ): AcroFormOverridesController {
         $storage = $storage ?? $this->createMock(AcroFormOverridesStorageInterface::class);
         /** @var EventDispatcherInterface&\PHPUnit\Framework\MockObject\MockObject $dispatcher */
@@ -48,11 +56,14 @@ final class AcroFormOverridesControllerTest extends TestCase
             $editor,
             $dispatcher,
             $translator,
-            [],
+            $proxyUrlAllowlist,
             20 * 1024 * 1024,
             $maxPatches,
             $fieldsExtractorScript,
             $processScript,
+            $processScriptCommand,
+            $debug,
+            $logger,
         );
     }
 
@@ -188,6 +199,20 @@ final class AcroFormOverridesControllerTest extends TestCase
 
         self::assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
         self::assertSame('', $response->getContent());
+    }
+
+    /** removeOverrides can resolve document_key from request bag. */
+    public function testRemoveOverridesWithDocumentKeyInRequestBag(): void
+    {
+        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage->expects(self::once())->method('remove')->with('key-from-request');
+        $controller = $this->createController(storage: $storage);
+        $request = Request::create('/pdf-signable/acroform/overrides', 'DELETE');
+        $request->request->replace(['document_key' => 'key-from-request']);
+
+        $response = $controller->removeOverrides($request);
+
+        self::assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
     }
 
     public function testApplyWhenDisabledReturns404(): void
@@ -350,6 +375,28 @@ final class AcroFormOverridesControllerTest extends TestCase
         self::assertStringContainsString('No editor', $response->getContent());
     }
 
+    public function testApplyNoEditorNoEventResponseWithDebugLogsWarning(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('warning')
+            ->with(
+                self::stringContains('AcroForm apply response: 501'),
+                self::anything()
+            );
+        $controller = $this->createController(allowPdfModify: true, editor: null, debug: true, logger: $logger);
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'pdf_content' => base64_encode('%PDF-1.4'),
+            'patches' => [['fieldId' => 'f1']],
+        ], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertSame(Response::HTTP_NOT_IMPLEMENTED, $response->getStatusCode());
+    }
+
     public function testApplyReturnsJsonWhenEventHasValidationResult(): void
     {
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -395,6 +442,48 @@ final class AcroFormOverridesControllerTest extends TestCase
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());
         self::assertSame('%PDF-1.4 edited', $response->getContent());
         self::assertSame('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function testApplyWithEditorAndValidateOnlyReturnsJson(): void
+    {
+        $editor = $this->createMock(PdfAcroFormEditorInterface::class);
+        $editor->method('applyPatches')->willReturn('%PDF-1.4');
+        $controller = $this->createController(allowPdfModify: true, editor: $editor, debug: true);
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'pdf_content' => base64_encode('%PDF-1.4'),
+            'patches' => [['fieldId' => 'f1']],
+            'validate_only' => true,
+        ], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertTrue($data['success']);
+        self::assertSame(1, $data['patches_count']);
+    }
+
+    public function testApplyWithEditorValidateOnlyAndExceptionReturnsJsonError(): void
+    {
+        $editor = $this->createMock(PdfAcroFormEditorInterface::class);
+        $editor->method('applyPatches')->willThrowException(new AcroFormEditorException('Invalid PDF'));
+        $controller = $this->createController(allowPdfModify: true, editor: $editor, debug: true);
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'pdf_content' => base64_encode('%PDF-1.4'),
+            'patches' => [['fieldId' => 'f1']],
+            'validate_only' => true,
+        ], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertFalse($data['success']);
+        self::assertSame('Invalid PDF', $data['error']);
     }
 
     public function testSaveOverridesWithFieldsInBody(): void
@@ -445,6 +534,23 @@ final class AcroFormOverridesControllerTest extends TestCase
         $request = Request::create('/pdf-signable/acroform/overrides?document_key=from-query', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['overrides' => []], JSON_THROW_ON_ERROR));
+
+        $response = $controller->saveOverrides($request);
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+    }
+
+    /** When fields is present but not an array, it is ignored (stored as null). */
+    public function testSaveOverridesWithFieldsNotArrayTreatedAsNull(): void
+    {
+        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage->expects(self::once())->method('set')->with('doc1', self::callback(function (AcroFormOverrides $o): bool {
+            return $o->documentKey === 'doc1' && $o->overrides === [] && $o->fields === null;
+        }));
+        $controller = $this->createController(storage: $storage);
+        $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['document_key' => 'doc1', 'overrides' => [], 'fields' => 'invalid'], JSON_THROW_ON_ERROR));
 
         $response = $controller->saveOverrides($request);
 
@@ -545,6 +651,20 @@ final class AcroFormOverridesControllerTest extends TestCase
         self::assertStringContainsString('document_key', $data['error']);
     }
 
+    public function testLoadOverridesDocumentKeyNotStringTreatedAsEmpty(): void
+    {
+        $controller = $this->createController();
+        $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['document_key' => 123], JSON_THROW_ON_ERROR));
+
+        $response = $controller->loadOverrides($request);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('document_key required in body', $data['error']);
+    }
+
     public function testLoadOverridesWithFieldsInBodyReturnsMergedOverrides(): void
     {
         $overrides = new AcroFormOverrides(['f1' => ['defaultValue' => 'x']], 'doc1');
@@ -623,6 +743,18 @@ final class AcroFormOverridesControllerTest extends TestCase
         self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
     }
 
+    public function testProcessWhenProcessScriptEmptyAfterTrimReturns404(): void
+    {
+        $controller = $this->createController(processScript: '   ');
+        $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+        $response = $controller->process($request);
+
+        self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+    }
+
     public function testProcessWhenProcessScriptNotAFileReturns503(): void
     {
         $controller = $this->createController(processScript: '/nonexistent/process.py');
@@ -667,5 +799,351 @@ final class AcroFormOverridesControllerTest extends TestCase
         self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
         $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertStringContainsString('Invalid', $data['error']);
+    }
+
+    /** When process script runs but exits non-zero, controller returns 400. */
+    public function testProcessWhenScriptExitsNonZeroReturns400(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_process_exit1_' . getmypid() . '.py';
+        file_put_contents($script, "import sys\nsys.exit(1)\n");
+        try {
+            $controller = $this->createController(processScript: $script);
+            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+                'CONTENT_TYPE' => 'application/json',
+            ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $response = $controller->process($request);
+
+            self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+            $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString('Process script failed', $data['error']);
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    /** When process script command is not in PATH, response includes Python install hint. */
+    public function testProcessWhenProcessCommandNotFoundReturns400WithPythonMessage(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_process_dummy_' . getmypid() . '.py';
+        file_put_contents($script, "import sys\nsys.exit(0)\n");
+        try {
+            $controller = $this->createController(processScript: $script, processScriptCommand: 'python999nonexistent');
+            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+                'CONTENT_TYPE' => 'application/json',
+            ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $response = $controller->process($request);
+
+            self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+            $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString('Process script failed', $data['error']);
+            self::assertStringContainsString('Python', $data['error']);
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    /** When process script does not write output file, controller returns 400. */
+    public function testProcessWhenScriptProducesNoOutputFileReturns400(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_process_noout_' . getmypid() . '.py';
+        file_put_contents($script, "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument('--input')\nparser.add_argument('--output')\nparser.parse_args()\n# do not write to output\nimport sys\nsys.exit(0)\n");
+        try {
+            $controller = $this->createController(processScript: $script);
+            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+                'CONTENT_TYPE' => 'application/json',
+            ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $response = $controller->process($request);
+
+            self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+            $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString('no output file', $data['error']);
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    /** When Accept header contains application/pdf, process returns 200 with PDF body. */
+    public function testProcessWhenAcceptPdfReturns200WithPdfContent(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_process_copy_' . getmypid() . '.py';
+        file_put_contents($script, <<<'PY'
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--input')
+parser.add_argument('--output')
+args = parser.parse_args()
+with open(args.input, 'rb') as f:
+    data = f.read()
+with open(args.output, 'wb') as f:
+    f.write(data)
+PY
+        );
+        try {
+            $controller = $this->createController(processScript: $script);
+            $pdfB64 = base64_encode('%PDF-1.4 minimal');
+            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/pdf',
+            ], json_encode(['pdf_content' => $pdfB64], JSON_THROW_ON_ERROR));
+
+            $response = $controller->process($request);
+
+            self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+            self::assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
+            self::assertSame('%PDF-1.4 minimal', $response->getContent());
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    public function testApplyPdfUrlEmptyReturns400(): void
+    {
+        $controller = $this->createController(allowPdfModify: true);
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['pdf_url' => '', 'patches' => []], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertArrayHasKey('error', $data);
+    }
+
+    public function testApplyPdfUrlInvalidUrlReturns400(): void
+    {
+        $controller = $this->createController(allowPdfModify: true);
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['pdf_url' => 'not-a-url', 'patches' => []], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertArrayHasKey('error', $data);
+    }
+
+    public function testApplyPdfUrlNotInAllowlistReturns403(): void
+    {
+        $controller = $this->createController(
+            allowPdfModify: true,
+            proxyUrlAllowlist: ['https://example.com'],
+        );
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'pdf_url' => 'https://other-site.com/doc.pdf',
+            'patches' => [],
+        ], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertStringContainsString('not allowed', $data['error'] ?? '');
+    }
+
+    /** When pdf_url matches allowlist substring, controller does not return 403 (allowlist check passes). */
+    public function testApplyPdfUrlAllowedByAllowlistSubstringNotForbidden(): void
+    {
+        $controller = $this->createController(
+            allowPdfModify: true,
+            proxyUrlAllowlist: ['example.com'],
+        );
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'pdf_url' => 'https://example.com/doc.pdf',
+            'patches' => [],
+        ], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertNotSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testApplyPdfUrlLocalhostBlockedBySsrfReturns403(): void
+    {
+        $controller = $this->createController(allowPdfModify: true);
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'pdf_url' => 'http://localhost/doc.pdf',
+            'patches' => [],
+        ], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertArrayHasKey('error', $data);
+    }
+
+    public function testApplyEventSetsErrorDetailInPayload(): void
+    {
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(function (object $event): object {
+            if ($event instanceof AcroFormApplyRequestEvent) {
+                $event->setError(new \RuntimeException('Apply failed'));
+                $event->setErrorDetail('stderr output here');
+            }
+
+            return $event;
+        });
+        $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'pdf_content' => base64_encode('%PDF-1.4'),
+            'patches' => [['fieldId' => 'f1']],
+        ], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('Apply failed', $data['error']);
+        self::assertSame('stderr output here', $data['detail'] ?? null);
+    }
+
+    public function testApplyPdfTooLargeReturns400(): void
+    {
+        $controller = $this->createController(allowPdfModify: true);
+        $largeContent = str_repeat('x', 21 * 1024 * 1024);
+        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'pdf_content' => base64_encode($largeContent),
+            'patches' => [],
+        ], JSON_THROW_ON_ERROR));
+
+        $response = $controller->apply($request);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertStringContainsString('PDF too large', $data['error'] ?? '');
+    }
+
+    public function testExtractFieldsScriptNotFoundReturns503(): void
+    {
+        $controller = $this->createController(fieldsExtractorScript: '/nonexistent/extract.py');
+        $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+        $response = $controller->extractFields($request);
+
+        self::assertSame(Response::HTTP_SERVICE_UNAVAILABLE, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertStringContainsString('not found', $data['error']);
+    }
+
+    public function testExtractFieldsPdfTooLargeReturns400(): void
+    {
+        $existingFile = __DIR__ . '/../../composer.json';
+        self::assertFileExists($existingFile);
+        $controller = $this->createController(fieldsExtractorScript: $existingFile);
+        $largeContent = str_repeat('x', 21 * 1024 * 1024);
+        $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['pdf_content' => base64_encode($largeContent)], JSON_THROW_ON_ERROR));
+
+        $response = $controller->extractFields($request);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('PDF too large', $data['error']);
+    }
+
+    /** When extractor script exits non-zero, controller returns 500. */
+    public function testExtractFieldsWhenExtractorScriptExitsNonZeroReturns500(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_extract_exit1_' . getmypid() . '.py';
+        file_put_contents($script, "import sys\nsys.exit(1)\n");
+        try {
+            $controller = $this->createController(fieldsExtractorScript: $script);
+            $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+                'CONTENT_TYPE' => 'application/json',
+            ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $response = $controller->extractFields($request);
+
+            self::assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
+            $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString('Fields extractor failed', $data['error']);
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    /** When extractor script output is not a JSON array (e.g. null), controller returns 500. */
+    public function testExtractFieldsWhenScriptOutputNotArrayReturns500(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_extract_invalid_' . getmypid() . '.py';
+        file_put_contents($script, "print('null')\n");
+        try {
+            $controller = $this->createController(fieldsExtractorScript: $script);
+            $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+                'CONTENT_TYPE' => 'application/json',
+            ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $response = $controller->extractFields($request);
+
+            self::assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
+            $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString('Invalid extractor output', $data['error']);
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    public function testGetOverridesWithDocumentKeyInQuery(): void
+    {
+        $overrides = new AcroFormOverrides([], 'my-doc');
+        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage->method('get')->with('my-doc')->willReturn($overrides);
+        $controller = $this->createController(storage: $storage);
+        $request = Request::create('/acroform/overrides', 'GET', ['document_key' => 'my-doc']);
+
+        $response = $controller->getOverrides($request);
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('my-doc', $data['document_key']);
+    }
+
+    /** document_key can be read from request bag (e.g. when sent in body for GET). */
+    public function testGetOverridesWithDocumentKeyInRequestBag(): void
+    {
+        $overrides = new AcroFormOverrides(['f1' => []], 'from-request');
+        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage->method('get')->with('from-request')->willReturn($overrides);
+        $controller = $this->createController(storage: $storage);
+        $request = Request::create('/acroform/overrides', 'GET');
+        $request->request->replace(['document_key' => 'from-request']);
+
+        $response = $controller->getOverrides($request);
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('from-request', $data['document_key']);
+    }
+
+    public function testSaveOverridesMissingDocumentKeyReturns400(): void
+    {
+        $controller = $this->createController();
+        $request = Request::create('/acroform/overrides', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['overrides' => []], JSON_THROW_ON_ERROR));
+
+        $response = $controller->saveOverrides($request);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertStringContainsString('document_key', $data['error']);
     }
 }

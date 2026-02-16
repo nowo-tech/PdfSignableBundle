@@ -22,8 +22,8 @@ final class AcroFormFieldEdit
         public string $rect = '',
         /** PDF field name (/T); used for matching and when creating new fields. */
         public string $fieldName = '',
-        /** Options for select/choice: one per line, optional "value|label". */
-        public string $options = '',
+        /** Options for select/choice: one per line, optional "value|label". Form may submit null when empty. */
+        public ?string $options = null,
         public string $defaultValue = '',
         public bool $defaultChecked = false,
         public string $checkboxValueOn = '1',

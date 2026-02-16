@@ -84,6 +84,61 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertSame('signature_coordinates', $type->getBlockPrefix());
     }
 
+    /** buildView uses examplePdfUrl when pdf_url option is null/empty. */
+    public function testBuildViewUsesExamplePdfUrlWhenPdfUrlOptionNull(): void
+    {
+        $exampleUrl = 'https://example.com/fallback.pdf';
+        $typeWithExample = new SignatureCoordinatesType($exampleUrl, []);
+        $factory = (new \Symfony\Component\Form\FormFactoryBuilder())
+            ->addExtension(new \Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension())
+            ->addExtension(new PreloadedExtension([new SignatureBoxType(), $typeWithExample], []))
+            ->addExtension(new ValidatorExtension(Validation::createValidator()))
+            ->getFormFactory();
+        $model = new SignatureCoordinatesModel();
+        $form = $factory->create(SignatureCoordinatesType::class, $model);
+        $view = $form->createView();
+
+        self::assertSame($exampleUrl, $view->vars['signature_coordinates_options']['pdf_url']);
+    }
+
+    /** buildView with url_field and show_load_pdf_button false. */
+    public function testBuildViewUrlFieldAndShowLoadPdfButtonFalse(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'url_field' => false,
+            'show_load_pdf_button' => false,
+        ]);
+        $view = $form->createView();
+        $opts = $view->vars['signature_coordinates_options'];
+
+        self::assertFalse($opts['url_field']);
+        self::assertFalse($opts['show_load_pdf_button']);
+    }
+
+    /** buildView passes viewer_lazy_load, batch_sign_enabled, show_signature_boxes, pdfjs_source to options. */
+    public function testBuildViewViewerAndPdfJsOptions(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'viewer_lazy_load' => true,
+            'batch_sign_enabled' => true,
+            'show_signature_boxes' => false,
+            'pdfjs_source' => 'cdn',
+            'pdfjs_worker_url' => '/assets/pdf.worker.js',
+        ]);
+        $view = $form->createView();
+        $opts = $view->vars['signature_coordinates_options'];
+
+        self::assertTrue($opts['viewer_lazy_load']);
+        self::assertTrue($opts['batch_sign_enabled']);
+        self::assertFalse($opts['show_signature_boxes']);
+        self::assertSame('cdn', $opts['pdfjs_source']);
+        self::assertSame('/assets/pdf.worker.js', $opts['pdfjs_worker_url']);
+    }
+
     public function testFormWithNamedConfigMergesOptions(): void
     {
         $model = new SignatureCoordinatesModel();

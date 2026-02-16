@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.29.3",
   "scripts": {
-    "build": "tsc && vite build && VITE_ENTRY=acroform-editor vite build && pnpm run copy-worker && pnpm run build:css",
+    "build": "tsc && vite build && VITE_ENTRY=acroform-editor vite build && pnpm run build:css",
     "copy-worker": "node scripts/copy-pdf-worker.cjs",
     "postinstall": "node scripts/copy-pdf-worker.cjs",
     "build:css": "sass assets/pdf-signable.scss src/Resources/public/js/pdf-signable.css --no-source-map",

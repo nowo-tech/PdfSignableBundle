@@ -42,6 +42,7 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
         'btn_restore_title', 'btn_hide_title', 'btn_edit_title', 'btn_move_resize_title', 'btn_add_field',
         'btn_add_field_title', 'btn_edit_mode', 'btn_edit_mode_title', 'msg_edit_mode_hint', 'msg_click_pdf_to_place',
         'row_click_highlight', 'download_filename', 'error_prefix', 'new_field_name_pattern',
+        'add_field_mode_btn', 'add_field_mode_btn_done', 'add_field_mode_title',
     ];
 
     /**

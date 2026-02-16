@@ -534,4 +534,37 @@ final class SignatureControllerTest extends TestCase
         self::assertSame(502, $response->getStatusCode());
         self::assertStringContainsString('proxy.error_load', $response->getContent());
     }
+
+    /** SSRF: IPv6 link-local (fe80::) is blocked. */
+    public function testProxyBlocksIpv6LinkLocalFe80Returns403(): void
+    {
+        $controller = $this->createController(true, []);
+        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://[fe80::1]/internal.pdf']);
+        $response = $controller->proxyPdf($request);
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    /** When fetch fails, logger receives a warning with url and reason. */
+    public function testProxyLogsWarningWhenFetchFails(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('warning')
+            ->with(
+                self::stringContains('PDF proxy could not fetch'),
+                self::callback(function (array $context): bool {
+                    return isset($context['url']) && isset($context['reason']);
+                })
+            );
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnArgument(0);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
+        $request = Request::create('/pdf-signable/proxy', 'GET', [
+            'url' => 'https://non-existent-domain-xyz-12345.invalid/document.pdf',
+        ]);
+        $response = $controller->proxyPdf($request);
+        self::assertSame(502, $response->getStatusCode());
+    }
 }

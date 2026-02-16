@@ -130,4 +130,23 @@ final class AcroFormEditorTypeTest extends TypeTestCase
         $form = $this->factory->create(AcroFormEditorType::class, new AcroFormPageModel());
         self::assertSame(AcroFormPageModel::class, $form->getConfig()->getDataClass());
     }
+
+    /** When config is null or empty string, defaultConfigAlias is used for merging. */
+    public function testBuildViewWithConfigNullUsesDefaultAlias(): void
+    {
+        $form = $this->factory->create(AcroFormEditorType::class, new AcroFormPageModel(), ['config' => null]);
+        $view = $form->createView();
+        $opts = $view->vars['acroform_editor_options'];
+        self::assertSame('choice', $opts['label_mode']);
+    }
+
+    /** buildForm sets initial pdfUrl from options when provided. */
+    public function testBuildFormPdfUrlOptionSetsFieldData(): void
+    {
+        $model = new AcroFormPageModel();
+        $form = $this->factory->create(AcroFormEditorType::class, $model, [
+            'pdf_url' => 'https://example.com/preload.pdf',
+        ]);
+        self::assertSame('https://example.com/preload.pdf', $form->get('pdfUrl')->getData());
+    }
 }

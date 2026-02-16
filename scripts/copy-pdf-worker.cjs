@@ -1,7 +1,7 @@
 /**
  * Copies the pdfjs-dist worker from node_modules to the bundle public directory.
  * Keeps worker version in sync with the API (same package).
- * Output: src/Resources/public/js/pdf.worker.min.mjs
+ * Output: src/Resources/public/js/pdf.worker.min.js (.js so servers serve with application/javascript).
  */
 const fs = require('fs');
 const path = require('path');
@@ -9,7 +9,7 @@ const path = require('path');
 const packageRoot = path.resolve(__dirname, '..');
 const buildDir = path.join(packageRoot, 'node_modules', 'pdfjs-dist', 'build');
 const outDir = path.join(packageRoot, 'src', 'Resources', 'public', 'js');
-const outFile = path.join(outDir, 'pdf.worker.min.mjs');
+const outFile = path.join(outDir, 'pdf.worker.min.js');
 
 const candidates = ['pdf.worker.min.mjs', 'pdf.worker.mjs', 'pdf.worker.min.js', 'pdf.worker.js'];
 

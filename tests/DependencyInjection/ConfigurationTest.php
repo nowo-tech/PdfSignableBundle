@@ -245,4 +245,42 @@ final class ConfigurationTest extends TestCase
         self::assertSame(20.0, $config['acroform']['min_field_width']);
         self::assertSame(18.0, $config['acroform']['min_field_height']);
     }
+
+    public function testAuditFillFromRequestDefaultAndOverride(): void
+    {
+        $configuration = new Configuration();
+        $processor = new Processor();
+        $config = $processor->processConfiguration($configuration, []);
+
+        self::assertArrayHasKey('audit', $config);
+        self::assertTrue($config['audit']['fill_from_request']);
+
+        $configOverride = $processor->processConfiguration($configuration, [
+            ['audit' => ['fill_from_request' => false]],
+        ]);
+        self::assertFalse($configOverride['audit']['fill_from_request']);
+    }
+
+    public function testAcroformDefaultConfigAliasDefaultAndOverride(): void
+    {
+        $configuration = new Configuration();
+        $processor = new Processor();
+        $config = $processor->processConfiguration($configuration, []);
+
+        self::assertSame('default', $config['acroform']['default_config_alias']);
+
+        $configOverride = $processor->processConfiguration($configuration, [
+            ['acroform' => ['default_config_alias' => 'minimal']],
+        ]);
+        self::assertSame('minimal', $configOverride['acroform']['default_config_alias']);
+    }
+
+    public function testSignatureDefaultConfigAliasDefault(): void
+    {
+        $configuration = new Configuration();
+        $processor = new Processor();
+        $config = $processor->processConfiguration($configuration, []);
+
+        self::assertSame('default', $config['signature']['default_config_alias']);
+    }
 }

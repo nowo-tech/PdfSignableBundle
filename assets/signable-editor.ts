@@ -1105,12 +1105,12 @@ function run(): void {
     if ((e.target as HTMLElement).closest('[data-pdf-signable="overlay"]')) return;
     const target = e.target as HTMLElement;
     if (target.closest('.acroform-field-input')) notifyAcroFormInputFocused(target);
-    const winEdit = window as Window & { __pdfSignableAcroFormEditMode?: boolean };
-    if (winEdit.__pdfSignableAcroFormEditMode) {
+    const winEdit = window as Window & { __pdfSignableAcroFormEditMode?: boolean; __pdfSignableAcroFormAddFieldMode?: boolean };
+    if (winEdit.__pdfSignableAcroFormEditMode && winEdit.__pdfSignableAcroFormAddFieldMode) {
       const input = target.closest('.acroform-field-input');
       if (input) return;
       if (target.closest('.acroform-field-outline')) return;
-      // Add field: click on empty canvas places a new AcroForm field. Move/resize only via the list row button (cruceta).
+      // Add field: click on empty canvas places a new AcroForm field (only when Add field mode is active). Move/resize via list row button.
       const wrapper = target.closest('.pdf-page-wrapper');
       const canvas = wrapper?.querySelector<HTMLCanvasElement>('canvas');
       if (canvas && pdfDoc) {

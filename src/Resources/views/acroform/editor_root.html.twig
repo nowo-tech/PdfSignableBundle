@@ -64,6 +64,7 @@
     <button type="button" id="acroform-load-btn" class="btn btn-sm btn-outline-primary">{{ 'acroform_editor.load_btn'|trans({}, 'nowo_pdf_signable') }}</button>
     <button type="button" id="acroform-save-btn" class="btn btn-sm btn-primary">{{ 'acroform_editor.save_btn'|trans({}, 'nowo_pdf_signable') }}</button>
     <button type="button" id="acroform-clear-btn" class="btn btn-sm btn-outline-secondary">{{ 'acroform_editor.clear_btn'|trans({}, 'nowo_pdf_signable') }}</button>
+    <button type="button" id="acroform-add-field-mode-btn" class="btn btn-sm btn-outline-success" title="{{ 'acroform_editor.add_field_mode_title'|trans({}, 'nowo_pdf_signable') }}">{{ 'acroform_editor.add_field_mode_btn'|trans({}, 'nowo_pdf_signable') }}</button>
   </div>
   {# Edit-field modal: Twig-rendered, overrideable via templates/bundles/NowoPdfSignable/acroform/ #}
   {% include '@NowoPdfSignable/acroform/_edit_modal.html.twig' with { acroform_config: _config, acroform_edit_form: acroform_edit_form|default(null) } %}

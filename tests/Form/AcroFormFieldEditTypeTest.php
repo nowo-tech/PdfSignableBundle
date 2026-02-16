@@ -153,6 +153,19 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
         self::assertSame([10, 12], $config['font_sizes']);
     }
 
+    public function testBuildViewIncludesShowFieldRectAndFieldNameOtherText(): void
+    {
+        $form = $this->factory->create(AcroFormFieldEditType::class, new AcroFormFieldEdit(), [
+            'show_field_rect' => false,
+            'field_name_other_text' => 'Other value',
+        ]);
+        $view = $form->createView();
+        $config = $view->vars['acroform_edit_config'];
+        self::assertFalse($config['show_field_rect']);
+        self::assertSame('Other value', $config['field_name_other_text']);
+        self::assertArrayHasKey('font_families', $config);
+    }
+
     public function testDataClassIsAcroFormFieldEdit(): void
     {
         $form = $this->factory->create(AcroFormFieldEditType::class, new AcroFormFieldEdit());

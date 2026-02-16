@@ -82,4 +82,25 @@ final class NowoPdfSignableTwigExtensionTest extends TestCase
         $extension->shouldIncludeAssets();
         self::assertTrue($request->attributes->get('_nowo_pdf_signable_assets_included'));
     }
+
+    public function testGetAcroformEditorConfigReturnsConfigArray(): void
+    {
+        $requestStack = new RequestStack();
+        $extension = $this->createExtension($requestStack);
+
+        $config = $extension->getAcroformEditorConfig();
+
+        self::assertIsArray($config);
+        self::assertArrayHasKey('field_name_mode', $config);
+        self::assertArrayHasKey('field_name_choices', $config);
+        self::assertArrayHasKey('show_field_rect', $config);
+        self::assertArrayHasKey('font_sizes', $config);
+        self::assertArrayHasKey('font_families', $config);
+        self::assertArrayHasKey('min_field_width', $config);
+        self::assertArrayHasKey('min_field_height', $config);
+        self::assertArrayHasKey('label_mode', $config);
+        self::assertArrayHasKey('label_choices', $config);
+        self::assertArrayHasKey('label_other_text', $config);
+        self::assertArrayHasKey('field_name_other_text', $config);
+    }
 }

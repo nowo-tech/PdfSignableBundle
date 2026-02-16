@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Tests\DependencyInjection;
 
+use Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface;
+use Nowo\PdfSignableBundle\Controller\AcroFormOverridesController;
 use Nowo\PdfSignableBundle\DependencyInjection\Configuration;
 use Nowo\PdfSignableBundle\DependencyInjection\PdfSignableExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Tests for PdfSignableExtension (alias, load and prepend).
@@ -182,5 +185,55 @@ final class PdfSignableExtensionTest extends TestCase
 
         self::assertFalse($container->hasExtension('twig'));
         self::assertFalse($container->hasExtension('framework'));
+    }
+
+    /**
+     * When acroform.overrides_storage is not "session", the extension sets an alias for AcroFormOverridesStorageInterface.
+     */
+    public function testLoadSetsCustomOverridesStorageAlias(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new PdfSignableExtension();
+        $extension->load([
+            ['acroform' => ['overrides_storage' => 'my_custom_storage_service']],
+        ], $container);
+
+        self::assertTrue($container->hasAlias(AcroFormOverridesStorageInterface::class));
+        self::assertSame('my_custom_storage_service', (string) $container->getAlias(AcroFormOverridesStorageInterface::class));
+    }
+
+    /**
+     * When acroform.editor_service_id is set, the extension injects it into AcroFormOverridesController.
+     */
+    public function testLoadSetsEditorServiceIdOnController(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new PdfSignableExtension();
+        $extension->load([
+            ['acroform' => ['editor_service_id' => 'app.acroform_editor']],
+        ], $container);
+
+        self::assertTrue($container->hasDefinition(AcroFormOverridesController::class));
+        $def = $container->getDefinition(AcroFormOverridesController::class);
+        $editorRef = $def->getArgument('$editor');
+        self::assertInstanceOf(Reference::class, $editorRef);
+        self::assertSame('app.acroform_editor', (string) $editorRef);
+    }
+
+    public function testLoadSetsAuditAndTsaAndSigningServiceParameters(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new PdfSignableExtension();
+        $extension->load([
+            [
+                'audit' => ['fill_from_request' => false],
+                'tsa_url' => 'https://tsa.example.com',
+                'signing_service_id' => 'app.pades_signer',
+            ],
+        ], $container);
+
+        self::assertFalse($container->getParameter('nowo_pdf_signable.audit.fill_from_request'));
+        self::assertSame('https://tsa.example.com', $container->getParameter('nowo_pdf_signable.tsa_url'));
+        self::assertSame('app.pades_signer', $container->getParameter('nowo_pdf_signable.signing_service_id'));
     }
 }
