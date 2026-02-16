@@ -909,16 +909,16 @@ final class AcroFormOverridesControllerTest extends TestCase
         file_put_contents(
             $script,
             <<<'PY'
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('--input')
-parser.add_argument('--output')
-args = parser.parse_args()
-with open(args.input, 'rb') as f:
-    data = f.read()
-with open(args.output, 'wb') as f:
-    f.write(data)
-PY
+                import argparse
+                parser = argparse.ArgumentParser()
+                parser.add_argument('--input')
+                parser.add_argument('--output')
+                args = parser.parse_args()
+                with open(args.input, 'rb') as f:
+                    data = f.read()
+                with open(args.output, 'wb') as f:
+                    f.write(data)
+                PY
         );
         try {
             $controller = $this->createController(processScript: $script);
