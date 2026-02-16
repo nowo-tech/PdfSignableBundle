@@ -287,6 +287,7 @@ This completes the backend extension for **AcroForm editing**: persistent overri
 
 When you prefer **Python** to apply patches (e.g. with pypdf) instead of a PHP editor service or event:
 
+- **Dependencies:** **Python 3.9+** and **pypdf** (`pip install pypdf`). The bundle does not depend on Python; these are only required if you configure `apply_script` to use the bundled script or your own Python script that uses pypdf.
 - **Config:** `acroform.apply_script`: path to a Python script. `acroform.apply_script_command`: executable to run it (default `python3`; use full path if not in PATH).
 - **Contract:** The script is invoked with `--pdf <path>` and `--patches <path>` (JSON file). It must write the **modified PDF to stdout** (binary).
 - **Bundle script:** `scripts/apply_acroform_patches.py` applies `rect`, `defaultValue`, `hidden` (removes widget), `label` (/TU), `fieldType` (/FT), `options` (/Opt), `maxLen` (/MaxLen), and `fontSize`/`fontFamily` (default appearance /DA) per patch. FieldId can be `p{N}-{idx}` (page and annotation index) or a field name.
