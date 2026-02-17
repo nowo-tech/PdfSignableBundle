@@ -6,6 +6,7 @@ namespace Nowo\PdfSignableBundle\Tests\Event;
 
 use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 /**
  * Tests for PdfSignableEvents constants.
@@ -49,7 +50,7 @@ final class PdfSignableEventsTest extends TestCase
 
     public function testClassIsNotInstantiable(): void
     {
-        $ref = new \ReflectionClass(PdfSignableEvents::class);
+        $ref = new ReflectionClass(PdfSignableEvents::class);
         self::assertTrue($ref->getConstructor()->isPrivate());
     }
 }

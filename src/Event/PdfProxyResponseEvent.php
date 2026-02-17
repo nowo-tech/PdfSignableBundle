@@ -16,8 +16,8 @@ use Symfony\Contracts\EventDispatcher\Event;
 final class PdfProxyResponseEvent extends Event
 {
     /**
-     * @param string   $url      The URL that was fetched
-     * @param Request  $request  The HTTP request to the proxy endpoint
+     * @param string $url The URL that was fetched
+     * @param Request $request The HTTP request to the proxy endpoint
      * @param Response $response The PDF response (can be modified by listeners)
      */
     public function __construct(

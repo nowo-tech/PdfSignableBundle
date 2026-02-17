@@ -38,6 +38,30 @@ describe('getScaleForFitWidth', () => {
   it('null container returns 1.5', async () => {
     expect(await getScaleForFitWidth({ getPage: vi.fn() } as never, null)).toBe(1.5);
   });
+  it('returns scale from container width minus gutter and viewport when container has no scroll child', async () => {
+    const doc = {
+      getPage: vi.fn().mockResolvedValue({
+        getViewport: () => ({ width: 200, height: 300 }),
+      }),
+    };
+    const container = document.createElement('div');
+    Object.defineProperty(container, 'clientWidth', { value: 276, configurable: true }); // 276 - 24 gutter = 252
+    Object.defineProperty(container, 'clientHeight', { value: 400, configurable: true });
+    const scale = await getScaleForFitWidth(doc as never, container);
+    expect(scale).toBe((276 - 24) / 200);
+    expect(scale).toBeGreaterThanOrEqual(0.5);
+  });
+  it('returns 1.5 when container clientWidth minus gutter is <= 0', async () => {
+    const doc = {
+      getPage: vi.fn().mockResolvedValue({
+        getViewport: () => ({ width: 100, height: 200 }),
+      }),
+    };
+    const container = document.createElement('div');
+    Object.defineProperty(container, 'clientWidth', { value: 10, configurable: true });
+    const scale = await getScaleForFitWidth(doc as never, container);
+    expect(scale).toBe(1.5);
+  });
 });
 
 describe('getScaleForFitPage', () => {
@@ -51,5 +75,22 @@ describe('getScaleForFitPage', () => {
       }),
     };
     expect(await getScaleForFitPage(doc as never, null)).toBe(1.5);
+  });
+  it('returns min of scaleW and scaleH when container has dimensions', async () => {
+    const doc = {
+      getPage: vi.fn().mockResolvedValue({
+        getViewport: () => ({ width: 100, height: 200 }),
+      }),
+    };
+    const container = document.createElement('div');
+    const cw = 276;
+    const ch = 376;
+    Object.defineProperty(container, 'clientWidth', { value: cw, configurable: true });
+    Object.defineProperty(container, 'clientHeight', { value: ch, configurable: true });
+    const scale = await getScaleForFitPage(doc as never, container);
+    const scaleW = (cw - 24) / 100;
+    const scaleH = (ch - 24) / 200;
+    expect(scale).toBe(Math.max(0.5, Math.min(scaleW, scaleH)));
+    expect(scale).toBeGreaterThanOrEqual(0.5);
   });
 });

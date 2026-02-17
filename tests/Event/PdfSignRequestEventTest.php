@@ -32,7 +32,7 @@ final class PdfSignRequestEventTest extends TestCase
 
     public function testDefaultOptionsEmptyArray(): void
     {
-        $model = new SignatureCoordinatesModel();
+        $model   = new SignatureCoordinatesModel();
         $request = Request::create('/pdf-signable', 'POST');
 
         $event = new PdfSignRequestEvent($model, $request);
@@ -42,9 +42,9 @@ final class PdfSignRequestEventTest extends TestCase
 
     public function testSetAndGetResponse(): void
     {
-        $model = new SignatureCoordinatesModel();
+        $model   = new SignatureCoordinatesModel();
         $request = Request::create('/pdf-signable', 'POST');
-        $event = new PdfSignRequestEvent($model, $request);
+        $event   = new PdfSignRequestEvent($model, $request);
 
         self::assertNull($event->getResponse());
 

@@ -6,6 +6,10 @@ namespace Nowo\PdfSignableBundle\Tests\Model;
 
 use Nowo\PdfSignableBundle\Model\AuditMetadata;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+
+use function constant;
+use function defined;
 
 /**
  * Tests for AuditMetadata constants (recommended keys for audit trail).
@@ -25,10 +29,10 @@ final class AuditMetadataTest extends TestCase
         ];
         foreach ($expected as $name) {
             self::assertTrue(
-                \defined(AuditMetadata::class.'::'.$name),
-                "Constant AuditMetadata::{$name} should be defined"
+                defined(AuditMetadata::class . '::' . $name),
+                "Constant AuditMetadata::{$name} should be defined",
             );
-            $value = \constant(AuditMetadata::class.'::'.$name);
+            $value = constant(AuditMetadata::class . '::' . $name);
             self::assertIsString($value, "AuditMetadata::{$name} should be string");
             self::assertNotSame('', $value, "AuditMetadata::{$name} should not be empty");
         }
@@ -47,7 +51,7 @@ final class AuditMetadataTest extends TestCase
 
     public function testClassIsNotInstantiable(): void
     {
-        $ref = new \ReflectionClass(AuditMetadata::class);
+        $ref = new ReflectionClass(AuditMetadata::class);
         self::assertTrue($ref->getConstructor()->isPrivate());
     }
 }

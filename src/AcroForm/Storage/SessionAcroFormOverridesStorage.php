@@ -8,6 +8,8 @@ use Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\HttpFoundation\RequestStack;
 
+use function is_array;
+
 /**
  * Session-based storage for AcroForm overrides.
  *
@@ -34,9 +36,9 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
         if (!$session) {
             return null;
         }
-        $key = self::SESSION_KEY_PREFIX.$this->sanitizeKey($documentKey);
+        $key  = self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey);
         $data = $session->get($key);
-        if (!\is_array($data)) {
+        if (!is_array($data)) {
             return null;
         }
 
@@ -49,7 +51,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
         if (!$session) {
             return;
         }
-        $key = self::SESSION_KEY_PREFIX.$this->sanitizeKey($documentKey);
+        $key = self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey);
         $session->set($key, $overrides->toArray());
     }
 
@@ -59,7 +61,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
         if (!$session) {
             return;
         }
-        $session->remove(self::SESSION_KEY_PREFIX.$this->sanitizeKey($documentKey));
+        $session->remove(self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey));
     }
 
     /**

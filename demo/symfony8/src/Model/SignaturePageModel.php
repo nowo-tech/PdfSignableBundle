@@ -38,6 +38,7 @@ class SignaturePageModel
     public function setSignatureCoordinates(?SignatureCoordinatesModel $signatureCoordinates): self
     {
         $this->signatureCoordinates = $signatureCoordinates;
+
         return $this;
     }
 }

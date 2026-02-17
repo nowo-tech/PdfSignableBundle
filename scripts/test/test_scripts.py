@@ -384,6 +384,63 @@ class TestProcessModifiedPdf:
         assert out_path.stat().st_size == minimal_pdf.stat().st_size
 
 
+class TestMinimalPdfBytes:
+    """Tests for _minimal_pdf_bytes helper."""
+
+    def test_minimal_pdf_bytes_starts_with_pdf_header(self) -> None:
+        """_minimal_pdf_bytes returns bytes that are a valid PDF header."""
+        data = _minimal_pdf_bytes()
+        assert data.startswith(b"%PDF")
+        assert len(data) > 100
+
+    def test_minimal_pdf_bytes_is_valid_pdf(self) -> None:
+        """_minimal_pdf_bytes produces bytes readable by PdfReader."""
+        data = _minimal_pdf_bytes()
+        reader = PdfReader(__import__("io").BytesIO(data))
+        assert len(reader.pages) >= 1
+
+
+class TestProcessModifiedPdfEdgeCases:
+    """Additional edge cases for process_modified_pdf.py."""
+
+    def test_process_input_not_file_exits_nonzero(self, tmp_path: Path) -> None:
+        """CLI with --input as directory (not a file) exits non-zero."""
+        out_path = tmp_path / "out.pdf"
+        result = subprocess.run(
+            [
+                "python3",
+                str(BUNDLE_ROOT / "scripts" / "process_modified_pdf.py"),
+                "--input",
+                str(tmp_path),
+                "--output",
+                str(out_path),
+            ],
+            capture_output=True,
+            cwd=BUNDLE_ROOT,
+        )
+        assert result.returncode != 0
+
+    def test_process_extra_args_accepted(self, minimal_pdf: Path, tmp_path: Path) -> None:
+        """CLI accepts --document-key and still copies input to output."""
+        out_path = tmp_path / "out.pdf"
+        result = subprocess.run(
+            [
+                "python3",
+                str(BUNDLE_ROOT / "scripts" / "process_modified_pdf.py"),
+                "--input",
+                str(minimal_pdf),
+                "--output",
+                str(out_path),
+                "--document-key",
+                "key-with-dash",
+            ],
+            capture_output=True,
+            cwd=BUNDLE_ROOT,
+        )
+        assert result.returncode == 0
+        assert out_path.read_bytes() == minimal_pdf.read_bytes()
+
+
 class TestPython3Available:
     """Sanity check: python3 is available and pypdf is installed."""
 

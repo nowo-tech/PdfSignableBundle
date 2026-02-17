@@ -30,8 +30,8 @@ final class BatchSignRequestedEventTest extends TestCase
 
     public function testBoxTargetWhenProvided(): void
     {
-        $model = new SignatureCoordinatesModel();
-        $request = Request::create('/pdf-signable', 'POST');
+        $model     = new SignatureCoordinatesModel();
+        $request   = Request::create('/pdf-signable', 'POST');
         $boxTarget = [0, 2];
 
         $event = new BatchSignRequestedEvent($model, $request, $boxTarget);
@@ -41,8 +41,8 @@ final class BatchSignRequestedEventTest extends TestCase
 
     public function testBoxTargetWithNames(): void
     {
-        $model = new SignatureCoordinatesModel();
-        $request = Request::create('/pdf-signable', 'POST');
+        $model     = new SignatureCoordinatesModel();
+        $request   = Request::create('/pdf-signable', 'POST');
         $boxTarget = ['signer_1', 'witness'];
 
         $event = new BatchSignRequestedEvent($model, $request, $boxTarget);

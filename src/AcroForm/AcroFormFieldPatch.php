@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\AcroForm;
 
+use InvalidArgumentException;
+
+use function is_array;
+
 /**
  * DTO for a single AcroForm field patch (frontend to backend).
  *
@@ -50,23 +54,23 @@ final class AcroFormFieldPatch
      *
      * @param array<string, mixed> $data Associative array with at least fieldId (or field_id)
      *
-     * @throws \InvalidArgumentException If fieldId is missing or empty
+     * @throws InvalidArgumentException If fieldId is missing or empty
      */
     public static function fromArray(array $data): self
     {
         $fieldId = $data['fieldId'] ?? $data['field_id'] ?? '';
-        if ('' === $fieldId) {
-            throw new \InvalidArgumentException('fieldId is required.');
+        if ($fieldId === '') {
+            throw new InvalidArgumentException('fieldId is required.');
         }
 
         return new self(
             $fieldId,
-            isset($data['rect']) && \is_array($data['rect']) ? $data['rect'] : null,
+            isset($data['rect']) && is_array($data['rect']) ? $data['rect'] : null,
             isset($data['defaultValue']) ? (string) $data['defaultValue'] : (isset($data['default_value']) ? (string) $data['default_value'] : null),
             isset($data['fieldType']) ? (string) $data['fieldType'] : (isset($data['field_type']) ? (string) $data['field_type'] : null),
             isset($data['label']) ? (string) $data['label'] : null,
             isset($data['controlType']) ? (string) $data['controlType'] : (isset($data['control_type']) ? (string) $data['control_type'] : null),
-            isset($data['options']) && \is_array($data['options']) ? $data['options'] : null,
+            isset($data['options']) && is_array($data['options']) ? $data['options'] : null,
             isset($data['page']) ? (int) $data['page'] : null,
             isset($data['hidden']) ? (bool) $data['hidden'] : null,
             isset($data['fieldName']) ? (string) $data['fieldName'] : (isset($data['field_name']) ? (string) $data['field_name'] : null),
@@ -86,40 +90,40 @@ final class AcroFormFieldPatch
     public function toArray(): array
     {
         $out = ['fieldId' => $this->fieldId];
-        if (null !== $this->rect) {
+        if ($this->rect !== null) {
             $out['rect'] = $this->rect;
         }
-        if (null !== $this->defaultValue) {
+        if ($this->defaultValue !== null) {
             $out['defaultValue'] = $this->defaultValue;
         }
-        if (null !== $this->fieldType) {
+        if ($this->fieldType !== null) {
             $out['fieldType'] = $this->fieldType;
         }
-        if (null !== $this->label) {
+        if ($this->label !== null) {
             $out['label'] = $this->label;
         }
-        if (null !== $this->controlType) {
+        if ($this->controlType !== null) {
             $out['controlType'] = $this->controlType;
         }
-        if (null !== $this->options) {
+        if ($this->options !== null) {
             $out['options'] = $this->options;
         }
-        if (null !== $this->page) {
+        if ($this->page !== null) {
             $out['page'] = $this->page;
         }
-        if (null !== $this->hidden) {
+        if ($this->hidden !== null) {
             $out['hidden'] = $this->hidden;
         }
-        if (null !== $this->fieldName) {
+        if ($this->fieldName !== null) {
             $out['fieldName'] = $this->fieldName;
         }
-        if (null !== $this->maxLen) {
+        if ($this->maxLen !== null) {
             $out['maxLen'] = $this->maxLen;
         }
-        if (null !== $this->fontSize) {
+        if ($this->fontSize !== null) {
             $out['fontSize'] = $this->fontSize;
         }
-        if (null !== $this->fontFamily && '' !== $this->fontFamily) {
+        if ($this->fontFamily !== null && $this->fontFamily !== '') {
             $out['fontFamily'] = $this->fontFamily;
         }
 

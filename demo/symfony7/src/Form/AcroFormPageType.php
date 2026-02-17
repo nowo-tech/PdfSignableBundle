@@ -27,7 +27,7 @@ final class AcroFormPageType extends AbstractType
     {
         $acroformOptions = array_merge([], $options['acroform_options'] ?? []);
         $builder->add('acroFormEditor', AcroFormEditorType::class, array_merge([
-            'label' => false,
+            'label'  => false,
             'mapped' => false,
         ], $acroformOptions));
 
@@ -54,7 +54,7 @@ final class AcroFormPageType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => \Nowo\PdfSignableBundle\Model\AcroFormPageModel::class,
+            'data_class'       => AcroFormPageModel::class,
             'acroform_options' => [],
         ]);
         $resolver->setAllowedTypes('acroform_options', 'array');

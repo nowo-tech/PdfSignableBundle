@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\AcroForm;
 
+use function is_array;
+
 /**
  * Builds a clean environment for Python subprocesses (apply script, extractor, process script).
  *
@@ -25,7 +27,7 @@ final class PythonProcessEnv
     public static function build(): array
     {
         $env = getenv();
-        if (!\is_array($env)) {
+        if (!is_array($env)) {
             return [];
         }
         unset(
@@ -33,10 +35,10 @@ final class PythonProcessEnv
             $env['PYTHONHOME'],
             $env['VIRTUAL_ENV'],
             $env['PYTHONUSERBASE'],
-            $env['PYTHONNOUSERSITE']
+            $env['PYTHONNOUSERSITE'],
         );
-        $env['PATH'] = '/usr/local/bin:/usr/bin:/bin'.(isset($env['PATH']) && '' !== $env['PATH'] ? ':'.$env['PATH'] : '');
+        $env['PATH'] = '/usr/local/bin:/usr/bin:/bin' . (isset($env['PATH']) && $env['PATH'] !== '' ? ':' . $env['PATH'] : '');
 
-        return array_filter($env, static fn ($v): bool => false !== $v);
+        return array_filter($env, static fn ($v): bool => $v !== false);
     }
 }

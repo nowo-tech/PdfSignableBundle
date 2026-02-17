@@ -26,8 +26,8 @@ final class PdfSignRequestEvent extends Event
 
     /**
      * @param SignatureCoordinatesModel $coordinates The coordinates model (PDF URL, boxes)
-     * @param Request                   $request     The current request
-     * @param array<string, mixed>      $options     optional: signing_profile, box_indices, etc
+     * @param Request $request The current request
+     * @param array<string, mixed> $options optional: signing_profile, box_indices, etc
      */
     public function __construct(
         private readonly SignatureCoordinatesModel $coordinates,

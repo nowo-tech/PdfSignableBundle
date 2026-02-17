@@ -20,9 +20,9 @@ use Symfony\Contracts\EventDispatcher\Event;
 final class BatchSignRequestedEvent extends Event
 {
     /**
-     * @param SignatureCoordinatesModel   $coordinates The submitted coordinates (boxes to sign)
-     * @param Request                     $request     The HTTP request (POST with form data)
-     * @param list<int>|list<string>|null $boxTarget   null = all boxes, or list of 0-based indices or box names to sign
+     * @param SignatureCoordinatesModel $coordinates The submitted coordinates (boxes to sign)
+     * @param Request $request The HTTP request (POST with form data)
+     * @param list<int>|list<string>|null $boxTarget null = all boxes, or list of 0-based indices or box names to sign
      */
     public function __construct(
         private readonly SignatureCoordinatesModel $coordinates,

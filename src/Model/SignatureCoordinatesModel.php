@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Model;
 
+use function is_array;
+
 /**
  * Main model for signature coordinates: PDF URL, unit, origin and signature boxes.
  *
@@ -217,15 +219,15 @@ class SignatureCoordinatesModel
     public function toArray(): array
     {
         $out = [
-            'pdf_url' => $this->pdfUrl,
-            'unit' => $this->unit,
-            'origin' => $this->origin,
+            'pdf_url'         => $this->pdfUrl,
+            'unit'            => $this->unit,
+            'origin'          => $this->origin,
             'signature_boxes' => array_map(static fn (SignatureBoxModel $box) => $box->toArray(), $this->signatureBoxes),
         ];
         if ($this->signingConsent) {
             $out['signing_consent'] = true;
         }
-        if ([] !== $this->auditMetadata) {
+        if ($this->auditMetadata !== []) {
             $out['audit_metadata'] = $this->auditMetadata;
         }
 

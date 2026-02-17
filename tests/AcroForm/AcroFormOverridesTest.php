@@ -45,15 +45,15 @@ final class AcroFormOverridesTest extends TestCase
     public function testToArrayIncludesFieldsWhenNonEmpty(): void
     {
         $fields = [['id' => 'f1', 'rect' => [0, 0, 100, 20]]];
-        $o = new AcroFormOverrides([], 'doc1', $fields);
-        $out = $o->toArray();
+        $o      = new AcroFormOverrides([], 'doc1', $fields);
+        $out    = $o->toArray();
         self::assertArrayHasKey('fields', $out);
         self::assertSame($fields, $out['fields']);
     }
 
     public function testToArrayExcludesFieldsWhenNull(): void
     {
-        $o = new AcroFormOverrides([], 'doc1', null);
+        $o   = new AcroFormOverrides([], 'doc1', null);
         $out = $o->toArray();
         self::assertArrayNotHasKey('fields', $out);
     }
@@ -61,9 +61,9 @@ final class AcroFormOverridesTest extends TestCase
     public function testFromArrayWithFields(): void
     {
         $data = [
-            'overrides' => ['f1' => ['defaultValue' => 'x']],
+            'overrides'    => ['f1' => ['defaultValue' => 'x']],
             'document_key' => 'doc1',
-            'fields' => [['id' => 'f1', 'rect' => [0, 0, 50, 20]]],
+            'fields'       => [['id' => 'f1', 'rect' => [0, 0, 50, 20]]],
         ];
         $o = AcroFormOverrides::fromArray($data);
         self::assertSame($data['fields'], $o->fields);
@@ -85,8 +85,15 @@ final class AcroFormOverridesTest extends TestCase
 
     public function testToArrayExcludesFieldsWhenEmptyArray(): void
     {
-        $o = new AcroFormOverrides([], 'doc1', []);
+        $o   = new AcroFormOverrides([], 'doc1', []);
         $out = $o->toArray();
         self::assertArrayNotHasKey('fields', $out);
+    }
+
+    public function testFromArrayWithoutDocumentKeyKeyUsesNull(): void
+    {
+        $o = AcroFormOverrides::fromArray(['overrides' => ['f1' => []]]);
+        self::assertNull($o->documentKey);
+        self::assertSame(['f1' => []], $o->overrides);
     }
 }

@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
+use function is_string;
+
 final class DemosTwigExtension extends AbstractExtension
 {
     public function __construct(
@@ -47,10 +49,11 @@ final class DemosTwigExtension extends AbstractExtension
     public function demosPrevNext(): array
     {
         $request = $this->requestStack->getCurrentRequest();
-        $route = $request?->attributes->get('_route');
-        if (!$route || !\is_string($route)) {
+        $route   = $request?->attributes->get('_route');
+        if (!$route || !is_string($route)) {
             return ['prev' => null, 'next' => null];
         }
+
         return DemoMenu::prevNext($route);
     }
 }

@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+use function is_array;
+
 /**
  * Demo controller: AcroForm editor (save/load overrides, apply to PDF, process).
  */
@@ -30,6 +32,7 @@ class AcroFormController extends AbstractController
     public function acroformEditor(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><strong>AcroForm editor</strong> — PDF viewer (FNMT PDF preloaded) plus a panel to <strong>save and load overrides</strong> (default value, label, control type, rect) per field.</li><li>Uses the bundle endpoints <code>GET/POST /pdf-signable/acroform/overrides</code> (session storage).</li></ul>';
+
         return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform', 'AcroForm editor (save/load overrides)', $explanation);
     }
 
@@ -37,6 +40,7 @@ class AcroFormController extends AbstractController
     public function acroformEditorLabelChoice(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><strong>Label as dropdown</strong> — when editing a field, the label is a <code>select</code> with predefined options (Nombre, Apellidos, DNI, Fecha, Firma) plus <strong>Otro</strong> for free text.</li></ul>';
+
         return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform-label-choice', 'AcroForm editor — Label as dropdown', $explanation, [
             'config' => 'label_dropdown',
         ]);
@@ -46,6 +50,7 @@ class AcroFormController extends AbstractController
     public function acroformEditorNoCoords(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><strong>Coordinates hidden</strong> — when editing a field, the rect input is not shown. Config: <code>show_field_rect: false</code>.</li></ul>';
+
         return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform-no-coords', 'AcroForm editor — Coordinates hidden', $explanation, [
             'show_field_rect' => false,
         ]);
@@ -55,6 +60,7 @@ class AcroFormController extends AbstractController
     public function acroformEditorCustomFonts(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><strong>Custom font options</strong> — font size is a <code>select</code> and font family is limited to the configured list.</li></ul>';
+
         return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform-custom-fonts', 'AcroForm editor — Custom font options', $explanation, [
             'config' => 'with_fonts',
         ]);
@@ -64,6 +70,7 @@ class AcroFormController extends AbstractController
     public function acroformEditorAllOptions(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><strong>All options combined</strong> — label dropdown, coordinates hidden, custom font lists.</li></ul>';
+
         return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform-all-options', 'AcroForm editor — All options', $explanation, [
             'config' => 'all_options',
         ]);
@@ -73,8 +80,9 @@ class AcroFormController extends AbstractController
     public function acroformEditorMinSize(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li>Same as <strong>AcroForm editor</strong> but with <code>min_field_width: 24</code>, <code>min_field_height: 24</code> (PDF points).</li></ul>';
+
         return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform-min-size', 'AcroForm editor (min field size 24 pt)', $explanation, [
-            'min_field_width' => 24.0,
+            'min_field_width'  => 24.0,
             'min_field_height' => 24.0,
         ]);
     }
@@ -83,10 +91,10 @@ class AcroFormController extends AbstractController
     private function renderAcroFormEditor(Request $request, string $documentKey, string $pageTitle, string $explanation, array $options = []): Response
     {
         $configName = $options['config'] ?? null;
-        $resolved = $options;
-        if (null !== $configName && '' !== $configName) {
+        $resolved   = $options;
+        if ($configName !== null && $configName !== '') {
             $acroformConfigs = $this->getParameter('nowo_pdf_signable.acroform.configs');
-            if (\is_array($acroformConfigs) && isset($acroformConfigs[$configName]) && \is_array($acroformConfigs[$configName])) {
+            if (is_array($acroformConfigs) && isset($acroformConfigs[$configName]) && is_array($acroformConfigs[$configName])) {
                 $resolved = array_merge($resolved, $acroformConfigs[$configName]);
             }
         }
@@ -96,22 +104,22 @@ class AcroFormController extends AbstractController
         $model->setDocumentKey($documentKey);
 
         $acroformEditForm = $this->createForm(AcroFormFieldEditType::class, new AcroFormFieldEdit(), [
-            'field_name_mode' => $resolved['field_name_mode'] ?? $resolved['label_mode'] ?? $this->getParameter('nowo_pdf_signable.acroform.field_name_mode'),
-            'field_name_choices' => $resolved['field_name_choices'] ?? $resolved['label_choices'] ?? $this->getParameter('nowo_pdf_signable.acroform.field_name_choices'),
+            'field_name_mode'       => $resolved['field_name_mode'] ?? $resolved['label_mode'] ?? $this->getParameter('nowo_pdf_signable.acroform.field_name_mode'),
+            'field_name_choices'    => $resolved['field_name_choices'] ?? $resolved['label_choices'] ?? $this->getParameter('nowo_pdf_signable.acroform.field_name_choices'),
             'field_name_other_text' => $resolved['field_name_other_text'] ?? $resolved['label_other_text'] ?? $this->getParameter('nowo_pdf_signable.acroform.field_name_other_text'),
-            'show_field_rect' => $resolved['show_field_rect'] ?? $this->getParameter('nowo_pdf_signable.acroform.show_field_rect'),
-            'font_sizes' => $resolved['font_sizes'] ?? $this->getParameter('nowo_pdf_signable.acroform.font_sizes'),
-            'font_families' => $resolved['font_families'] ?? $this->getParameter('nowo_pdf_signable.acroform.font_families'),
+            'show_field_rect'       => $resolved['show_field_rect'] ?? $this->getParameter('nowo_pdf_signable.acroform.show_field_rect'),
+            'font_sizes'            => $resolved['font_sizes'] ?? $this->getParameter('nowo_pdf_signable.acroform.font_sizes'),
+            'font_families'         => $resolved['font_families'] ?? $this->getParameter('nowo_pdf_signable.acroform.font_families'),
         ])->createView();
 
         $acroformOptions = array_merge([
-            'pdf_url' => self::FNMT_ACROFORM_PDF_URL,
-            'document_key' => $documentKey,
-            'load_url' => $this->generateUrl('nowo_pdf_signable_acroform_overrides_load'),
-            'post_url' => $this->generateUrl('nowo_pdf_signable_acroform_overrides_save'),
-            'apply_url' => $this->generateUrl('nowo_pdf_signable_acroform_apply'),
-            'process_url' => $this->generateUrl('nowo_pdf_signable_acroform_process'),
-            'debug' => $this->debug,
+            'pdf_url'            => self::FNMT_ACROFORM_PDF_URL,
+            'document_key'       => $documentKey,
+            'load_url'           => $this->generateUrl('nowo_pdf_signable_acroform_overrides_load'),
+            'post_url'           => $this->generateUrl('nowo_pdf_signable_acroform_overrides_save'),
+            'apply_url'          => $this->generateUrl('nowo_pdf_signable_acroform_apply'),
+            'process_url'        => $this->generateUrl('nowo_pdf_signable_acroform_process'),
+            'debug'              => $this->debug,
             'acroform_edit_form' => $acroformEditForm,
         ], $options);
 
@@ -128,8 +136,8 @@ class AcroFormController extends AbstractController
         }
 
         return $this->render('signature/acroform_editor.html.twig', [
-            'form' => $form,
-            'page_title' => $pageTitle,
+            'form'               => $form,
+            'page_title'         => $pageTitle,
             'config_explanation' => $explanation,
         ]);
     }

@@ -8,13 +8,17 @@ use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
 use Nowo\PdfSignableBundle\EventListener\AcroFormApplyScriptListener;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
+
+use function dirname;
+use function sprintf;
 
 final class AcroFormApplyScriptListenerTest extends TestCase
 {
     public function testReturnsEarlyWhenEventHasResponse(): void
     {
         $listener = new AcroFormApplyScriptListener(null, 'python3');
-        $event = new AcroFormApplyRequestEvent('%PDF', []);
+        $event    = new AcroFormApplyRequestEvent('%PDF', []);
         $event->setModifiedPdf('%PDF modified');
 
         $listener($event);
@@ -25,7 +29,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
     public function testReturnsEarlyWhenApplyScriptIsNull(): void
     {
         $listener = new AcroFormApplyScriptListener(null, 'python3');
-        $event = new AcroFormApplyRequestEvent('%PDF', []);
+        $event    = new AcroFormApplyRequestEvent('%PDF', []);
 
         $listener($event);
 
@@ -36,7 +40,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
     public function testReturnsEarlyWhenApplyScriptIsEmpty(): void
     {
         $listener = new AcroFormApplyScriptListener('  ', 'python3');
-        $event = new AcroFormApplyRequestEvent('%PDF', []);
+        $event    = new AcroFormApplyRequestEvent('%PDF', []);
 
         $listener($event);
 
@@ -47,7 +51,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
     public function testSetsErrorWhenScriptFileDoesNotExist(): void
     {
         $listener = new AcroFormApplyScriptListener('/nonexistent/script.py', 'python3');
-        $event = new AcroFormApplyRequestEvent('%PDF', []);
+        $event    = new AcroFormApplyRequestEvent('%PDF', []);
 
         $listener($event);
 
@@ -61,9 +65,9 @@ final class AcroFormApplyScriptListenerTest extends TestCase
      */
     public function testSetsErrorWhenScriptPathIsDirectory(): void
     {
-        $dirPath = sys_get_temp_dir();
+        $dirPath  = sys_get_temp_dir();
         $listener = new AcroFormApplyScriptListener($dirPath, 'python3');
-        $event = new AcroFormApplyRequestEvent('%PDF', []);
+        $event    = new AcroFormApplyRequestEvent('%PDF', []);
 
         $listener($event);
 
@@ -77,31 +81,31 @@ final class AcroFormApplyScriptListenerTest extends TestCase
      */
     public function testRunsApplyScriptAndSetsModifiedPdfWhenScriptAvailable(): void
     {
-        $scriptPath = dirname(__DIR__, 2).'/scripts/apply_acroform_patches.py';
+        $scriptPath = dirname(__DIR__, 2) . '/scripts/apply_acroform_patches.py';
         if (!is_file($scriptPath)) {
             self::markTestSkipped('Apply script not found');
         }
 
-        $minimalPdfPath = sys_get_temp_dir().'/pdf_signable_minimal_'.getmypid().'.pdf';
-        $genScript = sys_get_temp_dir().'/pdf_signable_gen_'.getmypid().'.py';
+        $minimalPdfPath = sys_get_temp_dir() . '/pdf_signable_minimal_' . getmypid() . '.pdf';
+        $genScript      = sys_get_temp_dir() . '/pdf_signable_gen_' . getmypid() . '.py';
         file_put_contents($genScript, "from pypdf import PdfWriter\nfrom io import BytesIO\nimport sys\nw=PdfWriter()\nw.add_blank_page(100,100)\nb=BytesIO()\nw.write(b)\nopen(sys.argv[1],'wb').write(b.getvalue())\n");
         $createResult = -1;
         exec(sprintf('python3 %s %s 2>/dev/null', escapeshellarg($genScript), escapeshellarg($minimalPdfPath)), $_, $createResult);
         @unlink($genScript);
-        if (0 !== $createResult || !is_file($minimalPdfPath)) {
+        if ($createResult !== 0 || !is_file($minimalPdfPath)) {
             @unlink($minimalPdfPath);
             self::markTestSkipped('Could not create minimal PDF (pypdf required)');
         }
 
         try {
             $pdfContents = file_get_contents($minimalPdfPath);
-            $patch = AcroFormFieldPatch::fromArray(['fieldId' => 'p1-0']);
-            $event = new AcroFormApplyRequestEvent($pdfContents, [$patch]);
+            $patch       = AcroFormFieldPatch::fromArray(['fieldId' => 'p1-0']);
+            $event       = new AcroFormApplyRequestEvent($pdfContents, [$patch]);
 
             $listener = new AcroFormApplyScriptListener($scriptPath, 'python3');
             $listener($event);
 
-            self::assertNull($event->getError(), 'Error: '.($event->getErrorDetail() ?? ''));
+            self::assertNull($event->getError(), 'Error: ' . ($event->getErrorDetail() ?? ''));
             self::assertNotNull($event->getModifiedPdf());
             self::assertStringStartsWith('%PDF', $event->getModifiedPdf());
         } finally {
@@ -111,11 +115,11 @@ final class AcroFormApplyScriptListenerTest extends TestCase
 
     public function testSetsErrorWhenScriptExitsNonZero(): void
     {
-        $script = sys_get_temp_dir().'/pdf_apply_exit1_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdf_apply_exit1_' . getmypid() . '.py';
         file_put_contents($script, "import sys\nsys.exit(1)\n");
         try {
             $listener = new AcroFormApplyScriptListener($script, 'python3');
-            $event = new AcroFormApplyRequestEvent('%PDF-1.4', []);
+            $event    = new AcroFormApplyRequestEvent('%PDF-1.4', []);
 
             $listener($event);
 
@@ -129,11 +133,11 @@ final class AcroFormApplyScriptListenerTest extends TestCase
 
     public function testSetsErrorWhenScriptOutputEmpty(): void
     {
-        $script = sys_get_temp_dir().'/pdf_apply_empty_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdf_apply_empty_' . getmypid() . '.py';
         file_put_contents($script, "import sys\n# no output\n");
         try {
             $listener = new AcroFormApplyScriptListener($script, 'python3');
-            $event = new AcroFormApplyRequestEvent('%PDF-1.4', []);
+            $event    = new AcroFormApplyRequestEvent('%PDF-1.4', []);
 
             $listener($event);
 
@@ -147,7 +151,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
 
     public function testSetsErrorWhenScriptOutputNotPdf(): void
     {
-        $script = sys_get_temp_dir().'/pdf_apply_text_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdf_apply_text_' . getmypid() . '.py';
         file_put_contents(
             $script,
             <<<'PY'
@@ -158,7 +162,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
         );
         try {
             $listener = new AcroFormApplyScriptListener($script, 'python3');
-            $event = new AcroFormApplyRequestEvent('%PDF-1.4', []);
+            $event    = new AcroFormApplyRequestEvent('%PDF-1.4', []);
 
             $listener($event);
 
@@ -172,7 +176,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
 
     public function testSetsValidationResultWhenValidateOnlyAndScriptReturnsJson(): void
     {
-        $script = sys_get_temp_dir().'/pdf_apply_dry_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdf_apply_dry_' . getmypid() . '.py';
         file_put_contents(
             $script,
             <<<'PY'
@@ -183,7 +187,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
         );
         try {
             $listener = new AcroFormApplyScriptListener($script, 'python3');
-            $event = new AcroFormApplyRequestEvent('%PDF-1.4', [], true);
+            $event    = new AcroFormApplyRequestEvent('%PDF-1.4', [], true);
 
             $listener($event);
 
@@ -197,11 +201,11 @@ final class AcroFormApplyScriptListenerTest extends TestCase
 
     public function testSetsErrorWhenValidateOnlyAndScriptReturnsNonJson(): void
     {
-        $script = sys_get_temp_dir().'/pdf_apply_dry_invalid_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdf_apply_dry_invalid_' . getmypid() . '.py';
         file_put_contents($script, "print('not json')\n");
         try {
             $listener = new AcroFormApplyScriptListener($script, 'python3');
-            $event = new AcroFormApplyRequestEvent('%PDF-1.4', [], true);
+            $event    = new AcroFormApplyRequestEvent('%PDF-1.4', [], true);
 
             $listener($event);
 
@@ -215,7 +219,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
     public function testReturnsEarlyWhenEventHasValidationResult(): void
     {
         $listener = new AcroFormApplyScriptListener('/nonexistent/script.py', 'python3');
-        $event = new AcroFormApplyRequestEvent('%PDF', []);
+        $event    = new AcroFormApplyRequestEvent('%PDF', []);
         $event->setValidationResult(['success' => true]);
 
         $listener($event);
@@ -227,8 +231,8 @@ final class AcroFormApplyScriptListenerTest extends TestCase
     public function testReturnsEarlyWhenEventHasError(): void
     {
         $listener = new AcroFormApplyScriptListener('/nonexistent/script.py', 'python3');
-        $event = new AcroFormApplyRequestEvent('%PDF', []);
-        $event->setError(new \RuntimeException('Previous error'));
+        $event    = new AcroFormApplyRequestEvent('%PDF', []);
+        $event->setError(new RuntimeException('Previous error'));
 
         $listener($event);
 
@@ -238,11 +242,11 @@ final class AcroFormApplyScriptListenerTest extends TestCase
     /** When script fails with "python" and "not found" in stderr, listener sets specific error message. */
     public function testSetsSpecificErrorWhenScriptCommandNotFound(): void
     {
-        $script = sys_get_temp_dir().'/pdf_apply_dummy_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdf_apply_dummy_' . getmypid() . '.py';
         file_put_contents($script, "import sys\nsys.exit(0)\n");
         try {
             $listener = new AcroFormApplyScriptListener($script, 'python999nonexistent');
-            $event = new AcroFormApplyRequestEvent('%PDF-1.4', []);
+            $event    = new AcroFormApplyRequestEvent('%PDF-1.4', []);
 
             $listener($event);
 

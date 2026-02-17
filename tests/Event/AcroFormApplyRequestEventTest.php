@@ -7,12 +7,13 @@ namespace Nowo\PdfSignableBundle\Tests\Event;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class AcroFormApplyRequestEventTest extends TestCase
 {
     public function testGetPdfContentsAndPatches(): void
     {
-        $pdf = '%PDF-1.4 contents';
+        $pdf   = '%PDF-1.4 contents';
         $patch = AcroFormFieldPatch::fromArray(['fieldId' => 'f1', 'defaultValue' => 'x']);
         $event = new AcroFormApplyRequestEvent($pdf, [$patch]);
 
@@ -35,7 +36,7 @@ final class AcroFormApplyRequestEventTest extends TestCase
         $event = new AcroFormApplyRequestEvent('%PDF', []);
         self::assertNull($event->getError());
 
-        $error = new \RuntimeException('PDF has no form');
+        $error = new RuntimeException('PDF has no form');
         $event->setError($error);
         self::assertSame($error, $event->getError());
     }
@@ -52,7 +53,7 @@ final class AcroFormApplyRequestEventTest extends TestCase
     public function testHasResponseWhenErrorSet(): void
     {
         $event = new AcroFormApplyRequestEvent('%PDF', []);
-        $event->setError(new \RuntimeException('err'));
+        $event->setError(new RuntimeException('err'));
         self::assertTrue($event->hasResponse());
     }
 

@@ -22,7 +22,7 @@ final class AcroFormPageModelTest extends TestCase
     public function testSetPdfUrl(): void
     {
         $model = new AcroFormPageModel();
-        $url = 'https://example.com/document.pdf';
+        $url   = 'https://example.com/document.pdf';
         $model->setPdfUrl($url);
         self::assertSame($url, $model->getPdfUrl());
     }

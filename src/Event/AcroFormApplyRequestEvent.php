@@ -6,6 +6,7 @@ namespace Nowo\PdfSignableBundle\Event;
 
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use Symfony\Contracts\EventDispatcher\Event;
+use Throwable;
 
 /**
  * Dispatched when POST /pdf-signable/acroform/apply is called.
@@ -20,8 +21,8 @@ final class AcroFormApplyRequestEvent extends Event
     /** @var string|null Modified PDF bytes (set by listener) */
     private ?string $modifiedPdf = null;
 
-    /** @var \Throwable|null Error to return to client (set by listener) */
-    private ?\Throwable $error = null;
+    /** @var Throwable|null Error to return to client (set by listener) */
+    private ?Throwable $error = null;
 
     /** @var string|null Optional detail (stderr, stdout, logs) for error response */
     private ?string $errorDetail = null;
@@ -30,9 +31,9 @@ final class AcroFormApplyRequestEvent extends Event
     private ?array $validationResult = null;
 
     /**
-     * @param string                   $pdfContents  Original PDF bytes
-     * @param list<AcroFormFieldPatch> $patches      Patches to apply
-     * @param bool                     $validateOnly When true, listener may run dry-run and set validationResult instead of modifiedPdf
+     * @param string $pdfContents Original PDF bytes
+     * @param list<AcroFormFieldPatch> $patches Patches to apply
+     * @param bool $validateOnly When true, listener may run dry-run and set validationResult instead of modifiedPdf
      */
     public function __construct(
         private readonly string $pdfContents,
@@ -76,7 +77,7 @@ final class AcroFormApplyRequestEvent extends Event
     /**
      * Sets an error to return to the client (e.g. script failed).
      */
-    public function setError(\Throwable $e): void
+    public function setError(Throwable $e): void
     {
         $this->error = $e;
     }
@@ -84,7 +85,7 @@ final class AcroFormApplyRequestEvent extends Event
     /**
      * Returns the error set by a listener, or null.
      */
-    public function getError(): ?\Throwable
+    public function getError(): ?Throwable
     {
         return $this->error;
     }
@@ -138,6 +139,6 @@ final class AcroFormApplyRequestEvent extends Event
      */
     public function hasResponse(): bool
     {
-        return null !== $this->modifiedPdf || null !== $this->error || null !== $this->validationResult;
+        return $this->modifiedPdf !== null || $this->error !== null || $this->validationResult !== null;
     }
 }

@@ -186,3 +186,9 @@ acroform_editor:
   download_filename: 'document-aangepast.pdf'
   error_prefix: 'Fout: '
   new_field_name_pattern: 'Nieuw veld %n'
+
+dependency_check:
+  debug_title: 'PdfSignable — afhankelijkheidscontrole (debug).'
+  debug_hint: 'Voer uit: php bin/console nowo_pdf_signable:check-dependencies'
+  required_missing: 'Ontbrekende vereiste afhankelijkheden:'
+  optional_missing: 'Optioneel / aanbevolen:'

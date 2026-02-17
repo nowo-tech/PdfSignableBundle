@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\AcroForm\Exception;
 
+use RuntimeException;
+
 /**
  * Thrown when AcroForm editing fails (e.g. PDF has no form, field not found, invalid patch).
  */
-final class AcroFormEditorException extends \RuntimeException
+final class AcroFormEditorException extends RuntimeException
 {
 }

@@ -40,13 +40,22 @@ final class SignatureCoordinatesModelTest extends TestCase
         self::assertSame(SignatureCoordinatesModel::ORIGIN_TOP_LEFT, $model->getOrigin());
     }
 
+    public function testSetPdfUrlNullClearsUrl(): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/doc.pdf');
+        self::assertNotNull($model->getPdfUrl());
+        $model->setPdfUrl(null);
+        self::assertNull($model->getPdfUrl());
+    }
+
     /**
      * Asserts addSignatureBox adds a box to the collection.
      */
     public function testAddSignatureBox(): void
     {
         $model = new SignatureCoordinatesModel();
-        $box = new SignatureBoxModel();
+        $box   = new SignatureBoxModel();
         $box->setName('signer_1')->setPage(1)->setX(10)->setY(20)->setWidth(150)->setHeight(40);
         $model->addSignatureBox($box);
 
@@ -60,8 +69,8 @@ final class SignatureCoordinatesModelTest extends TestCase
     public function testSetSignatureBoxes(): void
     {
         $model = new SignatureCoordinatesModel();
-        $box1 = (new SignatureBoxModel())->setName('a')->setPage(1);
-        $box2 = (new SignatureBoxModel())->setName('b')->setPage(2);
+        $box1  = (new SignatureBoxModel())->setName('a')->setPage(1);
+        $box2  = (new SignatureBoxModel())->setName('b')->setPage(2);
         $model->addSignatureBox($box1);
         self::assertCount(1, $model->getSignatureBoxes());
 
@@ -82,10 +91,10 @@ final class SignatureCoordinatesModelTest extends TestCase
         $model->setUnit(SignatureCoordinatesModel::UNIT_MM);
         $model->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT);
         $model->addSignatureBox(
-            (new SignatureBoxModel())->setName('s1')->setPage(1)->setX(10)->setY(20)->setWidth(150)->setHeight(40)->setAngle(0)
+            (new SignatureBoxModel())->setName('s1')->setPage(1)->setX(10)->setY(20)->setWidth(150)->setHeight(40)->setAngle(0),
         );
         $model->addSignatureBox(
-            (new SignatureBoxModel())->setName('s2')->setPage(2)->setX(50)->setY(60)->setWidth(120)->setHeight(30)->setAngle(5.0)
+            (new SignatureBoxModel())->setName('s2')->setPage(2)->setX(50)->setY(60)->setWidth(120)->setHeight(30)->setAngle(5.0),
         );
         $arr = $model->toArray();
         self::assertSame('https://example.com/doc.pdf', $arr['pdf_url']);
@@ -115,5 +124,24 @@ final class SignatureCoordinatesModelTest extends TestCase
         $restored = SignatureCoordinatesModel::fromArray($arr);
         self::assertTrue($restored->getSigningConsent());
         self::assertSame($model->getAuditMetadata(), $restored->getAuditMetadata());
+    }
+
+    public function testFromArraySkipsNonArraySignatureBoxItems(): void
+    {
+        $data = [
+            'pdf_url'          => 'https://example.com/doc.pdf',
+            'unit'             => SignatureCoordinatesModel::UNIT_MM,
+            'origin'           => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signature_boxes'   => [
+                ['name' => 's1', 'page' => 1, 'x' => 0, 'y' => 0, 'width' => 100, 'height' => 30],
+                'invalid',
+                null,
+                ['name' => 's2', 'page' => 2, 'x' => 10, 'y' => 20, 'width' => 80, 'height' => 25],
+            ],
+        ];
+        $model = SignatureCoordinatesModel::fromArray($data);
+        self::assertCount(2, $model->getSignatureBoxes());
+        self::assertSame('s1', $model->getSignatureBoxes()[0]->getName());
+        self::assertSame('s2', $model->getSignatureBoxes()[1]->getName());
     }
 }

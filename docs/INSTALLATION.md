@@ -4,7 +4,7 @@
 
 - **PHP** 8.1+
 - **Symfony** 6.1+, 7.x or 8.x
-- **PHP extensions:** form, http-client, twig, translation, validator, yaml
+- **PHP extensions:** those required by Symfony (e.g. json, mbstring, ctype, xml, fileinfo). Optional: **ext-yaml** for faster YAML config (see composer suggest)
 
 **Optional — AcroForm Apply / Process / Extract (Python):** If you use the bundle’s **Apply to PDF**, **Process**, or **fields extract** endpoints with the included Python scripts (`scripts/apply_acroform_patches.py`, `scripts/process_modified_pdf.py`, `scripts/extract_acroform_fields.py`), you need **Python 3.9+** and, for the apply and extract scripts, the **pypdf** package (`pip install pypdf`). The process script is a stub; replace it with your own and install any Python deps you need. If you implement Apply or Process in PHP (e.g. via `AcroFormApplyRequestEvent` or a service implementing `PdfAcroFormEditorInterface`), no Python is required. See [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md) and [CONFIGURATION](CONFIGURATION.md#acroform).
 
@@ -38,7 +38,7 @@ return [
 
 ## Routes
 
-Import the bundle routes in `config/routes.yaml` (or `config/routes/`) and set your prefix (e.g. `/pdf-signable`). One import registers both signature and AcroForm routes:
+Import the bundle routes in `config/routes.yaml` (or `config/routes/`) and set your prefix (e.g. `/pdf-signable`). The bundle’s `Resources/config/routes.yaml` registers the Controller routes (attribute-based); your import applies the prefix. One import registers both signature and AcroForm routes:
 
 ```yaml
 nowo_pdf_signable:
@@ -57,6 +57,16 @@ php bin/console assets:install
 ```
 
 This copies `Resources/public/js/pdf-signable.js` (and `acroform-editor.js` when using the AcroForm editor) to `public/bundles/nowopdfsignable/js/`.
+
+## Verify dependencies
+
+To check that PHP, extensions, optional tools (Python/pypdf) and bundle assets are correctly installed:
+
+```bash
+php bin/console nowo_pdf_signable:check-dependencies
+```
+
+The command reports missing required dependencies (exit code 1) and optional recommendations (warnings). Use `--strict` to also fail when optional checks do not pass (e.g. missing `ext-yaml` or bundle assets not installed).
 
 ## Base template
 

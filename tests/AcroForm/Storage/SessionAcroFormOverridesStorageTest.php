@@ -16,7 +16,7 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
     public function testGetReturnsNullWhenNoSession(): void
     {
         $requestStack = new RequestStack();
-        $storage = new SessionAcroFormOverridesStorage($requestStack);
+        $storage      = new SessionAcroFormOverridesStorage($requestStack);
 
         self::assertNull($storage->get('doc1'));
     }
@@ -53,8 +53,8 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
     public function testSetDoesNothingWhenNoSession(): void
     {
         $requestStack = new RequestStack();
-        $storage = new SessionAcroFormOverridesStorage($requestStack);
-        $overrides = new AcroFormOverrides(['f1' => []], 'doc1');
+        $storage      = new SessionAcroFormOverridesStorage($requestStack);
+        $overrides    = new AcroFormOverrides(['f1' => []], 'doc1');
 
         $storage->set('doc1', $overrides);
 
@@ -64,7 +64,7 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
     public function testRemoveDoesNothingWhenNoSession(): void
     {
         $requestStack = new RequestStack();
-        $storage = new SessionAcroFormOverridesStorage($requestStack);
+        $storage      = new SessionAcroFormOverridesStorage($requestStack);
 
         $storage->remove('doc1');
 
@@ -80,7 +80,7 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
         $requestStack = new RequestStack();
         $requestStack->push($request);
 
-        $storage = new SessionAcroFormOverridesStorage($requestStack);
+        $storage   = new SessionAcroFormOverridesStorage($requestStack);
         $overrides = new AcroFormOverrides(['f1' => ['label' => 'F1']], 'doc1');
 
         $storage->set('doc1', $overrides);

@@ -26,6 +26,13 @@ use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
+use function array_key_exists;
+use function count;
+use function is_array;
+use function is_bool;
+use function is_int;
+use function is_string;
+
 /**
  * Form type for signature coordinates: PDF URL, unit, origin and a collection of signature boxes.
  *
@@ -35,10 +42,10 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 final class SignatureCoordinatesType extends AbstractType
 {
     /**
-     * @param string               $examplePdfUrl      Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array> $namedConfigs       Configs by alias from nowo_pdf_signable.signature.configs
-     * @param string               $defaultConfigAlias Default alias when form option config is not set (e.g. "default")
-     * @param bool                 $debug              When true, the frontend emits console logs (browser dev tools)
+     * @param string $examplePdfUrl Fallback PDF URL when pdf_url option is not set
+     * @param array<string, array> $namedConfigs Configs by alias from nowo_pdf_signable.signature.configs
+     * @param string $defaultConfigAlias Default alias when form option config is not set (e.g. "default")
+     * @param bool $debug When true, the frontend emits console logs (browser dev tools)
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.example_pdf_url')]
@@ -110,15 +117,15 @@ final class SignatureCoordinatesType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $options = $this->mergeNamedConfig($options);
-        $units = $options['units'] ?? self::getAllUnits();
+        $units   = $options['units'] ?? self::getAllUnits();
         $origins = $options['origins'] ?? self::getAllOrigins();
 
-        $unitChoices = $this->buildUnitChoices($units);
+        $unitChoices   = $this->buildUnitChoices($units);
         $originChoices = $this->buildOriginChoices($origins);
 
         // Resolve pdf_url: use option if set, otherwise fallback to bundle example
         $pdfUrl = $options['pdf_url'] ?? null;
-        if ((null === $pdfUrl || '' === $pdfUrl) && '' !== $this->examplePdfUrl) {
+        if (($pdfUrl === null || $pdfUrl === '') && $this->examplePdfUrl !== '') {
             $pdfUrl = $this->examplePdfUrl;
         }
 
@@ -126,38 +133,38 @@ final class SignatureCoordinatesType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($pdfUrl): void {
             $model = $event->getData();
             if ($model instanceof SignatureCoordinatesModel
-                && (null === $model->getPdfUrl() || '' === $model->getPdfUrl())
-                && null !== $pdfUrl
-                && '' !== $pdfUrl
+                && ($model->getPdfUrl() === null || $model->getPdfUrl() === '')
+                && $pdfUrl !== null
+                && $pdfUrl !== ''
             ) {
                 $model->setPdfUrl($pdfUrl);
             }
         });
 
         // --- PDF URL ---
-        if (false === $options['url_field'] && null !== $pdfUrl && '' !== $pdfUrl) {
+        if ($options['url_field'] === false && $pdfUrl !== null && $pdfUrl !== '') {
             $builder->add('pdfUrl', HiddenType::class, [
-                'data' => $pdfUrl,
+                'data'       => $pdfUrl,
                 'empty_data' => $pdfUrl,
-                'attr' => ['class' => 'pdf-url-input', 'data-pdf-signable' => 'pdf-url'],
+                'attr'       => ['class' => 'pdf-url-input', 'data-pdf-signable' => 'pdf-url'],
             ]);
         } else {
-            if (self::URL_MODE_CHOICE === $options['url_mode'] && [] !== $options['url_choices']) {
+            if ($options['url_mode'] === self::URL_MODE_CHOICE && $options['url_choices'] !== []) {
                 $builder->add('pdfUrl', ChoiceType::class, [
-                    'label' => $options['url_label'],
-                    'choices' => $options['url_choices'],
-                    'required' => true,
-                    'attr' => ['class' => 'pdf-url-input form-control form-select', 'data-pdf-signable' => 'pdf-url'],
+                    'label'       => $options['url_label'],
+                    'choices'     => $options['url_choices'],
+                    'required'    => true,
+                    'attr'        => ['class' => 'pdf-url-input form-control form-select', 'data-pdf-signable' => 'pdf-url'],
                     'placeholder' => $options['url_placeholder'],
                 ]);
             } else {
                 $builder->add('pdfUrl', UrlType::class, [
-                    'label' => $options['url_label'],
+                    'label'    => $options['url_label'],
                     'required' => true,
-                    'data' => $pdfUrl,
-                    'attr' => [
-                        'placeholder' => $options['url_placeholder'],
-                        'class' => 'pdf-url-input form-control',
+                    'data'     => $pdfUrl,
+                    'attr'     => [
+                        'placeholder'       => $options['url_placeholder'],
+                        'class'             => 'pdf-url-input form-control',
                         'data-pdf-signable' => 'pdf-url',
                     ],
                 ]);
@@ -169,19 +176,19 @@ final class SignatureCoordinatesType extends AbstractType
             $builder->add('unit', HiddenType::class, [
                 'data' => $options['unit_default'],
             ]);
-        } elseif (self::UNIT_MODE_INPUT === $options['unit_mode']) {
+        } elseif ($options['unit_mode'] === self::UNIT_MODE_INPUT) {
             $builder->add('unit', TextType::class, [
-                'label' => $options['unit_label'],
-                'attr' => ['class' => 'unit-selector form-control form-control-sm', 'data-pdf-signable' => 'unit'],
-                'data' => $options['unit_default'],
+                'label'       => $options['unit_label'],
+                'attr'        => ['class' => 'unit-selector form-control form-control-sm', 'data-pdf-signable' => 'unit'],
+                'data'        => $options['unit_default'],
                 'constraints' => [new Choice(['choices' => $units])],
             ]);
         } else {
             $builder->add('unit', ChoiceType::class, [
-                'label' => $options['unit_label'],
+                'label'   => $options['unit_label'],
                 'choices' => $unitChoices,
-                'data' => $options['unit_default'],
-                'attr' => ['class' => 'unit-selector form-select form-select-sm', 'data-pdf-signable' => 'unit'],
+                'data'    => $options['unit_default'],
+                'attr'    => ['class' => 'unit-selector form-select form-select-sm', 'data-pdf-signable' => 'unit'],
             ]);
         }
 
@@ -190,47 +197,47 @@ final class SignatureCoordinatesType extends AbstractType
             $builder->add('origin', HiddenType::class, [
                 'data' => $options['origin_default'],
             ]);
-        } elseif (self::ORIGIN_MODE_INPUT === $options['origin_mode']) {
+        } elseif ($options['origin_mode'] === self::ORIGIN_MODE_INPUT) {
             $builder->add('origin', TextType::class, [
-                'label' => $options['origin_label'],
-                'attr' => ['class' => 'origin-selector form-control form-control-sm', 'data-pdf-signable' => 'origin'],
-                'data' => $options['origin_default'],
+                'label'       => $options['origin_label'],
+                'attr'        => ['class' => 'origin-selector form-control form-control-sm', 'data-pdf-signable' => 'origin'],
+                'data'        => $options['origin_default'],
                 'constraints' => [new Choice(['choices' => $origins])],
             ]);
         } else {
             $builder->add('origin', ChoiceType::class, [
-                'label' => $options['origin_label'],
+                'label'   => $options['origin_label'],
                 'choices' => $originChoices,
-                'data' => $options['origin_default'],
-                'attr' => ['class' => 'origin-selector form-select form-select-sm', 'data-pdf-signable' => 'origin'],
+                'data'    => $options['origin_default'],
+                'attr'    => ['class' => 'origin-selector form-select form-select-sm', 'data-pdf-signable' => 'origin'],
             ]);
         }
 
         $entryOptions = array_merge(
             ['label' => false],
-            $options['signature_box_options'] ?? []
+            $options['signature_box_options'] ?? [],
         );
         if (isset($options['allowed_pages'])) {
             $entryOptions['allowed_pages'] = $options['allowed_pages'];
         }
-        $entryOptions['angle_enabled'] = $options['enable_rotation'];
+        $entryOptions['angle_enabled']            = $options['enable_rotation'];
         $entryOptions['enable_signature_capture'] = $options['enable_signature_capture'];
-        $entryOptions['enable_signature_upload'] = $options['enable_signature_upload'];
-        $entryOptions['signing_only'] = $options['signing_only'];
-        $entryOptions['hide_coordinate_fields'] = $options['hide_coordinate_fields'];
-        $entryOptions['default_box_width'] = $options['default_box_width'];
-        $entryOptions['default_box_height'] = $options['default_box_height'];
-        $entryOptions['lock_box_width'] = $options['lock_box_width'];
-        $entryOptions['lock_box_height'] = $options['lock_box_height'];
-        $entryOptions['min_box_width'] = $options['min_box_width'];
-        $entryOptions['min_box_height'] = $options['min_box_height'];
-        $entryOptions['hide_position_fields'] = $options['hide_position_fields'];
-        $boxConstraints = $options['box_constraints'] ?? [];
-        if ([] !== $boxConstraints) {
+        $entryOptions['enable_signature_upload']  = $options['enable_signature_upload'];
+        $entryOptions['signing_only']             = $options['signing_only'];
+        $entryOptions['hide_coordinate_fields']   = $options['hide_coordinate_fields'];
+        $entryOptions['default_box_width']        = $options['default_box_width'];
+        $entryOptions['default_box_height']       = $options['default_box_height'];
+        $entryOptions['lock_box_width']           = $options['lock_box_width'];
+        $entryOptions['lock_box_height']          = $options['lock_box_height'];
+        $entryOptions['min_box_width']            = $options['min_box_width'];
+        $entryOptions['min_box_height']           = $options['min_box_height'];
+        $entryOptions['hide_position_fields']     = $options['hide_position_fields'];
+        $boxConstraints                           = $options['box_constraints'] ?? [];
+        if ($boxConstraints !== []) {
             $entryOptions['constraints'] = array_merge($entryOptions['constraints'] ?? [], $boxConstraints);
         }
         if ($options['sort_boxes']) {
-            $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event): void {
+            $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event): void {
                 $data = $event->getData();
                 if (!is_array($data) || !isset($data['signatureBoxes']) || !is_array($data['signatureBoxes'])) {
                     return;
@@ -256,7 +263,7 @@ final class SignatureCoordinatesType extends AbstractType
                 $event->setData($data);
             });
         }
-        if ($options['lock_box_width'] && null !== $options['default_box_width']) {
+        if ($options['lock_box_width'] && $options['default_box_width'] !== null) {
             $defaultW = (float) $options['default_box_width'];
             $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) use ($defaultW): void {
                 $data = $event->getData();
@@ -271,7 +278,7 @@ final class SignatureCoordinatesType extends AbstractType
                 $event->setData($data);
             });
         }
-        if ($options['lock_box_height'] && null !== $options['default_box_height']) {
+        if ($options['lock_box_height'] && $options['default_box_height'] !== null) {
             $defaultH = (float) $options['default_box_height'];
             $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) use ($defaultH): void {
                 $data = $event->getData();
@@ -287,17 +294,17 @@ final class SignatureCoordinatesType extends AbstractType
             });
         }
         $collectionOptions = [
-            'entry_type' => SignatureBoxType::class,
+            'entry_type'    => SignatureBoxType::class,
             'entry_options' => $entryOptions,
-            'allow_add' => true,
-            'allow_delete' => true,
-            'by_reference' => false,
-            'label' => 'signature_coordinates_type.signature_boxes.label',
-            'attr' => ['class' => 'signature-boxes-collection'],
+            'allow_add'     => true,
+            'allow_delete'  => true,
+            'by_reference'  => false,
+            'label'         => 'signature_coordinates_type.signature_boxes.label',
+            'attr'          => ['class' => 'signature-boxes-collection'],
         ];
-        $maxEntries = $options['max_entries'];
+        $maxEntries            = $options['max_entries'];
         $collectionConstraints = [];
-        if (null !== $maxEntries || $options['min_entries'] > 0) {
+        if ($maxEntries !== null || $options['min_entries'] > 0) {
             $collectionConstraints[] = new Count(
                 min: $options['min_entries'],
                 max: $maxEntries,
@@ -306,9 +313,9 @@ final class SignatureCoordinatesType extends AbstractType
             );
         }
         $uniqueNamesOpt = $options['unique_box_names'];
-        if (true === $uniqueNamesOpt || (is_array($uniqueNamesOpt) && [] !== $uniqueNamesOpt)) {
-            $namesToEnforce = true === $uniqueNamesOpt ? null : array_fill_keys(array_map('trim', $uniqueNamesOpt), true);
-            $collectionConstraints[] = new Callback(function (mixed $boxes, ExecutionContextInterface $context) use ($namesToEnforce): void {
+        if ($uniqueNamesOpt === true || (is_array($uniqueNamesOpt) && $uniqueNamesOpt !== [])) {
+            $namesToEnforce          = $uniqueNamesOpt === true ? null : array_fill_keys(array_map('trim', $uniqueNamesOpt), true);
+            $collectionConstraints[] = new Callback(static function (mixed $boxes, ExecutionContextInterface $context) use ($namesToEnforce): void {
                 if (!is_array($boxes)) {
                     return;
                 }
@@ -318,15 +325,15 @@ final class SignatureCoordinatesType extends AbstractType
                         continue;
                     }
                     $name = trim($box->getName());
-                    if ('' === $name) {
+                    if ($name === '') {
                         continue;
                     }
-                    if (null !== $namesToEnforce && !isset($namesToEnforce[$name])) {
+                    if ($namesToEnforce !== null && !isset($namesToEnforce[$name])) {
                         continue;
                     }
                     if (isset($seen[$name])) {
                         $context->buildViolation('signature_coordinates_type.signature_boxes.unique_names_message')
-                            ->atPath('['.$index.'].name')
+                            ->atPath('[' . $index . '].name')
                             ->addViolation();
                     } else {
                         $seen[$name] = $index;
@@ -335,7 +342,7 @@ final class SignatureCoordinatesType extends AbstractType
             });
         }
         if ($options['prevent_box_overlap']) {
-            $collectionConstraints[] = new Callback(function (mixed $boxes, ExecutionContextInterface $context): void {
+            $collectionConstraints[] = new Callback(static function (mixed $boxes, ExecutionContextInterface $context): void {
                 if (!is_array($boxes)) {
                     return;
                 }
@@ -344,7 +351,7 @@ final class SignatureCoordinatesType extends AbstractType
                     $model = $box instanceof SignatureBoxModel
                         ? $box
                         : self::boxFromArray(is_array($box) ? $box : []);
-                    if (null === $model) {
+                    if ($model === null) {
                         continue;
                     }
                     $list[] = ['index' => $index, 'box' => $model];
@@ -358,7 +365,7 @@ final class SignatureCoordinatesType extends AbstractType
                         }
                         if (self::boxesOverlap($a, $b)) {
                             $context->buildViolation('signature_coordinates_type.signature_boxes.no_overlap_message')
-                                ->atPath('['.$list[$j]['index'].']')
+                                ->atPath('[' . $list[$j]['index'] . ']')
                                 ->addViolation();
                         }
                     }
@@ -367,16 +374,16 @@ final class SignatureCoordinatesType extends AbstractType
         }
         $collectionOptions['constraints'] = array_merge(
             $collectionConstraints,
-            $options['collection_constraints'] ?? []
+            $options['collection_constraints'] ?? [],
         );
         $builder->add('signatureBoxes', CollectionType::class, $collectionOptions);
 
         if ($options['signing_require_consent']) {
             $builder->add('signingConsent', CheckboxType::class, [
-                'label' => $options['signing_consent_label'],
-                'required' => true,
+                'label'       => $options['signing_consent_label'],
+                'required'    => true,
                 'constraints' => [new IsTrue(message: 'signing.consent_required')],
-                'attr' => ['class' => 'signing-consent-checkbox'],
+                'attr'        => ['class' => 'signing-consent-checkbox'],
             ]);
         }
     }
@@ -384,59 +391,59 @@ final class SignatureCoordinatesType extends AbstractType
     /**
      * Passes signature_coordinates_options to the view for the PDF viewer and box logic.
      *
-     * @param FormView             $view    The form view
-     * @param FormInterface        $form    The form
+     * @param FormView $view The form view
+     * @param FormInterface $form The form
      * @param array<string, mixed> $options Resolved form options
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $options = $this->mergeNamedConfig($options);
-        $pdfUrl = $options['pdf_url'] ?? null;
-        if ((null === $pdfUrl || '' === $pdfUrl) && '' !== $this->examplePdfUrl) {
+        $pdfUrl  = $options['pdf_url'] ?? null;
+        if (($pdfUrl === null || $pdfUrl === '') && $this->examplePdfUrl !== '') {
             $pdfUrl = $this->examplePdfUrl;
         }
         $view->vars['signature_coordinates_options'] = [
-            'pdf_url' => $pdfUrl,
-            'url_field' => (bool) ($options['url_field'] ?? true),
-            'show_load_pdf_button' => (bool) ($options['show_load_pdf_button'] ?? true),
-            'url_mode' => $options['url_mode'],
-            'unit_default' => $options['unit_default'],
-            'unit_field' => (bool) ($options['unit_field'] ?? true),
-            'origin_default' => $options['origin_default'],
-            'origin_field' => (bool) ($options['origin_field'] ?? true),
-            'min_entries' => $options['min_entries'],
-            'max_entries' => $options['max_entries'],
-            'allowed_pages' => $options['allowed_pages'] ?? null,
-            'prevent_box_overlap' => $options['prevent_box_overlap'],
-            'box_defaults_by_name' => $options['box_defaults_by_name'] ?? [],
-            'enable_rotation' => $options['enable_rotation'],
-            'snap_to_grid' => $options['snap_to_grid'],
-            'snap_to_boxes' => $options['snap_to_boxes'],
-            'show_grid' => $options['show_grid'],
-            'grid_step' => $options['grid_step'],
-            'viewer_lazy_load' => $options['viewer_lazy_load'],
-            'show_acroform' => $options['show_acroform'],
-            'acroform_interactive' => $options['acroform_interactive'],
-            'enable_signature_capture' => $options['enable_signature_capture'],
-            'enable_signature_upload' => $options['enable_signature_upload'],
-            'signing_legal_disclaimer' => $options['signing_legal_disclaimer'],
+            'pdf_url'                      => $pdfUrl,
+            'url_field'                    => (bool) ($options['url_field'] ?? true),
+            'show_load_pdf_button'         => (bool) ($options['show_load_pdf_button'] ?? true),
+            'url_mode'                     => $options['url_mode'],
+            'unit_default'                 => $options['unit_default'],
+            'unit_field'                   => (bool) ($options['unit_field'] ?? true),
+            'origin_default'               => $options['origin_default'],
+            'origin_field'                 => (bool) ($options['origin_field'] ?? true),
+            'min_entries'                  => $options['min_entries'],
+            'max_entries'                  => $options['max_entries'],
+            'allowed_pages'                => $options['allowed_pages'] ?? null,
+            'prevent_box_overlap'          => $options['prevent_box_overlap'],
+            'box_defaults_by_name'         => $options['box_defaults_by_name'] ?? [],
+            'enable_rotation'              => $options['enable_rotation'],
+            'snap_to_grid'                 => $options['snap_to_grid'],
+            'snap_to_boxes'                => $options['snap_to_boxes'],
+            'show_grid'                    => $options['show_grid'],
+            'grid_step'                    => $options['grid_step'],
+            'viewer_lazy_load'             => $options['viewer_lazy_load'],
+            'show_acroform'                => $options['show_acroform'],
+            'acroform_interactive'         => $options['acroform_interactive'],
+            'enable_signature_capture'     => $options['enable_signature_capture'],
+            'enable_signature_upload'      => $options['enable_signature_upload'],
+            'signing_legal_disclaimer'     => $options['signing_legal_disclaimer'],
             'signing_legal_disclaimer_url' => $options['signing_legal_disclaimer_url'],
-            'signing_require_consent' => $options['signing_require_consent'],
-            'signing_consent_label' => $options['signing_consent_label'],
-            'signing_only' => $options['signing_only'],
-            'hide_coordinate_fields' => $options['hide_coordinate_fields'],
-            'default_box_width' => $options['default_box_width'],
-            'default_box_height' => $options['default_box_height'],
-            'lock_box_width' => $options['lock_box_width'],
-            'lock_box_height' => $options['lock_box_height'],
-            'min_box_width' => $options['min_box_width'],
-            'min_box_height' => $options['min_box_height'],
-            'hide_position_fields' => $options['hide_position_fields'],
-            'batch_sign_enabled' => $options['batch_sign_enabled'],
-            'show_signature_boxes' => $options['show_signature_boxes'],
-            'pdfjs_source' => $options['pdfjs_source'],
-            'pdfjs_worker_url' => $options['pdfjs_worker_url'],
-            'debug' => $this->debug,
+            'signing_require_consent'      => $options['signing_require_consent'],
+            'signing_consent_label'        => $options['signing_consent_label'],
+            'signing_only'                 => $options['signing_only'],
+            'hide_coordinate_fields'       => $options['hide_coordinate_fields'],
+            'default_box_width'            => $options['default_box_width'],
+            'default_box_height'           => $options['default_box_height'],
+            'lock_box_width'               => $options['lock_box_width'],
+            'lock_box_height'              => $options['lock_box_height'],
+            'min_box_width'                => $options['min_box_width'],
+            'min_box_height'               => $options['min_box_height'],
+            'hide_position_fields'         => $options['hide_position_fields'],
+            'batch_sign_enabled'           => $options['batch_sign_enabled'],
+            'show_signature_boxes'         => $options['show_signature_boxes'],
+            'pdfjs_source'                 => $options['pdfjs_source'],
+            'pdfjs_worker_url'             => $options['pdfjs_worker_url'],
+            'debug'                        => $this->debug,
         ];
     }
 
@@ -448,39 +455,39 @@ final class SignatureCoordinatesType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => SignatureCoordinatesModel::class,
+            'data_class'         => SignatureCoordinatesModel::class,
             'translation_domain' => 'nowo_pdf_signable',
 
             // Named config from nowo_pdf_signable.signature.configs (options merged; passed options override; default alias = default_config_alias)
             'config' => null,
 
             // URL (null = use bundle example_pdf_url when set)
-            'pdf_url' => null,
-            'url_field' => true,
+            'pdf_url'              => null,
+            'url_field'            => true,
             'show_load_pdf_button' => true,
-            'url_mode' => self::URL_MODE_INPUT,
-            'url_choices' => [],
-            'url_label' => 'signature_coordinates_type.pdf_url.label',
-            'url_placeholder' => 'signature_coordinates_type.pdf_url.placeholder',
+            'url_mode'             => self::URL_MODE_INPUT,
+            'url_choices'          => [],
+            'url_label'            => 'signature_coordinates_type.pdf_url.label',
+            'url_placeholder'      => 'signature_coordinates_type.pdf_url.placeholder',
 
             // Unit
-            'units' => null,
+            'units'        => null,
             'unit_default' => SignatureCoordinatesModel::UNIT_MM,
-            'unit_field' => true,
-            'unit_mode' => self::UNIT_MODE_CHOICE,
-            'unit_label' => 'signature_coordinates_type.unit.label',
+            'unit_field'   => true,
+            'unit_mode'    => self::UNIT_MODE_CHOICE,
+            'unit_label'   => 'signature_coordinates_type.unit.label',
 
             // Origin
-            'origins' => null,
+            'origins'        => null,
             'origin_default' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
-            'origin_field' => true,
-            'origin_mode' => self::ORIGIN_MODE_CHOICE,
-            'origin_label' => 'signature_coordinates_type.origin.label',
+            'origin_field'   => true,
+            'origin_mode'    => self::ORIGIN_MODE_CHOICE,
+            'origin_label'   => 'signature_coordinates_type.origin.label',
 
             // Signature boxes collection
-            'min_entries' => 0,
-            'max_entries' => null,
-            'unique_box_names' => false,
+            'min_entries'           => 0,
+            'max_entries'           => null,
+            'unique_box_names'      => false,
             'signature_box_options' => [],
             /* @see ROADMAP.md "Page restriction" — limit which pages boxes can be placed on */
             'allowed_pages' => null,
@@ -499,19 +506,19 @@ final class SignatureCoordinatesType extends AbstractType
             /* Grid step in form unit for snapping when dragging (0 = off). E.g. 5 for 5 mm. */
             'snap_to_grid' => 0,
             /* When true, dragging snaps box edges to other boxes’ edges (within threshold). */
-            'snap_to_boxes' => true,
-            'show_grid' => false,
-            'grid_step' => 10.0,
-            'viewer_lazy_load' => false,
-            'show_acroform' => true,
-            'acroform_interactive' => true,
-            'enable_signature_capture' => false,
-            'enable_signature_upload' => false,
-            'signing_legal_disclaimer' => null,
+            'snap_to_boxes'                => true,
+            'show_grid'                    => false,
+            'grid_step'                    => 10.0,
+            'viewer_lazy_load'             => false,
+            'show_acroform'                => true,
+            'acroform_interactive'         => true,
+            'enable_signature_capture'     => false,
+            'enable_signature_upload'      => false,
+            'signing_legal_disclaimer'     => null,
             'signing_legal_disclaimer_url' => null,
-            'signing_require_consent' => false,
-            'signing_consent_label' => 'signing.consent_label',
-            'signing_only' => false,
+            'signing_require_consent'      => false,
+            'signing_consent_label'        => 'signing.consent_label',
+            'signing_only'                 => false,
             /* When true, hide width, height, x, y (and angle) fields in the UI but keep them in the form so values are still submitted (e.g. from PDF overlay). */
             'hide_coordinate_fields' => false,
             /* Default width for new boxes (form unit). When lock_box_width is true, this value is used and the field is hidden. */
@@ -523,7 +530,7 @@ final class SignatureCoordinatesType extends AbstractType
             /* When true, height is fixed to default_box_height and the field is hidden. */
             'lock_box_height' => false,
             /* Minimum width/height for signature boxes (form unit). Null = no minimum in frontend; form still uses HTML min=10. */
-            'min_box_width' => null,
+            'min_box_width'  => null,
             'min_box_height' => null,
             /* When true, hide x and y fields in the UI; values are still submitted (e.g. from PDF overlay). */
             'hide_position_fields' => false,
@@ -581,7 +588,7 @@ final class SignatureCoordinatesType extends AbstractType
         $resolver->setAllowedTypes('config', ['string', 'null']);
         $resolver->setAllowedTypes('allowed_pages', ['array', 'null']);
         $resolver->setAllowedValues('allowed_pages', static function ($value): bool {
-            if (null === $value) {
+            if ($value === null) {
                 return true;
             }
             if (!is_array($value)) {
@@ -669,9 +676,9 @@ final class SignatureCoordinatesType extends AbstractType
      */
     private function mergeNamedConfig(array $options): array
     {
-        $name = $options['config'] ?? null;
-        $alias = (null !== $name && '' !== $name) ? $name : $this->defaultConfigAlias;
-        if ('' === $alias || !isset($this->namedConfigs[$alias]) || !\is_array($this->namedConfigs[$alias])) {
+        $name  = $options['config'] ?? null;
+        $alias = ($name !== null && $name !== '') ? $name : $this->defaultConfigAlias;
+        if ($alias === '' || !isset($this->namedConfigs[$alias]) || !is_array($this->namedConfigs[$alias])) {
             $merged = $options;
             unset($merged['config']);
 
@@ -718,9 +725,9 @@ final class SignatureCoordinatesType extends AbstractType
     private function buildOriginChoices(array $origins): array
     {
         $labels = [
-            SignatureCoordinatesModel::ORIGIN_TOP_LEFT => 'signature_coordinates_type.origin.option.top_left',
-            SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT => 'signature_coordinates_type.origin.option.bottom_left',
-            SignatureCoordinatesModel::ORIGIN_TOP_RIGHT => 'signature_coordinates_type.origin.option.top_right',
+            SignatureCoordinatesModel::ORIGIN_TOP_LEFT     => 'signature_coordinates_type.origin.option.top_left',
+            SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT  => 'signature_coordinates_type.origin.option.bottom_left',
+            SignatureCoordinatesModel::ORIGIN_TOP_RIGHT    => 'signature_coordinates_type.origin.option.top_right',
             SignatureCoordinatesModel::ORIGIN_BOTTOM_RIGHT => 'signature_coordinates_type.origin.option.bottom_right',
         ];
         $result = [];

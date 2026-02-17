@@ -13,6 +13,8 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use function is_array;
+
 /**
  * Form type for AcroForm page: PDF viewer + AcroForm editor panel.
  *
@@ -24,21 +26,21 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 final class AcroFormEditorType extends AbstractType
 {
     /**
-     * @param string               $examplePdfUrl      Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array> $acroformConfigs    Configs by alias from nowo_pdf_signable.acroform.configs
-     * @param string               $defaultConfigAlias Default alias when config option is null (e.g. "default")
-     * @param bool                 $debug              When true, the frontend emits console logs
-     * @param string               $labelMode          acroform.label_mode (deprecated)
-     * @param array<int, string>   $labelChoices       acroform.label_choices (deprecated)
-     * @param string               $labelOtherText     acroform.label_other_text (deprecated)
-     * @param string               $fieldNameMode      acroform.field_name_mode default
-     * @param array<int, string>   $fieldNameChoices   acroform.field_name_choices default
-     * @param string               $fieldNameOtherText acroform.field_name_other_text default
-     * @param bool                 $showFieldRect      acroform.show_field_rect default
-     * @param array<int, int>      $fontSizes          acroform.font_sizes default
-     * @param array<int, string>   $fontFamilies       acroform.font_families default
-     * @param float                $minFieldWidth      acroform.min_field_width default
-     * @param float                $minFieldHeight     acroform.min_field_height default
+     * @param string $examplePdfUrl Fallback PDF URL when pdf_url option is not set
+     * @param array<string, array> $acroformConfigs Configs by alias from nowo_pdf_signable.acroform.configs
+     * @param string $defaultConfigAlias Default alias when config option is null (e.g. "default")
+     * @param bool $debug When true, the frontend emits console logs
+     * @param string $labelMode acroform.label_mode (deprecated)
+     * @param array<int, string> $labelChoices acroform.label_choices (deprecated)
+     * @param string $labelOtherText acroform.label_other_text (deprecated)
+     * @param string $fieldNameMode acroform.field_name_mode default
+     * @param array<int, string> $fieldNameChoices acroform.field_name_choices default
+     * @param string $fieldNameOtherText acroform.field_name_other_text default
+     * @param bool $showFieldRect acroform.show_field_rect default
+     * @param array<int, int> $fontSizes acroform.font_sizes default
+     * @param array<int, string> $fontFamilies acroform.font_families default
+     * @param float $minFieldWidth acroform.min_field_width default
+     * @param float $minFieldHeight acroform.min_field_height default
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.example_pdf_url')]
@@ -82,51 +84,51 @@ final class AcroFormEditorType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('pdfUrl', UrlType::class, [
-            'label' => 'page.url_label',
+            'label'    => 'page.url_label',
             'required' => false,
-            'data' => $options['pdf_url'] ?? null,
-            'attr' => [
-                'class' => 'form-control pdf-url-input',
+            'data'     => $options['pdf_url'] ?? null,
+            'attr'     => [
+                'class'             => 'form-control pdf-url-input',
                 'data-pdf-signable' => 'pdf-url',
-                'placeholder' => 'https://example.com/document.pdf',
+                'placeholder'       => 'https://example.com/document.pdf',
             ],
         ]);
     }
 
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
-        $opts = $this->resolveOptions($options);
+        $opts                                  = $this->resolveOptions($options);
         $view->vars['acroform_editor_options'] = $opts;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => AcroFormPageModel::class,
-            'config' => null,
-            'pdf_url' => null,
-            'url_field' => true,
-            'show_load_pdf_button' => true,
-            'document_key' => '',
-            'load_url' => '',
-            'post_url' => '',
-            'apply_url' => '',
-            'process_url' => '',
-            'debug' => null,
-            'label_mode' => null,
-            'label_choices' => null,
-            'label_other_text' => null,
-            'field_name_mode' => null,
-            'field_name_choices' => null,
+            'data_class'            => AcroFormPageModel::class,
+            'config'                => null,
+            'pdf_url'               => null,
+            'url_field'             => true,
+            'show_load_pdf_button'  => true,
+            'document_key'          => '',
+            'load_url'              => '',
+            'post_url'              => '',
+            'apply_url'             => '',
+            'process_url'           => '',
+            'debug'                 => null,
+            'label_mode'            => null,
+            'label_choices'         => null,
+            'label_other_text'      => null,
+            'field_name_mode'       => null,
+            'field_name_choices'    => null,
             'field_name_other_text' => null,
-            'show_field_rect' => null,
-            'font_sizes' => null,
-            'font_families' => null,
-            'min_field_width' => null,
-            'min_field_height' => null,
-            'viewer_lazy_load' => null,
-            'pdfjs_source' => null,
-            'acroform_edit_form' => null,
+            'show_field_rect'       => null,
+            'font_sizes'            => null,
+            'font_families'         => null,
+            'min_field_width'       => null,
+            'min_field_height'      => null,
+            'viewer_lazy_load'      => null,
+            'pdfjs_source'          => null,
+            'acroform_edit_form'    => null,
         ]);
         $resolver->setAllowedTypes('config', ['null', 'string']);
         $resolver->setAllowedTypes('debug', ['null', 'bool']);
@@ -154,42 +156,42 @@ final class AcroFormEditorType extends AbstractType
     private function resolveOptions(array $options): array
     {
         $defaults = [
-            'pdf_url' => $options['pdf_url'] ?? ('' !== $this->examplePdfUrl ? $this->examplePdfUrl : null),
-            'url_field' => $options['url_field'] ?? true,
-            'show_load_pdf_button' => $options['show_load_pdf_button'] ?? true,
-            'document_key' => $options['document_key'] ?? '',
-            'load_url' => $options['load_url'] ?? '',
-            'post_url' => $options['post_url'] ?? '',
-            'apply_url' => $options['apply_url'] ?? '',
-            'process_url' => $options['process_url'] ?? '',
-            'debug' => $options['debug'] ?? $this->debug,
-            'label_mode' => $options['label_mode'] ?? $this->labelMode,
-            'label_choices' => $options['label_choices'] ?? $this->labelChoices,
-            'label_other_text' => $options['label_other_text'] ?? $this->labelOtherText,
-            'field_name_mode' => $options['field_name_mode'] ?? $this->fieldNameMode,
-            'field_name_choices' => $options['field_name_choices'] ?? $this->fieldNameChoices,
+            'pdf_url'               => $options['pdf_url'] ?? ($this->examplePdfUrl !== '' ? $this->examplePdfUrl : null),
+            'url_field'             => $options['url_field'] ?? true,
+            'show_load_pdf_button'  => $options['show_load_pdf_button'] ?? true,
+            'document_key'          => $options['document_key'] ?? '',
+            'load_url'              => $options['load_url'] ?? '',
+            'post_url'              => $options['post_url'] ?? '',
+            'apply_url'             => $options['apply_url'] ?? '',
+            'process_url'           => $options['process_url'] ?? '',
+            'debug'                 => $options['debug'] ?? $this->debug,
+            'label_mode'            => $options['label_mode'] ?? $this->labelMode,
+            'label_choices'         => $options['label_choices'] ?? $this->labelChoices,
+            'label_other_text'      => $options['label_other_text'] ?? $this->labelOtherText,
+            'field_name_mode'       => $options['field_name_mode'] ?? $this->fieldNameMode,
+            'field_name_choices'    => $options['field_name_choices'] ?? $this->fieldNameChoices,
             'field_name_other_text' => $options['field_name_other_text'] ?? $this->fieldNameOtherText,
-            'show_field_rect' => $options['show_field_rect'] ?? $this->showFieldRect,
-            'font_sizes' => $options['font_sizes'] ?? $this->fontSizes,
-            'font_families' => $options['font_families'] ?? $this->fontFamilies,
-            'min_field_width' => $options['min_field_width'] ?? $this->minFieldWidth,
-            'min_field_height' => $options['min_field_height'] ?? $this->minFieldHeight,
-            'acroform_edit_form' => $options['acroform_edit_form'] ?? null,
-            'show_acroform' => true,
-            'acroform_interactive' => true,
-            'viewer_lazy_load' => $options['viewer_lazy_load'] ?? false,
-            'pdfjs_source' => $options['pdfjs_source'] ?? 'npm',
+            'show_field_rect'       => $options['show_field_rect'] ?? $this->showFieldRect,
+            'font_sizes'            => $options['font_sizes'] ?? $this->fontSizes,
+            'font_families'         => $options['font_families'] ?? $this->fontFamilies,
+            'min_field_width'       => $options['min_field_width'] ?? $this->minFieldWidth,
+            'min_field_height'      => $options['min_field_height'] ?? $this->minFieldHeight,
+            'acroform_edit_form'    => $options['acroform_edit_form'] ?? null,
+            'show_acroform'         => true,
+            'acroform_interactive'  => true,
+            'viewer_lazy_load'      => $options['viewer_lazy_load'] ?? false,
+            'pdfjs_source'          => $options['pdfjs_source'] ?? 'npm',
         ];
 
         $configName = $options['config'] ?? null;
-        $alias = (null !== $configName && '' !== $configName) ? $configName : $this->defaultConfigAlias;
-        if ('' !== $alias && isset($this->acroformConfigs[$alias]) && \is_array($this->acroformConfigs[$alias])) {
+        $alias      = ($configName !== null && $configName !== '') ? $configName : $this->defaultConfigAlias;
+        if ($alias !== '' && isset($this->acroformConfigs[$alias]) && is_array($this->acroformConfigs[$alias])) {
             $defaults = array_merge($defaults, $this->acroformConfigs[$alias]);
         }
 
         $overrides = array_intersect_key($options, $defaults);
         foreach ($overrides as $k => $v) {
-            if (null !== $v) {
+            if ($v !== null) {
                 $defaults[$k] = $v;
             }
         }

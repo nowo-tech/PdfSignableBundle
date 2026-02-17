@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Controller;
 
+use InvalidArgumentException;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides;
 use Nowo\PdfSignableBundle\AcroForm\Exception\AcroFormEditorException;
@@ -13,7 +14,9 @@ use Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
 use Nowo\PdfSignableBundle\Event\AcroFormModifiedPdfProcessedEvent;
 use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
+use Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -26,6 +29,15 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
+
+use function array_key_exists;
+use function count;
+use function is_array;
+use function is_string;
+use function strlen;
+
+use const FILTER_VALIDATE_URL;
 
 /**
  * AcroForm overrides and PDF apply/process REST controller.
@@ -51,20 +63,20 @@ final class AcroFormOverridesController extends AbstractController
     private const DOCUMENT_KEY_MAX_LENGTH = 256;
 
     /**
-     * @param bool                              $enabled               Whether the AcroForm editor endpoints are enabled
-     * @param AcroFormOverridesStorageInterface $storage               Storage for overrides (session or custom service)
-     * @param bool                              $allowPdfModify        Whether POST /acroform/apply is allowed
-     * @param PdfAcroFormEditorInterface|null   $editor                Optional PHP-based editor to apply patches
-     * @param EventDispatcherInterface          $eventDispatcher       Dispatcher for ACROFORM_APPLY_REQUEST and ACROFORM_MODIFIED_PDF_PROCESSED
-     * @param TranslatorInterface               $translator            Used for error messages
-     * @param list<string>                      $proxyUrlAllowlist     URL allowlist for pdf_url (when fetching PDFs)
-     * @param int                               $maxPdfSize            Max PDF size in bytes for apply/process
-     * @param int                               $maxPatches            Max number of patches per apply request
-     * @param string|null                       $fieldsExtractorScript Path to Python script to extract AcroForm fields
-     * @param string|null                       $processScript         Path to Python script to process modified PDF
-     * @param string                            $processScriptCommand  Executable to run process_script (e.g. python3)
-     * @param bool                              $debug                 When true, allow validate_only in apply (dry-run)
-     * @param LoggerInterface|null              $logger                Optional logger for apply debug (when debug=true)
+     * @param bool $enabled Whether the AcroForm editor endpoints are enabled
+     * @param AcroFormOverridesStorageInterface $storage Storage for overrides (session or custom service)
+     * @param bool $allowPdfModify Whether POST /acroform/apply is allowed
+     * @param PdfAcroFormEditorInterface|null $editor Optional PHP-based editor to apply patches
+     * @param EventDispatcherInterface $eventDispatcher Dispatcher for ACROFORM_APPLY_REQUEST and ACROFORM_MODIFIED_PDF_PROCESSED
+     * @param TranslatorInterface $translator Used for error messages
+     * @param ProxyUrlValidator $proxyUrlValidator SSRF and allowlist validation for pdf_url in apply
+     * @param int $maxPdfSize Max PDF size in bytes for apply/process
+     * @param int $maxPatches Max number of patches per apply request
+     * @param string|null $fieldsExtractorScript Path to Python script to extract AcroForm fields
+     * @param string|null $processScript Path to Python script to process modified PDF
+     * @param string $processScriptCommand Executable to run process_script (e.g. python3)
+     * @param bool $debug When true, allow validate_only in apply (dry-run)
+     * @param LoggerInterface|null $logger Optional logger for apply debug (when debug=true)
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.acroform.enabled')]
@@ -72,11 +84,10 @@ final class AcroFormOverridesController extends AbstractController
         private readonly AcroFormOverridesStorageInterface $storage,
         #[Autowire(param: 'nowo_pdf_signable.acroform.allow_pdf_modify')]
         private readonly bool $allowPdfModify,
-        private readonly ?PdfAcroFormEditorInterface $editor = null,
+        private readonly ?PdfAcroFormEditorInterface $editor,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly TranslatorInterface $translator,
-        #[Autowire(param: 'nowo_pdf_signable.proxy_url_allowlist')]
-        private readonly array $proxyUrlAllowlist,
+        private readonly ProxyUrlValidator $proxyUrlValidator,
         #[Autowire(param: 'nowo_pdf_signable.acroform.max_pdf_size')]
         private readonly int $maxPdfSize,
         #[Autowire(param: 'nowo_pdf_signable.acroform.max_patches')]
@@ -109,11 +120,11 @@ final class AcroFormOverridesController extends AbstractController
             return new Response('', Response::HTTP_NOT_FOUND);
         }
         $documentKey = $this->resolveDocumentKey($request, null);
-        if (null === $documentKey) {
+        if ($documentKey === null) {
             return new JsonResponse(['error' => 'document_key required'], Response::HTTP_BAD_REQUEST);
         }
         $overrides = $this->storage->get($documentKey);
-        if (null === $overrides) {
+        if ($overrides === null) {
             return new JsonResponse(['error' => 'Not found'], Response::HTTP_NOT_FOUND);
         }
 
@@ -139,56 +150,56 @@ final class AcroFormOverridesController extends AbstractController
         if (!$this->enabled) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
-        $data = $request->toArray();
+        $data        = $request->toArray();
         $documentKey = $data['document_key'] ?? '';
-        $documentKey = \is_string($documentKey) ? trim($documentKey) : '';
-        if ('' === $documentKey || !$this->isValidDocumentKey($documentKey)) {
+        $documentKey = is_string($documentKey) ? trim($documentKey) : '';
+        if ($documentKey === '' || !$this->isValidDocumentKey($documentKey)) {
             return new JsonResponse(['error' => 'document_key required in body'], Response::HTTP_BAD_REQUEST);
         }
 
-        $overrides = $this->storage->get($documentKey);
-        $overridesData = null !== $overrides ? $overrides->toArray()['overrides'] ?? [] : [];
-        $out = ['overrides' => $overridesData, 'document_key' => $documentKey];
+        $overrides     = $this->storage->get($documentKey);
+        $overridesData = $overrides !== null ? $overrides->toArray()['overrides'] ?? [] : [];
+        $out           = ['overrides' => $overridesData, 'document_key' => $documentKey];
 
         // 1) Use "fields" from request body if the frontend sent them (e.g. from PDF.js in the browser).
-        $requestFields = $data['fields'] ?? null;
-        $extractedFields = \is_array($requestFields) ? $requestFields : null;
+        $requestFields   = $data['fields'] ?? null;
+        $extractedFields = is_array($requestFields) ? $requestFields : null;
 
         // 2) Otherwise try to extract from PDF via the Python script (when pdf_url/pdf_content and script are available).
-        if (null === $extractedFields || 0 === \count($extractedFields)) {
+        if ($extractedFields === null || count($extractedFields) === 0) {
             $pdfContents = $this->resolvePdfContentsFromRequest($request);
-            if (null !== $pdfContents
-                && null !== $this->fieldsExtractorScript
-                && '' !== trim($this->fieldsExtractorScript)
-                && \strlen($pdfContents) <= $this->maxPdfSize
+            if ($pdfContents !== null
+                && $this->fieldsExtractorScript !== null
+                && trim($this->fieldsExtractorScript) !== ''
+                && strlen($pdfContents) <= $this->maxPdfSize
             ) {
                 $scriptPath = trim($this->fieldsExtractorScript);
                 if (!is_file($scriptPath)) {
-                    $out['fields_extractor_error'] = 'Fields extractor script not found (path: '.$scriptPath.'). Fields have been sent from the browser if available.';
+                    $out['fields_extractor_error'] = 'Fields extractor script not found (path: ' . $scriptPath . '). Fields have been sent from the browser if available.';
                 } else {
                     $tmpFile = null;
                     try {
                         $tmpFile = tempnam(sys_get_temp_dir(), 'pdfsignable_');
-                        if (false !== $tmpFile && false !== file_put_contents($tmpFile, $pdfContents)) {
+                        if ($tmpFile !== false && file_put_contents($tmpFile, $pdfContents) !== false) {
                             $process = new Process(['python3', $scriptPath, $tmpFile], null, PythonProcessEnv::build());
                             $process->setTimeout(60);
                             $process->run();
                             if ($process->isSuccessful()) {
                                 $decoded = json_decode($process->getOutput(), true);
-                                if (\is_array($decoded) && \count($decoded) > 0) {
+                                if (is_array($decoded) && count($decoded) > 0) {
                                     $extractedFields = $decoded;
                                 }
                             } else {
-                                $stderr = $process->getErrorOutput();
-                                $exitCode = $process->getExitCode();
-                                $hint = ('' !== trim($stderr)) ? trim($stderr) : ('exit code '.$exitCode);
-                                $out['fields_extractor_error'] = 'Fields extractor (Python) could not run. Ensure python3 and pypdf are installed on the server. Detail: '.$hint;
+                                $stderr                        = $process->getErrorOutput();
+                                $exitCode                      = $process->getExitCode();
+                                $hint                          = (trim($stderr) !== '') ? trim($stderr) : ('exit code ' . $exitCode);
+                                $out['fields_extractor_error'] = 'Fields extractor (Python) could not run. Ensure python3 and pypdf are installed on the server. Detail: ' . $hint;
                             }
                         }
-                    } catch (\Throwable $e) {
-                        $out['fields_extractor_error'] = 'Error running the fields extractor (e.g. python3 is not installed or not in PATH): '.$e->getMessage();
+                    } catch (Throwable $e) {
+                        $out['fields_extractor_error'] = 'Error running the fields extractor (e.g. python3 is not installed or not in PATH): ' . $e->getMessage();
                     } finally {
-                        if (null !== $tmpFile && is_file($tmpFile)) {
+                        if ($tmpFile !== null && is_file($tmpFile)) {
                             @unlink($tmpFile);
                         }
                     }
@@ -196,23 +207,23 @@ final class AcroFormOverridesController extends AbstractController
             }
         }
 
-        if (null !== $extractedFields && \count($extractedFields) > 0) {
+        if ($extractedFields !== null && count($extractedFields) > 0) {
             $out['fields'] = $extractedFields;
         }
 
         // Merge extracted field info into overrides so each key has the full field object (rect, width, height, fontSize, etc.)
-        if (null !== $extractedFields && \count($extractedFields) > 0) {
+        if ($extractedFields !== null && count($extractedFields) > 0) {
             $byId = [];
             foreach ($extractedFields as $f) {
                 $id = isset($f['id']) ? (string) $f['id'] : '';
-                if ('' !== $id) {
+                if ($id !== '') {
                     $byId[$id] = $f;
                 }
             }
             $fullOverrides = [];
             foreach ($overridesData as $id => $stored) {
-                $base = $byId[$id] ?? [];
-                $fullOverrides[$id] = \is_array($stored) ? array_merge($base, $stored) : $base;
+                $base               = $byId[$id] ?? [];
+                $fullOverrides[$id] = is_array($stored) ? array_merge($base, $stored) : $base;
             }
             // Include all extracted fields as keys with at least full info (user can add overrides later)
             foreach ($byId as $id => $fieldData) {
@@ -242,18 +253,18 @@ final class AcroFormOverridesController extends AbstractController
         if (!$this->enabled) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
-        $data = $request->toArray();
+        $data        = $request->toArray();
         $documentKey = $data['document_key'] ?? $request->query->get('document_key') ?? '';
-        $documentKey = \is_string($documentKey) ? trim($documentKey) : '';
-        if ('' === $documentKey || !$this->isValidDocumentKey($documentKey)) {
+        $documentKey = is_string($documentKey) ? trim($documentKey) : '';
+        if ($documentKey === '' || !$this->isValidDocumentKey($documentKey)) {
             return new JsonResponse(['error' => 'Invalid or missing document_key'], Response::HTTP_BAD_REQUEST);
         }
         $overridesData = $data['overrides'] ?? [];
-        if (!\is_array($overridesData)) {
+        if (!is_array($overridesData)) {
             $overridesData = [];
         }
         $fields = $data['fields'] ?? null;
-        if (null !== $fields && !\is_array($fields)) {
+        if ($fields !== null && !is_array($fields)) {
             $fields = null;
         }
         $overrides = new AcroFormOverrides($overridesData, $documentKey, $fields);
@@ -275,7 +286,7 @@ final class AcroFormOverridesController extends AbstractController
     #[Route('/acroform/fields/extract', name: 'nowo_pdf_signable_acroform_fields_extract', methods: ['POST'])]
     public function extractFields(Request $request): Response
     {
-        if (!$this->enabled || null === $this->fieldsExtractorScript || '' === trim($this->fieldsExtractorScript)) {
+        if (!$this->enabled || $this->fieldsExtractorScript === null || trim($this->fieldsExtractorScript) === '') {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
         $scriptPath = trim($this->fieldsExtractorScript);
@@ -284,20 +295,20 @@ final class AcroFormOverridesController extends AbstractController
         }
 
         $pdfContents = $this->resolvePdfContentsFromRequest($request);
-        if (null === $pdfContents) {
+        if ($pdfContents === null) {
             return new JsonResponse(['error' => 'Provide pdf_url or pdf_content'], Response::HTTP_BAD_REQUEST);
         }
-        if (\strlen($pdfContents) > $this->maxPdfSize) {
+        if (strlen($pdfContents) > $this->maxPdfSize) {
             return new JsonResponse(['error' => 'PDF too large'], Response::HTTP_BAD_REQUEST);
         }
 
         $tmpFile = null;
         try {
             $tmpFile = tempnam(sys_get_temp_dir(), 'pdfsignable_');
-            if (false === $tmpFile) {
+            if ($tmpFile === false) {
                 return new JsonResponse(['error' => 'Failed to create temp file'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-            if (false === file_put_contents($tmpFile, $pdfContents)) {
+            if (file_put_contents($tmpFile, $pdfContents) === false) {
                 return new JsonResponse(['error' => 'Failed to write temp PDF'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
@@ -308,18 +319,18 @@ final class AcroFormOverridesController extends AbstractController
             $stderr = $process->getErrorOutput();
             if (!$process->isSuccessful()) {
                 return new JsonResponse([
-                    'error' => 'Fields extractor failed',
+                    'error'  => 'Fields extractor failed',
                     'detail' => $stderr ?: $process->getExitCodeText(),
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         } finally {
-            if (null !== $tmpFile && is_file($tmpFile)) {
+            if ($tmpFile !== null && is_file($tmpFile)) {
                 @unlink($tmpFile);
             }
         }
 
         $decoded = json_decode($stdout, true);
-        if (!\is_array($decoded)) {
+        if (!is_array($decoded)) {
             return new JsonResponse(['error' => 'Invalid extractor output', 'detail' => $stdout], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
@@ -343,7 +354,7 @@ final class AcroFormOverridesController extends AbstractController
             return new Response('', Response::HTTP_NOT_FOUND);
         }
         $documentKey = $this->resolveDocumentKey($request, null);
-        if (null === $documentKey) {
+        if ($documentKey === null) {
             return new JsonResponse(['error' => 'document_key required'], Response::HTTP_BAD_REQUEST);
         }
         $this->storage->remove($documentKey);
@@ -372,125 +383,125 @@ final class AcroFormOverridesController extends AbstractController
         if (!$this->enabled || !$this->allowPdfModify) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
-        $data = $request->toArray();
+        $data        = $request->toArray();
         $patchesData = $data['patches'] ?? [];
-        if (!\is_array($patchesData)) {
+        if (!is_array($patchesData)) {
             return new JsonResponse(['error' => 'patches must be an array'], Response::HTTP_BAD_REQUEST);
         }
-        if (\count($patchesData) > $this->maxPatches) {
+        if (count($patchesData) > $this->maxPatches) {
             return new JsonResponse(['error' => 'Too many patches'], Response::HTTP_BAD_REQUEST);
         }
         $patches = [];
         foreach ($patchesData as $i => $p) {
-            if (!\is_array($p)) {
+            if (!is_array($p)) {
                 continue;
             }
             try {
                 $patches[] = AcroFormFieldPatch::fromArray($p);
-            } catch (\InvalidArgumentException $e) {
-                return new JsonResponse(['error' => "Patch {$i}: ".$e->getMessage()], Response::HTTP_BAD_REQUEST);
+            } catch (InvalidArgumentException $e) {
+                return new JsonResponse(['error' => "Patch {$i}: " . $e->getMessage()], Response::HTTP_BAD_REQUEST);
             }
         }
 
         $pdfContents = null;
-        if (isset($data['pdf_url']) && \is_string($data['pdf_url'])) {
+        if (isset($data['pdf_url']) && is_string($data['pdf_url'])) {
             $url = trim($data['pdf_url']);
-            if ('' === $url || !filter_var($url, FILTER_VALIDATE_URL)) {
+            if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
                 return new JsonResponse(['error' => $this->translator->trans('proxy.invalid_url', [], 'nowo_pdf_signable')], Response::HTTP_BAD_REQUEST);
             }
-            if ([] !== $this->proxyUrlAllowlist && !$this->isUrlAllowedByAllowlist($url)) {
+            if (!$this->proxyUrlValidator->isAllowedByAllowlist($url)) {
                 return new JsonResponse(['error' => $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable')], Response::HTTP_FORBIDDEN);
             }
-            if ($this->isUrlBlockedForSsrf($url)) {
+            if ($this->proxyUrlValidator->isBlockedForSsrf($url)) {
                 return new JsonResponse(['error' => $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable')], Response::HTTP_FORBIDDEN);
             }
             try {
-                $client = HttpClient::create();
+                $client   = HttpClient::create();
                 $response = $client->request('GET', $url, [
-                    'timeout' => 30,
+                    'timeout'       => 30,
                     'max_redirects' => 5,
-                    'headers' => ['Accept' => 'application/pdf,*/*'],
+                    'headers'       => ['Accept' => 'application/pdf,*/*'],
                 ]);
                 if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
-                    throw new \RuntimeException('Upstream error');
+                    throw new RuntimeException('Upstream error');
                 }
                 $pdfContents = $response->getContent();
-            } catch (ExceptionInterface|\Throwable) {
+            } catch (ExceptionInterface|Throwable) {
                 return new Response(
                     $this->translator->trans('proxy.error_load', [], 'nowo_pdf_signable'),
-                    Response::HTTP_BAD_GATEWAY
+                    Response::HTTP_BAD_GATEWAY,
                 );
             }
-        } elseif (isset($data['pdf_content']) && \is_string($data['pdf_content'])) {
+        } elseif (isset($data['pdf_content']) && is_string($data['pdf_content'])) {
             $decoded = base64_decode($data['pdf_content'], true);
-            if (false === $decoded) {
+            if ($decoded === false) {
                 return new JsonResponse(['error' => 'Invalid base64 pdf_content'], Response::HTTP_BAD_REQUEST);
             }
-            if (\strlen($decoded) > $this->maxPdfSize) {
+            if (strlen($decoded) > $this->maxPdfSize) {
                 return new JsonResponse(['error' => 'PDF too large'], Response::HTTP_BAD_REQUEST);
             }
             $pdfContents = $decoded;
         }
-        if (null === $pdfContents) {
+        if ($pdfContents === null) {
             return new JsonResponse(['error' => 'Provide pdf_url or pdf_content'], Response::HTTP_BAD_REQUEST);
         }
 
         $validateOnly = $this->debug && !empty($data['validate_only']);
-        if ($this->debug && null !== $this->logger) {
+        if ($this->debug && $this->logger !== null) {
             $this->logger->info('AcroForm apply request', [
                 'has_pdf_content' => isset($data['pdf_content']),
-                'has_pdf_url' => isset($data['pdf_url']),
-                'pdf_bytes' => \strlen($pdfContents),
-                'patches_count' => \count($patches),
-                'validate_only' => $validateOnly,
+                'has_pdf_url'     => isset($data['pdf_url']),
+                'pdf_bytes'       => strlen($pdfContents),
+                'patches_count'   => count($patches),
+                'validate_only'   => $validateOnly,
             ]);
         }
 
         $event = new AcroFormApplyRequestEvent($pdfContents, $patches, $validateOnly);
         $this->eventDispatcher->dispatch($event, PdfSignableEvents::ACROFORM_APPLY_REQUEST);
 
-        if (null !== $event->getValidationResult()) {
-            if ($this->debug && null !== $this->logger) {
+        if ($event->getValidationResult() !== null) {
+            if ($this->debug && $this->logger !== null) {
                 $this->logger->info('AcroForm apply response: validation_result (JSON)');
             }
 
             return new JsonResponse($event->getValidationResult(), Response::HTTP_OK);
         }
-        if (null !== $event->getError()) {
+        if ($event->getError() !== null) {
             $payload = ['error' => $event->getError()->getMessage()];
-            if (null !== $event->getErrorDetail()) {
+            if ($event->getErrorDetail() !== null) {
                 $payload['detail'] = $event->getErrorDetail();
             }
-            if ($this->debug && null !== $this->logger) {
+            if ($this->debug && $this->logger !== null) {
                 $this->logger->warning('AcroForm apply response: error', ['error' => $payload['error'], 'detail' => $payload['detail'] ?? null]);
             }
 
             return new JsonResponse($payload, Response::HTTP_BAD_REQUEST);
         }
-        if (null !== $event->getModifiedPdf()) {
+        if ($event->getModifiedPdf() !== null) {
             $modified = $event->getModifiedPdf();
-            if ($this->debug && null !== $this->logger) {
-                $this->logger->info('AcroForm apply response: modified PDF', ['pdf_output_bytes' => \strlen($modified)]);
+            if ($this->debug && $this->logger !== null) {
+                $this->logger->info('AcroForm apply response: modified PDF', ['pdf_output_bytes' => strlen($modified)]);
             }
 
             return new Response($modified, Response::HTTP_OK, [
-                'Content-Type' => 'application/pdf',
+                'Content-Type'        => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="document.pdf"',
             ]);
         }
-        if (null !== $this->editor) {
+        if ($this->editor !== null) {
             try {
                 $modified = $this->editor->applyPatches($pdfContents, $patches);
                 if ($validateOnly) {
                     return new JsonResponse([
-                        'success' => true,
-                        'message' => 'Apply would succeed',
-                        'patches_count' => \count($patches),
+                        'success'       => true,
+                        'message'       => 'Apply would succeed',
+                        'patches_count' => count($patches),
                     ], Response::HTTP_OK);
                 }
 
                 return new Response($modified, Response::HTTP_OK, [
-                    'Content-Type' => 'application/pdf',
+                    'Content-Type'        => 'application/pdf',
                     'Content-Disposition' => 'inline; filename="document.pdf"',
                 ]);
             } catch (AcroFormEditorException $e) {
@@ -502,7 +513,7 @@ final class AcroFormOverridesController extends AbstractController
             }
         }
 
-        if ($this->debug && null !== $this->logger) {
+        if ($this->debug && $this->logger !== null) {
             $this->logger->warning('AcroForm apply response: 501 No editor configured and event did not set modified PDF');
         }
 
@@ -523,7 +534,7 @@ final class AcroFormOverridesController extends AbstractController
     #[Route('/acroform/process', name: 'nowo_pdf_signable_acroform_process', methods: ['POST'])]
     public function process(Request $request): Response
     {
-        if (!$this->enabled || null === $this->processScript || '' === trim($this->processScript)) {
+        if (!$this->enabled || $this->processScript === null || trim($this->processScript) === '') {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
         $script = trim($this->processScript);
@@ -531,34 +542,34 @@ final class AcroFormOverridesController extends AbstractController
             return new JsonResponse(['error' => 'Process script not configured or not readable'], Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
-        $data = $request->toArray();
+        $data          = $request->toArray();
         $pdfContentB64 = $data['pdf_content'] ?? '';
-        if (!\is_string($pdfContentB64)) {
+        if (!is_string($pdfContentB64)) {
             return new JsonResponse(['error' => 'pdf_content (base64) is required'], Response::HTTP_BAD_REQUEST);
         }
         $decoded = base64_decode($pdfContentB64, true);
-        if (false === $decoded || \strlen($decoded) > $this->maxPdfSize) {
+        if ($decoded === false || strlen($decoded) > $this->maxPdfSize) {
             return new JsonResponse(['error' => 'Invalid or too large pdf_content'], Response::HTTP_BAD_REQUEST);
         }
 
-        $documentKey = isset($data['document_key']) && \is_string($data['document_key']) ? trim($data['document_key']) : null;
-        if ('' === $documentKey) {
+        $documentKey = isset($data['document_key']) && is_string($data['document_key']) ? trim($data['document_key']) : null;
+        if ($documentKey === '') {
             $documentKey = null;
         }
 
-        $tmpInput = tempnam(sys_get_temp_dir(), 'pdf_process_in_');
+        $tmpInput  = tempnam(sys_get_temp_dir(), 'pdf_process_in_');
         $tmpOutput = tempnam(sys_get_temp_dir(), 'pdf_process_out_');
-        if (false === $tmpInput || false === $tmpOutput) {
+        if ($tmpInput === false || $tmpOutput === false) {
             return new JsonResponse(['error' => 'Failed to create temp files'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         try {
-            if (false === file_put_contents($tmpInput, $decoded)) {
-                throw new \RuntimeException('Failed to write temp PDF');
+            if (file_put_contents($tmpInput, $decoded) === false) {
+                throw new RuntimeException('Failed to write temp PDF');
             }
 
             $procArgs = [$this->processScriptCommand, $script, '--input', $tmpInput, '--output', $tmpOutput];
-            if (null !== $documentKey) {
+            if ($documentKey !== null) {
                 $procArgs[] = '--document-key';
                 $procArgs[] = $documentKey;
             }
@@ -567,7 +578,7 @@ final class AcroFormOverridesController extends AbstractController
             $proc->run();
 
             if (!$proc->isSuccessful()) {
-                $err = $proc->getErrorOutput()."\n".$proc->getOutput();
+                $err              = $proc->getErrorOutput() . "\n" . $proc->getOutput();
                 $isPythonNotFound = str_contains(strtolower($err), 'not found') && str_contains(strtolower($err), 'python');
 
                 return new JsonResponse([
@@ -579,25 +590,25 @@ final class AcroFormOverridesController extends AbstractController
             }
 
             $processedPdf = is_file($tmpOutput) ? file_get_contents($tmpOutput) : '';
-            if ('' === $processedPdf) {
+            if ($processedPdf === '') {
                 return new JsonResponse(['error' => 'Process script produced no output file'], Response::HTTP_BAD_REQUEST);
             }
 
             $this->eventDispatcher->dispatch(
                 new AcroFormModifiedPdfProcessedEvent($processedPdf, $documentKey, $request),
-                PdfSignableEvents::ACROFORM_MODIFIED_PDF_PROCESSED
+                PdfSignableEvents::ACROFORM_MODIFIED_PDF_PROCESSED,
             );
 
             $accept = $request->headers->get('Accept', '');
             if (str_contains($accept, 'application/pdf')) {
                 return new Response($processedPdf, Response::HTTP_OK, [
-                    'Content-Type' => 'application/pdf',
+                    'Content-Type'        => 'application/pdf',
                     'Content-Disposition' => 'inline; filename="processed.pdf"',
                 ]);
             }
 
             return new JsonResponse([
-                'success' => true,
+                'success'      => true,
                 'document_key' => $documentKey,
             ], Response::HTTP_OK);
         } finally {
@@ -619,37 +630,37 @@ final class AcroFormOverridesController extends AbstractController
     private function resolvePdfContentsFromRequest(Request $request): ?string
     {
         $data = $request->toArray();
-        if (isset($data['pdf_url']) && \is_string($data['pdf_url'])) {
+        if (isset($data['pdf_url']) && is_string($data['pdf_url'])) {
             $url = trim($data['pdf_url']);
-            if ('' === $url || !filter_var($url, FILTER_VALIDATE_URL)) {
+            if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
                 return null;
             }
-            if ([] !== $this->proxyUrlAllowlist && !$this->isUrlAllowedByAllowlist($url)) {
+            if ($this->proxyUrlAllowlist !== [] && !$this->isUrlAllowedByAllowlist($url)) {
                 return null;
             }
             if ($this->isUrlBlockedForSsrf($url)) {
                 return null;
             }
             try {
-                $client = HttpClient::create();
+                $client   = HttpClient::create();
                 $response = $client->request('GET', $url, [
-                    'timeout' => 30,
+                    'timeout'       => 30,
                     'max_redirects' => 5,
-                    'headers' => ['Accept' => 'application/pdf,*/*'],
+                    'headers'       => ['Accept' => 'application/pdf,*/*'],
                 ]);
                 if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
                     return null;
                 }
 
                 return $response->getContent();
-            } catch (ExceptionInterface|\Throwable) {
+            } catch (ExceptionInterface|Throwable) {
                 return null;
             }
         }
-        if (isset($data['pdf_content']) && \is_string($data['pdf_content'])) {
+        if (isset($data['pdf_content']) && is_string($data['pdf_content'])) {
             $decoded = base64_decode($data['pdf_content'], true);
 
-            return false !== $decoded ? $decoded : null;
+            return $decoded !== false ? $decoded : null;
         }
 
         return null;
@@ -660,17 +671,17 @@ final class AcroFormOverridesController extends AbstractController
      *
      * Prefer body['document_key'] when body is provided; otherwise query or request parameter.
      *
-     * @param Request                   $request Request to read document_key from
-     * @param array<string, mixed>|null $body    Optional pre-parsed body (e.g. from $request->toArray())
+     * @param Request $request Request to read document_key from
+     * @param array<string, mixed>|null $body Optional pre-parsed body (e.g. from $request->toArray())
      *
      * @return string|null The document key if present and valid, null otherwise
      */
     private function resolveDocumentKey(Request $request, ?array $body): ?string
     {
-        $key = (null !== $body && \array_key_exists('document_key', $body))
+        $key = ($body !== null && array_key_exists('document_key', $body))
             ? $body['document_key']
             : ($request->query->get('document_key') ?? $request->request->get('document_key'));
-        if (null === $key || '' === trim((string) $key)) {
+        if ($key === null || trim((string) $key) === '') {
             return null;
         }
         $key = trim((string) $key);
@@ -689,85 +700,10 @@ final class AcroFormOverridesController extends AbstractController
      */
     private function isValidDocumentKey(string $documentKey): bool
     {
-        if ('' === $documentKey || \strlen($documentKey) > self::DOCUMENT_KEY_MAX_LENGTH) {
+        if ($documentKey === '' || strlen($documentKey) > self::DOCUMENT_KEY_MAX_LENGTH) {
             return false;
         }
 
         return (bool) preg_match('/^[a-zA-Z0-9_.\-]+$/', $documentKey);
-    }
-
-    /**
-     * Checks whether the URL targets a private or local host (SSRF mitigation).
-     *
-     * Blocks: localhost, ::1, 127.0.0.0/8, 10.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16, and IPv6 link-local (fe80::).
-     *
-     * @param string $url Full URL (e.g. https://example.com/doc.pdf)
-     *
-     * @return bool True if the URL should be blocked
-     */
-    private function isUrlBlockedForSsrf(string $url): bool
-    {
-        $host = parse_url($url, PHP_URL_HOST);
-        if (null === $host || '' === $host) {
-            return true;
-        }
-        $hostLower = strtolower($host);
-        if ('localhost' === $hostLower || '::1' === $hostLower) {
-            return true;
-        }
-        $ip = $host;
-        if (!filter_var($host, FILTER_VALIDATE_IP)) {
-            $resolved = gethostbyname($host);
-            if ($resolved === $host) {
-                return false;
-            }
-            $ip = $resolved;
-        }
-        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            $long = ip2long($ip);
-            if (false === $long) {
-                return true;
-            }
-            $u = (float) sprintf('%u', $long);
-
-            return ($u >= 2130706432 && $u <= 2147483647)
-                || ($u >= 167772160 && $u <= 184549375)
-                || ($u >= 3232235520 && $u <= 3232301055)
-                || ($u >= 2851995648 && $u <= 2852061183);
-        }
-        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            return str_starts_with($ip, '::1') || str_starts_with($ip, 'fe80:');
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks whether the URL is allowed by the configured proxy_url_allowlist.
-     *
-     * Each allowlist entry is either a substring (URL must contain it) or a regex if prefixed with '#'.
-     *
-     * @param string $url Full URL to check
-     *
-     * @return bool True if the URL matches at least one allowlist entry
-     */
-    private function isUrlAllowedByAllowlist(string $url): bool
-    {
-        foreach ($this->proxyUrlAllowlist as $pattern) {
-            if ('' === $pattern) {
-                continue;
-            }
-            if (str_starts_with($pattern, '#')) {
-                if (1 === @preg_match($pattern, $url)) {
-                    return true;
-                }
-                continue;
-            }
-            if (str_contains($url, $pattern)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

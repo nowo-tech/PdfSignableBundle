@@ -18,7 +18,7 @@ final class SignatureCoordinatesSubmittedEvent extends Event
 {
     /**
      * @param SignatureCoordinatesModel $coordinates The submitted coordinates (PDF URL, unit, origin, boxes)
-     * @param Request                   $request     The HTTP request (POST with form data)
+     * @param Request $request The HTTP request (POST with form data)
      */
     public function __construct(
         private readonly SignatureCoordinatesModel $coordinates,

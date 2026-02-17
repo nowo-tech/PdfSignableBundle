@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Nowo\PdfSignableBundle;
 
 use Nowo\PdfSignableBundle\DependencyInjection\PdfSignableExtension;
+use Nowo\PdfSignableBundle\DependencyInjection\ProxyUrlAllowlistValidationPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -18,6 +20,11 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 final class NowoPdfSignableBundle extends Bundle
 {
+    public function build(ContainerBuilder $container): void
+    {
+        $container->addCompilerPass(new ProxyUrlAllowlistValidationPass());
+    }
+
     /**
      * Bundle path: directory containing this class (src/).
      * Ensures @NowoPdfSignableBundle/Resources/... resolves in all environments (e.g. Docker, path repo).

@@ -86,7 +86,7 @@ Configure `nowo_pdf_signable` (proxy, example URL, optional [named configs](docs
 
 - PHP >= 8.1
 - **Symfony >= 6.1** || >= 7.0 || >= 8.0
-- Extensions: `form`, `http-client`, `twig`, `translation`, `validator`, `yaml`
+- PHP extensions required by Symfony (e.g. json, mbstring, ctype, xml, fileinfo). **Optional:** `ext-yaml` for faster YAML config parsing (see `composer suggest`)
 
 ## Configuration
 

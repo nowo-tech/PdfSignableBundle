@@ -17,7 +17,7 @@ final class PdfProxyRequestEventTest extends TestCase
     public function testGetUrlAndSetUrl(): void
     {
         $request = Request::create('/proxy', 'GET', ['url' => 'https://example.com/a.pdf']);
-        $event = new PdfProxyRequestEvent('https://example.com/a.pdf', $request);
+        $event   = new PdfProxyRequestEvent('https://example.com/a.pdf', $request);
 
         self::assertSame('https://example.com/a.pdf', $event->getUrl());
         $event->setUrl('https://other.com/b.pdf');
@@ -27,14 +27,14 @@ final class PdfProxyRequestEventTest extends TestCase
     public function testGetRequest(): void
     {
         $request = Request::create('/proxy');
-        $event = new PdfProxyRequestEvent('https://example.com/doc.pdf', $request);
+        $event   = new PdfProxyRequestEvent('https://example.com/doc.pdf', $request);
         self::assertSame($request, $event->getRequest());
     }
 
     public function testSetResponseAndHasResponse(): void
     {
         $request = Request::create('/proxy');
-        $event = new PdfProxyRequestEvent('https://example.com/doc.pdf', $request);
+        $event   = new PdfProxyRequestEvent('https://example.com/doc.pdf', $request);
 
         self::assertFalse($event->hasResponse());
         self::assertNull($event->getResponse());

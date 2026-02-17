@@ -50,7 +50,7 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
     public function testBuildFormWithFieldNameModeChoiceAddsFieldNameOther(): void
     {
         $form = $this->factory->create(AcroFormFieldEditType::class, new AcroFormFieldEdit(), [
-            'field_name_mode' => 'choice',
+            'field_name_mode'    => 'choice',
             'field_name_choices' => ['Option A' => 'a', 'Option B' => 'b'],
         ]);
         self::assertInstanceOf(ChoiceType::class, $form->get('fieldName')->getConfig()->getType()->getInnerType());
@@ -60,7 +60,7 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
     public function testBuildFormWithFieldNameModeChoiceEmptyChoicesUsesTextType(): void
     {
         $form = $this->factory->create(AcroFormFieldEditType::class, new AcroFormFieldEdit(), [
-            'field_name_mode' => 'choice',
+            'field_name_mode'    => 'choice',
             'field_name_choices' => [],
         ]);
         self::assertInstanceOf(TextType::class, $form->get('fieldName')->getConfig()->getType()->getInnerType());
@@ -103,25 +103,25 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
     public function testSubmitValidData(): void
     {
         $model = new AcroFormFieldEdit();
-        $form = $this->factory->create(AcroFormFieldEditType::class, $model);
+        $form  = $this->factory->create(AcroFormFieldEditType::class, $model);
         $form->submit([
-            'fieldId' => 'field_1',
-            'page' => '2',
-            'fieldName' => 'FullName',
-            'controlType' => 'text',
-            'rect' => '100, 200, 300, 220',
-            'maxLen' => '50',
-            'hidden' => false,
-            'createIfMissing' => false,
-            'options' => '',
-            'defaultValue' => '',
-            'defaultChecked' => false,
-            'checkboxValueOn' => '1',
+            'fieldId'          => 'field_1',
+            'page'             => '2',
+            'fieldName'        => 'FullName',
+            'controlType'      => 'text',
+            'rect'             => '100, 200, 300, 220',
+            'maxLen'           => '50',
+            'hidden'           => false,
+            'createIfMissing'  => false,
+            'options'          => '',
+            'defaultValue'     => '',
+            'defaultChecked'   => false,
+            'checkboxValueOn'  => '1',
             'checkboxValueOff' => '0',
-            'checkboxIcon' => 'check',
-            'fontSize' => '12',
-            'fontFamily' => 'Arial',
-            'fontAutoSize' => true,
+            'checkboxIcon'     => 'check',
+            'fontSize'         => '12',
+            'fontFamily'       => 'Arial',
+            'fontAutoSize'     => true,
         ]);
 
         self::assertTrue($form->isSynchronized());
@@ -141,9 +141,9 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
     public function testBuildViewPassesAcroformEditConfig(): void
     {
         $form = $this->factory->create(AcroFormFieldEditType::class, new AcroFormFieldEdit(), [
-            'field_name_mode' => 'choice',
+            'field_name_mode'    => 'choice',
             'field_name_choices' => ['A' => 'a'],
-            'font_sizes' => [10, 12],
+            'font_sizes'         => [10, 12],
         ]);
         $view = $form->createView();
         self::assertArrayHasKey('acroform_edit_config', $view->vars);
@@ -156,10 +156,10 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
     public function testBuildViewIncludesShowFieldRectAndFieldNameOtherText(): void
     {
         $form = $this->factory->create(AcroFormFieldEditType::class, new AcroFormFieldEdit(), [
-            'show_field_rect' => false,
+            'show_field_rect'       => false,
             'field_name_other_text' => 'Other value',
         ]);
-        $view = $form->createView();
+        $view   = $form->createView();
         $config = $view->vars['acroform_edit_config'];
         self::assertFalse($config['show_field_rect']);
         self::assertSame('Other value', $config['field_name_other_text']);
@@ -190,25 +190,25 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
     public function testSubmitWithHiddenAndCreateIfMissing(): void
     {
         $model = new AcroFormFieldEdit();
-        $form = $this->factory->create(AcroFormFieldEditType::class, $model);
+        $form  = $this->factory->create(AcroFormFieldEditType::class, $model);
         $form->submit([
-            'fieldId' => 'new_1',
-            'page' => '1',
-            'fieldName' => 'NewField',
-            'controlType' => 'text',
-            'rect' => '0, 0, 100, 20',
-            'maxLen' => '80',
-            'hidden' => true,
-            'createIfMissing' => true,
-            'options' => '',
-            'defaultValue' => '',
-            'defaultChecked' => false,
-            'checkboxValueOn' => '1',
+            'fieldId'          => 'new_1',
+            'page'             => '1',
+            'fieldName'        => 'NewField',
+            'controlType'      => 'text',
+            'rect'             => '0, 0, 100, 20',
+            'maxLen'           => '80',
+            'hidden'           => true,
+            'createIfMissing'  => true,
+            'options'          => '',
+            'defaultValue'     => '',
+            'defaultChecked'   => false,
+            'checkboxValueOn'  => '1',
             'checkboxValueOff' => '0',
-            'checkboxIcon' => 'check',
-            'fontSize' => '11',
-            'fontFamily' => 'sans-serif',
-            'fontAutoSize' => false,
+            'checkboxIcon'     => 'check',
+            'fontSize'         => '11',
+            'fontFamily'       => 'sans-serif',
+            'fontAutoSize'     => false,
         ]);
         self::assertTrue($form->isSynchronized());
         self::assertTrue($model->hidden);

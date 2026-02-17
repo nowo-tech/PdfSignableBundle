@@ -6,13 +6,14 @@ namespace Nowo\PdfSignableBundle\Tests\AcroForm\Exception;
 
 use Nowo\PdfSignableBundle\AcroForm\Exception\AcroFormEditorException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class AcroFormEditorExceptionTest extends TestCase
 {
     public function testExtendsRuntimeException(): void
     {
         $e = new AcroFormEditorException('PDF has no form');
-        self::assertInstanceOf(\RuntimeException::class, $e);
+        self::assertInstanceOf(RuntimeException::class, $e);
     }
 
     public function testGetMessage(): void

@@ -28,7 +28,7 @@ final class SignatureBoxTypeTest extends TypeTestCase
      */
     protected function getExtensions(): array
     {
-        $type = new SignatureBoxType();
+        $type      = new SignatureBoxType();
         $validator = Validation::createValidator();
 
         return [
@@ -39,14 +39,14 @@ final class SignatureBoxTypeTest extends TypeTestCase
 
     public function testSubmitValidData(): void
     {
-        $model = new SignatureBoxModel();
+        $model    = new SignatureBoxModel();
         $formData = [
-            'name' => 'signer_1',
-            'page' => 1,
-            'width' => 150.0,
+            'name'   => 'signer_1',
+            'page'   => 1,
+            'width'  => 150.0,
             'height' => 40.0,
-            'x' => 50.5,
-            'y' => 100.25,
+            'x'      => 50.5,
+            'y'      => 100.25,
         ];
 
         $form = $this->factory->create(SignatureBoxType::class, $model);
@@ -78,7 +78,7 @@ final class SignatureBoxTypeTest extends TypeTestCase
     {
         $model = new SignatureBoxModel();
         $this->factory->create(SignatureBoxType::class, $model, [
-            'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+            'name_mode'    => SignatureBoxType::NAME_MODE_CHOICE,
             'name_choices' => ['First' => 'first_val', 'Second' => 'second_val'],
         ]);
         self::assertSame('first_val', $model->getName());
@@ -87,17 +87,17 @@ final class SignatureBoxTypeTest extends TypeTestCase
     public function testSubmitWithNameModeChoice(): void
     {
         $model = new SignatureBoxModel();
-        $form = $this->factory->create(SignatureBoxType::class, $model, [
-            'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+        $form  = $this->factory->create(SignatureBoxType::class, $model, [
+            'name_mode'    => SignatureBoxType::NAME_MODE_CHOICE,
             'name_choices' => ['Signer 1' => 'signer_1', 'Witness' => 'witness'],
         ]);
         $form->submit([
-            'name' => 'witness',
-            'page' => 2,
-            'width' => 100.0,
+            'name'   => 'witness',
+            'page'   => 2,
+            'width'  => 100.0,
             'height' => 30.0,
-            'x' => 10.0,
-            'y' => 20.0,
+            'x'      => 10.0,
+            'y'      => 20.0,
         ]);
 
         self::assertTrue($form->isSynchronized());
@@ -107,16 +107,16 @@ final class SignatureBoxTypeTest extends TypeTestCase
 
     public function testNameFieldHasNotBlankConstraint(): void
     {
-        $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel());
+        $form        = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel());
         $constraints = $form->get('name')->getConfig()->getOption('constraints');
-        $notBlanks = array_filter($constraints ?? [], static fn ($c) => $c instanceof NotBlank);
+        $notBlanks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof NotBlank);
         self::assertCount(1, $notBlanks);
     }
 
     public function testAllowedPagesRendersPageAsChoice(): void
     {
         $model = new SignatureBoxModel();
-        $form = $this->factory->create(SignatureBoxType::class, $model, [
+        $form  = $this->factory->create(SignatureBoxType::class, $model, [
             'allowed_pages' => [1, 2, 3],
         ]);
         $pageField = $form->get('page');
@@ -128,16 +128,16 @@ final class SignatureBoxTypeTest extends TypeTestCase
     public function testSubmitWithAllowedPages(): void
     {
         $model = new SignatureBoxModel();
-        $form = $this->factory->create(SignatureBoxType::class, $model, [
+        $form  = $this->factory->create(SignatureBoxType::class, $model, [
             'allowed_pages' => [1, 2],
         ]);
         $form->submit([
-            'name' => 'signer_1',
-            'page' => '2',
-            'width' => 120.0,
+            'name'   => 'signer_1',
+            'page'   => '2',
+            'width'  => 120.0,
             'height' => 35.0,
-            'x' => 10.0,
-            'y' => 20.0,
+            'x'      => 10.0,
+            'y'      => 20.0,
         ]);
 
         self::assertTrue($form->isSynchronized());
@@ -150,7 +150,7 @@ final class SignatureBoxTypeTest extends TypeTestCase
             'allowed_pages' => [1, 2],
         ]);
         $constraints = $form->get('page')->getConfig()->getOption('constraints');
-        $choices = array_filter($constraints ?? [], static fn ($c) => $c instanceof Choice);
+        $choices     = array_filter($constraints ?? [], static fn ($c) => $c instanceof Choice);
         self::assertCount(1, $choices);
     }
 
@@ -163,18 +163,18 @@ final class SignatureBoxTypeTest extends TypeTestCase
     public function testAngleEnabledTrueAddsAngleFieldAndSubmits(): void
     {
         $model = new SignatureBoxModel();
-        $form = $this->factory->create(SignatureBoxType::class, $model, [
+        $form  = $this->factory->create(SignatureBoxType::class, $model, [
             'angle_enabled' => true,
         ]);
         self::assertTrue($form->has('angle'));
         $form->submit([
-            'name' => 'signer_1',
-            'page' => 1,
-            'width' => 150.0,
+            'name'   => 'signer_1',
+            'page'   => 1,
+            'width'  => 150.0,
             'height' => 40.0,
-            'x' => 50.0,
-            'y' => 100.0,
-            'angle' => -15.5,
+            'x'      => 50.0,
+            'y'      => 100.0,
+            'angle'  => -15.5,
         ]);
         self::assertTrue($form->isSynchronized());
         self::assertSame(-15.5, $model->getAngle());
@@ -199,17 +199,17 @@ final class SignatureBoxTypeTest extends TypeTestCase
     public function testSubmitWithSignatureData(): void
     {
         $model = new SignatureBoxModel();
-        $form = $this->factory->create(SignatureBoxType::class, $model, [
+        $form  = $this->factory->create(SignatureBoxType::class, $model, [
             'enable_signature_capture' => true,
         ]);
         $dataUrl = 'data:image/png;base64,iVBORw0KGgo=';
         $form->submit([
-            'name' => 'signer_1',
-            'page' => 1,
-            'width' => 150.0,
-            'height' => 40.0,
-            'x' => 50.0,
-            'y' => 100.0,
+            'name'          => 'signer_1',
+            'page'          => 1,
+            'width'         => 150.0,
+            'height'        => 40.0,
+            'x'             => 50.0,
+            'y'             => 100.0,
             'signatureData' => $dataUrl,
         ]);
         self::assertTrue($form->isSynchronized());
@@ -238,7 +238,7 @@ final class SignatureBoxTypeTest extends TypeTestCase
     public function testNameModeChoiceWithEmptyChoicesUsesTextType(): void
     {
         $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
-            'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+            'name_mode'    => SignatureBoxType::NAME_MODE_CHOICE,
             'name_choices' => [],
         ]);
         self::assertInstanceOf(TextType::class, $form->get('name')->getConfig()->getType()->getInnerType());
@@ -254,7 +254,7 @@ final class SignatureBoxTypeTest extends TypeTestCase
         self::assertSame(10, $form->get('height')->getConfig()->getOption('attr')['min']);
 
         $form2 = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
-            'min_box_width' => 30.0,
+            'min_box_width'  => 30.0,
             'min_box_height' => 20.0,
         ]);
         $view2 = $form2->createView();
@@ -268,13 +268,13 @@ final class SignatureBoxTypeTest extends TypeTestCase
     public function testBuildViewPassesWidgetOptions(): void
     {
         $form = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel(), [
-            'signing_only' => true,
+            'signing_only'           => true,
             'hide_coordinate_fields' => true,
-            'hide_position_fields' => true,
-            'lock_box_width' => true,
-            'lock_box_height' => true,
-            'default_box_width' => 100.0,
-            'default_box_height' => 30.0,
+            'hide_position_fields'   => true,
+            'lock_box_width'         => true,
+            'lock_box_height'        => true,
+            'default_box_width'      => 100.0,
+            'default_box_height'     => 30.0,
         ]);
         $view = $form->createView();
 
@@ -294,9 +294,9 @@ final class SignatureBoxTypeTest extends TypeTestCase
         $model->setWidth(200.0)->setHeight(50.0);
 
         $this->factory->create(SignatureBoxType::class, $model, [
-            'lock_box_width' => true,
-            'lock_box_height' => true,
-            'default_box_width' => 120.0,
+            'lock_box_width'     => true,
+            'lock_box_height'    => true,
+            'default_box_width'  => 120.0,
             'default_box_height' => 25.0,
         ]);
 

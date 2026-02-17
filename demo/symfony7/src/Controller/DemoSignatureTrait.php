@@ -11,6 +11,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function sprintf;
+
+use const ENT_QUOTES;
+
 /**
  * Shared helpers for Signature, AcroForm and Signing demo controllers.
  */
@@ -24,7 +28,7 @@ trait DemoSignatureTrait
     private function signaturePage(Request $request, string $pageTitle, array $signatureOptions, string $configExplanation): Response
     {
         $model = new SignaturePageModel();
-        $form = $this->createForm(SignaturePageType::class, $model, [
+        $form  = $this->createForm(SignaturePageType::class, $model, [
             'signature_options' => $signatureOptions,
         ]);
         $form->handleRequest($request);
@@ -34,11 +38,12 @@ trait DemoSignatureTrait
                 $model = $form->getData();
                 if ($this->wantsJson($request)) {
                     $coords = $model->getSignatureCoordinates();
+
                     return new JsonResponse([
-                        'success' => true,
+                        'success'     => true,
                         'coordinates' => $this->formatCoordinates($coords),
-                        'unit' => $coords->getUnit(),
-                        'origin' => $coords->getOrigin(),
+                        'unit'        => $coords->getUnit(),
+                        'origin'      => $coords->getOrigin(),
                     ]);
                 }
                 $coords = $model->getSignatureCoordinates();
@@ -50,8 +55,8 @@ trait DemoSignatureTrait
         }
 
         return $this->render('signature/index.html.twig', [
-            'form' => $form,
-            'page_title' => $pageTitle,
+            'form'               => $form,
+            'page_title'         => $pageTitle,
             'config_explanation' => $configExplanation,
         ]);
     }
@@ -70,30 +75,32 @@ trait DemoSignatureTrait
         $out = [];
         foreach ($model->getSignatureBoxes() as $box) {
             $out[] = [
-                'name' => $box->getName(),
-                'page' => $box->getPage(),
-                'x' => $box->getX(),
-                'y' => $box->getY(),
-                'width' => $box->getWidth(),
+                'name'   => $box->getName(),
+                'page'   => $box->getPage(),
+                'x'      => $box->getX(),
+                'y'      => $box->getY(),
+                'width'  => $box->getWidth(),
                 'height' => $box->getHeight(),
-                'angle' => $box->getAngle(),
+                'angle'  => $box->getAngle(),
             ];
         }
+
         return $out;
     }
 
     private function formatCoordinatesForFlash(SignatureCoordinatesModel $model): string
     {
-        $boxes = $this->formatCoordinates($model);
-        $unit = $model->getUnit();
+        $boxes  = $this->formatCoordinates($model);
+        $unit   = $model->getUnit();
         $origin = $model->getOrigin();
-        $intro = sprintf('Unit: %s, origin: %s.', $unit, $origin);
+        $intro  = sprintf('Unit: %s, origin: %s.', $unit, $origin);
         if ($boxes === []) {
             return $intro . ' No boxes.';
         }
         $items = array_map(static function (array $b) use ($unit): string {
-            $name = htmlspecialchars($b['name'], ENT_QUOTES, 'UTF-8');
+            $name  = htmlspecialchars($b['name'], ENT_QUOTES, 'UTF-8');
             $angle = isset($b['angle']) ? (float) $b['angle'] : 0.0;
+
             return sprintf(
                 '<li><strong>%s</strong>: page %d, x=%s, y=%s, %s×%s (%s), angle=%s°</li>',
                 $name,
@@ -103,9 +110,10 @@ trait DemoSignatureTrait
                 (string) $b['width'],
                 (string) $b['height'],
                 $unit,
-                (string) $angle
+                (string) $angle,
             );
         }, $boxes);
+
         return $intro . ' <ul class="mb-0 mt-1">' . implode('', $items) . '</ul>';
     }
 }

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\AcroForm;
 
+use function count;
+use function is_array;
+use function is_string;
+use function sprintf;
+
 /**
  * Model for the AcroForm field edit form (modal).
  *
@@ -50,19 +55,19 @@ final class AcroFormFieldEdit
     public static function fromArray(array $data): self
     {
         $rect = null;
-        if (isset($data['rect']) && \is_array($data['rect'])) {
+        if (isset($data['rect']) && is_array($data['rect'])) {
             $r = $data['rect'];
-            if (\count($r) >= 4) {
+            if (count($r) >= 4) {
                 $rect = sprintf('%.1f, %.1f, %.1f, %.1f', (float) $r[0], (float) $r[1], (float) $r[2], (float) $r[3]);
             }
         }
         $opts = '';
-        if (isset($data['options']) && \is_array($data['options'])) {
+        if (isset($data['options']) && is_array($data['options'])) {
             $lines = [];
             foreach ($data['options'] as $o) {
-                if (\is_array($o) && isset($o['value'])) {
-                    $lines[] = isset($o['label']) && $o['label'] !== $o['value'] ? $o['value'].'|'.$o['label'] : $o['value'];
-                } elseif (\is_string($o)) {
+                if (is_array($o) && isset($o['value'])) {
+                    $lines[] = isset($o['label']) && $o['label'] !== $o['value'] ? $o['value'] . '|' . $o['label'] : $o['value'];
+                } elseif (is_string($o)) {
                     $lines[] = $o;
                 }
             }

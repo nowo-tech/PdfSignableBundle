@@ -8,12 +8,14 @@ use Nowo\PdfSignableBundle\Form\Extension\SignatureCoordinatesTypeExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use function is_array;
+
 final class SignatureCoordinatesTypeExtensionTest extends TestCase
 {
     public function testGetExtendedTypes(): void
     {
         $types = SignatureCoordinatesTypeExtension::getExtendedTypes();
-        $arr = \is_array($types) ? $types : iterator_to_array($types);
+        $arr   = is_array($types) ? $types : iterator_to_array($types);
 
         self::assertCount(1, $arr);
         self::assertSame('Nowo\PdfSignableBundle\Form\SignatureCoordinatesType', $arr[0]);
@@ -22,7 +24,7 @@ final class SignatureCoordinatesTypeExtensionTest extends TestCase
     public function testConfigureOptionsSetsDefaultsFromConstructor(): void
     {
         $extension = new SignatureCoordinatesTypeExtension(150.0, 40.0, true, false, 30.0, 15.0);
-        $resolver = new OptionsResolver();
+        $resolver  = new OptionsResolver();
         $extension->configureOptions($resolver);
 
         $options = $resolver->resolve();
@@ -38,7 +40,7 @@ final class SignatureCoordinatesTypeExtensionTest extends TestCase
     public function testConfigureOptionsWithNullDefaults(): void
     {
         $extension = new SignatureCoordinatesTypeExtension(null, null, false, false, null, null);
-        $resolver = new OptionsResolver();
+        $resolver  = new OptionsResolver();
         $extension->configureOptions($resolver);
 
         $options = $resolver->resolve();

@@ -33,10 +33,11 @@ class SigningController extends AbstractController
     public function draw(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><code>enable_signature_capture: true</code> — each box has a <strong>draw pad</strong> (canvas)</li><li>Draw with mouse or finger; the image is stored and shown in the PDF overlay</li><li><strong>Low legal validity</strong> — simple acceptance/consent; not a qualified electronic signature</li></ul>';
+
         return $this->signaturePage($request, 'Draw signature in box', [
             'enable_signature_capture' => true,
-            'min_entries' => 0,
-            'max_entries' => 4,
+            'min_entries'              => 0,
+            'max_entries'              => 4,
         ], $explanation);
     }
 
@@ -44,11 +45,12 @@ class SigningController extends AbstractController
     public function upload(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><code>enable_signature_capture: true</code>, <code>enable_signature_upload: true</code></li><li>Each box: <strong>draw</strong> in the canvas or <strong>upload</strong> an image file</li><li>Same storage (base64 data URL); image is shown in the overlay</li></ul>';
+
         return $this->signaturePage($request, 'Draw or upload signature image', [
             'enable_signature_capture' => true,
-            'enable_signature_upload' => true,
-            'min_entries' => 0,
-            'max_entries' => 4,
+            'enable_signature_upload'  => true,
+            'min_entries'              => 0,
+            'max_entries'              => 4,
         ], $explanation);
     }
 
@@ -56,18 +58,19 @@ class SigningController extends AbstractController
     public function legalDisclaimer(Request $request): Response
     {
         $explanation = '<ul class="mb-0"><li><code>signing_legal_disclaimer</code> — short text shown above the PDF viewer</li><li><code>signing_legal_disclaimer_url</code> — optional link (e.g. terms of use)</li><li>Use case: inform users about the legal effect of the signing method</li></ul>';
+
         return $this->signaturePage($request, 'Legal disclaimer (signing)', [
-            'signing_legal_disclaimer' => 'This is a <strong>simple signature</strong> (draw or image). It has no qualified legal validity. For legally binding signatures, use a qualified trust service.',
+            'signing_legal_disclaimer'     => 'This is a <strong>simple signature</strong> (draw or image). It has no qualified legal validity. For legally binding signatures, use a qualified trust service.',
             'signing_legal_disclaimer_url' => '#',
-            'min_entries' => 0,
-            'max_entries' => 4,
+            'min_entries'                  => 0,
+            'max_entries'                  => 4,
         ], $explanation);
     }
 
     #[Route('/demo-signing/predefined-boxes', name: 'app_signing_predefined_boxes', methods: ['GET', 'POST'])]
     public function predefinedBoxes(Request $request): Response
     {
-        $model = new SignaturePageModel();
+        $model         = new SignaturePageModel();
         $defaultPdfUrl = $this->examplePdfUrl ?? 'https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf';
 
         if (!$request->isMethod('POST')) {
@@ -76,25 +79,25 @@ class SigningController extends AbstractController
             $coords->setUnit(SignatureCoordinatesModel::UNIT_PT);
             $coords->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT);
             $coords->addSignatureBox(
-                (new SignatureBoxModel())->setName('signer_1')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(700)
+                (new SignatureBoxModel())->setName('signer_1')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(700),
             );
             $coords->addSignatureBox(
-                (new SignatureBoxModel())->setName('signer_2')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(650)
+                (new SignatureBoxModel())->setName('signer_2')->setPage(1)->setWidth(150)->setHeight(40)->setX(50)->setY(650),
             );
         }
 
         $form = $this->createForm(SignaturePageType::class, $model, [
             'signature_options' => [
-                'pdf_url' => $defaultPdfUrl,
-                'url_field' => false,
-                'unit_default' => SignatureCoordinatesModel::UNIT_PT,
-                'min_entries' => 2,
-                'max_entries' => 2,
+                'pdf_url'                  => $defaultPdfUrl,
+                'url_field'                => false,
+                'unit_default'             => SignatureCoordinatesModel::UNIT_PT,
+                'min_entries'              => 2,
+                'max_entries'              => 2,
                 'enable_signature_capture' => true,
-                'enable_signature_upload' => true,
-                'signing_only' => true,
-                'signature_box_options' => [
-                    'name_mode' => SignatureBoxType::NAME_MODE_CHOICE,
+                'enable_signature_upload'  => true,
+                'signing_only'             => true,
+                'signature_box_options'    => [
+                    'name_mode'    => SignatureBoxType::NAME_MODE_CHOICE,
                     'name_choices' => ['Signer 1' => 'signer_1', 'Signer 2' => 'signer_2'],
                 ],
             ],
@@ -105,11 +108,12 @@ class SigningController extends AbstractController
             $model = $form->getData();
             if ($this->wantsJson($request)) {
                 $coords = $model->getSignatureCoordinates();
+
                 return new JsonResponse([
-                    'success' => true,
+                    'success'     => true,
                     'coordinates' => $this->formatCoordinates($coords),
-                    'unit' => $coords->getUnit(),
-                    'origin' => $coords->getOrigin(),
+                    'unit'        => $coords->getUnit(),
+                    'origin'      => $coords->getOrigin(),
                 ]);
             }
             $coords = $model->getSignatureCoordinates();
@@ -122,8 +126,8 @@ class SigningController extends AbstractController
         $explanation = '<ul class="mb-0"><li><strong>Boxes already placed</strong> — two fixed positions (Signer 1, Signer 2) on page 1</li><li><code>signing_only: true</code> — only signer name and signature pad/upload are shown; coordinates are not editable</li><li><code>min_entries: 2</code>, <code>max_entries: 2</code> — cannot add or remove boxes</li><li>User only <strong>draws or uploads</strong> the signature in each box</li></ul>';
 
         return $this->render('signature/index.html.twig', [
-            'form' => $form,
-            'page_title' => 'Predefined boxes — sign only (draw or upload)',
+            'form'               => $form,
+            'page_title'         => 'Predefined boxes — sign only (draw or upload)',
             'config_explanation' => $explanation,
         ]);
     }

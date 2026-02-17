@@ -46,9 +46,9 @@ export function getWorkerUrl(config: { pdfjsSource?: string; pdfjsWorkerUrl?: st
       scriptSrc = bundleScript?.src ?? '';
     }
     if (scriptSrc) return toAbsoluteWorkerUrl(scriptSrc.replace(/\/[^/]*$/, '/pdf.worker.min.js'));
-    throw new Error(
-      '[PdfSignable] With pdfjsSource "npm" could not resolve worker URL. Set pdfjs_worker_url or run pnpm run copy-worker.',
-    );
+    // Fallback: default bundle asset path when script detection fails (e.g. dynamic load, SPA)
+    const defaultWorkerPath = '/bundles/nowopdfsignable/js/pdf.worker.min.js';
+    return toAbsoluteWorkerUrl(defaultWorkerPath);
   }
   if (config.pdfjsWorkerUrl && config.pdfjsWorkerUrl !== '') return config.pdfjsWorkerUrl;
   return DEFAULT_PDFJS_WORKER_CDN;

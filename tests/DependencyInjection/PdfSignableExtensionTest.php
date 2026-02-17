@@ -31,9 +31,9 @@ final class PdfSignableExtensionTest extends TestCase
         $extension = new PdfSignableExtension();
         $extension->load([
             [
-                'proxy_enabled' => false,
+                'proxy_enabled'   => false,
                 'example_pdf_url' => 'https://example.com/default.pdf',
-                'signature' => ['configs' => ['preset' => ['unit_default' => 'pt']]],
+                'signature'       => ['configs' => ['preset' => ['unit_default' => 'pt']]],
             ],
         ], $container);
 
@@ -53,10 +53,10 @@ final class PdfSignableExtensionTest extends TestCase
         $extension->load([
             [
                 'signature' => [
-                    'default_box_width' => 150.0,
+                    'default_box_width'  => 150.0,
                     'default_box_height' => 40.0,
-                    'lock_box_width' => true,
-                    'lock_box_height' => true,
+                    'lock_box_width'     => true,
+                    'lock_box_height'    => true,
                 ],
             ],
         ], $container);
@@ -89,7 +89,7 @@ final class PdfSignableExtensionTest extends TestCase
         $extension->load([
             [
                 'signature' => [
-                    'min_box_width' => 30.0,
+                    'min_box_width'  => 30.0,
                     'min_box_height' => 20.0,
                 ],
             ],
@@ -114,10 +114,10 @@ final class PdfSignableExtensionTest extends TestCase
         $extension->load([
             [
                 'acroform' => [
-                    'apply_script_command' => 'python',
+                    'apply_script_command'   => 'python',
                     'process_script_command' => '/usr/bin/python3.12',
-                    'min_field_width' => 25.0,
-                    'min_field_height' => 18.0,
+                    'min_field_width'        => 25.0,
+                    'min_field_height'       => 18.0,
                 ],
             ],
         ], $container2);
@@ -162,7 +162,7 @@ final class PdfSignableExtensionTest extends TestCase
         self::assertNotEmpty($twigConfigs);
         self::assertArrayHasKey('paths', $twigConfigs[0]);
         self::assertArrayHasKey('form_themes', $twigConfigs[0]);
-        $paths = $twigConfigs[0]['paths'];
+        $paths       = $twigConfigs[0]['paths'];
         $pathsString = implode('', array_merge(array_keys($paths), array_values($paths)));
         self::assertTrue(str_contains($pathsString, 'Resources/views'), 'Twig paths should contain bundle views path');
         self::assertContains('@NowoPdfSignable/form/theme.html.twig', $twigConfigs[0]['form_themes']);
@@ -214,7 +214,7 @@ final class PdfSignableExtensionTest extends TestCase
         ], $container);
 
         self::assertTrue($container->hasDefinition(AcroFormOverridesController::class));
-        $def = $container->getDefinition(AcroFormOverridesController::class);
+        $def       = $container->getDefinition(AcroFormOverridesController::class);
         $editorRef = $def->getArgument('$editor');
         self::assertInstanceOf(Reference::class, $editorRef);
         self::assertSame('app.acroform_editor', (string) $editorRef);
@@ -226,8 +226,8 @@ final class PdfSignableExtensionTest extends TestCase
         $extension = new PdfSignableExtension();
         $extension->load([
             [
-                'audit' => ['fill_from_request' => false],
-                'tsa_url' => 'https://tsa.example.com',
+                'audit'              => ['fill_from_request' => false],
+                'tsa_url'            => 'https://tsa.example.com',
                 'signing_service_id' => 'app.pades_signer',
             ],
         ], $container);

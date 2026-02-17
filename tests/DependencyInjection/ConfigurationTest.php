@@ -16,8 +16,8 @@ final class ConfigurationTest extends TestCase
     public function testDefaultConfig(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertTrue($config['proxy_enabled']);
         self::assertSame([], $config['proxy_url_allowlist']);
@@ -33,8 +33,8 @@ final class ConfigurationTest extends TestCase
     public function testProxyDisabledOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, [
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
             ['proxy_enabled' => false],
         ]);
 
@@ -44,8 +44,8 @@ final class ConfigurationTest extends TestCase
     public function testExamplePdfUrlOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, [
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
             ['example_pdf_url' => 'https://example.com/doc.pdf'],
         ]);
 
@@ -55,8 +55,8 @@ final class ConfigurationTest extends TestCase
     public function testConfigsDefaultEmpty(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertSame([], $config['signature']['configs']);
     }
@@ -64,13 +64,13 @@ final class ConfigurationTest extends TestCase
     public function testConfigsOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, [
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
             [
                 'signature' => [
                     'configs' => [
                         'fixed_url' => [
-                            'pdf_url' => 'https://example.com/template.pdf',
+                            'pdf_url'   => 'https://example.com/template.pdf',
                             'url_field' => false,
                         ],
                     ],
@@ -86,8 +86,8 @@ final class ConfigurationTest extends TestCase
     public function testProxyUrlAllowlistOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, [
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
             [
                 'proxy_url_allowlist' => [
                     'https://cdn.example.com/',
@@ -98,15 +98,15 @@ final class ConfigurationTest extends TestCase
 
         self::assertSame(
             ['https://cdn.example.com/', '#^https://internal\.corp/#'],
-            $config['proxy_url_allowlist']
+            $config['proxy_url_allowlist'],
         );
     }
 
     public function testDebugDefaultFalse(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertFalse($config['debug']);
     }
@@ -114,8 +114,8 @@ final class ConfigurationTest extends TestCase
     public function testDebugOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, [
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
             ['debug' => true],
         ]);
 
@@ -125,8 +125,8 @@ final class ConfigurationTest extends TestCase
     public function testAcroformEditorDefaults(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertArrayHasKey('acroform', $config);
         self::assertFalse($config['acroform']['enabled']);
@@ -141,13 +141,13 @@ final class ConfigurationTest extends TestCase
     public function testAcroformEditorOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, [
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
             [
                 'acroform' => [
-                    'enabled' => true,
+                    'enabled'          => true,
                     'allow_pdf_modify' => true,
-                    'max_pdf_size' => 10_000_000,
+                    'max_pdf_size'     => 10_000_000,
                 ],
             ],
         ]);
@@ -160,8 +160,8 @@ final class ConfigurationTest extends TestCase
     public function testMinBoxWidthHeightDefaultsNull(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertNull($config['signature']['min_box_width']);
         self::assertNull($config['signature']['min_box_height']);
@@ -170,11 +170,11 @@ final class ConfigurationTest extends TestCase
     public function testMinBoxWidthHeightOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, [
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
             [
                 'signature' => [
-                    'min_box_width' => 25.0,
+                    'min_box_width'  => 25.0,
                     'min_box_height' => 15.0,
                 ],
             ],
@@ -187,8 +187,8 @@ final class ConfigurationTest extends TestCase
     public function testAcroformEditorApplyScriptCommandDefault(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertSame('python3', $config['acroform']['apply_script_command']);
     }
@@ -196,8 +196,8 @@ final class ConfigurationTest extends TestCase
     public function testAcroformEditorProcessScriptCommandDefault(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertSame('python3', $config['acroform']['process_script_command']);
     }
@@ -205,11 +205,11 @@ final class ConfigurationTest extends TestCase
     public function testAcroformEditorScriptCommandsOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, [
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
             [
                 'acroform' => [
-                    'apply_script_command' => '/usr/bin/python3',
+                    'apply_script_command'   => '/usr/bin/python3',
                     'process_script_command' => 'python',
                 ],
             ],
@@ -222,8 +222,8 @@ final class ConfigurationTest extends TestCase
     public function testAcroformEditorMinFieldWidthHeightDefaults(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertSame(12.0, $config['acroform']['min_field_width']);
         self::assertSame(12.0, $config['acroform']['min_field_height']);
@@ -232,11 +232,11 @@ final class ConfigurationTest extends TestCase
     public function testAcroformEditorMinFieldWidthHeightOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, [
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
             [
                 'acroform' => [
-                    'min_field_width' => 20.0,
+                    'min_field_width'  => 20.0,
                     'min_field_height' => 18.0,
                 ],
             ],
@@ -249,8 +249,8 @@ final class ConfigurationTest extends TestCase
     public function testAuditFillFromRequestDefaultAndOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertArrayHasKey('audit', $config);
         self::assertTrue($config['audit']['fill_from_request']);
@@ -264,8 +264,8 @@ final class ConfigurationTest extends TestCase
     public function testAcroformDefaultConfigAliasDefaultAndOverride(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertSame('default', $config['acroform']['default_config_alias']);
 
@@ -278,9 +278,41 @@ final class ConfigurationTest extends TestCase
     public function testSignatureDefaultConfigAliasDefault(): void
     {
         $configuration = new Configuration();
-        $processor = new Processor();
-        $config = $processor->processConfiguration($configuration, []);
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
 
         self::assertSame('default', $config['signature']['default_config_alias']);
+    }
+
+    public function testAcroformLabelModeAndFontSizesDefaults(): void
+    {
+        $configuration = new Configuration();
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, []);
+
+        self::assertSame('input', $config['acroform']['label_mode']);
+        self::assertSame([], $config['acroform']['font_sizes']);
+        self::assertSame([], $config['acroform']['font_families']);
+    }
+
+    public function testAcroformLabelModeAndFontSizesOverride(): void
+    {
+        $configuration = new Configuration();
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
+            [
+                'acroform' => [
+                    'label_mode'   => 'choices',
+                    'label_choices' => ['Name', 'Date'],
+                    'font_sizes'   => [8, 10, 12],
+                    'font_families' => ['Helvetica', 'Arial'],
+                ],
+            ],
+        ]);
+
+        self::assertSame('choices', $config['acroform']['label_mode']);
+        self::assertSame(['Name', 'Date'], $config['acroform']['label_choices']);
+        self::assertSame([8, 10, 12], $config['acroform']['font_sizes']);
+        self::assertSame(['Helvetica', 'Arial'], $config['acroform']['font_families']);
     }
 }

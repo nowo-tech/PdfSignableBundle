@@ -16,10 +16,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 final class SignatureCoordinatesTypeExtension extends AbstractTypeExtension
 {
     /**
-     * @param float|null $defaultBoxWidth  Default width for new signature boxes (from signature config)
+     * @param float|null $defaultBoxWidth Default width for new signature boxes (from signature config)
      * @param float|null $defaultBoxHeight Default height for new signature boxes (from signature config)
-     * @param bool       $lockBoxWidth     Whether to lock width and hide the field (from signature config)
-     * @param bool       $lockBoxHeight    Whether to lock height and hide the field (from signature config)
+     * @param bool $lockBoxWidth Whether to lock width and hide the field (from signature config)
+     * @param bool $lockBoxHeight Whether to lock height and hide the field (from signature config)
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.signature.default_box_width')]
@@ -51,12 +51,12 @@ final class SignatureCoordinatesTypeExtension extends AbstractTypeExtension
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'default_box_width' => $this->defaultBoxWidth,
+            'default_box_width'  => $this->defaultBoxWidth,
             'default_box_height' => $this->defaultBoxHeight,
-            'lock_box_width' => $this->lockBoxWidth,
-            'lock_box_height' => $this->lockBoxHeight,
-            'min_box_width' => $this->minBoxWidth,
-            'min_box_height' => $this->minBoxHeight,
+            'lock_box_width'     => $this->lockBoxWidth,
+            'lock_box_height'    => $this->lockBoxHeight,
+            'min_box_width'      => $this->minBoxWidth,
+            'min_box_height'     => $this->minBoxHeight,
         ]);
     }
 }

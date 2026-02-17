@@ -62,14 +62,14 @@ final class PythonProcessEnvTest extends TestCase
         $env = PythonProcessEnv::build();
 
         foreach ($env as $value) {
-            self::assertNotSame(false, $value);
+            self::assertNotFalse($value);
         }
     }
 
     public function testBuildWhenPathIsUnsetStillPrependsSystemPath(): void
     {
         $originalPath = getenv('PATH');
-        if (false !== $originalPath) {
+        if ($originalPath !== false) {
             putenv('PATH');
         }
         try {
@@ -77,8 +77,8 @@ final class PythonProcessEnvTest extends TestCase
             self::assertArrayHasKey('PATH', $env);
             self::assertStringStartsWith('/usr/local/bin:/usr/bin:/bin', $env['PATH']);
         } finally {
-            if (false !== $originalPath) {
-                putenv('PATH='.$originalPath);
+            if ($originalPath !== false) {
+                putenv('PATH=' . $originalPath);
             }
         }
     }

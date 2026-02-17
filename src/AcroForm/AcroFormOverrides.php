@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\AcroForm;
 
+use function is_array;
+
 /**
  * DTO for full AcroForm overrides (storage).
  *
@@ -13,8 +15,8 @@ namespace Nowo\PdfSignableBundle\AcroForm;
 final class AcroFormOverrides
 {
     /**
-     * @param array<string, array<string, mixed>>   $overrides Map fieldId → override data
-     * @param array<int, array<string, mixed>>|null $fields    Optional list of PDF field definitions (id, rect, fieldType, page, value?)
+     * @param array<string, array<string, mixed>> $overrides Map fieldId → override data
+     * @param array<int, array<string, mixed>>|null $fields Optional list of PDF field definitions (id, rect, fieldType, page, value?)
      */
     public function __construct(
         public readonly array $overrides,
@@ -29,15 +31,15 @@ final class AcroFormOverrides
     public static function fromArray(array $data): self
     {
         $overrides = $data['overrides'] ?? [];
-        if (!\is_array($overrides)) {
+        if (!is_array($overrides)) {
             $overrides = [];
         }
         $documentKey = isset($data['document_key']) ? (string) $data['document_key'] : null;
-        if ('' === $documentKey) {
+        if ($documentKey === '') {
             $documentKey = null;
         }
         $fields = $data['fields'] ?? null;
-        if (null !== $fields && !\is_array($fields)) {
+        if ($fields !== null && !is_array($fields)) {
             $fields = null;
         }
 
@@ -50,10 +52,10 @@ final class AcroFormOverrides
     public function toArray(): array
     {
         $out = ['overrides' => $this->overrides];
-        if (null !== $this->documentKey) {
+        if ($this->documentKey !== null) {
             $out['document_key'] = $this->documentKey;
         }
-        if (null !== $this->fields && [] !== $this->fields) {
+        if ($this->fields !== null && $this->fields !== []) {
             $out['fields'] = $this->fields;
         }
 

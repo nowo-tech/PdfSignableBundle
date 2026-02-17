@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Tests\AcroForm;
 
+use InvalidArgumentException;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use PHPUnit\Framework\TestCase;
 
@@ -11,14 +12,14 @@ final class AcroFormFieldPatchTest extends TestCase
 {
     public function testFromArrayRequiresFieldId(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('fieldId');
         AcroFormFieldPatch::fromArray([]);
     }
 
     public function testFromArrayRejectsEmptyFieldId(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('fieldId');
         AcroFormFieldPatch::fromArray(['fieldId' => '']);
     }
@@ -35,12 +36,12 @@ final class AcroFormFieldPatchTest extends TestCase
     public function testFromArrayAndToArrayRoundtrip(): void
     {
         $data = [
-            'fieldId' => 'tx_1',
-            'rect' => [0, 0, 100, 20],
+            'fieldId'      => 'tx_1',
+            'rect'         => [0, 0, 100, 20],
             'defaultValue' => 'Hello',
-            'label' => 'Name',
-            'controlType' => 'text',
-            'page' => 1,
+            'label'        => 'Name',
+            'controlType'  => 'text',
+            'page'         => 1,
         ];
         $p = AcroFormFieldPatch::fromArray($data);
         self::assertSame('tx_1', $p->fieldId);
@@ -87,10 +88,10 @@ final class AcroFormFieldPatchTest extends TestCase
     public function testFromArrayWithFieldNameMaxLenFontSizeFontFamily(): void
     {
         $p = AcroFormFieldPatch::fromArray([
-            'fieldId' => 'f1',
-            'fieldName' => 'CustomerName',
-            'maxLen' => 50,
-            'fontSize' => 10.5,
+            'fieldId'    => 'f1',
+            'fieldName'  => 'CustomerName',
+            'maxLen'     => 50,
+            'fontSize'   => 10.5,
             'fontFamily' => 'Times New Roman',
         ]);
         self::assertSame('CustomerName', $p->fieldName);
@@ -114,7 +115,7 @@ final class AcroFormFieldPatchTest extends TestCase
 
     public function testToArrayOmitsNullOptionalFields(): void
     {
-        $p = AcroFormFieldPatch::fromArray(['fieldId' => 'f1']);
+        $p   = AcroFormFieldPatch::fromArray(['fieldId' => 'f1']);
         $out = $p->toArray();
         self::assertSame(['fieldId' => 'f1'], $out);
     }
@@ -156,7 +157,7 @@ final class AcroFormFieldPatchTest extends TestCase
 
     public function testToArrayOmitsEmptyFontFamily(): void
     {
-        $p = AcroFormFieldPatch::fromArray(['fieldId' => 'f1', 'fontFamily' => '']);
+        $p   = AcroFormFieldPatch::fromArray(['fieldId' => 'f1', 'fontFamily' => '']);
         $out = $p->toArray();
         self::assertArrayNotHasKey('fontFamily', $out);
     }

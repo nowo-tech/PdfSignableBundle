@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use function count;
+
 /**
  * Demo menu structure: grouped for sidebar/offcanvas nav and flat list for prev/next.
  */
@@ -89,6 +91,7 @@ final class DemoMenu
                 $flat[] = $item;
             }
         }
+
         return $flat;
     }
 
@@ -99,7 +102,7 @@ final class DemoMenu
      */
     public static function prevNext(string $currentRoute): array
     {
-        $flat = self::flat();
+        $flat  = self::flat();
         $index = null;
         foreach ($flat as $i => $item) {
             if ($item['route'] === $currentRoute) {
@@ -108,7 +111,8 @@ final class DemoMenu
             }
         }
         $prev = $index !== null && $index > 0 ? $flat[$index - 1] : null;
-        $next = $index !== null && $index < \count($flat) - 1 ? $flat[$index + 1] : null;
+        $next = $index !== null && $index < count($flat) - 1 ? $flat[$index + 1] : null;
+
         return ['prev' => $prev, 'next' => $next];
     }
 

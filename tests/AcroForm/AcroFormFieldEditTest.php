@@ -43,9 +43,9 @@ final class AcroFormFieldEditTest extends TestCase
     public function testFromArrayWithSnakeCaseKeys(): void
     {
         $edit = AcroFormFieldEdit::fromArray([
-            'field_id' => 'f2',
+            'field_id'      => 'f2',
             'default_value' => 'hello',
-            'control_type' => 'textarea',
+            'control_type'  => 'textarea',
         ]);
         self::assertSame('f2', $edit->fieldId);
         self::assertSame('hello', $edit->defaultValue);
@@ -56,7 +56,7 @@ final class AcroFormFieldEditTest extends TestCase
     {
         $edit = AcroFormFieldEdit::fromArray([
             'fieldId' => 'f3',
-            'rect' => [10.5, 20.0, 110.5, 40.0],
+            'rect'    => [10.5, 20.0, 110.5, 40.0],
         ]);
         self::assertSame('10.5, 20.0, 110.5, 40.0', $edit->rect);
     }
@@ -77,10 +77,10 @@ final class AcroFormFieldEditTest extends TestCase
     public function testFromArrayWithFieldNameMaxLenHiddenCreateIfMissing(): void
     {
         $edit = AcroFormFieldEdit::fromArray([
-            'fieldId' => 'f6',
-            'field_name' => 'MyField',
-            'maxLen' => 100,
-            'hidden' => true,
+            'fieldId'         => 'f6',
+            'field_name'      => 'MyField',
+            'maxLen'          => 100,
+            'hidden'          => true,
             'createIfMissing' => true,
         ]);
         self::assertSame('MyField', $edit->fieldName);
@@ -93,7 +93,7 @@ final class AcroFormFieldEditTest extends TestCase
     {
         $edit = AcroFormFieldEdit::fromArray([
             'fieldId' => 'f7',
-            'rect' => [10, 20],
+            'rect'    => [10, 20],
         ]);
         self::assertSame('', $edit->rect);
     }
@@ -101,9 +101,9 @@ final class AcroFormFieldEditTest extends TestCase
     public function testFromArrayWithLabelAndFontFamily(): void
     {
         $edit = AcroFormFieldEdit::fromArray([
-            'fieldId' => 'f8',
-            'label' => 'Full Name',
-            'fontSize' => 14,
+            'fieldId'    => 'f8',
+            'label'      => 'Full Name',
+            'fontSize'   => 14,
             'fontFamily' => 'Helvetica',
         ]);
         self::assertSame('Full Name', $edit->label);
@@ -123,7 +123,7 @@ final class AcroFormFieldEditTest extends TestCase
     public function testFromArrayWithDefaultCheckedTrue(): void
     {
         $edit = AcroFormFieldEdit::fromArray([
-            'fieldId' => 'f10',
+            'fieldId'        => 'f10',
             'defaultChecked' => true,
         ]);
         self::assertTrue($edit->defaultChecked);

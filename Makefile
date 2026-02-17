@@ -20,32 +20,42 @@ help:
 	@echo "  validate-translations  Validate translation YAML files"
 	@echo "  clean               Remove vendor, cache, coverage"
 
+# Build and start container (root docker-compose)
 up:
-	docker-compose build
-	docker-compose up -d
+	docker-compose -f docker-compose.yml build
+	docker-compose -f docker-compose.yml up -d
 	@sleep 2
 	docker-compose exec -T php composer install --no-interaction
 	@echo "Container listo."
 
+# Stop container (root docker-compose)
 down:
-	docker-compose down
+	docker-compose -f docker-compose.yml down
 
+# Ensure root container is running (start if not). Used by cs-fix, cs-check, qa, install, test, test-coverage.
+ensure-up:
+	@if ! docker-compose -f docker-compose.yml exec -T php true 2>/dev/null; then \
+		echo "Starting container (root docker-compose)..."; \
+		docker-compose -f docker-compose.yml up -d; \
+		sleep 3; \
+		docker-compose -f docker-compose.yml exec -T php composer install --no-interaction; \
+	fi
+# Open shell in container (root docker-compose)
 shell:
-	docker-compose exec php sh
+	docker-compose -f docker-compose.yml exec php sh
 
-install:
-	docker-compose up -d
+# Install dependencies (runs inside root docker-compose php container)
+install: ensure-up
 	docker-compose exec -T php composer install --no-interaction
 	docker-compose exec -T -e CI=true php pnpm install
 	@echo "Dependencias instaladas (composer + pnpm)."
 
-assets:
-	docker-compose up -d
+assets: ensure-up
 	docker-compose exec -T php pnpm install
 	docker-compose exec -T php pnpm run build
 
-test:
-	docker-compose up -d
+# Run tests (runs inside root docker-compose php container)
+test: ensure-up
 	docker-compose exec -T php composer test
 
 test-ts:
@@ -66,18 +76,26 @@ test-coverage:
 	docker-compose up -d
 	docker-compose exec -T php composer test-coverage
 
-cs-check:
-	docker-compose exec -T php composer cs-check
+# Check code style (runs inside root docker-compose php container)
+cs-check: ensure-up
+	docker-compose -f docker-compose.yml exec -T php composer cs-check
 
-cs-fix:
-	docker-compose exec -T php composer cs-fix
+# Fix code style (runs inside root docker-compose php container)
+cs-fix: ensure-up
+	docker-compose -f docker-compose.yml exec -T php composer cs-fix
 
-qa:
-	docker-compose exec -T php composer qa
+# Run all QA (runs inside root docker-compose php container)
+qa: ensure-up
+	docker-compose -f docker-compose.yml exec -T php composer qa
 
 validate-translations:
 	docker-compose up -d
 	docker-compose exec -T php php scripts/validate-translations-yaml.php
 
+# Clean vendor and cache
 clean:
-	rm -rf vendor .phpunit.cache coverage coverage.xml .php-cs-fixer.cache
+	rm -rf vendor
+	rm -rf .phpunit.cache
+	rm -rf coverage
+	rm -f coverage.xml
+	rm -f .php-cs-fixer.cache

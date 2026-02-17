@@ -186,3 +186,9 @@ acroform_editor:
   download_filename: 'document-modificat.pdf'
   error_prefix: 'Error: '
   new_field_name_pattern: 'Camp nou %n'
+
+dependency_check:
+  debug_title: 'PdfSignable — dependency check (debug).'
+  debug_hint: 'Run: php bin/console nowo_pdf_signable:check-dependencies'
+  required_missing: 'Required dependencies missing:'
+  optional_missing: 'Optional / recommended:'

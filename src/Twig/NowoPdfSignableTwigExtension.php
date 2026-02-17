@@ -46,19 +46,19 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
     ];
 
     /**
-     * @param RequestStack        $requestStack       Request stack for asset inclusion
-     * @param TranslatorInterface $translator         Translator for AcroForm strings
-     * @param string              $labelMode          acroform.label_mode (deprecated)
-     * @param array<int, string>  $labelChoices       acroform.label_choices (deprecated)
-     * @param string              $labelOtherText     acroform.label_other_text (deprecated)
-     * @param string              $fieldNameMode      acroform.field_name_mode
-     * @param array<int, string>  $fieldNameChoices   acroform.field_name_choices
-     * @param string              $fieldNameOtherText acroform.field_name_other_text
-     * @param bool                $showFieldRect      acroform.show_field_rect
-     * @param array<int, int>     $fontSizes          acroform.font_sizes
-     * @param array<int, string>  $fontFamilies       acroform.font_families
-     * @param float               $minFieldWidth      acroform.min_field_width
-     * @param float               $minFieldHeight     acroform.min_field_height
+     * @param RequestStack $requestStack Request stack for asset inclusion
+     * @param TranslatorInterface $translator Translator for AcroForm strings
+     * @param string $labelMode acroform.label_mode (deprecated)
+     * @param array<int, string> $labelChoices acroform.label_choices (deprecated)
+     * @param string $labelOtherText acroform.label_other_text (deprecated)
+     * @param string $fieldNameMode acroform.field_name_mode
+     * @param array<int, string> $fieldNameChoices acroform.field_name_choices
+     * @param string $fieldNameOtherText acroform.field_name_other_text
+     * @param bool $showFieldRect acroform.show_field_rect
+     * @param array<int, int> $fontSizes acroform.font_sizes
+     * @param array<int, string> $fontFamilies acroform.font_families
+     * @param float $minFieldWidth acroform.min_field_width
+     * @param float $minFieldHeight acroform.min_field_height
      */
     public function __construct(
         private readonly RequestStack $requestStack,
@@ -109,10 +109,10 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
      */
     public function getAcroformStrings(): array
     {
-        $domain = 'nowo_pdf_signable';
+        $domain  = 'nowo_pdf_signable';
         $strings = [];
         foreach (self::ACROFORM_STRING_KEYS as $key) {
-            $strings[$key] = $this->translator->trans('acroform_editor.'.$key, [], $domain);
+            $strings[$key] = $this->translator->trans('acroform_editor.' . $key, [], $domain);
         }
 
         return $strings;
@@ -126,17 +126,17 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
     public function getAcroformEditorConfig(): array
     {
         return [
-            'label_mode' => $this->labelMode,
-            'label_choices' => $this->labelChoices,
-            'label_other_text' => $this->labelOtherText,
-            'field_name_mode' => $this->fieldNameMode,
-            'field_name_choices' => $this->fieldNameChoices,
+            'label_mode'            => $this->labelMode,
+            'label_choices'         => $this->labelChoices,
+            'label_other_text'      => $this->labelOtherText,
+            'field_name_mode'       => $this->fieldNameMode,
+            'field_name_choices'    => $this->fieldNameChoices,
             'field_name_other_text' => $this->fieldNameOtherText,
-            'show_field_rect' => $this->showFieldRect,
-            'font_sizes' => $this->fontSizes,
-            'font_families' => $this->fontFamilies,
-            'min_field_width' => $this->minFieldWidth,
-            'min_field_height' => $this->minFieldHeight,
+            'show_field_rect'       => $this->showFieldRect,
+            'font_sizes'            => $this->fontSizes,
+            'font_families'         => $this->fontFamilies,
+            'min_field_width'       => $this->minFieldWidth,
+            'min_field_height'      => $this->minFieldHeight,
         ];
     }
 
@@ -150,7 +150,7 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
     public function shouldIncludeAssets(): bool
     {
         $request = $this->requestStack->getCurrentRequest();
-        if (null === $request) {
+        if ($request === null) {
             return true;
         }
         if ($request->attributes->get(self::REQUEST_ATTR)) {

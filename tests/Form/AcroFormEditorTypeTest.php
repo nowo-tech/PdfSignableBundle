@@ -23,9 +23,9 @@ final class AcroFormEditorTypeTest extends TypeTestCase
             examplePdfUrl: 'https://example.com/default.pdf',
             acroformConfigs: [
                 'default' => [
-                    'label_mode' => 'choice',
+                    'label_mode'      => 'choice',
                     'field_name_mode' => 'choice',
-                    'font_sizes' => [10, 12, 14],
+                    'font_sizes'      => [10, 12, 14],
                 ],
                 'minimal' => [
                     'show_field_rect' => false,
@@ -69,7 +69,7 @@ final class AcroFormEditorTypeTest extends TypeTestCase
     public function testSubmitValidData(): void
     {
         $model = new AcroFormPageModel();
-        $form = $this->factory->create(AcroFormEditorType::class, $model, [
+        $form  = $this->factory->create(AcroFormEditorType::class, $model, [
             'pdf_url' => 'https://example.com/doc.pdf',
         ]);
         $form->submit(['pdfUrl' => 'https://example.com/submitted.pdf']);
@@ -81,10 +81,10 @@ final class AcroFormEditorTypeTest extends TypeTestCase
     public function testBuildViewPassesAcroformEditorOptions(): void
     {
         $form = $this->factory->create(AcroFormEditorType::class, new AcroFormPageModel(), [
-            'pdf_url' => 'https://custom.com/file.pdf',
+            'pdf_url'      => 'https://custom.com/file.pdf',
             'document_key' => 'doc-123',
-            'load_url' => '/load',
-            'debug' => true,
+            'load_url'     => '/load',
+            'debug'        => true,
         ]);
         $view = $form->createView();
 
@@ -145,7 +145,7 @@ final class AcroFormEditorTypeTest extends TypeTestCase
     public function testBuildFormPdfUrlOptionSetsFieldData(): void
     {
         $model = new AcroFormPageModel();
-        $form = $this->factory->create(AcroFormEditorType::class, $model, [
+        $form  = $this->factory->create(AcroFormEditorType::class, $model, [
             'pdf_url' => 'https://example.com/preload.pdf',
         ]);
         self::assertSame('https://example.com/preload.pdf', $form->get('pdfUrl')->getData());

@@ -8,6 +8,7 @@ use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use ReflectionMethod;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -30,20 +31,20 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
      */
     protected function getExtensions(): array
     {
-        $signatureBoxType = new SignatureBoxType();
+        $signatureBoxType         = new SignatureBoxType();
         $signatureCoordinatesType = new SignatureCoordinatesType('', [
             'my_preset' => [
-                'unit_default' => SignatureCoordinatesModel::UNIT_PT,
+                'unit_default'   => SignatureCoordinatesModel::UNIT_PT,
                 'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
             ],
             'fixed_url' => [
-                'pdf_url' => 'https://example.com/fixed.pdf',
-                'url_field' => false,
+                'pdf_url'              => 'https://example.com/fixed.pdf',
+                'url_field'            => false,
                 'show_load_pdf_button' => false,
-                'unit_field' => false,
-                'origin_field' => false,
-                'unit_default' => SignatureCoordinatesModel::UNIT_MM,
-                'origin_default' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'unit_field'           => false,
+                'origin_field'         => false,
+                'unit_default'         => SignatureCoordinatesModel::UNIT_MM,
+                'origin_default'       => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             ],
         ]);
         $validator = Validation::createValidator();
@@ -51,7 +52,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         return [
             new PreloadedExtension(
                 [$signatureBoxType, $signatureCoordinatesType],
-                []
+                [],
             ),
             new ValidatorExtension($validator),
         ];
@@ -87,16 +88,16 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     /** buildView uses examplePdfUrl when pdf_url option is null/empty. */
     public function testBuildViewUsesExamplePdfUrlWhenPdfUrlOptionNull(): void
     {
-        $exampleUrl = 'https://example.com/fallback.pdf';
+        $exampleUrl      = 'https://example.com/fallback.pdf';
         $typeWithExample = new SignatureCoordinatesType($exampleUrl, []);
-        $factory = (new \Symfony\Component\Form\FormFactoryBuilder())
+        $factory         = (new \Symfony\Component\Form\FormFactoryBuilder())
             ->addExtension(new \Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension())
             ->addExtension(new PreloadedExtension([new SignatureBoxType(), $typeWithExample], []))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
         $model = new SignatureCoordinatesModel();
-        $form = $factory->create(SignatureCoordinatesType::class, $model);
-        $view = $form->createView();
+        $form  = $factory->create(SignatureCoordinatesType::class, $model);
+        $view  = $form->createView();
 
         self::assertSame($exampleUrl, $view->vars['signature_coordinates_options']['pdf_url']);
     }
@@ -107,7 +108,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'url_field' => false,
+            'url_field'            => false,
             'show_load_pdf_button' => false,
         ]);
         $view = $form->createView();
@@ -123,11 +124,11 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'viewer_lazy_load' => true,
-            'batch_sign_enabled' => true,
+            'viewer_lazy_load'     => true,
+            'batch_sign_enabled'   => true,
             'show_signature_boxes' => false,
-            'pdfjs_source' => 'cdn',
-            'pdfjs_worker_url' => '/assets/pdf.worker.js',
+            'pdfjs_source'         => 'cdn',
+            'pdfjs_worker_url'     => '/assets/pdf.worker.js',
         ]);
         $view = $form->createView();
         $opts = $view->vars['signature_coordinates_options'];
@@ -160,9 +161,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'config' => 'my_preset',
         ]);
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_PT,
-            'origin' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_PT,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
             'signatureBoxes' => [],
         ]);
 
@@ -184,17 +185,17 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model->addSignatureBox($box);
 
         $formData = [
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => [
-                    'name' => 'signer_1',
-                    'page' => 1,
-                    'width' => 150.0,
+                    'name'   => 'signer_1',
+                    'page'   => 1,
+                    'width'  => 150.0,
                     'height' => 40.0,
-                    'x' => 50.0,
-                    'y' => 100.0,
+                    'x'      => 50.0,
+                    'y'      => 100.0,
                 ],
             ],
         ];
@@ -216,11 +217,11 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'unique_box_names' => false,
+            'unique_box_names'    => false,
             'prevent_box_overlap' => false,
         ]);
         $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
-        $callbacks = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        $callbacks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
         self::assertCount(0, $callbacks);
     }
 
@@ -229,11 +230,11 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'unique_box_names' => true,
+            'unique_box_names'    => true,
             'prevent_box_overlap' => false,
         ]);
         $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
-        $callbacks = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        $callbacks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
         self::assertCount(1, $callbacks);
     }
 
@@ -242,11 +243,11 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'unique_box_names' => ['signer_1', 'witness'],
+            'unique_box_names'    => ['signer_1', 'witness'],
             'prevent_box_overlap' => false,
         ]);
         $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
-        $callbacks = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        $callbacks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
         self::assertCount(1, $callbacks);
     }
 
@@ -293,7 +294,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model->setPdfUrl('https://example.com/doc.pdf');
         $defaults = [
             'signer_1' => ['width' => 180, 'height' => 45, 'x' => 80, 'y' => 700],
-            'witness' => ['width' => 120, 'height' => 35],
+            'witness'  => ['width' => 120, 'height' => 35],
         ];
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
             'box_defaults_by_name' => $defaults,
@@ -315,9 +316,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertNull($opts['signing_legal_disclaimer_url']);
 
         $form2 = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'enable_signature_capture' => true,
-            'enable_signature_upload' => true,
-            'signing_legal_disclaimer' => 'Simple signature – no qualified validity.',
+            'enable_signature_capture'     => true,
+            'enable_signature_upload'      => true,
+            'signing_legal_disclaimer'     => 'Simple signature – no qualified validity.',
             'signing_legal_disclaimer_url' => 'https://example.com/terms',
         ]);
         $view2 = $form2->createView();
@@ -333,7 +334,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
 
         $form3 = $this->factory->create(SignatureCoordinatesType::class, $model, [
             'signing_require_consent' => true,
-            'signing_consent_label' => 'I accept.',
+            'signing_consent_label'   => 'I accept.',
         ]);
         $view3 = $form3->createView();
         $opts3 = $view3->vars['signature_coordinates_options'];
@@ -341,9 +342,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertSame('I accept.', $opts3['signing_consent_label']);
         self::assertTrue($form3->has('signingConsent'));
         $form3->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [],
             'signingConsent' => '1',
         ]);
@@ -351,14 +352,14 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertTrue($form3->getData()->getSigningConsent());
 
         $modelNoConsent = new SignatureCoordinatesModel();
-        $form3b = $this->factory->create(SignatureCoordinatesType::class, $modelNoConsent, [
+        $form3b         = $this->factory->create(SignatureCoordinatesType::class, $modelNoConsent, [
             'signing_require_consent' => true,
-            'signing_consent_label' => 'I accept.',
+            'signing_consent_label'   => 'I accept.',
         ]);
         $form3b->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [],
             'signingConsent' => null,
         ]);
@@ -379,10 +380,10 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertTrue($opts5['hide_coordinate_fields']);
 
         $form6 = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'default_box_width' => 150.0,
+            'default_box_width'  => 150.0,
             'default_box_height' => 40.0,
-            'lock_box_width' => true,
-            'lock_box_height' => true,
+            'lock_box_width'     => true,
+            'lock_box_height'    => true,
         ]);
         $view6 = $form6->createView();
         $opts6 = $view6->vars['signature_coordinates_options'];
@@ -392,7 +393,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertTrue($opts6['lock_box_height']);
 
         $form7 = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'min_box_width' => 25.0,
+            'min_box_width'  => 25.0,
             'min_box_height' => 15.0,
         ]);
         $view7 = $form7->createView();
@@ -408,15 +409,15 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model->setUnit(SignatureCoordinatesModel::UNIT_MM);
         $model->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT);
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'default_box_width' => 120.0,
+            'default_box_width'  => 120.0,
             'default_box_height' => 35.0,
-            'lock_box_width' => true,
-            'lock_box_height' => true,
+            'lock_box_width'     => true,
+            'lock_box_height'    => true,
         ]);
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 's1', 'page' => 1, 'width' => '999', 'height' => '888', 'x' => '10', 'y' => '20'],
             ],
@@ -438,9 +439,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         ]);
         // Submit boxes in "wrong" order: page 2 first, then page 1; on page 1, higher Y first
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 'b', 'page' => 2, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 50.0],
                 1 => ['name' => 'a', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 200.0],
@@ -449,7 +450,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         ]);
 
         self::assertTrue($form->isSynchronized());
-        $data = $form->getData();
+        $data  = $form->getData();
         $boxes = $data->getSignatureBoxes();
         self::assertCount(3, $boxes);
         // Expected order: page 1 (y 100, x 10), page 1 (y 200, x 10), page 2 (y 50, x 10)
@@ -469,10 +470,10 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         // Overlap logic is covered by testBoxesOverlapHelper; here we only assert the constraint is present.
         $form = $this->factory->create(SignatureCoordinatesType::class, new SignatureCoordinatesModel(), [
             'prevent_box_overlap' => true,
-            'unique_box_names' => false,
+            'unique_box_names'    => false,
         ]);
         $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
-        $callbacks = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        $callbacks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
         self::assertCount(1, $callbacks, 'Exactly one Callback (overlap) should be present when prevent_box_overlap is true and unique_box_names is false');
 
         // Ensure the overlap helper would detect overlapping boxes with the same coordinates as in the doc
@@ -489,9 +490,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'prevent_box_overlap' => true,
         ]);
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 'a', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
                 1 => ['name' => 'b', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 50.0],
@@ -509,9 +510,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'prevent_box_overlap' => false,
         ]);
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 'a', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
                 1 => ['name' => 'b', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 50.0, 'y' => 120.0],
@@ -543,10 +544,10 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'allowed_pages' => [1],
-            'sort_boxes' => true,
+            'allowed_pages'       => [1],
+            'sort_boxes'          => true,
             'prevent_box_overlap' => true,
-            'max_entries' => 5,
+            'max_entries'         => 5,
         ]);
         $view = $form->createView();
         $opts = $view->vars['signature_coordinates_options'];
@@ -555,9 +556,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
 
         // Submit two non-overlapping boxes on page 1 in "wrong" order; expect sorted by Y then X
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 'b', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 50.0, 'y' => 200.0],
                 1 => ['name' => 'a', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
@@ -565,7 +566,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         ]);
         self::assertTrue($form->isSynchronized());
         self::assertTrue($form->isValid());
-        $data = $form->getData();
+        $data  = $form->getData();
         $boxes = $data->getSignatureBoxes();
         self::assertCount(2, $boxes);
         // Sorted by page then Y then X: a (y=100) then b (y=200)
@@ -579,9 +580,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testUrlFieldFalseWithPdfUrlUsesHiddenField(): void
     {
         $model = new SignatureCoordinatesModel();
-        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+        $form  = $this->factory->create(SignatureCoordinatesType::class, $model, [
             'url_field' => false,
-            'pdf_url' => 'https://example.com/fixed.pdf',
+            'pdf_url'   => 'https://example.com/fixed.pdf',
         ]);
         $pdfUrlField = $form->get('pdfUrl');
         self::assertInstanceOf(HiddenType::class, $pdfUrlField->getConfig()->getType()->getInnerType());
@@ -592,9 +593,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testShowLoadPdfButtonPassedToView(): void
     {
         $model = new SignatureCoordinatesModel();
-        $form = $this->factory->create(SignatureCoordinatesType::class, $model);
-        $view = $form->createView();
-        $opts = $view->vars['signature_coordinates_options'];
+        $form  = $this->factory->create(SignatureCoordinatesType::class, $model);
+        $view  = $form->createView();
+        $opts  = $view->vars['signature_coordinates_options'];
         self::assertArrayHasKey('show_load_pdf_button', $opts);
         self::assertTrue($opts['show_load_pdf_button']);
 
@@ -607,8 +608,8 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testUrlModeChoiceRendersPdfUrlAsChoiceType(): void
     {
         $model = new SignatureCoordinatesModel();
-        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'url_mode' => SignatureCoordinatesType::URL_MODE_CHOICE,
+        $form  = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'url_mode'    => SignatureCoordinatesType::URL_MODE_CHOICE,
             'url_choices' => ['Document A' => 'https://a.com/a.pdf', 'Document B' => 'https://b.com/b.pdf'],
         ]);
         self::assertInstanceOf(ChoiceType::class, $form->get('pdfUrl')->getConfig()->getType()->getInnerType());
@@ -618,8 +619,8 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testUnitFieldFalseRendersUnitAsHidden(): void
     {
         $model = new SignatureCoordinatesModel();
-        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'unit_field' => false,
+        $form  = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'unit_field'   => false,
             'unit_default' => SignatureCoordinatesModel::UNIT_PT,
         ]);
         $unitField = $form->get('unit');
@@ -631,8 +632,8 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testOriginFieldFalseRendersOriginAsHidden(): void
     {
         $model = new SignatureCoordinatesModel();
-        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'origin_field' => false,
+        $form  = $this->factory->create(SignatureCoordinatesType::class, $model, [
+            'origin_field'   => false,
             'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
         ]);
         $originField = $form->get('origin');
@@ -644,9 +645,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testUnitModeInputRendersUnitAsTextType(): void
     {
         $model = new SignatureCoordinatesModel();
-        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+        $form  = $this->factory->create(SignatureCoordinatesType::class, $model, [
             'unit_mode' => SignatureCoordinatesType::UNIT_MODE_INPUT,
-            'units' => [SignatureCoordinatesModel::UNIT_MM, SignatureCoordinatesModel::UNIT_PT],
+            'units'     => [SignatureCoordinatesModel::UNIT_MM, SignatureCoordinatesModel::UNIT_PT],
         ]);
         self::assertInstanceOf(TextType::class, $form->get('unit')->getConfig()->getType()->getInnerType());
     }
@@ -655,9 +656,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testOriginModeInputRendersOriginAsTextType(): void
     {
         $model = new SignatureCoordinatesModel();
-        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+        $form  = $this->factory->create(SignatureCoordinatesType::class, $model, [
             'origin_mode' => SignatureCoordinatesType::ORIGIN_MODE_INPUT,
-            'origins' => [SignatureCoordinatesModel::ORIGIN_TOP_LEFT, SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT],
+            'origins'     => [SignatureCoordinatesModel::ORIGIN_TOP_LEFT, SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT],
         ]);
         self::assertInstanceOf(TextType::class, $form->get('origin')->getConfig()->getType()->getInnerType());
     }
@@ -680,13 +681,13 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
             'signing_require_consent' => true,
-            'signing_consent_label' => 'I agree to sign',
+            'signing_consent_label'   => 'I agree to sign',
         ]);
         self::assertTrue($form->has('signingConsent'));
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [],
             'signingConsent' => '1',
         ]);
@@ -705,9 +706,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         ]);
         // Checkbox not checked: omit key or send empty; form normalizes to false, IsTrue constraint fails
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [],
         ]);
         self::assertTrue($form->isSynchronized());
@@ -739,7 +740,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testNamedConfigWithHiddenFieldsOverridesDefaults(): void
     {
         $model = new SignatureCoordinatesModel();
-        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+        $form  = $this->factory->create(SignatureCoordinatesType::class, $model, [
             'config' => 'fixed_url',
         ]);
         self::assertInstanceOf(HiddenType::class, $form->get('pdfUrl')->getConfig()->getType()->getInnerType());
@@ -759,7 +760,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'config' => 'nonexistent_preset',
+            'config'       => 'nonexistent_preset',
             'unit_default' => SignatureCoordinatesModel::UNIT_CM,
         ]);
         $view = $form->createView();
@@ -776,9 +777,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'box_constraints' => [new \Symfony\Component\Validator\Constraints\NotNull()],
         ]);
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 'a', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
             ],
@@ -790,11 +791,11 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testUnitsWithUnmappedUnitUsesFallbackInChoices(): void
     {
         $model = new SignatureCoordinatesModel();
-        $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
+        $form  = $this->factory->create(SignatureCoordinatesType::class, $model, [
             'units' => [SignatureCoordinatesModel::UNIT_MM, 'custom_unit'],
         ]);
         $unitField = $form->get('unit');
-        $choices = $unitField->getConfig()->getOption('choices');
+        $choices   = $unitField->getConfig()->getOption('choices');
         self::assertArrayHasKey('custom_unit', $choices);
         self::assertSame('custom_unit', $choices['custom_unit']);
     }
@@ -805,13 +806,13 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'unique_box_names' => true,
+            'unique_box_names'    => true,
             'prevent_box_overlap' => false,
         ]);
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 'signer', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
                 1 => ['name' => 'signer', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 200.0],
@@ -828,13 +829,13 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'unique_box_names' => ['signer_1', 'witness'],
+            'unique_box_names'    => ['signer_1', 'witness'],
             'prevent_box_overlap' => false,
         ]);
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 'other', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
                 1 => ['name' => 'other', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 200.0],
@@ -853,9 +854,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'prevent_box_overlap' => true,
         ]);
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 'a', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
                 1 => ['name' => 'b', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 50.0, 'y' => 120.0],
@@ -876,9 +877,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'sort_boxes' => true,
         ]);
         $form->submit([
-            'pdfUrl' => 'https://example.com/doc.pdf',
-            'unit' => SignatureCoordinatesModel::UNIT_MM,
-            'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'pdfUrl'         => 'https://example.com/doc.pdf',
+            'unit'           => SignatureCoordinatesModel::UNIT_MM,
+            'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signatureBoxes' => [
                 0 => ['name' => 'page2', 'page' => 2, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 50.0],
                 1 => ['name' => 'page1', 'page' => 1, 'width' => 100.0, 'height' => 40.0, 'x' => 10.0, 'y' => 100.0],
@@ -897,9 +898,9 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     /** buildView uses type examplePdfUrl when pdf_url option is empty. */
     public function testBuildViewUsesExamplePdfUrlWhenOptionEmpty(): void
     {
-        $exampleUrl = 'https://example.com/fallback.pdf';
+        $exampleUrl      = 'https://example.com/fallback.pdf';
         $typeWithExample = new SignatureCoordinatesType($exampleUrl, []);
-        $factory = (new \Symfony\Component\Form\FormFactoryBuilder())
+        $factory         = (new \Symfony\Component\Form\FormFactoryBuilder())
             ->addExtension(new PreloadedExtension([new SignatureBoxType(), $typeWithExample], []))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
@@ -911,20 +912,20 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     /** boxFromArray (private) builds a box from an array; missing required keys return null. */
     public function testBoxFromArrayViaReflection(): void
     {
-        $ref = new \ReflectionMethod(SignatureCoordinatesType::class, 'boxFromArray');
+        $ref = new ReflectionMethod(SignatureCoordinatesType::class, 'boxFromArray');
         $ref->setAccessible(true);
 
         self::assertNull($ref->invoke(null, []));
         self::assertNull($ref->invoke(null, ['page' => 1]));
 
         $box = $ref->invoke(null, [
-            'page' => 2,
-            'x' => 10.5,
-            'y' => 20.5,
-            'width' => 100.0,
+            'page'   => 2,
+            'x'      => 10.5,
+            'y'      => 20.5,
+            'width'  => 100.0,
             'height' => 40.0,
-            'name' => 'test',
-            'angle' => -90.0,
+            'name'   => 'test',
+            'angle'  => -90.0,
         ]);
         self::assertInstanceOf(SignatureBoxModel::class, $box);
         self::assertSame(2, $box->getPage());
@@ -936,10 +937,10 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         self::assertEqualsWithDelta(-90.0, $box->getAngle(), 0.01);
 
         $boxNoAngle = $ref->invoke(null, [
-            'page' => 1,
-            'x' => 0.0,
-            'y' => 0.0,
-            'width' => 50.0,
+            'page'   => 1,
+            'x'      => 0.0,
+            'y'      => 0.0,
+            'width'  => 50.0,
             'height' => 20.0,
         ]);
         self::assertInstanceOf(SignatureBoxModel::class, $boxNoAngle);

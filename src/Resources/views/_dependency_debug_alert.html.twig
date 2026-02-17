@@ -1,0 +1,35 @@
+{#
+  Debug-only alert: dependency check results (failures and warnings).
+  Rendered when nowo_pdf_signable.debug is true and the request hit a bundle form page (GET).
+  Include in form pages, e.g. at the top of body: {{ include('@NowoPdfSignable/_dependency_debug_alert.html.twig') }}
+#}
+{% set _failures = app.request.attributes.get('nowo_pdf_signable_dependency_failures') %}
+{% set _warnings = app.request.attributes.get('nowo_pdf_signable_dependency_warnings') %}
+{% if _failures is iterable and _failures|length > 0 or _warnings is iterable and _warnings|length > 0 %}
+  <div class="nowo-pdf-signable-dependency-debug mb-3" role="alert">
+    <p class="mb-2 small text-muted">
+      <strong>{{ 'dependency_check.debug_title'|trans({}, 'nowo_pdf_signable') }}</strong>
+      {{ 'dependency_check.debug_hint'|trans({}, 'nowo_pdf_signable') }}
+    </p>
+    {% if _failures is iterable and _failures|length > 0 %}
+      <div class="alert alert-danger mb-2">
+        <strong>{{ 'dependency_check.required_missing'|trans({}, 'nowo_pdf_signable') }}</strong>
+        <ul class="mb-0 mt-1 small">
+          {% for msg in _failures %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    {% if _warnings is iterable and _warnings|length > 0 %}
+      <div class="alert alert-warning mb-0">
+        <strong>{{ 'dependency_check.optional_missing'|trans({}, 'nowo_pdf_signable') }}</strong>
+        <ul class="mb-0 mt-1 small">
+          {% for msg in _warnings %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}

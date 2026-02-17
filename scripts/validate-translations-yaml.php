@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types=1);
+
 /**
  * Validates that translation YAML files in the given directory are parseable
  * and that all files have the same keys as the reference (English) file.
@@ -8,9 +10,8 @@
  * Usage: php scripts/validate-translations-yaml.php [directory]
  * Default directory: src/Resources/translations (relative to bundle root).
  */
-
 $root = dirname(__DIR__);
-$dir = isset($argv[1])
+$dir  = isset($argv[1])
     ? (str_starts_with($argv[1], '/') ? $argv[1] : $root . '/' . $argv[1])
     : $root . '/src/Resources/translations';
 if (!is_dir($dir)) {
@@ -20,7 +21,7 @@ if (!is_dir($dir)) {
 
 require_once $root . '/vendor/autoload.php';
 
-$files = array_merge(glob($dir . '/*.yaml') ?: [], glob($dir . '/*.yml') ?: []);
+$files  = array_merge(glob($dir . '/*.yaml') ?: [], glob($dir . '/*.yml') ?: []);
 $failed = 0;
 $parsed = [];
 
@@ -28,14 +29,14 @@ foreach ($files as $file) {
     $content = @file_get_contents($file);
     if ($content === false) {
         echo "ERROR: Cannot read {$file}\n";
-        $failed++;
+        ++$failed;
         continue;
     }
     try {
-        $parsed[$file] = \Symfony\Component\Yaml\Yaml::parse($content);
+        $parsed[$file] = Symfony\Component\Yaml\Yaml::parse($content);
     } catch (Throwable $e) {
         echo "ERROR: Invalid YAML in {$file}: " . $e->getMessage() . "\n";
-        $failed++;
+        ++$failed;
     }
 }
 
@@ -44,7 +45,8 @@ if ($failed > 0) {
 }
 
 /** Flatten YAML array to dot-separated leaf keys (e.g. signature_coordinates_type.pdf_url.label). */
-function flattenKeys(array $arr, string $prefix = ''): array {
+function flattenKeys(array $arr, string $prefix = ''): array
+{
     $out = [];
     foreach ($arr as $k => $v) {
         $key = $prefix === '' ? $k : $prefix . '.' . $k;
@@ -54,6 +56,7 @@ function flattenKeys(array $arr, string $prefix = ''): array {
             $out[] = $key;
         }
     }
+
     return $out;
 }
 
@@ -70,13 +73,13 @@ if (!isset($parsed[$refFile])) {
         $langKeys = flattenKeys($data);
         sort($langKeys);
         $missing = array_diff($refKeys, $langKeys);
-        $extra = array_diff($langKeys, $refKeys);
+        $extra   = array_diff($langKeys, $refKeys);
         if ($missing !== []) {
-            echo "ERROR: " . basename($path) . " missing keys: " . implode(', ', $missing) . "\n";
-            $failed++;
+            echo 'ERROR: ' . basename($path) . ' missing keys: ' . implode(', ', $missing) . "\n";
+            ++$failed;
         }
         if ($extra !== []) {
-            echo "WARN: " . basename($path) . " extra keys (not in en): " . implode(', ', $extra) . "\n";
+            echo 'WARN: ' . basename($path) . ' extra keys (not in en): ' . implode(', ', $extra) . "\n";
         }
     }
 }
@@ -85,5 +88,5 @@ if ($failed > 0) {
     exit(1);
 }
 
-echo "OK: " . count($files) . " translation file(s) validated.\n";
+echo 'OK: ' . count($files) . " translation file(s) validated.\n";
 exit(0);

@@ -33,11 +33,11 @@ final class SignaturePageType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $baseOptions = [
-            'label' => false,
-            'units' => ['mm', 'cm', 'pt'],
-            'unit_default' => 'mm',
+            'label'          => false,
+            'units'          => ['mm', 'cm', 'pt'],
+            'unit_default'   => 'mm',
             'origin_default' => 'bottom_left',
-            'show_acroform' => true,
+            'show_acroform'  => true,
         ];
         if ($this->examplePdfUrl !== null && $this->examplePdfUrl !== '') {
             $baseOptions['pdf_url'] = $this->examplePdfUrl;
@@ -50,13 +50,11 @@ final class SignaturePageType extends AbstractType
      * Sets data_class (SignaturePageModel) and signature_options default.
      *
      * @param OptionsResolver $resolver The options resolver
-     *
-     * @return void
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => \App\Model\SignaturePageModel::class,
+            'data_class'        => \App\Model\SignaturePageModel::class,
             'signature_options' => [],
         ]);
         $resolver->setAllowedTypes('signature_options', 'array');

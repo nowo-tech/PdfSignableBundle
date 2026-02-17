@@ -1,8 +1,16 @@
-# Bundle routes: signature + AcroForm. Import this file once and set prefix, e.g. prefix: /pdf-signable
-# Single resource = bundle getPath() + /Controller (src/Controller). Registers route names:
-#   nowo_pdf_signable_index, nowo_pdf_signable_proxy, nowo_pdf_signable_acroform_overrides,
-#   nowo_pdf_signable_acroform_overrides_save, nowo_pdf_signable_acroform_overrides_remove, nowo_pdf_signable_acroform_apply
-#nowo_pdf_signable:
-#    resource: '@NowoPdfSignableBundle/Controller'
-#    type: attribute
-#    prefix: ''
+# PdfSignable bundle routes: signature form, proxy, AcroForm endpoints.
+#
+# Copy the block below into your app's config/routes.yaml (or config/routes/*.yaml)
+# and change the prefix if needed:
+#
+#   nowo_pdf_signable:
+#     resource: '@NowoPdfSignableBundle/Resources/config/routes.yaml'
+#     prefix: /pdf-signable
+#
+# Resulting route names: nowo_pdf_signable_index, nowo_pdf_signable_proxy,
+# nowo_pdf_signable_acroform_overrides, nowo_pdf_signable_acroform_overrides_save,
+# nowo_pdf_signable_acroform_overrides_remove, nowo_pdf_signable_acroform_apply, etc.
+_pdf_signable_bundle:
+    resource: '@NowoPdfSignableBundle/Controller'
+    type: attribute
+    prefix: ''

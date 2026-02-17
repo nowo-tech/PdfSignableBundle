@@ -186,3 +186,9 @@ acroform_editor:
   download_filename: 'document-modified.pdf'
   error_prefix: 'Error: '
   new_field_name_pattern: 'Yeni alan %n'
+
+dependency_check:
+  debug_title: 'PdfSignable — bağımlılık kontrolü (hata ayıklama).'
+  debug_hint: 'Çalıştırın: php bin/console nowo_pdf_signable:check-dependencies'
+  required_missing: 'Eksik gerekli bağımlılıklar:'
+  optional_missing: 'İsteğe bağlı / önerilen:'

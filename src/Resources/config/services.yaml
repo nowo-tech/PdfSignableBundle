@@ -2,12 +2,30 @@
 # - Controllers: SignatureController (resource + autowire), AcroFormOverridesController (explicit below).
 # - Form types: SignatureCoordinatesType, SignatureBoxType; extension SignatureCoordinatesTypeExtension.
 # - Twig: NowoPdfSignableTwigExtension.
+# - Commands: CheckDependenciesCommand (autowire).
+# - Checker: DependencyChecker (used by command and DependencyCheckListener).
+# - EventListener: DependencyCheckListener (debug-only dependency check on form pages).
+# - Proxy: ProxyUrlValidator (SSRF + allowlist for proxy and AcroForm apply).
 
 services:
     _defaults:
         autowire: true
         autoconfigure: true
         public: false
+
+    Nowo\PdfSignableBundle\Proxy\:
+        resource: '../../Proxy/*'
+
+    Nowo\PdfSignableBundle\Checker\:
+        resource: '../../Checker/*'
+        exclude: '../../Checker/DependencyCheckerInterface.php'
+
+    Nowo\PdfSignableBundle\Checker\DependencyCheckerInterface: '@Nowo\PdfSignableBundle\Checker\DependencyChecker'
+
+    # Commands
+    Nowo\PdfSignableBundle\Command\:
+        resource: '../../Command/*'
+        tags: ['console.command']
 
     # Controllers: SignatureController via resource; AcroFormOverridesController excluded and defined explicitly below.
     Nowo\PdfSignableBundle\Controller\:
@@ -24,7 +42,7 @@ services:
             $editor: null
             $eventDispatcher: '@event_dispatcher'
             $translator: '@translator'
-            $proxyUrlAllowlist: '%nowo_pdf_signable.proxy_url_allowlist%'
+            $proxyUrlValidator: '@Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator'
             $maxPdfSize: '%nowo_pdf_signable.acroform.max_pdf_size%'
             $maxPatches: '%nowo_pdf_signable.acroform.max_patches%'
             $fieldsExtractorScript: '%nowo_pdf_signable.acroform.fields_extractor_script%'
@@ -34,6 +52,10 @@ services:
             $logger: '@?Psr\Log\LoggerInterface'
         tags: ['controller.service_arguments']
         public: true
+
+    Nowo\PdfSignableBundle\EventListener\:
+        resource: '../../EventListener/*'
+        exclude: '../../EventListener/AcroFormApplyScriptListener.php'
 
     Nowo\PdfSignableBundle\EventListener\AcroFormApplyScriptListener:
         arguments:

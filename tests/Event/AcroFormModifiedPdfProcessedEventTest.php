@@ -8,13 +8,15 @@ use Nowo\PdfSignableBundle\Event\AcroFormModifiedPdfProcessedEvent;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
+use const JSON_THROW_ON_ERROR;
+
 final class AcroFormModifiedPdfProcessedEventTest extends TestCase
 {
     public function testGetProcessedPdfContentsAndDocumentKey(): void
     {
         $processedPdf = '%PDF-1.4 processed';
-        $documentKey = 'doc-123';
-        $request = Request::create('/process', 'POST', [], [], [], [
+        $documentKey  = 'doc-123';
+        $request      = Request::create('/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => 'e0=', 'document_key' => $documentKey], JSON_THROW_ON_ERROR));
 

@@ -81,9 +81,10 @@ describe('getWorkerUrl', () => {
     );
   });
 
-  it('with npm and no worker url and no script src: throws', () => {
+  it('with npm and no worker url and no script src: returns default bundle worker path', () => {
     (document as { currentScript: HTMLScriptElement | null }).currentScript = null;
-    expect(() => getWorkerUrl({ pdfjsSource: 'npm' })).toThrow(/could not resolve worker/);
+    const url = getWorkerUrl({ pdfjsSource: 'npm' });
+    expect(url).toMatch(/\/bundles\/nowopdfsignable\/js\/pdf\.worker\.min\.js$/);
   });
 });
 

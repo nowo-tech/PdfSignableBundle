@@ -186,3 +186,9 @@ acroform_editor:
   download_filename: 'document-modified.pdf'
   error_prefix: 'Error: '
   new_field_name_pattern: 'Nowe pole %n'
+
+dependency_check:
+  debug_title: 'PdfSignable — sprawdzanie zależności (debug).'
+  debug_hint: 'Uruchom: php bin/console nowo_pdf_signable:check-dependencies'
+  required_missing: 'Brakujące wymagane zależności:'
+  optional_missing: 'Opcjonalne / zalecane:'

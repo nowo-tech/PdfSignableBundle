@@ -10,12 +10,16 @@ use Nowo\PdfSignableBundle\AcroForm\PdfAcroFormEditorInterface;
 use Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface;
 use Nowo\PdfSignableBundle\Controller\AcroFormOverridesController;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
+use Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Translation\TranslatorInterface;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Unit tests for AcroFormOverridesController: overrides GET/POST/DELETE and apply endpoint.
@@ -23,8 +27,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class AcroFormOverridesControllerTest extends TestCase
 {
     /**
+     * Creates a ProxyUrlValidator instance (real class; it is final so we cannot mock it).
+     */
+    private function createProxyUrlValidator(array $proxyUrlAllowlist): ProxyUrlValidator
+    {
+        return new ProxyUrlValidator($proxyUrlAllowlist, null);
+    }
+
+    /**
      * @param array<string> $proxyUrlAllowlist When non-empty, pdf_url must match one entry (substring or regex #...)
-     * @param int|null      $maxPdfSize        Max PDF size in bytes; default 20MB (use a small value in tests for "too large" to avoid memory exhaustion)
+     * @param int|null $maxPdfSize Max PDF size in bytes; default 20MB (use a small value in tests for "too large" to avoid memory exhaustion)
      */
     private function createController(
         bool $enabled = true,
@@ -49,6 +61,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
+        $proxyUrlValidator = $this->createProxyUrlValidator($proxyUrlAllowlist);
 
         return new AcroFormOverridesController(
             $enabled,
@@ -57,7 +70,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $editor,
             $dispatcher,
             $translator,
-            $proxyUrlAllowlist,
+            $proxyUrlValidator,
             $maxPdfSize ?? 20 * 1024 * 1024,
             $maxPatches,
             $fieldsExtractorScript,
@@ -71,7 +84,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testGetOverridesWhenDisabledReturns404(): void
     {
         $controller = $this->createController(enabled: false);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'GET', ['document_key' => 'doc1']);
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'GET', ['document_key' => 'doc1']);
 
         $response = $controller->getOverrides($request);
 
@@ -81,7 +94,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testGetOverridesMissingDocumentKeyReturns400(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/pdf-signable/acroform/overrides', 'GET');
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'GET');
 
         $response = $controller->getOverrides($request);
 
@@ -95,7 +108,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->method('get')->with('doc1')->willReturn(null);
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'GET', ['document_key' => 'doc1']);
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'GET', ['document_key' => 'doc1']);
 
         $response = $controller->getOverrides($request);
 
@@ -107,10 +120,10 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testGetOverridesReturns200WithOverrides(): void
     {
         $overrides = new AcroFormOverrides(['f1' => ['defaultValue' => 'x']], 'doc1');
-        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage   = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->method('get')->with('doc1')->willReturn($overrides);
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'GET', ['document_key' => 'doc1']);
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'GET', ['document_key' => 'doc1']);
 
         $response = $controller->getOverrides($request);
 
@@ -124,7 +137,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesWhenDisabledReturns404(): void
     {
         $controller = $this->createController(enabled: false);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['document_key' => 'doc1', 'overrides' => []], JSON_THROW_ON_ERROR));
 
@@ -136,7 +149,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesInvalidDocumentKeyReturns400(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['document_key' => 'invalid key with spaces', 'overrides' => []], JSON_THROW_ON_ERROR));
 
@@ -150,15 +163,15 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesValidCallsStorageAndReturns200(): void
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
-        $storage->expects(self::once())->method('set')->with('doc1', self::callback(function (AcroFormOverrides $o): bool {
-            return 'doc1' === $o->documentKey && $o->overrides === ['f1' => ['label' => 'Field 1']];
+        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static function (AcroFormOverrides $o): bool {
+            return $o->documentKey === 'doc1' && $o->overrides === ['f1' => ['label' => 'Field 1']];
         }));
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'document_key' => 'doc1',
-            'overrides' => ['f1' => ['label' => 'Field 1']],
+            'overrides'    => ['f1' => ['label' => 'Field 1']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->saveOverrides($request);
@@ -172,7 +185,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testRemoveOverridesWhenDisabledReturns404(): void
     {
         $controller = $this->createController(enabled: false);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'DELETE', ['document_key' => 'doc1']);
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE', ['document_key' => 'doc1']);
 
         $response = $controller->removeOverrides($request);
 
@@ -182,7 +195,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testRemoveOverridesMissingDocumentKeyReturns400(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/pdf-signable/acroform/overrides', 'DELETE');
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE');
 
         $response = $controller->removeOverrides($request);
 
@@ -194,7 +207,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->expects(self::once())->method('remove')->with('doc1');
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'DELETE', ['document_key' => 'doc1']);
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE', ['document_key' => 'doc1']);
 
         $response = $controller->removeOverrides($request);
 
@@ -208,7 +221,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->expects(self::once())->method('remove')->with('key-from-request');
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'DELETE');
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE');
         $request->request->replace(['document_key' => 'key-from-request']);
 
         $response = $controller->removeOverrides($request);
@@ -219,7 +232,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyWhenDisabledReturns404(): void
     {
         $controller = $this->createController(enabled: true, allowPdfModify: false);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4'), 'patches' => []], JSON_THROW_ON_ERROR));
 
@@ -231,7 +244,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyMissingPdfReturns400(): void
     {
         $controller = $this->createController(allowPdfModify: true);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['patches' => []], JSON_THROW_ON_ERROR));
 
@@ -245,11 +258,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyTooManyPatchesReturns400(): void
     {
         $controller = $this->createController(allowPdfModify: true, maxPatches: 2);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [
+            'patches'     => [
                 ['fieldId' => 'f1'],
                 ['fieldId' => 'f2'],
                 ['fieldId' => 'f3'],
@@ -266,7 +279,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyPatchesNotArrayReturns400(): void
     {
         $controller = $this->createController(allowPdfModify: true);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4'), 'patches' => 'not-array'], JSON_THROW_ON_ERROR));
 
@@ -280,7 +293,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyInvalidBase64PdfContentReturns400(): void
     {
         $controller = $this->createController(allowPdfModify: true);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => '!!!invalid-base64!!!', 'patches' => []], JSON_THROW_ON_ERROR));
 
@@ -294,11 +307,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyInvalidPatchMissingFieldIdReturns400(): void
     {
         $controller = $this->createController(allowPdfModify: true);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['defaultValue' => 'x']],
+            'patches'     => [['defaultValue' => 'x']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -311,8 +324,8 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyEventSetsModifiedPdfReturns200(): void
     {
         $modifiedPdf = '%PDF-1.4 modified';
-        $dispatcher = $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(function (object $event) use ($modifiedPdf): object {
+        $dispatcher  = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event) use ($modifiedPdf): object {
             if ($event instanceof AcroFormApplyRequestEvent) {
                 $event->setModifiedPdf($modifiedPdf);
             }
@@ -320,11 +333,11 @@ final class AcroFormOverridesControllerTest extends TestCase
             return $event;
         });
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1', 'defaultValue' => 'test']],
+            'patches'     => [['fieldId' => 'f1', 'defaultValue' => 'test']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -338,19 +351,19 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyEventSetsErrorReturns400(): void
     {
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(function (object $event): object {
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
             if ($event instanceof AcroFormApplyRequestEvent) {
-                $event->setError(new \RuntimeException('PDF has no form'));
+                $event->setError(new RuntimeException('PDF has no form'));
             }
 
             return $event;
         });
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1']],
+            'patches'     => [['fieldId' => 'f1']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -363,11 +376,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyNoEditorNoEventResponseReturns501(): void
     {
         $controller = $this->createController(allowPdfModify: true, editor: null);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1']],
+            'patches'     => [['fieldId' => 'f1']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -383,14 +396,14 @@ final class AcroFormOverridesControllerTest extends TestCase
             ->method('warning')
             ->with(
                 self::stringContains('AcroForm apply response: 501'),
-                self::anything()
+                self::anything(),
             );
         $controller = $this->createController(allowPdfModify: true, editor: null, debug: true, logger: $logger);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1']],
+            'patches'     => [['fieldId' => 'f1']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -401,7 +414,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyReturnsJsonWhenEventHasValidationResult(): void
     {
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(function (object $event): object {
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
             if ($event instanceof AcroFormApplyRequestEvent) {
                 $event->setValidationResult(['success' => true, 'patches_count' => 1, 'message' => 'Dry-run OK']);
             }
@@ -409,11 +422,11 @@ final class AcroFormOverridesControllerTest extends TestCase
             return $event;
         });
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1']],
+            'patches'     => [['fieldId' => 'f1']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -431,11 +444,11 @@ final class AcroFormOverridesControllerTest extends TestCase
         $editor->method('applyPatches')->with(self::stringContains('%PDF'), self::isType('array'))
             ->willReturn('%PDF-1.4 edited');
         $controller = $this->createController(allowPdfModify: true, editor: $editor);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1', 'defaultValue' => 'v']],
+            'patches'     => [['fieldId' => 'f1', 'defaultValue' => 'v']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -450,11 +463,11 @@ final class AcroFormOverridesControllerTest extends TestCase
         $editor = $this->createMock(PdfAcroFormEditorInterface::class);
         $editor->method('applyPatches')->willReturn('%PDF-1.4');
         $controller = $this->createController(allowPdfModify: true, editor: $editor, debug: true);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
-            'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1']],
+            'pdf_content'   => base64_encode('%PDF-1.4'),
+            'patches'       => [['fieldId' => 'f1']],
             'validate_only' => true,
         ], JSON_THROW_ON_ERROR));
 
@@ -471,11 +484,11 @@ final class AcroFormOverridesControllerTest extends TestCase
         $editor = $this->createMock(PdfAcroFormEditorInterface::class);
         $editor->method('applyPatches')->willThrowException(new AcroFormEditorException('Invalid PDF'));
         $controller = $this->createController(allowPdfModify: true, editor: $editor, debug: true);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
-            'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1']],
+            'pdf_content'   => base64_encode('%PDF-1.4'),
+            'patches'       => [['fieldId' => 'f1']],
             'validate_only' => true,
         ], JSON_THROW_ON_ERROR));
 
@@ -490,18 +503,18 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesWithFieldsInBody(): void
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
-        $storage->expects(self::once())->method('set')->with('doc1', self::callback(function (AcroFormOverrides $o): bool {
-            return 'doc1' === $o->documentKey
+        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static function (AcroFormOverrides $o): bool {
+            return $o->documentKey === 'doc1'
                 && $o->overrides === ['f1' => ['label' => 'x']]
                 && $o->fields === [['id' => 'f1', 'rect' => [0, 0, 100, 20]]];
         }));
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'document_key' => 'doc1',
-            'overrides' => ['f1' => ['label' => 'x']],
-            'fields' => [['id' => 'f1', 'rect' => [0, 0, 100, 20]]],
+            'overrides'    => ['f1' => ['label' => 'x']],
+            'fields'       => [['id' => 'f1', 'rect' => [0, 0, 100, 20]]],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->saveOverrides($request);
@@ -514,11 +527,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesWithNonArrayOverridesTreatedAsEmpty(): void
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
-        $storage->expects(self::once())->method('set')->with('doc1', self::callback(function (AcroFormOverrides $o): bool {
-            return [] === $o->overrides;
+        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static function (AcroFormOverrides $o): bool {
+            return $o->overrides === [];
         }));
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['document_key' => 'doc1', 'overrides' => 'invalid'], JSON_THROW_ON_ERROR));
 
@@ -532,7 +545,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->expects(self::once())->method('set')->with('from-query', self::anything());
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides?document_key=from-query', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides?document_key=from-query', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['overrides' => []], JSON_THROW_ON_ERROR));
 
@@ -545,11 +558,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesWithFieldsNotArrayTreatedAsNull(): void
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
-        $storage->expects(self::once())->method('set')->with('doc1', self::callback(function (AcroFormOverrides $o): bool {
-            return 'doc1' === $o->documentKey && [] === $o->overrides && null === $o->fields;
+        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static function (AcroFormOverrides $o): bool {
+            return $o->documentKey === 'doc1' && $o->overrides === [] && $o->fields === null;
         }));
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['document_key' => 'doc1', 'overrides' => [], 'fields' => 'invalid'], JSON_THROW_ON_ERROR));
 
@@ -563,11 +576,11 @@ final class AcroFormOverridesControllerTest extends TestCase
         $editor = $this->createMock(PdfAcroFormEditorInterface::class);
         $editor->method('applyPatches')->willThrowException(new AcroFormEditorException('PDF has no form fields'));
         $controller = $this->createController(allowPdfModify: true, editor: $editor);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1']],
+            'patches'     => [['fieldId' => 'f1']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -580,7 +593,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testLoadOverridesWhenDisabledReturns404(): void
     {
         $controller = $this->createController(enabled: false);
-        $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['document_key' => 'doc1'], JSON_THROW_ON_ERROR));
 
@@ -592,7 +605,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testLoadOverridesMissingDocumentKeyReturns400(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([], JSON_THROW_ON_ERROR));
 
@@ -606,10 +619,10 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testLoadOverridesValidReturnsOverridesAndDocumentKey(): void
     {
         $overrides = new AcroFormOverrides(['f1' => ['label' => 'Field 1']], 'doc1');
-        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage   = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->method('get')->with('doc1')->willReturn($overrides);
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['document_key' => 'doc1'], JSON_THROW_ON_ERROR));
 
@@ -626,7 +639,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->method('get')->with('doc1')->willReturn(null);
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['document_key' => 'doc1'], JSON_THROW_ON_ERROR));
 
@@ -641,9 +654,9 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testLoadOverridesInvalidDocumentKeyReturns400(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
-        ], json_encode(['document_key' => 'x'.str_repeat('a', 300)], JSON_THROW_ON_ERROR));
+        ], json_encode(['document_key' => 'x' . str_repeat('a', 300)], JSON_THROW_ON_ERROR));
 
         $response = $controller->loadOverrides($request);
 
@@ -655,7 +668,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testLoadOverridesDocumentKeyNotStringTreatedAsEmpty(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['document_key' => 123], JSON_THROW_ON_ERROR));
 
@@ -669,10 +682,10 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testLoadOverridesWithFieldsInBodyReturnsMergedOverrides(): void
     {
         $overrides = new AcroFormOverrides(['f1' => ['defaultValue' => 'x']], 'doc1');
-        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage   = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->method('get')->with('doc1')->willReturn($overrides);
         $controller = $this->createController(storage: $storage);
-        $fields = [
+        $fields     = [
             ['id' => 'f1', 'rect' => [0, 0, 100, 20], 'fieldType' => 'text'],
             ['id' => 'f2', 'rect' => [0, 30, 80, 50], 'fieldType' => 'text'],
         ];
@@ -695,7 +708,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testExtractFieldsWhenDisabledReturns404(): void
     {
         $controller = $this->createController(enabled: false);
-        $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -706,10 +719,10 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testExtractFieldsMissingPdfReturns400(): void
     {
-        $existingFile = __DIR__.'/../../composer.json';
+        $existingFile = __DIR__ . '/../../composer.json';
         self::assertFileExists($existingFile, 'composer.json must exist for this test');
         $controller = $this->createController(fieldsExtractorScript: $existingFile);
-        $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([], JSON_THROW_ON_ERROR));
 
@@ -723,7 +736,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testProcessWhenDisabledReturns404(): void
     {
         $controller = $this->createController(enabled: false);
-        $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -735,7 +748,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testProcessWhenProcessScriptNullReturns404(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -747,7 +760,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testProcessWhenProcessScriptEmptyAfterTrimReturns404(): void
     {
         $controller = $this->createController(processScript: '   ');
-        $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -759,7 +772,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testProcessWhenProcessScriptNotAFileReturns503(): void
     {
         $controller = $this->createController(processScript: '/nonexistent/process.py');
-        $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -772,10 +785,10 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testProcessMissingPdfContentReturns400(): void
     {
-        $existingFile = __DIR__.'/../../composer.json';
+        $existingFile = __DIR__ . '/../../composer.json';
         self::assertFileExists($existingFile);
         $controller = $this->createController(processScript: $existingFile);
-        $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => 123], JSON_THROW_ON_ERROR));
 
@@ -788,10 +801,10 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testProcessInvalidBase64Returns400(): void
     {
-        $existingFile = __DIR__.'/../../composer.json';
+        $existingFile = __DIR__ . '/../../composer.json';
         self::assertFileExists($existingFile);
         $controller = $this->createController(processScript: $existingFile);
-        $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => '!!!invalid!!!'], JSON_THROW_ON_ERROR));
 
@@ -805,11 +818,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When process script runs but exits non-zero, controller returns 400. */
     public function testProcessWhenScriptExitsNonZeroReturns400(): void
     {
-        $script = sys_get_temp_dir().'/pdfsignable_process_exit1_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdfsignable_process_exit1_' . getmypid() . '.py';
         file_put_contents($script, "import sys\nsys.exit(1)\n");
         try {
             $controller = $this->createController(processScript: $script);
-            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+            $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -826,11 +839,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When process script command is not in PATH, response includes Python install hint. */
     public function testProcessWhenProcessCommandNotFoundReturns400WithPythonMessage(): void
     {
-        $script = sys_get_temp_dir().'/pdfsignable_process_dummy_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdfsignable_process_dummy_' . getmypid() . '.py';
         file_put_contents($script, "import sys\nsys.exit(0)\n");
         try {
             $controller = $this->createController(processScript: $script, processScriptCommand: 'python999nonexistent');
-            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+            $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -848,11 +861,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When process script does not write output file, controller returns 400. */
     public function testProcessWhenScriptProducesNoOutputFileReturns400(): void
     {
-        $script = sys_get_temp_dir().'/pdfsignable_process_noout_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdfsignable_process_noout_' . getmypid() . '.py';
         file_put_contents($script, "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument('--input')\nparser.add_argument('--output')\nparser.parse_args()\n# do not write to output\nimport sys\nsys.exit(0)\n");
         try {
             $controller = $this->createController(processScript: $script);
-            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+            $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -869,7 +882,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When Accept header contains application/pdf, process returns 200 with PDF body. */
     public function testProcessWhenAcceptPdfReturns200WithPdfContent(): void
     {
-        $script = sys_get_temp_dir().'/pdfsignable_process_copy_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdfsignable_process_copy_' . getmypid() . '.py';
         file_put_contents(
             $script,
             <<<'PY'
@@ -886,10 +899,10 @@ final class AcroFormOverridesControllerTest extends TestCase
         );
         try {
             $controller = $this->createController(processScript: $script);
-            $pdfB64 = base64_encode('%PDF-1.4 minimal');
-            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+            $pdfB64     = base64_encode('%PDF-1.4 minimal');
+            $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
-                'HTTP_ACCEPT' => 'application/pdf',
+                'HTTP_ACCEPT'  => 'application/pdf',
             ], json_encode(['pdf_content' => $pdfB64], JSON_THROW_ON_ERROR));
 
             $response = $controller->process($request);
@@ -905,7 +918,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When Accept does not contain application/pdf, process returns 200 with JSON body. */
     public function testProcessWhenAcceptJsonReturns200WithJsonBody(): void
     {
-        $script = sys_get_temp_dir().'/pdfsignable_process_copy_json_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdfsignable_process_copy_json_' . getmypid() . '.py';
         file_put_contents(
             $script,
             <<<'PY'
@@ -922,9 +935,9 @@ final class AcroFormOverridesControllerTest extends TestCase
         );
         try {
             $controller = $this->createController(processScript: $script);
-            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+            $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
-                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_ACCEPT'  => 'application/json',
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
             $response = $controller->process($request);
@@ -943,7 +956,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyPdfUrlEmptyReturns400(): void
     {
         $controller = $this->createController(allowPdfModify: true);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_url' => '', 'patches' => []], JSON_THROW_ON_ERROR));
 
@@ -957,7 +970,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyPdfUrlInvalidUrlReturns400(): void
     {
         $controller = $this->createController(allowPdfModify: true);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_url' => 'not-a-url', 'patches' => []], JSON_THROW_ON_ERROR));
 
@@ -1010,7 +1023,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyPdfUrlLocalhostBlockedBySsrfReturns403(): void
     {
         $controller = $this->createController(allowPdfModify: true);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_url' => 'http://localhost/doc.pdf',
@@ -1027,20 +1040,20 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testApplyEventSetsErrorDetailInPayload(): void
     {
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(function (object $event): object {
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
             if ($event instanceof AcroFormApplyRequestEvent) {
-                $event->setError(new \RuntimeException('Apply failed'));
+                $event->setError(new RuntimeException('Apply failed'));
                 $event->setErrorDetail('stderr output here');
             }
 
             return $event;
         });
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
-            'patches' => [['fieldId' => 'f1']],
+            'patches'     => [['fieldId' => 'f1']],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -1053,13 +1066,13 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testApplyPdfTooLargeReturns400(): void
     {
-        $controller = $this->createController(allowPdfModify: true, maxPdfSize: 100);
+        $controller   = $this->createController(allowPdfModify: true, maxPdfSize: 100);
         $largeContent = str_repeat('x', 101);
-        $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request      = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'pdf_content' => base64_encode($largeContent),
-            'patches' => [],
+            'patches'     => [],
         ], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -1072,7 +1085,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testExtractFieldsScriptNotFoundReturns503(): void
     {
         $controller = $this->createController(fieldsExtractorScript: '/nonexistent/extract.py');
-        $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+        $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -1085,11 +1098,11 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testExtractFieldsPdfTooLargeReturns400(): void
     {
-        $existingFile = __DIR__.'/../../composer.json';
+        $existingFile = __DIR__ . '/../../composer.json';
         self::assertFileExists($existingFile);
-        $controller = $this->createController(fieldsExtractorScript: $existingFile, maxPdfSize: 100);
+        $controller   = $this->createController(fieldsExtractorScript: $existingFile, maxPdfSize: 100);
         $largeContent = str_repeat('x', 101);
-        $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+        $request      = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['pdf_content' => base64_encode($largeContent)], JSON_THROW_ON_ERROR));
 
@@ -1103,11 +1116,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When extractor script exits non-zero, controller returns 500. */
     public function testExtractFieldsWhenExtractorScriptExitsNonZeroReturns500(): void
     {
-        $script = sys_get_temp_dir().'/pdfsignable_extract_exit1_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdfsignable_extract_exit1_' . getmypid() . '.py';
         file_put_contents($script, "import sys\nsys.exit(1)\n");
         try {
             $controller = $this->createController(fieldsExtractorScript: $script);
-            $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+            $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -1124,11 +1137,11 @@ final class AcroFormOverridesControllerTest extends TestCase
     /** When extractor script output is not a JSON array (e.g. null), controller returns 500. */
     public function testExtractFieldsWhenScriptOutputNotArrayReturns500(): void
     {
-        $script = sys_get_temp_dir().'/pdfsignable_extract_invalid_'.getmypid().'.py';
+        $script = sys_get_temp_dir() . '/pdfsignable_extract_invalid_' . getmypid() . '.py';
         file_put_contents($script, "print('null')\n");
         try {
             $controller = $this->createController(fieldsExtractorScript: $script);
-            $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+            $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -1145,10 +1158,10 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testGetOverridesWithDocumentKeyInQuery(): void
     {
         $overrides = new AcroFormOverrides([], 'my-doc');
-        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage   = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->method('get')->with('my-doc')->willReturn($overrides);
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/acroform/overrides', 'GET', ['document_key' => 'my-doc']);
+        $request    = Request::create('/acroform/overrides', 'GET', ['document_key' => 'my-doc']);
 
         $response = $controller->getOverrides($request);
 
@@ -1161,10 +1174,10 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testGetOverridesWithDocumentKeyInRequestBag(): void
     {
         $overrides = new AcroFormOverrides(['f1' => []], 'from-request');
-        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage   = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->method('get')->with('from-request')->willReturn($overrides);
         $controller = $this->createController(storage: $storage);
-        $request = Request::create('/acroform/overrides', 'GET');
+        $request    = Request::create('/acroform/overrides', 'GET');
         $request->request->replace(['document_key' => 'from-request']);
 
         $response = $controller->getOverrides($request);
@@ -1177,7 +1190,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesMissingDocumentKeyReturns400(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/acroform/overrides', 'POST', [], [], [], [
+        $request    = Request::create('/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['overrides' => []], JSON_THROW_ON_ERROR));
 

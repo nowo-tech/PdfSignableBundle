@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Tests\Controller;
 
+use InvalidArgumentException;
 use Nowo\PdfSignableBundle\Controller\SignatureController;
 use Nowo\PdfSignableBundle\Event\BatchSignRequestedEvent;
 use Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent;
@@ -11,6 +12,7 @@ use Nowo\PdfSignableBundle\Event\SignatureCoordinatesSubmittedEvent;
 use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -31,17 +33,28 @@ use Symfony\Component\Validator\Validation;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
+use const JSON_THROW_ON_ERROR;
+
 /**
  * Unit tests for SignatureController: index (GET/POST, JSON/redirect), proxy disabled, invalid URL, SSRF.
  */
 final class SignatureControllerTest extends TestCase
 {
     /**
+     * Creates a ProxyUrlValidator instance (real class; it is final so we cannot mock it).
+     * Empty allowlist = allow all; otherwise allows URL if it matches an entry (substring or regex #).
+     */
+    private function createProxyUrlValidator(array $proxyUrlAllowlist): ProxyUrlValidator
+    {
+        return new ProxyUrlValidator($proxyUrlAllowlist, null);
+    }
+
+    /**
      * Creates the bundle SignatureController with optional proxy, allowlist and example URL.
      *
-     * @param bool         $proxyEnabled      Whether the proxy route is enabled
+     * @param bool $proxyEnabled Whether the proxy route is enabled
      * @param list<string> $proxyUrlAllowlist URL allowlist for the proxy (empty = no restriction)
-     * @param string       $examplePdfUrl     Default PDF URL for the form
+     * @param string $examplePdfUrl Default PDF URL for the form
      *
      * @return SignatureController The controller instance with mocked dispatcher and translator
      */
@@ -52,16 +65,17 @@ final class SignatureControllerTest extends TestCase
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
         $logger = $this->createMock(LoggerInterface::class);
+        $proxyUrlValidator = $this->createProxyUrlValidator($proxyUrlAllowlist);
 
-        return new SignatureController($dispatcher, $translator, $proxyEnabled, $proxyUrlAllowlist, $examplePdfUrl, true, $logger);
+        return new SignatureController($dispatcher, $translator, $proxyEnabled, $proxyUrlValidator, $examplePdfUrl, true, $logger);
     }
 
     /**
      * Builds a minimal container with form.factory, twig, router and request_stack for index() tests.
      *
-     * @param Request|null     $request Request to use as current (for request_stack)
-     * @param Session|null     $session Session to return from request_stack->getSession() (if null, uses $request->getSession() when available)
-     * @param Environment|null $twig    Optional Twig mock (e.g. to assert form vars); default returns '<html>form</html>'
+     * @param Request|null $request Request to use as current (for request_stack)
+     * @param Session|null $session Session to return from request_stack->getSession() (if null, uses $request->getSession() when available)
+     * @param Environment|null $twig Optional Twig mock (e.g. to assert form vars); default returns '<html>form</html>'
      */
     private function createContainerForIndex(?Request $request = null, ?Session $session = null, ?Environment $twig = null): ContainerInterface
     {
@@ -69,12 +83,12 @@ final class SignatureControllerTest extends TestCase
             ->addExtension(new HttpFoundationExtension())
             ->addExtension(new PreloadedExtension(
                 [new SignatureBoxType(), new SignatureCoordinatesType('', [])],
-                []
+                [],
             ))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
 
-        if (null === $twig) {
+        if ($twig === null) {
             $twig = $this->createMock(Environment::class);
             $twig->method('render')->willReturn('<html>form</html>');
         }
@@ -85,7 +99,7 @@ final class SignatureControllerTest extends TestCase
         $sessionToUse = $session ?? ($request?->hasSession() ? $request->getSession() : null);
         $requestStack = $this->createMock(RequestStack::class);
         $requestStack->method('getCurrentRequest')->willReturn($request);
-        if (null !== $sessionToUse) {
+        if ($sessionToUse !== null) {
             $requestStack->method('getSession')->willReturn($sessionToUse);
         }
 
@@ -98,11 +112,11 @@ final class SignatureControllerTest extends TestCase
         ]);
         $container->method('get')->willReturnCallback(static function (string $id) use ($formFactory, $twig, $router, $requestStack) {
             return match ($id) {
-                'form.factory' => $formFactory,
-                'twig' => $twig,
-                'router' => $router,
+                'form.factory'  => $formFactory,
+                'twig'          => $twig,
+                'router'        => $router,
                 'request_stack' => $requestStack,
-                default => throw new \InvalidArgumentException("Unknown service: {$id}"),
+                default         => throw new InvalidArgumentException("Unknown service: {$id}"),
             };
         });
 
@@ -112,7 +126,7 @@ final class SignatureControllerTest extends TestCase
     public function testIndexGetRendersForm(): void
     {
         $controller = $this->createController(proxyEnabled: true, proxyUrlAllowlist: [], examplePdfUrl: '');
-        $request = Request::create('/pdf-signable', 'GET');
+        $request    = Request::create('/pdf-signable', 'GET');
         $controller->setContainer($this->createContainerForIndex($request));
 
         $response = $controller->index($request);
@@ -125,12 +139,12 @@ final class SignatureControllerTest extends TestCase
     public function testIndexGetWithExamplePdfUrlPrefillsModel(): void
     {
         $exampleUrl = 'https://example.com/default.pdf';
-        $twig = $this->createMock(Environment::class);
-        $twig->method('render')->willReturnCallback(function (string $view, array $vars) use ($exampleUrl): string {
+        $twig       = $this->createMock(Environment::class);
+        $twig->method('render')->willReturnCallback(static function (string $view, array $vars) use ($exampleUrl): string {
             $form = $vars['form'] ?? null;
-            if (null !== $form && method_exists($form, 'getData')) {
+            if ($form !== null && method_exists($form, 'getData')) {
                 $data = $form->getData();
-                if (null !== $data && method_exists($data, 'getPdfUrl')) {
+                if ($data !== null && method_exists($data, 'getPdfUrl')) {
                     self::assertSame($exampleUrl, $data->getPdfUrl(), 'Model should be pre-filled with example PDF URL on GET');
                 }
             }
@@ -150,7 +164,7 @@ final class SignatureControllerTest extends TestCase
     public function testIndexPostValidRedirectsWithFlash(): void
     {
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(function (object $event): object {
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
             if ($event instanceof SignatureCoordinatesSubmittedEvent) {
                 // ensure the event was dispatched with model and request
                 self::assertInstanceOf(SignatureCoordinatesModel::class, $event->getCoordinates());
@@ -161,14 +175,14 @@ final class SignatureControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $logger = $this->createMock(LoggerInterface::class);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
-        $session = new Session(new MockArraySessionStorage());
-        $request = Request::create('/pdf-signable', 'POST', [
+        $logger     = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, $this->createProxyUrlValidator([]), '', true, $logger);
+        $session    = new Session(new MockArraySessionStorage());
+        $request    = Request::create('/pdf-signable', 'POST', [
             'signature_coordinates' => [
-                'pdfUrl' => 'https://example.com/doc.pdf',
-                'unit' => SignatureCoordinatesModel::UNIT_MM,
-                'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'pdfUrl'         => 'https://example.com/doc.pdf',
+                'unit'           => SignatureCoordinatesModel::UNIT_MM,
+                'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
                 'signatureBoxes' => [
                     0 => ['name' => 'signer_1', 'page' => 1, 'width' => 150.0, 'height' => 40.0, 'x' => 50.0, 'y' => 100.0],
                 ],
@@ -193,14 +207,14 @@ final class SignatureControllerTest extends TestCase
         $dispatcher->method('dispatch')->willReturnArgument(0);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $logger = $this->createMock(LoggerInterface::class);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '', false, $logger);
-        $session = new Session(new MockArraySessionStorage());
-        $request = Request::create('/pdf-signable', 'POST', [
+        $logger     = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, $this->createProxyUrlValidator([]), '', false, $logger);
+        $session    = new Session(new MockArraySessionStorage());
+        $request    = Request::create('/pdf-signable', 'POST', [
             'signature_coordinates' => [
-                'pdfUrl' => 'https://example.com/doc.pdf',
-                'unit' => SignatureCoordinatesModel::UNIT_MM,
-                'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'pdfUrl'         => 'https://example.com/doc.pdf',
+                'unit'           => SignatureCoordinatesModel::UNIT_MM,
+                'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
                 'signatureBoxes' => [
                     0 => ['name' => 's1', 'page' => 1, 'width' => 100.0, 'height' => 30.0, 'x' => 0.0, 'y' => 0.0],
                 ],
@@ -218,8 +232,8 @@ final class SignatureControllerTest extends TestCase
     public function testIndexPostValidWithBatchSignDispatchesBatchSignRequestedEvent(): void
     {
         $batchEventDispatched = false;
-        $dispatcher = $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(function (object $event) use (&$batchEventDispatched): object {
+        $dispatcher           = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event) use (&$batchEventDispatched): object {
             if ($event instanceof BatchSignRequestedEvent) {
                 $batchEventDispatched = true;
             }
@@ -228,14 +242,14 @@ final class SignatureControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $logger = $this->createMock(LoggerInterface::class);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
-        $session = new Session(new MockArraySessionStorage());
-        $request = Request::create('/pdf-signable', 'POST', [
+        $logger     = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, $this->createProxyUrlValidator([]), '', true, $logger);
+        $session    = new Session(new MockArraySessionStorage());
+        $request    = Request::create('/pdf-signable', 'POST', [
             'signature_coordinates' => [
-                'pdfUrl' => 'https://example.com/doc.pdf',
-                'unit' => SignatureCoordinatesModel::UNIT_MM,
-                'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'pdfUrl'         => 'https://example.com/doc.pdf',
+                'unit'           => SignatureCoordinatesModel::UNIT_MM,
+                'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
                 'signatureBoxes' => [
                     0 => ['name' => 'signer_1', 'page' => 1, 'width' => 150.0, 'height' => 40.0, 'x' => 50.0, 'y' => 100.0],
                 ],
@@ -256,13 +270,13 @@ final class SignatureControllerTest extends TestCase
         $dispatcher->method('dispatch')->willReturnArgument(0);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $logger = $this->createMock(LoggerInterface::class);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
-        $request = Request::create('/pdf-signable', 'POST', [
+        $logger     = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, $this->createProxyUrlValidator([]), '', true, $logger);
+        $request    = Request::create('/pdf-signable', 'POST', [
             'signature_coordinates' => [
-                'pdfUrl' => 'https://example.com/doc.pdf',
-                'unit' => SignatureCoordinatesModel::UNIT_MM,
-                'origin' => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'pdfUrl'         => 'https://example.com/doc.pdf',
+                'unit'           => SignatureCoordinatesModel::UNIT_MM,
+                'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
                 'signatureBoxes' => [
                     0 => ['name' => 's1', 'page' => 1, 'width' => 100.0, 'height' => 30.0, 'x' => 0.0, 'y' => 0.0],
                 ],
@@ -285,13 +299,13 @@ final class SignatureControllerTest extends TestCase
         $dispatcher->method('dispatch')->willReturnArgument(0);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $logger = $this->createMock(LoggerInterface::class);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
-        $request = Request::create('/pdf-signable', 'POST', [
+        $logger     = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, $this->createProxyUrlValidator([]), '', true, $logger);
+        $request    = Request::create('/pdf-signable', 'POST', [
             'signature_coordinates' => [
-                'pdfUrl' => 'https://example.com/doc.pdf',
-                'unit' => SignatureCoordinatesModel::UNIT_PT,
-                'origin' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+                'pdfUrl'         => 'https://example.com/doc.pdf',
+                'unit'           => SignatureCoordinatesModel::UNIT_PT,
+                'origin'         => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
                 'signatureBoxes' => [
                     0 => ['name' => 'witness', 'page' => 2, 'width' => 120.0, 'height' => 35.0, 'x' => 10.0, 'y' => 200.0],
                 ],
@@ -321,7 +335,7 @@ final class SignatureControllerTest extends TestCase
     public function testProxyDisabledReturns403(): void
     {
         $controller = $this->createController(proxyEnabled: false);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
 
         $response = $controller->proxyPdf($request);
 
@@ -332,7 +346,7 @@ final class SignatureControllerTest extends TestCase
     public function testProxyInvalidUrlReturns400(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'not-a-valid-url']);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'not-a-valid-url']);
 
         $response = $controller->proxyPdf($request);
 
@@ -342,7 +356,7 @@ final class SignatureControllerTest extends TestCase
     public function testProxyMissingUrlReturns400(): void
     {
         $controller = $this->createController();
-        $request = Request::create('/pdf-signable/proxy', 'GET');
+        $request    = Request::create('/pdf-signable/proxy', 'GET');
 
         $response = $controller->proxyPdf($request);
 
@@ -352,8 +366,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyReturnsCustomResponseWhenEventProvidesOne(): void
     {
         $customResponse = new Response('custom pdf from cache', 200, ['Content-Type' => 'application/pdf']);
-        $dispatcher = $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(function (object $event) use ($customResponse): object {
+        $dispatcher     = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event) use ($customResponse): object {
             if ($event instanceof PdfProxyRequestEvent) {
                 $event->setResponse($customResponse);
             }
@@ -362,10 +376,10 @@ final class SignatureControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $logger = $this->createMock(LoggerInterface::class);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
+        $logger     = $this->createMock(LoggerInterface::class);
+        $controller = new SignatureController($dispatcher, $translator, true, $this->createProxyUrlValidator([]), '', true, $logger);
 
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
+        $request  = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
         $response = $controller->proxyPdf($request);
 
         self::assertSame(200, $response->getStatusCode());
@@ -376,7 +390,7 @@ final class SignatureControllerTest extends TestCase
     public function testProxyUrlNotInAllowlistReturns403(): void
     {
         $controller = $this->createController(true, ['https://allowed.example.com/']);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://other.example.com/doc.pdf']);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://other.example.com/doc.pdf']);
 
         $response = $controller->proxyPdf($request);
 
@@ -390,7 +404,7 @@ final class SignatureControllerTest extends TestCase
     public function testProxyBlocksLocalhostReturns403(): void
     {
         $controller = $this->createController(true, []);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://localhost/test.pdf']);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://localhost/test.pdf']);
 
         $response = $controller->proxyPdf($request);
 
@@ -403,7 +417,7 @@ final class SignatureControllerTest extends TestCase
     public function testProxyBlocks127Returns403(): void
     {
         $controller = $this->createController(true, []);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://127.0.0.1/internal.pdf']);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://127.0.0.1/internal.pdf']);
 
         $response = $controller->proxyPdf($request);
 
@@ -414,8 +428,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyBlocks10NetworkReturns403(): void
     {
         $controller = $this->createController(true, []);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://10.0.0.1/internal.pdf']);
-        $response = $controller->proxyPdf($request);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://10.0.0.1/internal.pdf']);
+        $response   = $controller->proxyPdf($request);
         self::assertSame(403, $response->getStatusCode());
     }
 
@@ -423,8 +437,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyBlocks192168NetworkReturns403(): void
     {
         $controller = $this->createController(true, []);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://192.168.1.1/internal.pdf']);
-        $response = $controller->proxyPdf($request);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://192.168.1.1/internal.pdf']);
+        $response   = $controller->proxyPdf($request);
         self::assertSame(403, $response->getStatusCode());
     }
 
@@ -432,8 +446,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyBlocks169254NetworkReturns403(): void
     {
         $controller = $this->createController(true, []);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://169.254.0.1/internal.pdf']);
-        $response = $controller->proxyPdf($request);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://169.254.0.1/internal.pdf']);
+        $response   = $controller->proxyPdf($request);
         self::assertSame(403, $response->getStatusCode());
     }
 
@@ -441,8 +455,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyUrlAllowedBySubstringReturns200WhenEventProvidesResponse(): void
     {
         $customResponse = new Response('pdf content', 200, ['Content-Type' => 'application/pdf']);
-        $dispatcher = $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(function (object $event) use ($customResponse): object {
+        $dispatcher     = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event) use ($customResponse): object {
             if ($event instanceof PdfProxyRequestEvent) {
                 $event->setResponse($customResponse);
             }
@@ -451,10 +465,11 @@ final class SignatureControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $logger = $this->createMock(LoggerInterface::class);
-        $controller = new SignatureController($dispatcher, $translator, true, ['example.com'], '', true, $logger);
+        $logger     = $this->createMock(LoggerInterface::class);
+        $validator = $this->createProxyUrlValidator(['example.com']);
+        $controller = new SignatureController($dispatcher, $translator, true, $validator, '', true, $logger);
 
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
+        $request  = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
         $response = $controller->proxyPdf($request);
 
         self::assertSame(200, $response->getStatusCode());
@@ -465,8 +480,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyUrlAllowedByRegexReturns200WhenEventProvidesResponse(): void
     {
         $customResponse = new Response('pdf from regex allowlist', 200, ['Content-Type' => 'application/pdf']);
-        $dispatcher = $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(function (object $event) use ($customResponse): object {
+        $dispatcher     = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event) use ($customResponse): object {
             if ($event instanceof PdfProxyRequestEvent) {
                 $event->setResponse($customResponse);
             }
@@ -475,10 +490,11 @@ final class SignatureControllerTest extends TestCase
         });
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $logger = $this->createMock(LoggerInterface::class);
-        $controller = new SignatureController($dispatcher, $translator, true, ['#^https://allowed\.example\.com/#'], '', true, $logger);
+        $logger     = $this->createMock(LoggerInterface::class);
+        $validator = $this->createProxyUrlValidator(['#^https://allowed\.example\.com/#']);
+        $controller = new SignatureController($dispatcher, $translator, true, $validator, '', true, $logger);
 
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://allowed.example.com/doc.pdf']);
+        $request  = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://allowed.example.com/doc.pdf']);
         $response = $controller->proxyPdf($request);
 
         self::assertSame(200, $response->getStatusCode());
@@ -488,8 +504,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyInvalidUrlNoHostReturns400(): void
     {
         $controller = $this->createController(true, []);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http:///path']);
-        $response = $controller->proxyPdf($request);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http:///path']);
+        $response   = $controller->proxyPdf($request);
         self::assertSame(400, $response->getStatusCode());
     }
 
@@ -497,8 +513,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyAllowlistEmptyPatternSkippedReturns403(): void
     {
         $controller = $this->createController(true, ['', 'https://allowed.example.com/']);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://other.example.com/doc.pdf']);
-        $response = $controller->proxyPdf($request);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://other.example.com/doc.pdf']);
+        $response   = $controller->proxyPdf($request);
         self::assertSame(403, $response->getStatusCode());
     }
 
@@ -506,8 +522,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyUrlNotMatchingRegexAllowlistReturns403(): void
     {
         $controller = $this->createController(true, ['#^https://only\.this\.com/#']);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://other.example.com/doc.pdf']);
-        $response = $controller->proxyPdf($request);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://other.example.com/doc.pdf']);
+        $response   = $controller->proxyPdf($request);
         self::assertSame(403, $response->getStatusCode());
     }
 
@@ -516,7 +532,7 @@ final class SignatureControllerTest extends TestCase
     {
         $controller = $this->createController(true, []);
         // parse_url with "http://[::1]/x" returns host "::1" on PHP 7.4+
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://[::1]/internal.pdf']);
+        $request  = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://[::1]/internal.pdf']);
         $response = $controller->proxyPdf($request);
         // Blocked by SSRF (403) or request fails with 502 if host is not resolved as IPv6 in this environment
         self::assertContains($response->getStatusCode(), [403, 502], 'IPv6 loopback should be blocked or request fail');
@@ -539,8 +555,8 @@ final class SignatureControllerTest extends TestCase
     public function testProxyBlocksIpv6LinkLocalFe80Returns403Or502(): void
     {
         $controller = $this->createController(true, []);
-        $request = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://[fe80::1]/internal.pdf']);
-        $response = $controller->proxyPdf($request);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://[fe80::1]/internal.pdf']);
+        $response   = $controller->proxyPdf($request);
         self::assertContains($response->getStatusCode(), [Response::HTTP_FORBIDDEN, Response::HTTP_BAD_GATEWAY]);
     }
 
@@ -552,16 +568,17 @@ final class SignatureControllerTest extends TestCase
             ->method('warning')
             ->with(
                 self::stringContains('PDF proxy could not fetch'),
-                self::callback(function (array $context): bool {
+                self::callback(static function (array $context): bool {
                     return isset($context['url']) && isset($context['reason']);
-                })
+                }),
             );
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
         $dispatcher->method('dispatch')->willReturnArgument(0);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $controller = new SignatureController($dispatcher, $translator, true, [], '', true, $logger);
-        $request = Request::create('/pdf-signable/proxy', 'GET', [
+        $validator = $this->createProxyUrlValidator([]);
+        $controller = new SignatureController($dispatcher, $translator, true, $validator, '', true, $logger);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', [
             'url' => 'https://non-existent-domain-xyz-12345.invalid/document.pdf',
         ]);
         $response = $controller->proxyPdf($request);

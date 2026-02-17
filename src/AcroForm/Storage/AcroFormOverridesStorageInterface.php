@@ -26,8 +26,8 @@ interface AcroFormOverridesStorageInterface
     /**
      * Saves overrides for the given document key.
      *
-     * @param string            $documentKey Unique key identifying the document
-     * @param AcroFormOverrides $overrides   Overrides to store (field id => override data)
+     * @param string $documentKey Unique key identifying the document
+     * @param AcroFormOverrides $overrides Overrides to store (field id => override data)
      */
     public function set(string $documentKey, AcroFormOverrides $overrides): void;
 

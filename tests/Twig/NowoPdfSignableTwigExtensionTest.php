@@ -29,8 +29,8 @@ final class NowoPdfSignableTwigExtensionTest extends TestCase
     public function testGetFunctionsExposesIncludeAssetsAcroformStringsAndConfig(): void
     {
         $requestStack = new RequestStack();
-        $extension = $this->createExtension($requestStack);
-        $functions = $extension->getFunctions();
+        $extension    = $this->createExtension($requestStack);
+        $functions    = $extension->getFunctions();
         self::assertCount(3, $functions);
         self::assertSame('nowo_pdf_signable_include_assets', $functions[0]->getName());
         self::assertSame('nowo_pdf_signable_acroform_strings', $functions[1]->getName());
@@ -40,10 +40,10 @@ final class NowoPdfSignableTwigExtensionTest extends TestCase
     public function testGetAcroformStringsReturnsTranslatedKeys(): void
     {
         $requestStack = new RequestStack();
-        $translator = $this->createStub(TranslatorInterface::class);
+        $translator   = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(static fn (string $id): string => $id);
         $extension = new NowoPdfSignableTwigExtension($requestStack, $translator);
-        $strings = $extension->getAcroformStrings();
+        $strings   = $extension->getAcroformStrings();
         self::assertIsArray($strings);
         self::assertArrayHasKey('modal_edit_title', $strings);
         self::assertArrayHasKey('modal_field_name', $strings);
@@ -54,14 +54,14 @@ final class NowoPdfSignableTwigExtensionTest extends TestCase
     public function testShouldIncludeAssetsReturnsTrueWhenNoRequest(): void
     {
         $requestStack = new RequestStack();
-        $extension = $this->createExtension($requestStack);
+        $extension    = $this->createExtension($requestStack);
         self::assertTrue($extension->shouldIncludeAssets());
         self::assertTrue($extension->shouldIncludeAssets(), 'Without request, always true');
     }
 
     public function testShouldIncludeAssetsReturnsTrueFirstTimeThenFalse(): void
     {
-        $request = Request::create('/test');
+        $request      = Request::create('/test');
         $requestStack = new RequestStack();
         $requestStack->push($request);
 
@@ -73,7 +73,7 @@ final class NowoPdfSignableTwigExtensionTest extends TestCase
 
     public function testShouldIncludeAssetsSetsRequestAttribute(): void
     {
-        $request = Request::create('/test');
+        $request      = Request::create('/test');
         $requestStack = new RequestStack();
         $requestStack->push($request);
 
@@ -86,7 +86,7 @@ final class NowoPdfSignableTwigExtensionTest extends TestCase
     public function testGetAcroformEditorConfigReturnsConfigArray(): void
     {
         $requestStack = new RequestStack();
-        $extension = $this->createExtension($requestStack);
+        $extension    = $this->createExtension($requestStack);
 
         $config = $extension->getAcroformEditorConfig();
 

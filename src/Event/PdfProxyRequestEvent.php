@@ -23,7 +23,7 @@ final class PdfProxyRequestEvent extends Event
     private ?Response $response = null;
 
     /**
-     * @param string  $url     The URL the proxy is about to fetch
+     * @param string $url The URL the proxy is about to fetch
      * @param Request $request The HTTP request to the proxy endpoint
      */
     public function __construct(
@@ -90,6 +90,6 @@ final class PdfProxyRequestEvent extends Event
      */
     public function hasResponse(): bool
     {
-        return null !== $this->response;
+        return $this->response !== null;
     }
 }
