@@ -9,7 +9,7 @@ Quick guide to find each topic. AcroForm: [ACROFORM](ACROFORM.md) (unified guide
 | Document | Content |
 |----------|---------|
 | [INSTALLATION](INSTALLATION.md) | Bundle installation (Composer, assets, minimal configuration). |
-| [CONFIGURATION](CONFIGURATION.md) | `nowo_pdf_signable` options (proxy, signing, AcroForm, routes, styles). |
+| [CONFIGURATION](CONFIGURATION.md) | `nowo_pdf_signable` options (proxy, signature, AcroForm, audit, signing placeholders). |
 | [USAGE](USAGE.md) | Basic usage: coordinates form, signature box, Twig integration. |
 | [WORKFLOW](WORKFLOW.md) | Signature viewer flow: page load, PDF, boxes, sync and form submit. Includes Mermaid diagrams. |
 
@@ -60,6 +60,6 @@ Quick guide to find each topic. AcroForm: [ACROFORM](ACROFORM.md) (unified guide
 |----------|---------|
 | [CONTRIBUTING](CONTRIBUTING.md) | How to contribute to the project. |
 | [TESTING](TESTING.md) | PHP tests and execution. |
-| [RELEASE](RELEASE.md) | Release and versioning process. |
+| [RELEASE](RELEASE.md) | Release and versioning process; [registering on Packagist](RELEASE.md#registering-on-packagist) for maintainers. |
 | [CHANGELOG](CHANGELOG.md) | Change history. |
 | [UPGRADING](UPGRADING.md) | Upgrade guide between versions. |

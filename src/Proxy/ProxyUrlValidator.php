@@ -9,6 +9,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 use function filter_var;
 use function gethostbyname;
+use function is_string;
 use function preg_last_error;
 use function preg_match;
 use function sprintf;
@@ -48,11 +49,15 @@ final class ProxyUrlValidator
     public function isBlockedForSsrf(string $url): bool
     {
         $host = parse_url($url, PHP_URL_HOST);
-        if ($host === null || $host === '') {
+        if (!is_string($host) || $host === '') {
+            return true;
+        }
+        $host = trim($host, '[]');
+        if ($host === '') {
             return true;
         }
         $hostLower = strtolower($host);
-        if ($hostLower === 'localhost' || $hostLower === '::1') {
+        if ($hostLower === 'localhost' || $hostLower === '::1' || str_starts_with($hostLower, 'fe80:')) {
             return true;
         }
         $ip = $host;

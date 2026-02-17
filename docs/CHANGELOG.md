@@ -21,6 +21,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.2] - 2026-02-16
+
+### Added
+
+- **Routes:** Comment in `Resources/config/routes.yaml` with a copy-paste example for the app’s `config/routes.yaml` (resource + prefix), reducing friction on first install.
+- **Proxy URL allowlist validation (dev):** `ProxyUrlAllowlistValidationPass` runs at container compile when `kernel.debug` is true; validates regex patterns (entries starting with `#`) in `proxy_url_allowlist` and triggers `E_USER_WARNING` if a pattern is invalid. Does not run in production.
+- **Tests:** Broader coverage: `ProxyUrlValidator` (SSRF: empty host, private ranges 10.x/192.168.x/169.254.x, IPv6 link-local/loopback; allowlist: empty pattern skip, no-match returns false, invalid regex with/without logger). `DependencyCheckListener` cache (reuses request attribute, does not call checker again). `NowoPdfSignableBundle::build()` registers the compiler pass. `CheckDependenciesCommand` output with warnings when not strict. `SignatureCoordinatesModel::fromArray` skips non-array box items. `Configuration` acroform `label_mode`, `font_sizes`, `font_families` defaults and overrides. New `ProxyUrlAllowlistValidationPassTest` for the compiler pass.
+- **Test groups:** `DependencyCheckerTest::testCheckWhenBundlePublicDirMissingAddsWarning` and `testCheckRequiredExtensionsInFailureMessageWhenMissing` marked with `@group integration` so CI can exclude them with `--exclude-group integration` if needed.
+
+### Changed
+
+- (None.)
+
+### Fixed
+
+- **ProxyUrlValidator (SSRF):** When `parse_url($url, PHP_URL_HOST)` returns `false` (e.g. malformed URL like `http:///path`), the validator no longer passes it to `strtolower()`; invalid or missing host is now treated as blocked. IPv6 literal hosts in URLs (e.g. `http://[::1]/` or `http://[fe80::1]/`) are normalized (brackets stripped) and link-local (`fe80:`) is blocked via an early string check so SSRF blocking works in all environments.
+
+### Documentation
+
+- **Documentation:** Added “Estado de las mejoras (seguimiento)” table tracking implementation of review suggestions (routes, allowlist validation, integration group).
+
+For upgrade steps from 2.0.1, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [2.0.1] - 2026-02-16
 
 ### Added
@@ -350,7 +375,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.2
 [2.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.1
 [2.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.0
 [1.5.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.4

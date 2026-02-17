@@ -10,11 +10,13 @@
 
 ## Composer
 
-Install the bundle (stable, from Packagist or your configured repository):
+Install the bundle (stable, from [Packagist](https://packagist.org/packages/nowo-tech/pdf-signable-bundle)):
 
 ```bash
 composer require nowo-tech/pdf-signable-bundle
 ```
+
+This works as long as the package is [registered on Packagist](https://packagist.org/packages/submit) (see [RELEASE.md](RELEASE.md#registering-on-packagist) for maintainers). If it is not yet published, add the VCS repository first (see “Development / unreleased” below).
 
 **Development / unreleased:** To use the latest `main` (or default) branch before the next tag:
 

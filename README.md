@@ -56,7 +56,7 @@ composer require nowo-tech/pdf-signable-bundle
 
 [Symfony Flex](https://symfony.com/doc/current/setup/flex.html) registers the bundle automatically. Otherwise see [Installation](docs/INSTALLATION.md) to register the bundle and routes.
 
-**Unreleased / dev:** To use the latest `main` branch, add the VCS repo and require `dev-main` — see [docs/INSTALLATION.md](docs/INSTALLATION.md).
+**Unreleased / dev:** To use the latest default branch (`main` or `master`), add the VCS repo and require `dev-main` or `dev-master` — see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 ## Quick Start
 

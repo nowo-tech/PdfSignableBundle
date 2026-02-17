@@ -142,6 +142,28 @@ For the full list of options in the new structure, see [CONFIGURATION.md](CONFIG
 
 ---
 
+### Upgrading to 2.0.2 (2026-02-16)
+
+**Release date:** 2026-02-16
+
+**Patch release:** No breaking changes. Improves first-time setup (copy-paste example for routes in the bundle’s routes YAML), adds optional validation of `proxy_url_allowlist` regex patterns in dev (compiler pass warns on invalid patterns), extends test coverage, and marks environment-dependent tests with `@group integration`.
+
+#### What's new
+
+- **Routes:** The bundle’s `Resources/config/routes.yaml` now includes a comment with a ready-to-paste block for your app’s `config/routes.yaml` (resource + prefix).
+- **Allowlist validation (dev only):** When `kernel.debug` is true, invalid regex entries (prefix `#`) in `proxy_url_allowlist` trigger a PHP warning at container compile. Fix or remove invalid patterns; production is unaffected.
+- **Tests:** Additional tests for proxy validator (SSRF, allowlist), dependency listener cache, bundle build, command output, models and config. Two `DependencyCheckerTest` methods are in `@group integration` for optional CI exclusion.
+- **ProxyUrlValidator (SSRF):** Fixed handling when the URL has no valid host (`parse_url` returns `false`) and improved IPv6 literal blocking (bracket stripping, early `fe80:` check) so tests and SSRF mitigation work in all environments.
+
+#### Upgrade steps (from 2.0.0 or 2.0.1)
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Clear cache: `php bin/console cache:clear`.
+
+No config or asset changes required. See [CHANGELOG.md](CHANGELOG.md) for the full list of changes.
+
+---
+
 ### Upgrading to 2.0.1 (2026-02-16)
 
 **Release date:** 2026-02-16
@@ -429,7 +451,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **2.0.0 breaking:** Signature under `signature` node; AcroForm under single `acroform` node. **2.0.1:** PDF.js worker default `.js` (MIME fix), worker URL absolute/fallback, translations (AcroForm modal keys + tr YAML), tests. |
+| 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **2.0.0 breaking:** Signature under `signature` node; AcroForm under single `acroform` node. **2.0.1:** PDF.js worker default `.js` (MIME fix), worker URL absolute/fallback, translations (AcroForm modal keys + tr YAML), tests. **2.0.2:** Routes YAML copy-paste example, allowlist regex validation in dev (compiler pass), extended tests, `@group integration` for env-dependent tests. |
 | 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging. 1.5.4: show_acroform option (default true), AcroForm outline overlay; recipe and demos set show_acroform: true in signature.configs / acroform.configs. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |
 | 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |

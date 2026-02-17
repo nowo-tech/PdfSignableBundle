@@ -51,7 +51,7 @@ Excluded from coverage: `src/Resources` (views, config, assets), and `src/Event/
 
 ### Typical summary
 
-After a full run (239 PHP tests, 38 TypeScript tests):
+After a full run (PHPUnit and Vitest; test counts may vary):
 
 - **Lines:** ~84%
 - **Methods:** ~85%
