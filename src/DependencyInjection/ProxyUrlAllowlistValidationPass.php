@@ -7,6 +7,11 @@ namespace Nowo\PdfSignableBundle\DependencyInjection;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
+use function sprintf;
+
+use const E_USER_WARNING;
+use const PREG_NO_ERROR;
+
 /**
  * In dev, validates regex patterns in proxy_url_allowlist (entries starting with #)
  * and triggers a warning if any pattern is invalid.
@@ -38,9 +43,9 @@ final class ProxyUrlAllowlistValidationPass implements CompilerPassInterface
                     sprintf(
                         '[NowoPdfSignableBundle] Invalid regex in proxy_url_allowlist: %s (preg error: %d). Fix or remove the pattern.',
                         $pattern,
-                        preg_last_error()
+                        preg_last_error(),
                     ),
-                    E_USER_WARNING
+                    E_USER_WARNING,
                 );
             }
         }

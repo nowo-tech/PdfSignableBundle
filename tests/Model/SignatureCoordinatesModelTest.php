@@ -129,10 +129,10 @@ final class SignatureCoordinatesModelTest extends TestCase
     public function testFromArraySkipsNonArraySignatureBoxItems(): void
     {
         $data = [
-            'pdf_url'          => 'https://example.com/doc.pdf',
-            'unit'             => SignatureCoordinatesModel::UNIT_MM,
-            'origin'           => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
-            'signature_boxes'   => [
+            'pdf_url'         => 'https://example.com/doc.pdf',
+            'unit'            => SignatureCoordinatesModel::UNIT_MM,
+            'origin'          => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+            'signature_boxes' => [
                 ['name' => 's1', 'page' => 1, 'x' => 0, 'y' => 0, 'width' => 100, 'height' => 30],
                 'invalid',
                 null,

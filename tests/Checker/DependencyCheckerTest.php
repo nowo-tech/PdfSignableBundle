@@ -19,7 +19,7 @@ final class DependencyCheckerTest extends TestCase
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
 
         $checker = new DependencyChecker($params, $kernel);
-        $result = $checker->check();
+        $result  = $checker->check();
 
         self::assertArrayHasKey('failures', $result);
         self::assertArrayHasKey('warnings', $result);
@@ -35,7 +35,7 @@ final class DependencyCheckerTest extends TestCase
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
 
         $checker = new DependencyChecker($params, $kernel);
-        $result = $checker->check();
+        $result  = $checker->check();
 
         self::assertIsArray($result['failures']);
         foreach ($result['failures'] as $msg) {
@@ -59,7 +59,7 @@ final class DependencyCheckerTest extends TestCase
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
 
         $checker = new DependencyChecker($params, $kernel);
-        $result = $checker->check();
+        $result  = $checker->check();
 
         self::assertNotEmpty($result['failures']);
         $found = false;
@@ -79,13 +79,13 @@ final class DependencyCheckerTest extends TestCase
     {
         $params = $this->createMock(ParameterBagInterface::class);
         $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(false);
-        $kernel = $this->createMock(KernelInterface::class);
-        $projectDir = sys_get_temp_dir().'/pdfsignable-test-'.bin2hex(random_bytes(4));
+        $kernel     = $this->createMock(KernelInterface::class);
+        $projectDir = sys_get_temp_dir() . '/pdfsignable-test-' . bin2hex(random_bytes(4));
         self::assertTrue(mkdir($projectDir, 0o755, true));
         $kernel->method('getProjectDir')->willReturn($projectDir);
         try {
             $checker = new DependencyChecker($params, $kernel);
-            $result = $checker->check();
+            $result  = $checker->check();
             self::assertNotEmpty($result['warnings']);
             $found = false;
             foreach ($result['warnings'] as $msg) {
@@ -111,7 +111,7 @@ final class DependencyCheckerTest extends TestCase
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
 
         $checker = new DependencyChecker($params, $kernel);
-        $result = $checker->check();
+        $result  = $checker->check();
 
         self::assertArrayHasKey('failures', $result);
         if ($result['failures'] !== []) {

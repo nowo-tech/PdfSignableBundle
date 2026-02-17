@@ -302,9 +302,9 @@ final class ConfigurationTest extends TestCase
         $config        = $processor->processConfiguration($configuration, [
             [
                 'acroform' => [
-                    'label_mode'   => 'choices',
+                    'label_mode'    => 'choices',
                     'label_choices' => ['Name', 'Date'],
-                    'font_sizes'   => [8, 10, 12],
+                    'font_sizes'    => [8, 10, 12],
                     'font_families' => ['Helvetica', 'Arial'],
                 ],
             ],

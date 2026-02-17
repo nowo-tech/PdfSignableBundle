@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
+use function is_array;
+
 /**
  * Tests for NowoPdfSignableBundle (container extension and compiler pass).
  */

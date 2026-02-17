@@ -100,7 +100,7 @@ final class ProxyUrlValidator
                 }
                 if ($matched === false && preg_last_error() !== PREG_NO_ERROR && $this->logger !== null) {
                     $this->logger->warning('Invalid regex in proxy_url_allowlist, pattern skipped', [
-                        'pattern' => $pattern,
+                        'pattern'    => $pattern,
                         'preg_error' => preg_last_error(),
                     ]);
                 }

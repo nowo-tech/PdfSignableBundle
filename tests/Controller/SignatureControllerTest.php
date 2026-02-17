@@ -64,7 +64,7 @@ final class SignatureControllerTest extends TestCase
         $dispatcher->method('dispatch')->willReturnArgument(0);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $logger = $this->createMock(LoggerInterface::class);
+        $logger            = $this->createMock(LoggerInterface::class);
         $proxyUrlValidator = $this->createProxyUrlValidator($proxyUrlAllowlist);
 
         return new SignatureController($dispatcher, $translator, $proxyEnabled, $proxyUrlValidator, $examplePdfUrl, true, $logger);
@@ -466,7 +466,7 @@ final class SignatureControllerTest extends TestCase
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
         $logger     = $this->createMock(LoggerInterface::class);
-        $validator = $this->createProxyUrlValidator(['example.com']);
+        $validator  = $this->createProxyUrlValidator(['example.com']);
         $controller = new SignatureController($dispatcher, $translator, true, $validator, '', true, $logger);
 
         $request  = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
@@ -491,7 +491,7 @@ final class SignatureControllerTest extends TestCase
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
         $logger     = $this->createMock(LoggerInterface::class);
-        $validator = $this->createProxyUrlValidator(['#^https://allowed\.example\.com/#']);
+        $validator  = $this->createProxyUrlValidator(['#^https://allowed\.example\.com/#']);
         $controller = new SignatureController($dispatcher, $translator, true, $validator, '', true, $logger);
 
         $request  = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://allowed.example.com/doc.pdf']);
@@ -576,7 +576,7 @@ final class SignatureControllerTest extends TestCase
         $dispatcher->method('dispatch')->willReturnArgument(0);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
-        $validator = $this->createProxyUrlValidator([]);
+        $validator  = $this->createProxyUrlValidator([]);
         $controller = new SignatureController($dispatcher, $translator, true, $validator, '', true, $logger);
         $request    = Request::create('/pdf-signable/proxy', 'GET', [
             'url' => 'https://non-existent-domain-xyz-12345.invalid/document.pdf',

@@ -8,6 +8,8 @@ use Nowo\PdfSignableBundle\DependencyInjection\ProxyUrlAllowlistValidationPass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
+use const E_USER_WARNING;
+
 final class ProxyUrlAllowlistValidationPassTest extends TestCase
 {
     public function testProcessWhenNotDebugDoesNothing(): void
@@ -19,6 +21,7 @@ final class ProxyUrlAllowlistValidationPassTest extends TestCase
         $warnings = [];
         set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
             $warnings[] = $errstr;
+
             return true;
         }, E_USER_WARNING);
         try {
@@ -38,6 +41,7 @@ final class ProxyUrlAllowlistValidationPassTest extends TestCase
         $warnings = [];
         set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
             $warnings[] = $errstr;
+
             return true;
         }, E_USER_WARNING);
         try {
@@ -59,6 +63,7 @@ final class ProxyUrlAllowlistValidationPassTest extends TestCase
         $warnings = [];
         set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
             $warnings[] = $errstr;
+
             return true;
         }, E_USER_WARNING);
         try {

@@ -162,16 +162,16 @@ final class DependencyChecker implements DependencyCheckerInterface
 
         $foundWorker = false;
         foreach (['pdf.worker.min.js', 'pdf.worker.min.mjs'] as $workerFile) {
-            $path = $jsDir . \DIRECTORY_SEPARATOR . $workerFile;
+            $path = $jsDir . DIRECTORY_SEPARATOR . $workerFile;
             if (is_file($path) && is_readable($path)) {
                 $foundWorker = true;
                 break;
             }
         }
         if (!$foundWorker) {
-            $warnings[] = 'Bundle asset missing. Run: php bin/console assets:install — Expected: ' . $jsDir . \DIRECTORY_SEPARATOR . 'pdf.worker.min.js or pdf.worker.min.mjs';
+            $warnings[] = 'Bundle asset missing. Run: php bin/console assets:install — Expected: ' . $jsDir . DIRECTORY_SEPARATOR . 'pdf.worker.min.js or pdf.worker.min.mjs';
         }
-        $mainPath = $jsDir . \DIRECTORY_SEPARATOR . 'pdf-signable.js';
+        $mainPath = $jsDir . DIRECTORY_SEPARATOR . 'pdf-signable.js';
         if (!is_file($mainPath) || !is_readable($mainPath)) {
             $warnings[] = "Bundle asset missing. Run: php bin/console assets:install — Expected: {$mainPath}";
         }
