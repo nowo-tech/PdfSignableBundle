@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 
 - **Documentation:** Added “Estado de las mejoras (seguimiento)” table tracking implementation of review suggestions (routes, allowlist validation, integration group).
+- **Packagist:** Removed `repository` from `composer.json` so `composer validate --strict` passes when publishing the package.
 
 For upgrade steps from 2.0.1, see [UPGRADING](UPGRADING.md).
 

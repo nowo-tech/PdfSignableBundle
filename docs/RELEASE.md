@@ -59,6 +59,7 @@ Once registered, the package appears in search, and users can install it with `c
 - [ ] Run locally: `make test` and `make cs-check`.
 - [ ] Run locally: `make assets` (bundle JS + worker built).
 - [ ] Run locally: `make validate-translations`.
+- [ ] Run locally: `composer validate --strict` (root `composer.json`).
 - [ ] Commit and push: `git add -A && git commit -m "Prepare v2.0.2 release" && git push origin HEAD`
 - [ ] Create and push tag: `git tag -a v2.0.2 -m "Release v2.0.2"` then `git push origin v2.0.2`
 

@@ -154,6 +154,7 @@ For the full list of options in the new structure, see [CONFIGURATION.md](CONFIG
 - **Allowlist validation (dev only):** When `kernel.debug` is true, invalid regex entries (prefix `#`) in `proxy_url_allowlist` trigger a PHP warning at container compile. Fix or remove invalid patterns; production is unaffected.
 - **Tests:** Additional tests for proxy validator (SSRF, allowlist), dependency listener cache, bundle build, command output, models and config. Two `DependencyCheckerTest` methods are in `@group integration` for optional CI exclusion.
 - **ProxyUrlValidator (SSRF):** Fixed handling when the URL has no valid host (`parse_url` returns `false`) and improved IPv6 literal blocking (bracket stripping, early `fe80:` check) so tests and SSRF mitigation work in all environments.
+- **Packagist:** `composer.json` no longer includes the `repository` property, so `composer validate --strict` passes (Packagist uses the repo URL from the package registration).
 
 #### Upgrade steps (from 2.0.0 or 2.0.1)
 
