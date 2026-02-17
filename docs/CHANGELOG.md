@@ -21,6 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.3] - 2026-02-16
+
+### Changed
+
+- **Packagist:** Removed `repository` from `composer.json` so `composer validate --strict` passes when publishing the package. No impact on installs; Packagist uses the repo URL from package registration.
+
+For upgrade steps from 2.0.2, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [2.0.2] - 2026-02-16
 
 ### Added
@@ -41,7 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 
 - **Documentation:** Added “Estado de las mejoras (seguimiento)” table tracking implementation of review suggestions (routes, allowlist validation, integration group).
-- **Packagist:** Removed `repository` from `composer.json` so `composer validate --strict` passes when publishing the package.
 
 For upgrade steps from 2.0.1, see [UPGRADING](UPGRADING.md).
 
@@ -376,7 +385,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.2...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.3...HEAD
+[2.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.3
 [2.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.2
 [2.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.1
 [2.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.0

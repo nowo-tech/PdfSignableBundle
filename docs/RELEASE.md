@@ -51,21 +51,21 @@ Once registered, the package appears in search, and users can install it with `c
 
 ---
 
-## Ready for v2.0.2 (2026-02-16)
+## Ready for v2.0.3 (2026-02-16)
 
-- [x] CHANGELOG: [2.0.2] with date; [Unreleased] at top; links updated.
-- [x] UPGRADING: “Upgrading to 2.0.2" with release date and upgrade steps; version table updated.
-- [x] RELEASE: this checklist for v2.0.2.
+- [x] CHANGELOG: [2.0.3] with date; [Unreleased] at top; links updated.
+- [x] UPGRADING: “Upgrading to 2.0.3" with release date and upgrade steps.
+- [x] RELEASE: this checklist for v2.0.3.
 - [ ] Run locally: `make test` and `make cs-check`.
 - [ ] Run locally: `make assets` (bundle JS + worker built).
 - [ ] Run locally: `make validate-translations`.
 - [ ] Run locally: `composer validate --strict` (root `composer.json`).
-- [ ] Commit and push: `git add -A && git commit -m "Prepare v2.0.2 release" && git push origin HEAD`
-- [ ] Create and push tag: `git tag -a v2.0.2 -m "Release v2.0.2"` then `git push origin v2.0.2`
+- [ ] Commit and push: `git add -A && git commit -m "Prepare v2.0.3 release" && git push origin HEAD`
+- [ ] Create and push tag: `git tag -a v2.0.3 -m "Release v2.0.3"` then `git push origin v2.0.3`
 
 ---
 
-## Next release (e.g. v2.0.3)
+## Next release (e.g. v2.0.4)
 
 - [ ] CHANGELOG: Move [Unreleased] entries into `[X.Y.Z]` with date; add new empty [Unreleased] at top; update version links at bottom.
 - [ ] UPGRADING: Add section "Upgrading to X.Y.Z" with release date, what's new, breaking changes (if any), and upgrade steps; update version compatibility table.
