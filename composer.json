@@ -24,10 +24,6 @@
     "source": "https://github.com/nowo-tech/pdfSignableBundle",
     "docs": "https://github.com/nowo-tech/pdfSignableBundle/tree/HEAD/docs"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/nowo-tech/pdfSignableBundle.git"
-  },
   "authors": [
     {
       "name": "Héctor Franco Aceituno",
