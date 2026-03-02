@@ -9,8 +9,8 @@ Screenshots (demo home and signature coordinates form) are in the [main README](
 The demos use **HTTPS** on localhost (self-signed certificate). The browser will show a security warning; accept the certificate to access the app.
 
 ```bash
-make run-symfony7   # https://localhost:8001
-make run-symfony8   # https://localhost:8002
+make run-symfony7   # http://localhost:8001
+make run-symfony8   # http://localhost:8002
 ```
 
 From inside a demo:

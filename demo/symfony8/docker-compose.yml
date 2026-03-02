@@ -1,4 +1,5 @@
-# FrankenPHP (Caddy + PHP) — serves Symfony 8 demo over HTTPS on localhost
+# FrankenPHP (Caddy + PHP) — serves Symfony 8 demo over HTTP on port 80
+name: pdf-signable-bundle-demo-symfony-8
 services:
   php:
     build:
@@ -18,7 +19,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "${PORT:-8002}:443"
+      - "${PORT:-8002}:80"
     networks:
       - pdf-signable-demo-network
 

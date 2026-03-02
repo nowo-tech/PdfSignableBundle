@@ -1,5 +1,5 @@
 # Makefile for PdfSignable Bundle (tests and QA at bundle root)
-.PHONY: help up down shell install assets test test-coverage cs-check cs-fix qa validate-translations clean
+.PHONY: help up down shell install assets test test-coverage cs-check cs-fix qa validate-translations clean release-check release-check-demos composer-sync
 
 help:
 	@echo "PdfSignable Bundle - Development"
@@ -17,6 +17,8 @@ help:
 	@echo "  cs-check            Code style check"
 	@echo "  cs-fix              Code style fix"
 	@echo "  qa                  cs-check + test"
+	@echo "  release-check       Pre-release: cs-fix, cs-check, test-coverage, demo healthchecks"
+	@echo "  composer-sync      Validate composer.json and align composer.lock (no install)"
 	@echo "  validate-translations  Validate translation YAML files"
 	@echo "  clean               Remove vendor, cache, coverage"
 
@@ -72,8 +74,7 @@ test-poc:
 	docker-compose up -d
 	docker-compose exec -T php sh -c 'apt-get update -qq && apt-get install -y -qq python3-pip >/dev/null 2>&1; python3 -m pip install --break-system-packages -q pypdf 2>/dev/null; python3 scripts/PoC/run_poc.py'
 
-test-coverage:
-	docker-compose up -d
+test-coverage: ensure-up
 	docker-compose exec -T php composer test-coverage
 
 # Check code style (runs inside root docker-compose php container)
@@ -87,6 +88,15 @@ cs-fix: ensure-up
 # Run all QA (runs inside root docker-compose php container)
 qa: ensure-up
 	docker-compose -f docker-compose.yml exec -T php composer qa
+
+release-check: ensure-up composer-sync cs-fix cs-check test-coverage release-check-demos
+
+release-check-demos:
+	@$(MAKE) -C demo release-verify
+
+composer-sync: ensure-up
+	docker-compose -f docker-compose.yml exec -T php composer validate --strict
+	docker-compose -f docker-compose.yml exec -T php composer update --no-install
 
 validate-translations:
 	docker-compose up -d
