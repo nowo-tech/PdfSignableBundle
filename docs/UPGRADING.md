@@ -39,6 +39,21 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 2.0.4 (2026-03-02)
+
+**Release date:** 2026-03-02
+
+**Patch release:** No breaking changes. Improves development tooling: PHP-CS-Fixer rules (PSR-12/Symfony), Docker (PHP 8.2 Alpine, dev/test deps), demo Makefiles (restart, build, test commands), demos served over HTTP by default, and READMEs for Symfony 7 and 8 demos. CI workflow simplified.
+
+#### Upgrade steps (from 2.0.x)
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Clear cache: `php bin/console cache:clear`.
+
+No config or asset changes required. See [CHANGELOG.md](CHANGELOG.md) for the full list of changes.
+
+---
+
 ### Upgrading to 2.0.0 (2026-02-16)
 
 **Release date**: 2026-02-16
@@ -470,7 +485,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **2.0.0 breaking:** Signature under `signature` node; AcroForm under single `acroform` node. **2.0.1:** PDF.js worker default `.js` (MIME fix), worker URL absolute/fallback, translations (AcroForm modal keys + tr YAML), tests. **2.0.2:** Routes YAML copy-paste example, allowlist regex validation in dev (compiler pass), extended tests, `@group integration` for env-dependent tests. |
+| 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **2.0.0 breaking:** Signature under `signature` node; AcroForm under single `acroform` node. **2.0.1:** PDF.js worker default `.js` (MIME fix), worker URL absolute/fallback, translations (AcroForm modal keys + tr YAML), tests. **2.0.2:** Routes YAML copy-paste example, allowlist regex validation in dev (compiler pass), extended tests, `@group integration` for env-dependent tests. **2.0.4:** PHP-CS-Fixer (PSR-12/Symfony), Docker PHP 8.2 Alpine, demo Makefiles/HTTP/READMEs, CI simplified. |
 | 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging. 1.5.4: show_acroform option (default true), AcroForm outline overlay; recipe and demos set show_acroform: true in signature.configs / acroform.configs. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |
 | 1.3.x          | 6.1+, 7.x, 8.x | 8.1+ | PDF viewer zoom (in/out/fit), debug config, zoom translations. |
