@@ -1,5 +1,4 @@
 name: pdf-signable-bundle
-
 services:
   php:
     build:

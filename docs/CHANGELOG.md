@@ -13,6 +13,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.4] - 2026-03-02
+
+### Changed
+
+- **PHP-CS-Fixer:** Refined rules to align with PSR-12 and Symfony coding standards.
+- **Docker:** Root and demo Dockerfiles updated to PHP 8.2 Alpine; added dependencies for development and testing.
+- **Demos:** Symfony 7 and 8 demos now serve over HTTP by default (Caddyfile updated) to simplify local development; Makefiles enhanced with commands for restarting containers, building images, and running tests; added README files with quick start instructions for each demo.
+- **CI:** Simplified GitHub Actions workflow (ci.yml).
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 2.0.4.
+
+For upgrade steps from 2.0.3, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [2.0.3] - 2026-02-16
 
 ### Changed
@@ -377,7 +394,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.3...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.4...HEAD
+[2.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.4
 [2.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.3
 [2.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.2
 [2.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.1

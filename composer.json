@@ -66,6 +66,9 @@
       "Nowo\\PdfSignableBundle\\Tests\\": "tests/"
     }
   },
+  "archive": {
+    "exclude": ["/demo"]
+  },
   "config": {
     "sort-packages": true,
     "platform": {

@@ -25,7 +25,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "${PORT:-8002}:443"
+      - "${PORT:-8002}:80"
     networks:
       - pdf-signable-demo-network
 

@@ -1,38 +1,37 @@
-FROM php:8.4-cli
+# PHP 8.2 Alpine + Node/pnpm (Vite) + Python (pypdf, pytest) for bundle dev and tests
+FROM php:8.2-cli-alpine
 
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     git \
     unzip \
+    bash \
     libzip-dev \
-    curl \
-    && docker-php-ext-install zip \
+    nodejs \
+    npm \
+    python3 \
+    py3-pip
+
+RUN docker-php-ext-install -j$(nproc) zip
+
+# PCOV for code coverage
+RUN apk add --no-cache $PHPIZE_DEPS \
     && pecl install pcov \
     && docker-php-ext-enable pcov \
-    && rm -rf /var/lib/apt/lists/*
+    && apk del $PHPIZE_DEPS
 
-RUN apt-get update && apt-get install -y python3 python3-pip \
-    && python3 -m pip install --break-system-packages --no-cache-dir pypdf pytest \
-    && python3 -c "from pypdf import PdfReader, PdfWriter; print('pypdf OK')" \
-    && rm -rf /var/lib/apt/lists/*
+# Python deps for PDF/PoC tests
+RUN python3 -m pip install --break-system-packages --no-cache-dir pypdf pytest \
+    && python3 -c "from pypdf import PdfReader, PdfWriter; print('pypdf OK')"
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# pnpm for front (Vite)
+RUN npm install -g pnpm@9
 
-# Install Node.js and pnpm (corepack)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && corepack enable \
-    && corepack prepare pnpm@9.15.0 --activate \
-    && rm -rf /var/lib/apt/lists/*
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+RUN git config --global --add safe.directory /app
 
 WORKDIR /app
 
-# Allow git when project is mounted at /app (e.g. different host ownership)
-RUN git config --global --add safe.directory /app
-
-COPY composer.json composer.lock* ./
-
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-
-COPY . .
-
-CMD ["tail", "-f", "/dev/null"]
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV PATH="/app/vendor/bin:${PATH}"

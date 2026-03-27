@@ -1,4 +1,4 @@
-# FrankenPHP (Dunglas) — Symfony 8 demo, HTTPS on localhost
+# FrankenPHP (Dunglas) — Symfony 8 demo, HTTP on port 80 (runtime worker)
 # https://frankenphp.dev/docs/docker/
 FROM node:22-alpine AS node
 RUN npm install -g pnpm@10
@@ -26,6 +26,9 @@ RUN git config --global --add safe.directory /var/pdf-signable-bundle && \
     git config --global --add safe.directory /app
 
 WORKDIR /app
+
+# Caddyfile: HTTP on :80, runtime worker (canonical for Nowo demos)
+COPY docker/frankenphp/Caddyfile /etc/frankenphp/Caddyfile
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 

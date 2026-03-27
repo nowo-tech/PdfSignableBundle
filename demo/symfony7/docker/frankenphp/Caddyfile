@@ -1,0 +1,12 @@
+# FrankenPHP: HTTP on port 80, runtime worker (canonical for Nowo demos)
+{
+	skip_install_trust
+}
+
+:80 {
+	root * /app/public
+	encode zstd br gzip
+	php_server {
+		worker /app/public/index.php 2
+	}
+}
