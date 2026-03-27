@@ -29,14 +29,19 @@ WORKDIR /app
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
+# Caddyfile: HTTPS :443 (prod). Caddyfile.dev used when APP_ENV=dev (no worker, no-cache).
+COPY docker/caddy/Caddyfile /etc/frankenphp/Caddyfile
+COPY docker/caddy/Caddyfile.dev /etc/frankenphp/Caddyfile.dev
+
 # Xdebug (IDE on port 9003)
 RUN echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-# Entrypoint: var dirs + run FrankenPHP (absolute paths like TwigInspector)
+# Entrypoint: when APP_ENV=dev copy Caddyfile.dev (no worker), var dirs, then run FrankenPHP
 RUN echo '#!/bin/sh' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ "${APP_ENV:-prod}" = "dev" ]; then cp /etc/frankenphp/Caddyfile.dev /etc/frankenphp/Caddyfile; fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /app/var/cache /app/var/log' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chmod -R 777 /app/var' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'exec frankenphp run --config /etc/frankenphp/Caddyfile --adapter caddyfile' >> /usr/local/bin/docker-entrypoint.sh && \

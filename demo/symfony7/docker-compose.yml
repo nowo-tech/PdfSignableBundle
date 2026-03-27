@@ -1,4 +1,6 @@
 # FrankenPHP (Caddy + PHP) — serves Symfony 7 demo over HTTPS on localhost
+name: pdf-signable-bundle-demo-symfony-7
+
 services:
   php:
     build:
@@ -10,9 +12,14 @@ services:
       - .:/app
       # Bundle root for pnpm build and optional vendor symlink
       - ../..:/var/pdf-signable-bundle
+      - ./docker/caddy/Caddyfile.dev:/etc/frankenphp/Caddyfile.dev
+      - ./docker/php-dev.ini:/usr/local/etc/php/conf.d/99-dev.ini:ro
       - composer-cache:/root/.composer/cache
     environment:
       - COMPOSER_ALLOW_SUPERUSER=1
+      - APP_ENV=dev
+      - APP_DEBUG=1
+      - APP_SECRET=${APP_SECRET:-demo-secret}
       - XDEBUG_MODE=debug
       - XDEBUG_CONFIG=client_host=host.docker.internal client_port=9003
     extra_hosts:

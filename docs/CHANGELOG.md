@@ -7,17 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Documentation
 
-- (None yet.)
-
-### Changed
-
-- (None yet.)
-
-### Fixed
-
-- (None yet.)
+- **README**: Configuration snippet no longer implies `example_pdf_url` defaults to empty (it matches `Configuration.php`: sample public PDF unless set to `''`). Demos section clarifies **dev** demos use `Caddyfile.dev` without FrankenPHP workers vs production Caddyfile; points to full config reference.
 
 ---
 
@@ -114,7 +106,7 @@ For upgrade steps from 2.0.0, see [UPGRADING](UPGRADING.md).
 
 - **Unified AcroForm docs:** Single [ACROFORM](ACROFORM.md) guide; [ACROFORM_FLOWS](ACROFORM_FLOWS.md) for flow diagrams; [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md) for backend. Removed redundant ACROFORM_EDITOR.md and ACROFORM_EDITOR_UX.md.
 - **Documentation in English:** [README](README.md), [ACROFORM](ACROFORM.md), [ACROFORM_FLOWS](ACROFORM_FLOWS.md), and [EVENTS](EVENTS.md) frontend section translated to English; [ROADMAP](ROADMAP.md) updated with AcroForm section and doc links.
-- **Code comments in English:** Spanish comments in `assets/acroform-editor.ts`, `assets/pdf-signable.scss`, and `scripts/PoC/run_poc.py` translated to English.
+- **Code comments in English:** Spanish comments in `src/Resources/assets/acroform-editor.ts`, `src/Resources/assets/pdf-signable.scss`, and `scripts/PoC/run_poc.py` translated to English.
 
 For upgrade steps from 1.5.x, see [UPGRADING](UPGRADING.md).
 
@@ -361,7 +353,7 @@ First stable release.
 - **Form theme**
   - Twig form theme for the signature coordinates widget (full widget: PDF + boxes). Reusable `SignatureBoxType` layout.
 - **Frontend assets**
-  - Vite + TypeScript entry (`assets/pdf-signable.ts`). Built file at `Resources/public/js/pdf-signable.js`. Form submits as normal POST; JS re-indexes collection before submit.
+  - Vite + TypeScript entry (`src/Resources/assets/signable-editor.ts`). Built file at `Resources/public/js/pdf-signable.js`. Form submits as normal POST; JS re-indexes collection before submit.
 - **Validation**
   - Required box name (`NotBlank` on `SignatureBoxType`). `unique_box_names`: `true` (all unique), `false` (no check), or array (e.g. `['signer_1', 'witness']`) for per-name uniqueness. See [USAGE.md](USAGE.md).
 - **Events**

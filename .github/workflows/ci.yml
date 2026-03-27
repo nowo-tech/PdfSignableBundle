@@ -48,7 +48,7 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: Validate translation YAML files
-        run: php scripts/validate-translations-yaml.php src/Resources/translations
+        run: php .scripts/validate-translations-yaml.php src/Resources/translations
 
       - name: Run tests
         run: |
@@ -59,6 +59,16 @@ jobs:
             exit 1
           fi
           echo "✅ All tests passed successfully"
+
+      - name: Python (pytest + coverage)
+        if: matrix.php == '8.2'
+        run: |
+          python3 -m pip install --user -q pypdf pytest pytest-cov
+          python3 -m pytest .scripts/test -v \
+            --cov=extract_acroform_fields \
+            --cov=apply_acroform_patches \
+            --cov=process_modified_pdf \
+            --cov-report=term-missing
 
       - name: Validate coverage (PHP 8.2 only)
         if: matrix.php == '8.2'

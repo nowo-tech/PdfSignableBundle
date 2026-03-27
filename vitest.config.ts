@@ -4,16 +4,17 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'node',
-    include: ['assets/**/*.test.ts'],
+    environment: 'jsdom',
+    include: ['src/Resources/assets/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['assets/**/*.ts'],
+      reportsDirectory: 'coverage-ts',
+      include: ['src/Resources/assets/**/*.ts'],
       exclude: [
-        'assets/**/*.test.ts',
-        'assets/**/*.d.ts',
-        'assets/signable-editor.ts',
-        'assets/acroform-editor.ts',
+        'src/Resources/assets/**/*.test.ts',
+        'src/Resources/assets/**/*.d.ts',
+        'src/Resources/assets/signable-editor.ts',
+        'src/Resources/assets/acroform-editor.ts',
       ],
     },
   },

@@ -26,7 +26,9 @@
       </div>
       {{ form_errors(pdf_url_form) }}
     {% else %}
-      {{ form_widget(pdf_url_form, { attr: { class: (pdf_url_form.vars.attr.class|default('') ~ (pdf_url_form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
+      <div class="d-none">
+        {{ form_widget(pdf_url_form, { attr: { class: (pdf_url_form.vars.attr.class|default('') ~ (pdf_url_form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
+      </div>
       {{ form_errors(pdf_url_form) }}
     {% endif %}
     {% if signing_legal_disclaimer is defined and signing_legal_disclaimer is not null and signing_legal_disclaimer != '' %}

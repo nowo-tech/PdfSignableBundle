@@ -37,19 +37,24 @@
     }
   ],
   "require": {
-    "php": ">=8.1",
-    "symfony/framework-bundle": "^6.1 || ^7.0 || ^8.0",
-    "symfony/form": "^6.1 || ^7.0 || ^8.0",
-    "symfony/http-client": "^6.1 || ^7.0 || ^8.0",
-    "symfony/process": "^6.1 || ^7.0 || ^8.0",
-    "symfony/twig-bundle": "^6.1 || ^7.0 || ^8.0",
-    "symfony/translation": "^6.1 || ^7.0 || ^8.0",
-    "symfony/validator": "^6.1 || ^7.0 || ^8.0",
-    "symfony/yaml": "^6.1 || ^7.0 || ^8.0"
+    "php": ">=8.1 <8.6",
+    "symfony/framework-bundle": "^6.0 || ^7.0 || ^8.0",
+    "symfony/form": "^6.0 || ^7.0 || ^8.0",
+    "symfony/http-client": "^6.0 || ^7.0 || ^8.0",
+    "symfony/process": "^6.0 || ^7.0 || ^8.0",
+    "symfony/twig-bundle": "^6.0 || ^7.0 || ^8.0",
+    "symfony/translation": "^6.0 || ^7.0 || ^8.0",
+    "symfony/validator": "^6.0 || ^7.0 || ^8.0",
+    "symfony/yaml": "^6.0 || ^7.0 || ^8.0"
   },
   "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.0",
+    "phpstan/extension-installer": "^1.4",
+    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan-phpunit": "^2.0",
+    "phpstan/phpstan-symfony": "^2.0",
     "phpunit/phpunit": "^10.0",
-    "friendsofphp/php-cs-fixer": "^3.0"
+    "rector/rector": "^2.0"
   },
   "autoload": {
     "psr-4": {
@@ -65,20 +70,44 @@
     "sort-packages": true,
     "platform": {
       "php": "8.1.0"
+    },
+    "allow-plugins": {
+      "phpstan/extension-installer": true
     }
   },
   "minimum-stability": "stable",
   "prefer-stable": true,
+  "archive": {
+    "exclude": ["/demo", "/.cursor"]
+  },
   "scripts": {
-    "test": "phpunit",
-    "test-coverage": "phpunit --coverage-text --coverage-html coverage --coverage-clover coverage.xml",
+    "test": "phpunit --color=always",
+    "test-coverage": "phpunit --color=always --coverage-text --coverage-html coverage --coverage-clover coverage.xml",
     "cs-check": "php-cs-fixer fix --dry-run --diff",
     "cs-fix": "php-cs-fixer fix",
+    "phpstan": "phpstan analyse --memory-limit=512M",
+    "rector": "rector process",
+    "rector-dry": "rector process --dry-run --no-progress-bar",
+    "update": "composer update --no-interaction",
+    "validate": "composer validate --strict",
     "qa": [
       "@cs-check",
       "@test"
     ],
-    "validate-translations": "php scripts/validate-translations-yaml.php"
+    "validate-translations": "php .scripts/validate-translations-yaml.php"
+  },
+  "scripts-descriptions": {
+    "test": "Run PHPUnit tests",
+    "test-coverage": "Run PHPUnit tests with code coverage",
+    "cs-check": "Check code style with PHP-CS-Fixer",
+    "cs-fix": "Fix code style with PHP-CS-Fixer",
+    "phpstan": "Run PHPStan static analysis",
+    "rector": "Apply Rector refactoring",
+    "rector-dry": "Run Rector in dry-run mode",
+    "update": "Update composer.lock (composer update)",
+    "validate": "Validate composer.json (composer validate --strict)",
+    "qa": "Run all quality assurance checks",
+    "validate-translations": "Validate translation YAML files"
   },
   "suggest": {
     "ext-yaml": "For faster YAML parsing (optional; Symfony Yaml is used)"

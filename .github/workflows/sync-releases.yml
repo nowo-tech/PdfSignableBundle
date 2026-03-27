@@ -1,0 +1,77 @@
+name: Sync Releases
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Sync missing/incomplete releases from tags
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const tagsResp = await github.paginate(github.rest.repos.listTags, {
+              owner,
+              repo,
+              per_page: 100,
+            });
+            const tags = tagsResp.map(t => t.name).filter(name => /^v/.test(name));
+
+            const releasesResp = await github.paginate(github.rest.repos.listReleases, {
+              owner,
+              repo,
+              per_page: 100,
+            });
+            const releasesByTag = new Map(releasesResp.map(r => [r.tag_name, r]));
+
+            let created = 0;
+            let updated = 0;
+
+            for (const tag of tags) {
+              const release = releasesByTag.get(tag);
+
+              const body = `Release ${tag}\n\nSynced by workflow from existing tag.`;
+
+              if (!release) {
+                await github.rest.repos.createRelease({
+                  owner,
+                  repo,
+                  tag_name: tag,
+                  name: `Release ${tag}`,
+                  body,
+                  draft: false,
+                  prerelease: /-(alpha|beta|rc)/.test(tag),
+                });
+                created += 1;
+                core.info(`Created release for ${tag}`);
+                continue;
+              }
+
+              const existingBody = (release.body || '').trim();
+              if (existingBody === '') {
+                await github.rest.repos.updateRelease({
+                  owner,
+                  repo,
+                  release_id: release.id,
+                  body,
+                });
+                updated += 1;
+                core.info(`Updated empty-body release for ${tag}`);
+              }
+            }
+
+            core.info(`Sync complete: created=${created}, updated=${updated}, scanned_tags=${tags.length}`);

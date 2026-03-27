@@ -28,10 +28,11 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Closure;
 use Throwable;
 
-use function array_key_exists;
 use function count;
 use function is_array;
 use function is_string;
@@ -101,6 +102,9 @@ final class AcroFormOverridesController extends AbstractController
         #[Autowire(param: 'nowo_pdf_signable.debug')]
         private readonly bool $debug = false,
         private readonly ?LoggerInterface $logger = null,
+        private readonly ?HttpClientInterface $httpClient = null,
+        private readonly ?Closure $createTempFile = null,
+        private readonly ?Closure $writeFile = null,
     ) {
     }
 
@@ -119,7 +123,7 @@ final class AcroFormOverridesController extends AbstractController
         if (!$this->enabled) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
-        $documentKey = $this->resolveDocumentKey($request, null);
+        $documentKey = $this->resolveDocumentKey($request);
         if ($documentKey === null) {
             return new JsonResponse(['error' => 'document_key required'], Response::HTTP_BAD_REQUEST);
         }
@@ -179,8 +183,8 @@ final class AcroFormOverridesController extends AbstractController
                 } else {
                     $tmpFile = null;
                     try {
-                        $tmpFile = tempnam(sys_get_temp_dir(), 'pdfsignable_');
-                        if ($tmpFile !== false && file_put_contents($tmpFile, $pdfContents) !== false) {
+                        $tmpFile = $this->createTempFile('pdfsignable_');
+                        if ($tmpFile !== false && $this->writeTempFile($tmpFile, $pdfContents) !== false) {
                             $process = new Process(['python3', $scriptPath, $tmpFile], null, PythonProcessEnv::build());
                             $process->setTimeout(60);
                             $process->run();
@@ -304,11 +308,11 @@ final class AcroFormOverridesController extends AbstractController
 
         $tmpFile = null;
         try {
-            $tmpFile = tempnam(sys_get_temp_dir(), 'pdfsignable_');
+            $tmpFile = $this->createTempFile('pdfsignable_');
             if ($tmpFile === false) {
                 return new JsonResponse(['error' => 'Failed to create temp file'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-            if (file_put_contents($tmpFile, $pdfContents) === false) {
+            if ($this->writeTempFile($tmpFile, $pdfContents) === false) {
                 return new JsonResponse(['error' => 'Failed to write temp PDF'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
@@ -324,7 +328,7 @@ final class AcroFormOverridesController extends AbstractController
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         } finally {
-            if ($tmpFile !== null && is_file($tmpFile)) {
+            if (is_string($tmpFile) && is_file($tmpFile)) {
                 @unlink($tmpFile);
             }
         }
@@ -353,7 +357,7 @@ final class AcroFormOverridesController extends AbstractController
         if (!$this->enabled) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
-        $documentKey = $this->resolveDocumentKey($request, null);
+        $documentKey = $this->resolveDocumentKey($request);
         if ($documentKey === null) {
             return new JsonResponse(['error' => 'document_key required'], Response::HTTP_BAD_REQUEST);
         }
@@ -416,8 +420,7 @@ final class AcroFormOverridesController extends AbstractController
                 return new JsonResponse(['error' => $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable')], Response::HTTP_FORBIDDEN);
             }
             try {
-                $client   = HttpClient::create();
-                $response = $client->request('GET', $url, [
+                $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
                     'timeout'       => 30,
                     'max_redirects' => 5,
                     'headers'       => ['Accept' => 'application/pdf,*/*'],
@@ -557,14 +560,14 @@ final class AcroFormOverridesController extends AbstractController
             $documentKey = null;
         }
 
-        $tmpInput  = tempnam(sys_get_temp_dir(), 'pdf_process_in_');
-        $tmpOutput = tempnam(sys_get_temp_dir(), 'pdf_process_out_');
+        $tmpInput  = $this->createTempFile('pdf_process_in_');
+        $tmpOutput = $this->createTempFile('pdf_process_out_');
         if ($tmpInput === false || $tmpOutput === false) {
             return new JsonResponse(['error' => 'Failed to create temp files'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         try {
-            if (file_put_contents($tmpInput, $decoded) === false) {
+            if ($this->writeTempFile($tmpInput, $decoded) === false) {
                 throw new RuntimeException('Failed to write temp PDF');
             }
 
@@ -635,15 +638,14 @@ final class AcroFormOverridesController extends AbstractController
             if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
                 return null;
             }
-            if ($this->proxyUrlAllowlist !== [] && !$this->isUrlAllowedByAllowlist($url)) {
+            if (!$this->proxyUrlValidator->isAllowedByAllowlist($url)) {
                 return null;
             }
-            if ($this->isUrlBlockedForSsrf($url)) {
+            if ($this->proxyUrlValidator->isBlockedForSsrf($url)) {
                 return null;
             }
             try {
-                $client   = HttpClient::create();
-                $response = $client->request('GET', $url, [
+                $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
                     'timeout'       => 30,
                     'max_redirects' => 5,
                     'headers'       => ['Accept' => 'application/pdf,*/*'],
@@ -672,15 +674,11 @@ final class AcroFormOverridesController extends AbstractController
      * Prefer body['document_key'] when body is provided; otherwise query or request parameter.
      *
      * @param Request $request Request to read document_key from
-     * @param array<string, mixed>|null $body Optional pre-parsed body (e.g. from $request->toArray())
-     *
      * @return string|null The document key if present and valid, null otherwise
      */
-    private function resolveDocumentKey(Request $request, ?array $body): ?string
+    private function resolveDocumentKey(Request $request): ?string
     {
-        $key = ($body !== null && array_key_exists('document_key', $body))
-            ? $body['document_key']
-            : ($request->query->get('document_key') ?? $request->request->get('document_key'));
+        $key = $request->query->get('document_key') ?? $request->request->get('document_key');
         if ($key === null || trim((string) $key) === '') {
             return null;
         }
@@ -705,5 +703,26 @@ final class AcroFormOverridesController extends AbstractController
         }
 
         return (bool) preg_match('/^[a-zA-Z0-9_.\-]+$/', $documentKey);
+    }
+
+    /**
+     * @return string|false
+     */
+    private function createTempFile(string $prefix)
+    {
+        if ($this->createTempFile !== null) {
+            return ($this->createTempFile)($prefix);
+        }
+
+        return tempnam(sys_get_temp_dir(), $prefix);
+    }
+
+    private function writeTempFile(string $path, string $contents): int|false
+    {
+        if ($this->writeFile !== null) {
+            return ($this->writeFile)($path, $contents);
+        }
+
+        return file_put_contents($path, $contents);
     }
 }

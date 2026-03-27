@@ -39,13 +39,16 @@ function copyPdfWorker(outDir: string): void {
 }
 
 export default defineConfig({
+  define: {
+    __PDF_SIGNABLE_BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   build: {
     outDir: 'src/Resources/public/js',
     emptyOutDir: isPdf,
     rollupOptions: {
       input: isPdf
-        ? { 'pdf-signable': 'assets/signable-editor.ts' }
-        : { 'acroform-editor': 'assets/acroform-editor.ts' },
+        ? { 'pdf-signable': 'src/Resources/assets/signable-editor.ts' }
+        : { 'acroform-editor': 'src/Resources/assets/acroform-editor.ts' },
       output: {
         format: 'iife',
         ...(isPdf ? { inlineDynamicImports: true } : {}),

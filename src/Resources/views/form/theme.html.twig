@@ -89,10 +89,12 @@
     </div>
     <div class="col-lg-4">
       {% set _config = { field_name_mode: opts.field_name_mode|default('input'), field_name_choices: opts.field_name_choices|default([]), field_name_other_text: opts.field_name_other_text|default(''), show_field_rect: opts.show_field_rect ?? true, font_sizes: opts.font_sizes|default([]), font_families: opts.font_families|default([]), min_field_width: opts.min_field_width|default(12), min_field_height: opts.min_field_height|default(12) } %}
+      {% set show_document_key_row = opts.document_key_field is not defined or (opts.document_key_field is not same as(false) and opts.document_key_field is not same as('false')) %}
       {{ include('@NowoPdfSignable/acroform/editor_root.html.twig', {
         load_url: opts.load_url|default(''),
         post_url: opts.post_url|default(''),
         document_key: opts.document_key|default(''),
+        show_document_key_row: show_document_key_row,
         apply_url: opts.apply_url|default(''),
         process_url: opts.process_url|default(''),
         debug: opts.debug|default(false),

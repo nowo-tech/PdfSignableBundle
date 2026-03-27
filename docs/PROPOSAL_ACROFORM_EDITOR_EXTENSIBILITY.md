@@ -9,7 +9,7 @@ The AcroForm edit-field form, translatable strings and templates are currently:
    - Use Symfony Form Type for validation
    - Override the template via `templates/bundles/NowoPdfSignable/`
 
-2. **Strings** — Defined in `assets/acroform-editor/strings.ts` and overridden via `window.NowoPdfSignableAcroFormEditorStrings`. Users must:
+2. **Strings** — Defined in `src/Resources/assets/acroform-editor/strings.ts` and overridden via `window.NowoPdfSignableAcroFormEditorStrings`. Users must:
    - Inject every string manually in their template (as in the demo)
    - Cannot rely on Symfony translations and `translations/` for overrides
    - No single place to extend/override strings

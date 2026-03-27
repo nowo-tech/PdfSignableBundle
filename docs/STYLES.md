@@ -1,6 +1,6 @@
 # PDF viewer styles
 
-Styles for the PDF viewer live in **`assets/pdf-signable.scss`**, scoped under `.nowo-pdf-signable-widget`. The bundle build (Vite) compiles this to `src/Resources/public/js/pdf-signable.css`. The form theme (`src/Resources/views/form/theme.html.twig`) links that CSS and loads the script; no inline `<style>` block. The signature view (`signature/index.html.twig`) may use a smaller inline block for the same viewer concepts.
+Styles for the PDF viewer live in **`src/Resources/assets/pdf-signable.scss`**, scoped under `.nowo-pdf-signable-widget`. The bundle build (Vite) compiles this to `src/Resources/public/js/pdf-signable.css`. The form theme (`src/Resources/views/form/theme.html.twig`) links that CSS and loads the script; no inline `<style>` block. The signature view (`signature/index.html.twig`) may use a smaller inline block for the same viewer concepts.
 
 **Single inclusion per request:** The form theme uses the Twig function `nowo_pdf_signable_include_assets()` (from `NowoPdfSignableTwigExtension`) so that the CSS link and the PDF.js / pdf-signable.js scripts are output only once per request. If you render multiple `SignatureCoordinatesType` widgets on the same page, the assets are not duplicated.
 

@@ -1,13 +1,32 @@
-/vendor/
-/node_modules/
-/.pnpm-store/
-/.phpunit.cache/
-/coverage/
-coverage.xml
-.php-cs-fixer.cache
+# Dependencies
+/vendor
+/node_modules
+/.pnpm-store
+/.pytest_cache
+
+# Environment and secrets
 .env
 .env.local
-package-lock.json
-yarn.lock
-.symfony.local.yaml
-.phpunit.result.cache
+.env.*.local
+
+# Test coverage
+/coverage
+/coverage-ts
+/coverage.xml
+/coverage-php.txt
+/coverage-ts.txt
+/.coverage
+
+
+# PHP tool caches
+/.php-cs-fixer.cache
+/.phpunit.cache
+/.phpunit.result.cache
+
+# Archives / compressed
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z

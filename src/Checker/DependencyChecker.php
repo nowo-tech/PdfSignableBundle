@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
+use Closure;
 
 use function extension_loaded;
 use function is_string;
@@ -33,6 +34,9 @@ final class DependencyChecker implements DependencyCheckerInterface
     public function __construct(
         private readonly ParameterBagInterface $params,
         private readonly KernelInterface $kernel,
+        private readonly ?Closure $extensionLoaded = null,
+        private readonly ?string $phpVersion = null,
+        private readonly ?Closure $isPypdfAvailable = null,
     ) {
     }
 
@@ -46,13 +50,14 @@ final class DependencyChecker implements DependencyCheckerInterface
         $failures = [];
         $warnings = [];
 
-        if (version_compare(PHP_VERSION, self::MIN_PHP_VERSION, '<')) {
-            $failures[] = sprintf('PHP version must be >= %s (current: %s)', self::MIN_PHP_VERSION, PHP_VERSION);
+        $phpVersion = $this->phpVersion ?? PHP_VERSION;
+        if (version_compare($phpVersion, self::MIN_PHP_VERSION, '<')) {
+            $failures[] = sprintf('PHP version must be >= %s (current: %s)', self::MIN_PHP_VERSION, $phpVersion);
         }
 
         $missingRequired = [];
         foreach (self::REQUIRED_EXTENSIONS as $ext) {
-            if (!extension_loaded($ext)) {
+            if (!$this->isExtensionLoaded($ext)) {
                 $missingRequired[] = $ext;
             }
         }
@@ -62,7 +67,7 @@ final class DependencyChecker implements DependencyCheckerInterface
 
         $missingOptional = [];
         foreach (self::OPTIONAL_EXTENSIONS as $ext) {
-            if (!extension_loaded($ext)) {
+            if (!$this->isExtensionLoaded($ext)) {
                 $missingOptional[] = $ext;
             }
         }
@@ -130,6 +135,13 @@ final class DependencyChecker implements DependencyCheckerInterface
      */
     private function checkPypdfAvailable(array &$warnings, string $pythonCommand): void
     {
+        if ($this->isPypdfAvailable !== null) {
+            if (!(bool) ($this->isPypdfAvailable)($pythonCommand)) {
+                $warnings[] = 'Python pypdf module not installed. Install with: ' . $pythonCommand . ' -m pip install pypdf (required for AcroForm apply/extract scripts)';
+            }
+
+            return;
+        }
         $finder   = new ExecutableFinder();
         $resolved = $finder->find($pythonCommand);
         if ($resolved === null) {
@@ -141,6 +153,15 @@ final class DependencyChecker implements DependencyCheckerInterface
         if (!$proc->isSuccessful()) {
             $warnings[] = 'Python pypdf module not installed. Install with: ' . $pythonCommand . ' -m pip install pypdf (required for AcroForm apply/extract scripts)';
         }
+    }
+
+    private function isExtensionLoaded(string $extension): bool
+    {
+        if ($this->extensionLoaded !== null) {
+            return (bool) ($this->extensionLoaded)($extension);
+        }
+
+        return extension_loaded($extension);
     }
 
     /**

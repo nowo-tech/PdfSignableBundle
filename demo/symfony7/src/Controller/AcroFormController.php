@@ -31,9 +31,11 @@ class AcroFormController extends AbstractController
     #[Route('/demo-signature/acroform-editor', name: 'app_signature_acroform_editor', methods: ['GET', 'POST'])]
     public function acroformEditor(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li><strong>AcroForm editor</strong> — PDF viewer (FNMT PDF preloaded) plus a panel to <strong>save and load overrides</strong> (default value, label, control type, rect) per field.</li><li>Uses the bundle endpoints <code>GET/POST /pdf-signable/acroform/overrides</code> (session storage).</li></ul>';
+        $explanation = '<ul class="mb-0"><li><strong>AcroForm editor (default)</strong> — PDF viewer (FNMT PDF preloaded) plus a panel to <strong>save and load overrides</strong>.</li><li>Uses config alias <code>default</code>: <code>url_field: false</code> and <code>document_key_field: false</code> — the PDF URL and Document key input rows are hidden.</li><li>Endpoints <code>GET/POST /pdf-signable/acroform/overrides</code> (session storage).</li></ul>';
 
-        return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform', 'AcroForm editor (save/load overrides)', $explanation);
+        return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform', 'AcroForm editor (save/load overrides)', $explanation, [
+            'config' => 'default',
+        ]);
     }
 
     #[Route('/demo-signature/acroform-editor-label-choice', name: 'app_signature_acroform_editor_label_choice', methods: ['GET', 'POST'])]
@@ -87,6 +89,36 @@ class AcroFormController extends AbstractController
         ]);
     }
 
+    #[Route('/demo-signature/acroform-editor-with-url', name: 'app_signature_acroform_editor_with_url', methods: ['GET', 'POST'])]
+    public function acroformEditorWithUrl(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><strong>URL field visible</strong> — config <code>with_url</code> with <code>url_field: true</code>. The PDF URL input row is shown (compare with default which has <code>url_field: false</code>).</li></ul>';
+
+        return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform-with-url', 'AcroForm editor — URL field visible', $explanation, [
+            'config' => 'with_url',
+        ]);
+    }
+
+    #[Route('/demo-signature/acroform-editor-field-names-map', name: 'app_signature_acroform_editor_field_names_map', methods: ['GET', 'POST'])]
+    public function acroformEditorFieldNamesMap(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><strong>Field names as associative array</strong> — <code>field_name_choices</code> as a map (label => value). In YAML: <code>Nombre: nombre</code>, <code>Apellidos: apellidos</code>, etc.</li></ul>';
+
+        return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform-field-names-map', 'AcroForm editor — Field names (map)', $explanation, [
+            'config' => 'field_names_map',
+        ]);
+    }
+
+    #[Route('/demo-signature/acroform-editor-field-names-pipe', name: 'app_signature_acroform_editor_field_names_pipe', methods: ['GET', 'POST'])]
+    public function acroformEditorFieldNamesPipe(Request $request): Response
+    {
+        $explanation = '<ul class="mb-0"><li><strong>Field names as value|Label list</strong> — <code>field_name_choices: [\'nombre|Nombre\', \'apellidos|Apellidos\', ...]</code>.</li></ul>';
+
+        return $this->renderAcroFormEditor($request, 'demo-fnmt-acroform-field-names-pipe', 'AcroForm editor — Field names (value|Label)', $explanation, [
+            'config' => 'field_names_pipe',
+        ]);
+    }
+
     /** @param array<string, mixed> $options */
     private function renderAcroFormEditor(Request $request, string $documentKey, string $pageTitle, string $explanation, array $options = []): Response
     {
@@ -121,7 +153,7 @@ class AcroFormController extends AbstractController
             'process_url'        => $this->generateUrl('nowo_pdf_signable_acroform_process'),
             'debug'              => $this->debug,
             'acroform_edit_form' => $acroformEditForm,
-        ], $options);
+        ], $resolved);
 
         $form = $this->createForm(\App\Form\AcroFormPageType::class, $model, [
             'acroform_options' => $acroformOptions,

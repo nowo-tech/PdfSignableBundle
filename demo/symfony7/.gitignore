@@ -1,8 +1,12 @@
+# Local environment files (do not commit local secrets/config)
 /.env
 /.env.local
+/.env.dev
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
+
+# Symfony runtime/build output
 /public/bundles/
 /var/*
 !/var/cache/
@@ -12,17 +16,19 @@
 /var/log/*
 !/var/log/.gitkeep
 /vendor/
-###> symfony/framework-bundle ###
-/public/bundles/
-/var/
-!/var/cache/.gitkeep
-!/var/log/.gitkeep
-/vendor/
-###< symfony/framework-bundle ###
-###> phpunit/phpunit ###
+
+# Test/cache files
 .phpunit.result.cache
-###< phpunit/phpunit ###
 /.data/
 
+# Frontend dependencies/cache
 /.pnpm-store/
 /node_modules/
+
+# Archives / compressed
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z

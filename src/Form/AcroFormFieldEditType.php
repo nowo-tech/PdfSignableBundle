@@ -230,15 +230,21 @@ final class AcroFormFieldEditType extends AbstractType
     {
         if ($fieldNameMode === 'choice' && $fieldNameChoices !== []) {
             $choices = [];
-            foreach ($fieldNameChoices as $item) {
-                if (is_array($item) && isset($item['value'])) {
-                    $choices[$item['label'] ?? $item['value']] = $item['value'];
-                } elseif (is_string($item)) {
-                    $pipe = strpos($item, '|');
-                    if ($pipe !== false) {
-                        $choices[trim(substr($item, $pipe + 1))] = trim(substr($item, 0, $pipe));
-                    } else {
-                        $choices[$item] = $item;
+            if (!array_is_list($fieldNameChoices)) {
+                foreach ($fieldNameChoices as $label => $value) {
+                    $choices[is_string($label) ? $label : (string) $value] = (string) $value;
+                }
+            } else {
+                foreach ($fieldNameChoices as $item) {
+                    if (is_array($item) && isset($item['value'])) {
+                        $choices[$item['label'] ?? $item['value']] = $item['value'];
+                    } elseif (is_string($item)) {
+                        $pipe = strpos($item, '|');
+                        if ($pipe !== false) {
+                            $choices[trim(substr($item, $pipe + 1))] = trim(substr($item, 0, $pipe));
+                        } else {
+                            $choices[$item] = $item;
+                        }
                     }
                 }
             }

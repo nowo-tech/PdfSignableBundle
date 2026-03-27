@@ -108,6 +108,7 @@ final class AcroFormEditorType extends AbstractType
             'config'                => null,
             'pdf_url'               => null,
             'url_field'             => true,
+            'document_key_field'    => true,
             'show_load_pdf_button'  => true,
             'document_key'          => '',
             'load_url'              => '',
@@ -139,6 +140,7 @@ final class AcroFormEditorType extends AbstractType
         $resolver->setAllowedTypes('field_name_choices', ['null', 'array']);
         $resolver->setAllowedTypes('field_name_other_text', ['null', 'string']);
         $resolver->setAllowedTypes('show_field_rect', ['null', 'bool']);
+        $resolver->setAllowedTypes('document_key_field', ['null', 'bool']);
         $resolver->setAllowedTypes('font_sizes', ['null', 'array']);
         $resolver->setAllowedTypes('font_families', ['null', 'array']);
         $resolver->setAllowedTypes('min_field_width', ['null', 'int', 'float']);
@@ -158,6 +160,7 @@ final class AcroFormEditorType extends AbstractType
         $defaults = [
             'pdf_url'               => $options['pdf_url'] ?? ($this->examplePdfUrl !== '' ? $this->examplePdfUrl : null),
             'url_field'             => $options['url_field'] ?? true,
+            'document_key_field'    => $options['document_key_field'] ?? true,
             'show_load_pdf_button'  => $options['show_load_pdf_button'] ?? true,
             'document_key'          => $options['document_key'] ?? '',
             'load_url'              => $options['load_url'] ?? '',
@@ -196,6 +199,32 @@ final class AcroFormEditorType extends AbstractType
             }
         }
 
+        $defaults['field_name_choices'] = $this->normalizeFieldNameChoicesToList($defaults['field_name_choices']);
+        $defaults['label_choices']      = $this->normalizeFieldNameChoicesToList($defaults['label_choices']);
+
         return $defaults;
+    }
+
+    /**
+     * Normalize field_name_choices / label_choices to a list for the view and JSON.
+     * Accepts: list of strings, list of {value, label?}, or associative array (value => label).
+     *
+     * @param array<int|string, array{value: string, label?: string}|string|mixed> $choices
+     *
+     * @return list<array{value: string, label?: string}|string>
+     */
+    private function normalizeFieldNameChoicesToList(array $choices): array
+    {
+        if ($choices === []) {
+            return [];
+        }
+        if (!array_is_list($choices)) {
+            $out = [];
+            foreach ($choices as $label => $value) {
+                $out[] = ['value' => (string) $value, 'label' => is_string($label) ? $label : (string) $value];
+            }
+            return $out;
+        }
+        return $choices;
     }
 }

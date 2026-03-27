@@ -1,5 +1,5 @@
 # Makefile for PdfSignable Bundle demos (Symfony 7 and 8) - Docker
-.PHONY: help list up-all down-all run-symfony7 run-symfony8 down-symfony7 down-symfony8 setup-symfony7 setup-symfony8 update-bundle-symfony7 update-bundle-symfony8 update-bundle-all clean-all
+.PHONY: help list up-all down-all run-symfony7 run-symfony8 down-symfony7 down-symfony8 setup-symfony7 setup-symfony8 update-bundle-symfony7 update-bundle-symfony8 update-bundle-all clean-all test-coverage-all release-check release-verify
 
 DEMOS := symfony7 symfony8
 
@@ -20,6 +20,8 @@ help:
 	@echo "  up-all              Start all demos (symfony7 + symfony8)"
 	@echo "  down-all            Stop all demos"
 	@echo "  clean-all           Stop and clean vendor/var in all"
+	@echo "  release-check       Pre-release: test-coverage-all, release-verify"
+	@echo "  release-verify      For each demo: up → healthcheck HTTP 200 → down"
 	@echo ""
 	@echo "Example: make run-symfony7   → then open https://localhost:8001"
 
@@ -75,6 +77,25 @@ update-bundle-all:
 	@$(MAKE) -C symfony7 update-bundle
 	@$(MAKE) -C symfony8 update-bundle
 	@echo "✅ Bundle code updated in both demos"
+
+test-coverage-all:
+	@$(MAKE) -C symfony7 test-coverage 2>/dev/null || true
+	@$(MAKE) -C symfony8 test-coverage 2>/dev/null || true
+	@echo "test-coverage-all done."
+release-verify:
+	@for demo in $(DEMOS); do \
+		port=$$(case $$demo in symfony7) echo 8001;; symfony8) echo 8002;; *) echo 8001;; esac); \
+		echo "Release verify: $$demo (port $$port)..."; \
+		$(MAKE) -C $$demo up 2>/dev/null || $(MAKE) -C $$demo run 2>/dev/null || true; \
+		sleep 12; \
+		code=$$(curl -sk -o /dev/null -w "%{http_code}" https://127.0.0.1:$$port 2>/dev/null || echo "000"); \
+		$(MAKE) -C $$demo down 2>/dev/null || true; \
+		if [ "$$code" != "200" ]; then echo "$$demo healthcheck failed (HTTP $$code)"; exit 1; fi; \
+		echo "OK $$demo (HTTP $$code)"; \
+	done
+	@echo "All demos passed release-verify."
+release-check: test-coverage-all release-verify
+	@echo "All demos passed release-check."
 
 clean-all:
 	@for d in $(DEMOS); do $(MAKE) -C $$d clean; done

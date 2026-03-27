@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -62,6 +63,7 @@ final class SignatureController extends AbstractController
         #[Autowire(param: 'nowo_pdf_signable.audit.fill_from_request')]
         private readonly bool $auditFillFromRequest,
         private readonly LoggerInterface $logger,
+        private readonly ?HttpClientInterface $httpClient = null,
     ) {
     }
 
@@ -198,8 +200,7 @@ final class SignatureController extends AbstractController
         }
 
         try {
-            $client   = HttpClient::create();
-            $response = $client->request('GET', $url, [
+            $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
                 'timeout'       => 30,
                 'max_redirects' => 5,
                 'headers'       => [

@@ -22,11 +22,13 @@ final class PythonProcessEnv
      *
      * PATH is prepended with /usr/local/bin:/usr/bin:/bin so system Python is findable.
      *
+     * @param mixed $sourceEnv Optional env source for tests. Null uses getenv().
+     *
      * @return array<string, string> Environment variables for the subprocess
      */
-    public static function build(): array
+    public static function build(mixed $sourceEnv = null): array
     {
-        $env = getenv();
+        $env = $sourceEnv ?? getenv();
         if (!is_array($env)) {
             return [];
         }

@@ -6,6 +6,7 @@
   - load_url (required): URL for loading overrides
   - post_url (required): URL for saving overrides
   - document_key (required): Default document key
+  - show_document_key_row (optional): When false, the document key input row is hidden. Default true.
   - apply_url (optional): URL for apply PDF
   - process_url (optional): URL for process PDF
   - debug (optional): bool, default false
@@ -43,10 +44,12 @@
      data-min-field-width="{{ _config.min_field_width|default(12) }}"
      data-min-field-height="{{ _config.min_field_height|default(12) }}">
   <p class="small text-muted mb-2">{{ 'acroform_editor.draft_intro'|trans({}, 'nowo_pdf_signable')|raw }}</p>
+  {% if show_document_key_row|default(true) %}
   <div class="mb-2">
     <label for="acroform-document-key" class="form-label small">{{ 'acroform_editor.document_key_label'|trans({}, 'nowo_pdf_signable') }}</label>
     <input type="text" id="acroform-document-key" class="form-control form-control-sm" value="{{ _document_key|e('html_attr') }}" placeholder="{{ 'acroform_editor.document_key_placeholder'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}">
   </div>
+  {% endif %}
   <div class="mb-2" id="acroform-fields-section" style="display: none;">
     <label class="form-label small">{{ 'acroform_editor.fields_label'|trans({}, 'nowo_pdf_signable') }}</label>
     <div class="d-flex justify-content-between align-items-center mb-1">

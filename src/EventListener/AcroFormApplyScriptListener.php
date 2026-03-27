@@ -13,6 +13,7 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Process\Process;
+use Closure;
 
 use function count;
 use function is_array;
@@ -49,6 +50,8 @@ final class AcroFormApplyScriptListener
         #[Autowire(param: 'nowo_pdf_signable.acroform.apply_script_command')]
         private readonly string $applyScriptCommand,
         private readonly ?LoggerInterface $logger = null,
+        private readonly ?Closure $createTempFile = null,
+        private readonly ?Closure $writeFile = null,
     ) {
     }
 
@@ -84,8 +87,8 @@ final class AcroFormApplyScriptListener
             'validate_only' => $event->isValidateOnly(),
         ]);
 
-        $tmpPdf     = tempnam(sys_get_temp_dir(), 'pdf_apply_');
-        $tmpPatches = tempnam(sys_get_temp_dir(), 'patches_');
+        $tmpPdf     = $this->createTempFile('pdf_apply_');
+        $tmpPatches = $this->createTempFile('patches_');
         if ($tmpPdf === false || $tmpPatches === false) {
             $event->setError(new RuntimeException('Failed to create temp files'));
 
@@ -93,10 +96,10 @@ final class AcroFormApplyScriptListener
         }
 
         try {
-            if (file_put_contents($tmpPdf, $pdfContents) === false) {
+            if ($this->writeTempFile($tmpPdf, $pdfContents) === false) {
                 throw new RuntimeException('Failed to write temp PDF');
             }
-            if (file_put_contents($tmpPatches, json_encode($patchesArray, JSON_THROW_ON_ERROR)) === false) {
+            if ($this->writeTempFile($tmpPatches, json_encode($patchesArray, JSON_THROW_ON_ERROR)) === false) {
                 throw new RuntimeException('Failed to write temp patches');
             }
 
@@ -186,5 +189,26 @@ final class AcroFormApplyScriptListener
             @unlink($tmpPdf);
             @unlink($tmpPatches);
         }
+    }
+
+    /**
+     * @return string|false
+     */
+    private function createTempFile(string $prefix)
+    {
+        if ($this->createTempFile !== null) {
+            return ($this->createTempFile)($prefix);
+        }
+
+        return tempnam(sys_get_temp_dir(), $prefix);
+    }
+
+    private function writeTempFile(string $path, string $contents): int|false
+    {
+        if ($this->writeFile !== null) {
+            return ($this->writeFile)($path, $contents);
+        }
+
+        return file_put_contents($path, $contents);
     }
 }

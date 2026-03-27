@@ -8,6 +8,6 @@
     "skipLibCheck": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"]
   },
-  "include": ["assets/**/*.ts", "assets/**/*.d.ts"],
-  "exclude": ["assets/**/*.test.ts"]
+  "include": ["src/Resources/assets/**/*.ts", "src/Resources/assets/**/*.d.ts"],
+  "exclude": ["src/Resources/assets/**/*.test.ts"]
 }

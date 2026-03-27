@@ -1,6 +1,6 @@
 # PdfSignable Bundle
 
-[![Packagist Version](https://img.shields.io/packagist/v/nowo-tech/pdf-signable-bundle.svg?style=flat)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-6.1%2B%20%7C%207%20%7C%208-000000?logo=symfony)](https://symfony.com) [![GitHub stars](https://img.shields.io/github/stars/nowo-tech/PdfSignableBundle.svg?style=social&label=Star)](https://github.com/nowo-tech/PdfSignableBundle)
+[![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![Packagist Version](https://img.shields.io/packagist/v/nowo-tech/pdf-signable-bundle.svg?style=flat)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![Packagist Downloads](https://img.shields.io/packagist/dt/nowo-tech/pdf-signable-bundle.svg)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-6.1%2B%20%7C%207%20%7C%208-000000?logo=symfony)](https://symfony.com) [![GitHub stars](https://img.shields.io/github/stars/nowo-tech/pdf-signable-bundle.svg?style=social&label=Star)](https://github.com/nowo-tech/PdfSignableBundle) [![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen)](#tests-and-coverage)
 
 > ⭐ **Found this useful?** [Install from Packagist](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) · Give it a star on [GitHub](https://github.com/nowo-tech/PdfSignableBundle) to help others find it.
 
@@ -94,22 +94,23 @@ The bundle works with default settings. Create or edit `config/packages/nowo_pdf
 
 ```yaml
 nowo_pdf_signable:
-    proxy_enabled: true                    # Enable proxy for external PDFs (avoids CORS)
-    example_pdf_url: ''                    # Optional default URL for form preload
-    signature:
-        configs: {}                        # Optional named configs (see CONFIGURATION.md)
+  proxy_enabled: true  # Proxy route for external PDFs (avoids CORS)
+  # example_pdf_url: bundle default is a sample public PDF URL; set to '' to disable preload
+  # debug: false    # Browser console logging for the viewer (default false)
+  signature:
+    configs: {}    # Named presets; see CONFIGURATION.md
 ```
 
-See [CONFIGURATION.md](docs/CONFIGURATION.md) for detailed options and named configs.
+See [CONFIGURATION.md](docs/CONFIGURATION.md) for the full tree (`proxy_url_allowlist`, `audit`, `tsa_url`, `signing_service_id`, `acroform.*`, etc.) and default values.
 
 ## Demos
 
-Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. They run with **FrankenPHP** (Caddy + PHP) and are served over **HTTPS** on localhost (self-signed certificate; accept it in the browser to access). The [screenshots above](#screenshots) show the demo home (configuration cards), the signature coordinates form (PDF viewer + boxes), and an alternate view with thumbnails, zoom and rotation.
+Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. They run with **FrankenPHP** (Caddy + PHP): the **Dockerfile** ships a production Caddyfile with **`php_server` worker**, but with **`APP_ENV=dev`** the container **entrypoint swaps in `Caddyfile.dev`** (no worker, cache-busting headers) so local dev matches [docs/DEMO-FRANKENPHP.md](docs/DEMO-FRANKENPHP.md). Served over **HTTPS** on localhost (self-signed certificate; accept it in the browser). The [screenshots above](#screenshots) show the demo home (configuration cards), the signature coordinates form (PDF viewer + boxes), and an alternate view with thumbnails, zoom and rotation.
 
 ```bash
 cd demo
-make run-symfony7   # → https://localhost:8001
-make run-symfony8   # → https://localhost:8002
+make run-symfony7  # → https://localhost:8001
+make run-symfony8  # → https://localhost:8002
 ```
 
 Twenty-plus demos: no config, default config, fixed_url, overridden config, URL as dropdown, limited boxes, same signer (multiple locations), unique per name (array), page restriction, sorted boxes, no-overlap, allow-overlap, **min-size-boxes**, rotation, defaults-by-name, snap-to-grid, **guides-and-grid**, **viewer lazy-load**, **AcroForm editor**, **AcroForm editor min-size**, latest features (combined), predefined boxes; plus signing (draw, upload, legal disclaimer, predefined boxes — sign only, signing options). See [demo/README.md](demo/README.md) and [demo/Makefile](demo/Makefile).
@@ -140,33 +141,45 @@ From the bundle root (optionally via Docker):
 ```bash
 make up
 make install
-make test          # PHPUnit
+make test     # PHPUnit
 make test-coverage # PHPUnit + HTML (coverage/) and Clover (coverage.xml). Requires PCOV in the container.
-make cs-check      # PHP-CS-Fixer
-make qa            # cs-check + test
-make validate-translations  # Validate translation YAML files (inside Docker)
+make cs-check   # PHP-CS-Fixer
+make qa      # cs-check + test
+make validate-translations # Validate translation YAML files (inside Docker)
 ```
 
 Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `composer qa`. The bundle Docker image includes PCOV for coverage.
 
 ## Documentation
 
-- [Installation](docs/INSTALLATION.md) — Step-by-step installation and route registration
-- [Configuration](docs/CONFIGURATION.md) — Proxy, example URL, named configs
-- [Usage](docs/USAGE.md) — Form options, named configs, customization; **recovering coordinates and signature data on POST** (with example controller)
-- [Workflow](docs/WORKFLOW.md) — Flows and diagrams: init, load PDF, add/drag box, coordinate sync, submit
-- [AcroForm backend](docs/ACROFORM_BACKEND_EXTENSION.md) — Overrides, apply endpoint, process script; **transforming the PDF and uploading to storage (e.g. Amazon S3)**
-- [Events](docs/EVENTS.md) — Proxy, submission, batch sign and PDF sign request events
-- [Advanced signing](docs/SIGNING_ADVANCED.md) — PKI/PAdES, timestamp, audit trail, batch (structure; you add keys and services)
-- [Styles](docs/STYLES.md) — PDF viewer CSS, handle sizes, single-inclusion
-- [Testing](docs/TESTING.md) — Test structure and code coverage
-- [Changelog](docs/CHANGELOG.md) — Version history
-- [Upgrading](docs/UPGRADING.md) — Upgrade instructions
-- [Roadmap](docs/ROADMAP.md) — Possible improvements and future ideas
-- [Accessibility](docs/ACCESSIBILITY.md) — Keyboard, screen readers, contrast
-- [Release process](docs/RELEASE.md) — How to create a release and tag
-- [Contributing](docs/CONTRIBUTING.md) — How to contribute
-- [Security](docs/SECURITY.md) — Reporting vulnerabilities
+- [Installation](docs/INSTALLATION.md)
+- [Configuration](docs/CONFIGURATION.md)
+- [Usage](docs/USAGE.md)
+- [Contributing](docs/CONTRIBUTING.md)
+- [Changelog](docs/CHANGELOG.md)
+- [Upgrading](docs/UPGRADING.md)
+- [Release](docs/RELEASE.md)
+- [Security](docs/SECURITY.md)
+- [Engram](docs/ENGRAM.md)
+- [Roadmap](docs/ROADMAP.md)
+
+### Additional documentation
+
+- [Demo with FrankenPHP (development and production)](docs/DEMO-FRANKENPHP.md)
+- [Workflow](docs/WORKFLOW.md)
+- [AcroForm backend](docs/ACROFORM_BACKEND_EXTENSION.md)
+- [Events](docs/EVENTS.md)
+- [Advanced signing](docs/SIGNING_ADVANCED.md)
+- [Styles](docs/STYLES.md)
+- [Testing](docs/TESTING.md)
+- [Accessibility](docs/ACCESSIBILITY.md)
+
+## Tests and coverage
+
+- Tests: PHPUnit (PHP), pytest (Python scripts)
+- PHP: 99.09%
+- TS/JS: 27.48%
+- Python: 21%
 
 ## License
 

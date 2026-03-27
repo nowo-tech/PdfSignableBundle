@@ -1,5 +1,5 @@
 # PdfSignable Bundle Demo - Symfony 8 (Docker, FrankenPHP + Caddy, HTTPS)
-.PHONY: help up down shell install setup run update-bundle clean logs
+.PHONY: help up down shell install setup run ensure-up update-bundle clean logs
 
 help:
 	@echo "PdfSignable Demo (Symfony 8) - Docker (FrankenPHP + Caddy)"
@@ -10,6 +10,7 @@ help:
 	@echo "  install       - composer install in container"
 	@echo "  setup         - install + cache:clear"
 	@echo "  run           - up + setup (start and ready)"
+	@echo "  ensure-up     - Ensure containers are up (start if needed)"
 	@echo "  update-bundle - Rebuild bundle assets and refresh symlinks/cache (use after changing bundle code)"
 	@echo "  clean         - Stop and remove vendor/var"
 	@echo "  logs          - View logs"
@@ -18,8 +19,8 @@ help:
 
 up:
 	@if [ ! -f .env ]; then \
-		cp .env.dist .env; \
-		echo "✅ .env created from .env.dist"; \
+		cp .env.example .env; \
+		echo "✅ .env created from .env.example"; \
 	fi
 	docker-compose build
 	docker-compose up -d
@@ -33,6 +34,15 @@ down:
 
 shell:
 	docker-compose exec php sh
+
+ensure-up:
+	@if ! docker-compose exec -T php true 2>/dev/null; then \
+		echo "Starting containers..."; \
+		[ ! -f .env ] && cp .env.example .env || true; \
+		docker-compose up -d; \
+		sleep 5; \
+		docker-compose exec -T php sh -c "composer install --no-interaction || true"; \
+	fi
 
 install:
 	@echo "📦 Building bundle assets (pnpm)..."
@@ -57,7 +67,7 @@ run: up
 	@docker-compose exec -T php php bin/console cache:clear
 	@echo "✅ Demo ready: https://localhost:8002"
 
-update-bundle:
+update-bundle: ensure-up
 	@echo "📦 Rebuilding bundle assets..."
 	docker-compose exec -T php sh -c "cd /var/pdf-signable-bundle && CI=true pnpm install && pnpm run build"
 	@echo "📦 Refreshing bundle assets in public..."

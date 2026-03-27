@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 // This file is auto-generated and is for apps only. Bundles SHOULD NOT rely on its content.
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
@@ -772,7 +770,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         label_choices?: list<scalar|Param|null>,
  *         label_other_text?: scalar|Param|null, // Deprecated: use field_name_other_text. When set, shows "Other" in the (legacy) label select. // Default: ""
  *         field_name_mode?: scalar|Param|null, // When editing a field, field name can be: "input" (free text) or "choice" (select from field_name_choices plus optional "Other" free text). Global default; overridable per config alias. // Default: "input"
- *         field_name_choices?: list<scalar|Param|null>,
+ *         field_name_choices?: list<mixed>,
  *         field_name_other_text?: scalar|Param|null, // When set (non-empty), shows an "Other" option in the field name select with this text and a free-text input. Leave empty to hide. Global default; overridable per config alias. // Default: ""
  *         show_field_rect?: bool|Param, // When editing a field, show the coordinates (rect) input in the modal. Global default; overridable per config alias. // Default: true
  *         font_sizes?: list<int|Param>,

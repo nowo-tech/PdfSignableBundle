@@ -45,11 +45,11 @@ nowo_pdf_signable:
     # AcroForm: platform settings (enabled, scripts, storage) and configs by alias. Default alias is "default".
     acroform:
         enabled: true
-        fields_extractor_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/scripts/extract_acroform_fields.py'
+        fields_extractor_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/.scripts/extract_acroform_fields.py'
         allow_pdf_modify: true
-        apply_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/scripts/apply_acroform_patches.py'
+        apply_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/.scripts/apply_acroform_patches.py'
         apply_script_command: '/usr/bin/python3'
-        process_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/scripts/process_modified_pdf.py'
+        process_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/.scripts/process_modified_pdf.py'
         process_script_command: '/usr/bin/python3'
     #     default_config_alias: default
     #     label_mode: input
@@ -57,7 +57,10 @@ nowo_pdf_signable:
     #     font_sizes: []
     #     font_families: []
         configs:
-            default: {}
+            # url_field: false and document_key_field: false hide the PDF URL and document key input rows.
+            default:
+                url_field: false
+                document_key_field: false
             label_dropdown:
                 label_mode: choice
                 label_choices: ['Nombre', 'Apellidos', 'DNI', 'Fecha', 'Firma']
@@ -72,6 +75,24 @@ nowo_pdf_signable:
                 show_field_rect: false
                 font_sizes: [8, 10, 11, 12, 14, 18]
                 font_families: ['sans-serif', 'Arial', 'Times New Roman|Times New Roman', 'Courier New|Courier New']
+            # URL field visible (compare with default which has url_field: false).
+            with_url:
+                url_field: true
+            # field_name_choices as associative array (label => value for PDF /T).
+            field_names_map:
+                field_name_mode: choice
+                field_name_choices:
+                    Nombre: nombre
+                    Apellidos: apellidos
+                    DNI: dni
+                    Fecha: fecha
+                    Firma: firma
+                field_name_other_text: 'Otro'
+            # field_name_choices as list of "value|Label".
+            field_names_pipe:
+                field_name_mode: choice
+                field_name_choices: ['nombre|Nombre', 'apellidos|Apellidos', 'dni|DNI', 'fecha|Fecha', 'firma|Firma']
+                field_name_other_text: 'Otro'
 
     # Audit metadata: the controller merges IP, user_agent and submitted_at into the model before dispatching SIGNATURE_COORDINATES_SUBMITTED.
     # audit:

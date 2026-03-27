@@ -57,6 +57,9 @@ final class DemoMenu
                     ['route' => 'app_signature_acroform_editor_custom_fonts', 'label' => 'AcroForm editor — Custom font options'],
                     ['route' => 'app_signature_acroform_editor_all_options', 'label' => 'AcroForm editor — All options'],
                     ['route' => 'app_signature_acroform_editor_min_size', 'label' => 'AcroForm editor (min field size 24 pt)'],
+                    ['route' => 'app_signature_acroform_editor_with_url', 'label' => 'AcroForm editor — URL field visible'],
+                    ['route' => 'app_signature_acroform_editor_field_names_map', 'label' => 'AcroForm editor — Field names (map)'],
+                    ['route' => 'app_signature_acroform_editor_field_names_pipe', 'label' => 'AcroForm editor — Field names (value|Label)'],
                 ],
             ],
             [
@@ -171,6 +174,9 @@ final class DemoMenu
                         ['title' => 'AcroForm editor — Custom font options', 'bullets' => ['<code>font_sizes</code> + <code>font_families</code> — select instead of free input'], 'route' => 'app_signature_acroform_editor_custom_fonts', 'btn_class' => 'btn-primary'],
                         ['title' => 'AcroForm editor — All options', 'bullets' => ['Label dropdown + coordinates hidden + custom fonts combined'], 'route' => 'app_signature_acroform_editor_all_options', 'btn_class' => 'btn-primary'],
                         ['title' => 'AcroForm editor (min field size 24 pt)', 'bullets' => ['<code>min_field_width/height: 24</code> — move/resize enforces minimum size'], 'route' => 'app_signature_acroform_editor_min_size', 'btn_class' => 'btn-primary'],
+                        ['title' => 'AcroForm editor — URL field visible', 'bullets' => ['<code>config: with_url</code>, <code>url_field: true</code> — PDF URL input row shown'], 'route' => 'app_signature_acroform_editor_with_url', 'btn_class' => 'btn-primary'],
+                        ['title' => 'AcroForm editor — Field names (map)', 'bullets' => ['<code>field_name_choices</code> as associative array (label => value) in YAML'], 'route' => 'app_signature_acroform_editor_field_names_map', 'btn_class' => 'btn-primary'],
+                        ['title' => 'AcroForm editor — Field names (value|Label)', 'bullets' => ['<code>field_name_choices</code> as list of <code>value|Label</code> strings'], 'route' => 'app_signature_acroform_editor_field_names_pipe', 'btn_class' => 'btn-primary'],
                     ]],
                     ['type' => 'subsection', 'title' => 'Latest features (combined)'],
                     ['type' => 'cards', 'col_class' => 'col-md-6 col-lg-4', 'cards' => [
