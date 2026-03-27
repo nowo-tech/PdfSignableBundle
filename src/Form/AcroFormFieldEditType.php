@@ -34,9 +34,16 @@ use function is_string;
  *
  * Renders with fixed IDs (acroform-edit-*) so the AcroForm editor JS can fill/read values.
  * Only field name is shown/edited (no label).
+ *
+ * @extends AbstractType<AcroFormFieldEdit>
  */
 final class AcroFormFieldEditType extends AbstractType
 {
+    /**
+     * @param array<int|string, scalar|array{value: scalar|null, label?: scalar|null}> $fieldNameChoices
+     * @param array<int, int> $fontSizes
+     * @param array<int, array<string, mixed>|string> $fontFamilies
+     */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.acroform.field_name_mode')]
         private readonly string $fieldNameMode = 'input',
@@ -217,6 +224,9 @@ final class AcroFormFieldEditType extends AbstractType
         ];
     }
 
+    /**
+     * @param array<int|string, scalar|array{value: scalar|null, label?: scalar|null}> $fieldNameChoices
+     */
     private function getFieldNameFieldType(string $fieldNameMode, array $fieldNameChoices): string
     {
         if ($fieldNameMode === 'choice' && $fieldNameChoices !== []) {
@@ -226,18 +236,32 @@ final class AcroFormFieldEditType extends AbstractType
         return TextType::class;
     }
 
+    /**
+     * @param array<int|string, scalar|array{value: scalar|null, label?: scalar|null}> $fieldNameChoices
+     *
+     * @return array<string, mixed>
+     */
     private function getFieldNameFieldOptions(string $fieldNameMode, array $fieldNameChoices, string $fieldNameOtherText): array
     {
         if ($fieldNameMode === 'choice' && $fieldNameChoices !== []) {
             $choices = [];
             if (!array_is_list($fieldNameChoices)) {
                 foreach ($fieldNameChoices as $label => $value) {
-                    $choices[is_string($label) ? $label : (string) $value] = (string) $value;
+                    if (!is_string($value) && !is_int($value) && !is_float($value) && !is_bool($value) && $value !== null) {
+                        continue;
+                    }
+                    $valueString = (string) $value;
+                    $choices[is_string($label) ? $label : $valueString] = $valueString;
                 }
             } else {
                 foreach ($fieldNameChoices as $item) {
-                    if (is_array($item) && isset($item['value'])) {
-                        $choices[$item['label'] ?? $item['value']] = $item['value'];
+                    if (is_array($item) && array_key_exists('value', $item)) {
+                        $value = $item['value'];
+                        if (!is_string($value) && !is_int($value) && !is_float($value) && !is_bool($value) && $value !== null) {
+                            continue;
+                        }
+                        $label = $item['label'] ?? $value;
+                        $choices[(string) $label] = (string) $value;
                     } elseif (is_string($item)) {
                         $pipe = strpos($item, '|');
                         if ($pipe !== false) {
@@ -290,8 +314,13 @@ final class AcroFormFieldEditType extends AbstractType
         }
         $out = [];
         foreach ($fontFamilies as $item) {
-            if (is_array($item) && isset($item['value'])) {
-                $out[$item['label'] ?? $item['value']] = $item['value'];
+            if (is_array($item) && array_key_exists('value', $item)) {
+                $value = $item['value'];
+                if (!is_string($value) || $value === '') {
+                    continue;
+                }
+                $label = $item['label'] ?? $value;
+                $out[(string) $label] = $value;
             } elseif (is_string($item)) {
                 $pipe = strpos($item, '|');
                 if ($pipe !== false) {

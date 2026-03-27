@@ -25,16 +25,14 @@ final class AcroFormOverrides
     ) {
     }
 
-    /**
-     * @param array{overrides?: array<string, array>, document_key?: string|null, fields?: array} $data
-     */
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         $overrides = $data['overrides'] ?? [];
         if (!is_array($overrides)) {
             $overrides = [];
         }
-        $documentKey = isset($data['document_key']) ? (string) $data['document_key'] : null;
+        $documentKey = $data['document_key'] ?? null;
         if ($documentKey === '') {
             $documentKey = null;
         }
@@ -47,7 +45,11 @@ final class AcroFormOverrides
     }
 
     /**
-     * @return array{overrides: array<string, array>, document_key?: string|null, fields?: array}
+     * @return array{
+     *     overrides: array<string, array<string, mixed>>,
+     *     document_key?: string,
+     *     fields?: array<int, array<string, mixed>>
+     * }
      */
     public function toArray(): array
     {

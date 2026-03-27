@@ -12,6 +12,9 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 final class CheckDependenciesCommandTest extends TestCase
 {
+    /**
+     * @param array{failures: list<string>, warnings: list<string>} $checkResult
+     */
     private function createCheckerStub(array $checkResult): DependencyCheckerInterface
     {
         $checker = $this->createMock(DependencyCheckerInterface::class);

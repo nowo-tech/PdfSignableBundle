@@ -10,7 +10,6 @@ use Nowo\PdfSignableBundle\EventListener\AcroFormApplyScriptListener;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-
 final class AcroFormApplyScriptListenerTest extends TestCase
 {
     public function testReturnsEarlyWhenEventHasResponse(): void
@@ -226,7 +225,9 @@ final class AcroFormApplyScriptListenerTest extends TestCase
 
         $listener($event);
 
-        self::assertSame('Previous error', $event->getError()->getMessage());
+        $error = $event->getError();
+        self::assertNotNull($error);
+        self::assertSame('Previous error', $error->getMessage());
     }
 
     /** When script fails with "python" and "not found" in stderr, listener sets specific error message. */
@@ -257,7 +258,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
                 $script,
                 'python3',
                 null,
-                static fn (string $prefix): string|false => false,
+                static fn (string $prefix) => false,
             );
             $event = new AcroFormApplyRequestEvent('%PDF-1.4', []);
 
@@ -280,7 +281,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
                 'python3',
                 null,
                 null,
-                static fn (string $path, string $contents): int|false => false,
+                static fn (string $path, string $contents) => false,
             );
             $event = new AcroFormApplyRequestEvent('%PDF-1.4', []);
 
@@ -303,7 +304,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
                 'python3',
                 null,
                 null,
-                static function (string $path, string $contents) use (&$calls): int|false {
+                static function (string $path, string $contents) use (&$calls) {
                     ++$calls;
                     if ($calls === 1) {
                         return 1;

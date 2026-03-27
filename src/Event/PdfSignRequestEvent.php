@@ -32,7 +32,7 @@ final class PdfSignRequestEvent extends Event
     public function __construct(
         private readonly SignatureCoordinatesModel $coordinates,
         private readonly Request $request,
-        private array $options = [],
+        private readonly array $options = [],
     ) {
     }
 

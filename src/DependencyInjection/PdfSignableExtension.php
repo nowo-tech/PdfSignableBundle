@@ -29,7 +29,7 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
     /**
      * Loads services from Resources/config/services.yaml and sets container parameters.
      *
-     * @param array<string, mixed> $configs Raw configuration arrays (e.g. from config files)
+     * @param array<int, array<string, mixed>> $configs Raw configuration arrays (e.g. from config files)
      * @param ContainerBuilder $container The container builder
      */
     public function load(array $configs, ContainerBuilder $container): void

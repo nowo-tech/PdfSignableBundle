@@ -14,6 +14,7 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use function is_array;
+use function is_string;
 
 /**
  * Form type for AcroForm page: PDF viewer + AcroForm editor panel.
@@ -22,12 +23,14 @@ use function is_array;
  * pdf_url, url visibility, document_key, load/post/apply/process URLs, and
  * editor config (label_mode, font_sizes, etc.). Use option "config" to apply
  * a named config from nowo_pdf_signable.acroform.configs (alias; default alias is "default").
+ *
+ * @extends AbstractType<AcroFormPageModel>
  */
 final class AcroFormEditorType extends AbstractType
 {
     /**
      * @param string $examplePdfUrl Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array> $acroformConfigs Configs by alias from nowo_pdf_signable.acroform.configs
+     * @param array<string, array<string, mixed>> $acroformConfigs Configs by alias from nowo_pdf_signable.acroform.configs
      * @param string $defaultConfigAlias Default alias when config option is null (e.g. "default")
      * @param bool $debug When true, the frontend emits console logs
      * @param string $labelMode acroform.label_mode (deprecated)
@@ -188,7 +191,7 @@ final class AcroFormEditorType extends AbstractType
 
         $configName = $options['config'] ?? null;
         $alias      = ($configName !== null && $configName !== '') ? $configName : $this->defaultConfigAlias;
-        if ($alias !== '' && isset($this->acroformConfigs[$alias]) && is_array($this->acroformConfigs[$alias])) {
+        if ($alias !== '' && isset($this->acroformConfigs[$alias])) {
             $defaults = array_merge($defaults, $this->acroformConfigs[$alias]);
         }
 
@@ -209,7 +212,7 @@ final class AcroFormEditorType extends AbstractType
      * Normalize field_name_choices / label_choices to a list for the view and JSON.
      * Accepts: list of strings, list of {value, label?}, or associative array (value => label).
      *
-     * @param array<int|string, array{value: string, label?: string}|string|mixed> $choices
+     * @param array<int|string, array{value: string, label?: string}|mixed|string> $choices
      *
      * @return list<array{value: string, label?: string}|string>
      */
@@ -223,8 +226,10 @@ final class AcroFormEditorType extends AbstractType
             foreach ($choices as $label => $value) {
                 $out[] = ['value' => (string) $value, 'label' => is_string($label) ? $label : (string) $value];
             }
+
             return $out;
         }
+
         return $choices;
     }
 }

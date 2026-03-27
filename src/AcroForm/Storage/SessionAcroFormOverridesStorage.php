@@ -33,7 +33,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
     public function get(string $documentKey): ?AcroFormOverrides
     {
         $session = $this->requestStack->getCurrentRequest()?->getSession();
-        if (!$session) {
+        if (!$session instanceof \Symfony\Component\HttpFoundation\Session\SessionInterface) {
             return null;
         }
         $key  = self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey);
@@ -48,7 +48,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
     public function set(string $documentKey, AcroFormOverrides $overrides): void
     {
         $session = $this->requestStack->getCurrentRequest()?->getSession();
-        if (!$session) {
+        if (!$session instanceof \Symfony\Component\HttpFoundation\Session\SessionInterface) {
             return;
         }
         $key = self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey);
@@ -58,7 +58,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
     public function remove(string $documentKey): void
     {
         $session = $this->requestStack->getCurrentRequest()?->getSession();
-        if (!$session) {
+        if (!$session instanceof \Symfony\Component\HttpFoundation\Session\SessionInterface) {
             return;
         }
         $session->remove(self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey));

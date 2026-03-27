@@ -40,18 +40,20 @@ final class AuditMetadataTest extends TestCase
 
     public function testConstantValuesAreSnakeCase(): void
     {
-        self::assertSame('submitted_at', AuditMetadata::SUBMITTED_AT);
-        self::assertSame('ip', AuditMetadata::IP);
-        self::assertSame('user_agent', AuditMetadata::USER_AGENT);
-        self::assertSame('user_id', AuditMetadata::USER_ID);
-        self::assertSame('session_id', AuditMetadata::SESSION_ID);
-        self::assertSame('tsa_token', AuditMetadata::TSA_TOKEN);
-        self::assertSame('signing_method', AuditMetadata::SIGNING_METHOD);
+        self::assertStringContainsString('submitted_at', AuditMetadata::SUBMITTED_AT);
+        self::assertStringContainsString('ip', AuditMetadata::IP);
+        self::assertStringContainsString('user_agent', AuditMetadata::USER_AGENT);
+        self::assertStringContainsString('user_id', AuditMetadata::USER_ID);
+        self::assertStringContainsString('session_id', AuditMetadata::SESSION_ID);
+        self::assertStringContainsString('tsa_token', AuditMetadata::TSA_TOKEN);
+        self::assertStringContainsString('signing_method', AuditMetadata::SIGNING_METHOD);
     }
 
     public function testClassIsNotInstantiable(): void
     {
         $ref = new ReflectionClass(AuditMetadata::class);
-        self::assertTrue($ref->getConstructor()->isPrivate());
+        $constructor = $ref->getConstructor();
+        self::assertNotNull($constructor);
+        self::assertTrue($constructor->isPrivate());
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\EventListener;
 
+use Closure;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use Nowo\PdfSignableBundle\AcroForm\PythonProcessEnv;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
@@ -13,7 +14,6 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Process\Process;
-use Closure;
 
 use function count;
 use function is_array;
@@ -79,7 +79,7 @@ final class AcroFormApplyScriptListener
 
         $pdfContents  = $event->getPdfContents();
         $patches      = $event->getPatches();
-        $patchesArray = array_map(static fn (AcroFormFieldPatch $p) => $p->toArray(), $patches);
+        $patchesArray = array_map(static fn (AcroFormFieldPatch $p): array => $p->toArray(), $patches);
 
         $this->logger?->info('AcroForm apply: running script', [
             'pdf_bytes'     => strlen($pdfContents),
@@ -192,11 +192,11 @@ final class AcroFormApplyScriptListener
     }
 
     /**
-     * @return string|false
+     * @return false|string
      */
     private function createTempFile(string $prefix)
     {
-        if ($this->createTempFile !== null) {
+        if ($this->createTempFile instanceof \Closure) {
             return ($this->createTempFile)($prefix);
         }
 
@@ -205,7 +205,7 @@ final class AcroFormApplyScriptListener
 
     private function writeTempFile(string $path, string $contents): int|false
     {
-        if ($this->writeFile !== null) {
+        if ($this->writeFile instanceof \Closure) {
             return ($this->writeFile)($path, $contents);
         }
 

@@ -19,6 +19,9 @@ use Symfony\Component\Validator\Validation;
  */
 final class AcroFormFieldEditTypeTest extends TypeTestCase
 {
+    /**
+     * @return array<int, PreloadedExtension|ValidatorExtension>
+     */
     protected function getExtensions(): array
     {
         $type = new AcroFormFieldEditType(
@@ -241,7 +244,7 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
 
         $choices = $form->get('fieldName')->getConfig()->getOption('choices');
         self::assertSame([
-            'Nombre' => 'name',
+            'Nombre'  => 'name',
             'surname' => 'surname',
         ], $choices);
     }
@@ -249,15 +252,15 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
     public function testBuildFormWithFieldNameChoicesPipeSyntax(): void
     {
         $form = $this->factory->create(AcroFormFieldEditType::class, new AcroFormFieldEdit(), [
-            'field_name_mode'    => 'choice',
-            'field_name_choices' => ['dni|Documento', 'email'],
+            'field_name_mode'       => 'choice',
+            'field_name_choices'    => ['dni|Documento', 'email'],
             'field_name_other_text' => '',
         ]);
 
         $choices = $form->get('fieldName')->getConfig()->getOption('choices');
         self::assertSame([
             'Documento' => 'dni',
-            'email' => 'email',
+            'email'     => 'email',
         ], $choices);
     }
 
@@ -270,5 +273,18 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
         self::assertArrayHasKey('Arial', $choices);
         self::assertArrayHasKey('sans-serif', $choices);
         self::assertSame('Arial', $choices['Arial']);
+    }
+
+    public function testBuildFormWithFontFamiliesAsListMapsAndPipeSyntax(): void
+    {
+        $form = $this->factory->create(AcroFormFieldEditType::class, new AcroFormFieldEdit(), [
+            'font_families' => [
+                ['value' => 'Inter', 'label' => 'Inter UI'],
+                'Roboto|Roboto Label',
+            ],
+        ]);
+        $choices = $form->get('fontFamily')->getConfig()->getOption('choices');
+        self::assertSame('Inter', $choices['Inter UI']);
+        self::assertSame('Roboto', $choices['Roboto Label']);
     }
 }

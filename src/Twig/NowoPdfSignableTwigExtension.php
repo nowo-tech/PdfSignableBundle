@@ -96,9 +96,9 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('nowo_pdf_signable_include_assets', [$this, 'shouldIncludeAssets']),
-            new TwigFunction('nowo_pdf_signable_acroform_strings', [$this, 'getAcroformStrings']),
-            new TwigFunction('nowo_pdf_signable_acroform_editor_config', [$this, 'getAcroformEditorConfig']),
+            new TwigFunction('nowo_pdf_signable_include_assets', $this->shouldIncludeAssets(...)),
+            new TwigFunction('nowo_pdf_signable_acroform_strings', $this->getAcroformStrings(...)),
+            new TwigFunction('nowo_pdf_signable_acroform_editor_config', $this->getAcroformEditorConfig(...)),
         ];
     }
 
@@ -121,7 +121,19 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
     /**
      * Returns AcroForm editor config from bundle parameters (field_name_mode, field_name_choices, etc.).
      *
-     * @return array{label_mode: string, label_choices: array, label_other_text: string, field_name_mode: string, field_name_choices: array, field_name_other_text: string, show_field_rect: bool, font_sizes: array, font_families: array, min_field_width: float, min_field_height: float}
+     * @return array{
+     *     label_mode: string,
+     *     label_choices: array<int|string, scalar|array<string, mixed>>,
+     *     label_other_text: string,
+     *     field_name_mode: string,
+     *     field_name_choices: array<int|string, scalar|array<string, mixed>>,
+     *     field_name_other_text: string,
+     *     show_field_rect: bool,
+     *     font_sizes: array<int, int>,
+     *     font_families: array<int, string>,
+     *     min_field_width: float,
+     *     min_field_height: float
+     * }
      */
     public function getAcroformEditorConfig(): array
     {
@@ -150,7 +162,7 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
     public function shouldIncludeAssets(): bool
     {
         $request = $this->requestStack->getCurrentRequest();
-        if ($request === null) {
+        if (!$request instanceof \Symfony\Component\HttpFoundation\Request) {
             return true;
         }
         if ($request->attributes->get(self::REQUEST_ATTR)) {

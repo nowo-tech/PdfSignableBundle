@@ -206,7 +206,7 @@ final class DependencyCheckerTest extends TestCase
 
             self::assertNotEmpty($result['warnings']);
             $workerMsg = null;
-            $mainMsg  = null;
+            $mainMsg   = null;
             foreach ($result['warnings'] as $msg) {
                 if (str_contains($msg, 'pdf.worker.min')) {
                     $workerMsg = $msg;
@@ -334,5 +334,4 @@ final class DependencyCheckerTest extends TestCase
             @unlink($tmpFile);
         }
     }
-
 }

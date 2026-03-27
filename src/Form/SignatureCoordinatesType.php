@@ -38,12 +38,14 @@ use function is_string;
  *
  * Renders a full widget (PDF viewer + boxes). Options control URL field visibility/mode,
  * unit and origin choices, min/max entries, overlap validation, sort order and snap options.
+ *
+ * @extends AbstractType<SignatureCoordinatesModel>
  */
 final class SignatureCoordinatesType extends AbstractType
 {
     /**
      * @param string $examplePdfUrl Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array> $namedConfigs Configs by alias from nowo_pdf_signable.signature.configs
+     * @param array<string, array<string, mixed>> $namedConfigs Configs by alias from nowo_pdf_signable.signature.configs
      * @param string $defaultConfigAlias Default alias when form option config is not set (e.g. "default")
      * @param bool $debug When true, the frontend emits console logs (browser dev tools)
      */
@@ -111,7 +113,7 @@ final class SignatureCoordinatesType extends AbstractType
     /**
      * Builds the form: pdfUrl, unit, origin and signatureBoxes collection.
      *
-     * @param FormBuilderInterface $builder Form builder
+     * @param FormBuilderInterface<SignatureCoordinatesModel|null> $builder Form builder
      * @param array<string, mixed> $options Resolved options (pdf_url, url_field, units, etc.). Merged with named config when option "config" is set.
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -148,27 +150,25 @@ final class SignatureCoordinatesType extends AbstractType
                 'empty_data' => $pdfUrl,
                 'attr'       => ['class' => 'pdf-url-input', 'data-pdf-signable' => 'pdf-url'],
             ]);
+        } elseif ($options['url_mode'] === self::URL_MODE_CHOICE && $options['url_choices'] !== []) {
+            $builder->add('pdfUrl', ChoiceType::class, [
+                'label'       => $options['url_label'],
+                'choices'     => $options['url_choices'],
+                'required'    => true,
+                'attr'        => ['class' => 'pdf-url-input form-control form-select', 'data-pdf-signable' => 'pdf-url'],
+                'placeholder' => $options['url_placeholder'],
+            ]);
         } else {
-            if ($options['url_mode'] === self::URL_MODE_CHOICE && $options['url_choices'] !== []) {
-                $builder->add('pdfUrl', ChoiceType::class, [
-                    'label'       => $options['url_label'],
-                    'choices'     => $options['url_choices'],
-                    'required'    => true,
-                    'attr'        => ['class' => 'pdf-url-input form-control form-select', 'data-pdf-signable' => 'pdf-url'],
-                    'placeholder' => $options['url_placeholder'],
-                ]);
-            } else {
-                $builder->add('pdfUrl', UrlType::class, [
-                    'label'    => $options['url_label'],
-                    'required' => true,
-                    'data'     => $pdfUrl,
-                    'attr'     => [
-                        'placeholder'       => $options['url_placeholder'],
-                        'class'             => 'pdf-url-input form-control',
-                        'data-pdf-signable' => 'pdf-url',
-                    ],
-                ]);
-            }
+            $builder->add('pdfUrl', UrlType::class, [
+                'label'    => $options['url_label'],
+                'required' => true,
+                'data'     => $pdfUrl,
+                'attr'     => [
+                    'placeholder'       => $options['url_placeholder'],
+                    'class'             => 'pdf-url-input form-control',
+                    'data-pdf-signable' => 'pdf-url',
+                ],
+            ]);
         }
 
         // --- Unit ---
@@ -259,7 +259,7 @@ final class SignatureCoordinatesType extends AbstractType
 
                     return $xA <=> $xB;
                 });
-                $data['signatureBoxes'] = array_values($boxes);
+                $data['signatureBoxes'] = $boxes;
                 $event->setData($data);
             });
         }
@@ -314,7 +314,7 @@ final class SignatureCoordinatesType extends AbstractType
         }
         $uniqueNamesOpt = $options['unique_box_names'];
         if ($uniqueNamesOpt === true || (is_array($uniqueNamesOpt) && $uniqueNamesOpt !== [])) {
-            $namesToEnforce          = $uniqueNamesOpt === true ? null : array_fill_keys(array_map('trim', $uniqueNamesOpt), true);
+            $namesToEnforce          = $uniqueNamesOpt === true ? null : array_fill_keys(array_map(trim(...), $uniqueNamesOpt), true);
             $collectionConstraints[] = new Callback(static function (mixed $boxes, ExecutionContextInterface $context) use ($namesToEnforce): void {
                 if (!is_array($boxes)) {
                     return;
@@ -351,12 +351,13 @@ final class SignatureCoordinatesType extends AbstractType
                     $model = $box instanceof SignatureBoxModel
                         ? $box
                         : self::boxFromArray(is_array($box) ? $box : []);
-                    if ($model === null) {
+                    if (!$model instanceof \Nowo\PdfSignableBundle\Model\SignatureBoxModel) {
                         continue;
                     }
                     $list[] = ['index' => $index, 'box' => $model];
                 }
-                for ($i = 0; $i < count($list); ++$i) {
+                $counter = count($list);
+                for ($i = 0; $i < $counter; ++$i) {
                     for ($j = $i + 1; $j < count($list); ++$j) {
                         $a = $list[$i]['box'];
                         $b = $list[$j]['box'];
@@ -392,7 +393,7 @@ final class SignatureCoordinatesType extends AbstractType
      * Passes signature_coordinates_options to the view for the PDF viewer and box logic.
      *
      * @param FormView $view The form view
-     * @param FormInterface $form The form
+     * @param FormInterface<SignatureCoordinatesModel> $form The form
      * @param array<string, mixed> $options Resolved form options
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
@@ -563,7 +564,7 @@ final class SignatureCoordinatesType extends AbstractType
                 return true;
             }
 
-            return is_array($value) && array_reduce($value, static fn ($carry, $v) => $carry && is_string($v), true);
+            return is_array($value) && array_reduce($value, static fn ($carry, $v): bool => $carry && is_string($v), true);
         });
         $resolver->setAllowedTypes('signature_box_options', 'array');
         $resolver->setAllowedTypes('enable_signature_capture', 'bool');
@@ -678,7 +679,7 @@ final class SignatureCoordinatesType extends AbstractType
     {
         $name  = $options['config'] ?? null;
         $alias = ($name !== null && $name !== '') ? $name : $this->defaultConfigAlias;
-        if ($alias === '' || !isset($this->namedConfigs[$alias]) || !is_array($this->namedConfigs[$alias])) {
+        if ($alias === '' || !isset($this->namedConfigs[$alias])) {
             $merged = $options;
             unset($merged['config']);
 

@@ -35,6 +35,17 @@ describe('formToViewport', () => {
     expect(rDefault.vpX).toBe(rOther.vpX);
     expect(rDefault.vpY).toBe(rOther.vpY);
   });
+
+  it('top_right y bottom_right ajustan X respecto al ancho de pagina', () => {
+    const vp = createMockViewport(1);
+    const tr = formToViewport(vp, 10, 20, 30, 40, 'top_right');
+    const br = formToViewport(vp, 10, 20, 30, 40, 'bottom_right');
+
+    expect(tr.vpX).toBe(595 - 10 - 30);
+    expect(br.vpX).toBe(595 - 10 - 30);
+    // top_right y bottom_right solo difieren en Y
+    expect(tr.vpY).not.toBe(br.vpY);
+  });
 });
 
 describe('viewportToForm', () => {
@@ -48,6 +59,24 @@ describe('viewportToForm', () => {
     const back = viewportToForm(vp, vpX, vpY, wPt, hPt, 'bottom_left');
     expect(back.xPt).toBeCloseTo(xPt, 5);
     expect(back.yPt).toBeCloseTo(yPt, 5);
+  });
+
+  it('convierte correctamente para top_right y bottom_right', () => {
+    const vp = createMockViewport(1);
+    const wPt = 30;
+    const hPt = 20;
+    const x = 50;
+    const y = 60;
+
+    const trVp = formToViewport(vp, x, y, wPt, hPt, 'top_right');
+    const trBack = viewportToForm(vp, trVp.vpX, trVp.vpY, wPt, hPt, 'top_right');
+    expect(trBack.xPt).toBeCloseTo(x, 5);
+    expect(trBack.yPt).toBeCloseTo(y, 5);
+
+    const brVp = formToViewport(vp, x, y, wPt, hPt, 'bottom_right');
+    const brBack = viewportToForm(vp, brVp.vpX, brVp.vpY, wPt, hPt, 'bottom_right');
+    expect(brBack.xPt).toBeCloseTo(x, 5);
+    expect(brBack.yPt).toBeCloseTo(y, 5);
   });
 });
 
@@ -77,5 +106,11 @@ describe('pdfToFormCoords', () => {
     const r = pdfToFormCoords(pageW, pageH, 500, 50, 95, 15, 'bottom_right');
     expect(r.xForm).toBe(pageW - 500 - 95);
     expect(r.yForm).toBe(50);
+  });
+
+  it('default origin usa coordenadas PDF directas', () => {
+    const r = pdfToFormCoords(pageW, pageH, 11, 22, 33, 44, 'unknown');
+    expect(r.xForm).toBe(11);
+    expect(r.yForm).toBe(22);
   });
 });

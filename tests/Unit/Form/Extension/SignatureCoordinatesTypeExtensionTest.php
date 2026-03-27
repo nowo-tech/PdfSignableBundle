@@ -18,7 +18,7 @@ final class SignatureCoordinatesTypeExtensionTest extends TestCase
         $arr   = is_array($types) ? $types : iterator_to_array($types);
 
         self::assertCount(1, $arr);
-        self::assertSame('Nowo\PdfSignableBundle\Form\SignatureCoordinatesType', $arr[0]);
+        self::assertSame(\Nowo\PdfSignableBundle\Form\SignatureCoordinatesType::class, $arr[0]);
     }
 
     public function testConfigureOptionsSetsDefaultsFromConstructor(): void
@@ -39,7 +39,7 @@ final class SignatureCoordinatesTypeExtensionTest extends TestCase
 
     public function testConfigureOptionsWithNullDefaults(): void
     {
-        $extension = new SignatureCoordinatesTypeExtension(null, null, false, false, null, null);
+        $extension = new SignatureCoordinatesTypeExtension(null, null, false, false);
         $resolver  = new OptionsResolver();
         $extension->configureOptions($resolver);
 

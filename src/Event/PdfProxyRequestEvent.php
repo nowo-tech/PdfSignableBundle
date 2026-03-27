@@ -16,9 +16,6 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class PdfProxyRequestEvent extends Event
 {
-    /** @var string URL the proxy is about to fetch (may be modified by listeners). */
-    private string $url;
-
     /** @var Response|null Custom response to return instead of fetching (set by listeners). */
     private ?Response $response = null;
 
@@ -26,11 +23,8 @@ final class PdfProxyRequestEvent extends Event
      * @param string $url The URL the proxy is about to fetch
      * @param Request $request The HTTP request to the proxy endpoint
      */
-    public function __construct(
-        string $url,
-        private readonly Request $request,
-    ) {
-        $this->url = $url;
+    public function __construct(private string $url, private readonly Request $request)
+    {
     }
 
     /**
@@ -90,6 +84,6 @@ final class PdfProxyRequestEvent extends Event
      */
     public function hasResponse(): bool
     {
-        return $this->response !== null;
+        return $this->response instanceof \Symfony\Component\HttpFoundation\Response;
     }
 }

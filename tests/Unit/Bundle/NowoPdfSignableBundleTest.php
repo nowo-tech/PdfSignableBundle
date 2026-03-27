@@ -9,7 +9,6 @@ use Nowo\PdfSignableBundle\DependencyInjection\ProxyUrlAllowlistValidationPass;
 use Nowo\PdfSignableBundle\NowoPdfSignableBundle;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
 use function is_array;
 
@@ -23,7 +22,6 @@ final class NowoPdfSignableBundleTest extends TestCase
         $bundle    = new NowoPdfSignableBundle();
         $extension = $bundle->getContainerExtension();
 
-        self::assertInstanceOf(ExtensionInterface::class, $extension);
         self::assertInstanceOf(PdfSignableExtension::class, $extension);
         self::assertSame('nowo_pdf_signable', $extension->getAlias());
     }

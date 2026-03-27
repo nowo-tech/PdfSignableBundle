@@ -300,8 +300,8 @@ class SignatureBoxModel
         $box->setWidth((float) ($data['width'] ?? 150));
         $box->setHeight((float) ($data['height'] ?? 40));
         $box->setAngle((float) ($data['angle'] ?? 0));
-        $box->setSignatureData(isset($data['signature_data']) && $data['signature_data'] !== '' ? (string) $data['signature_data'] : null);
-        $box->setSignedAt(isset($data['signed_at']) && $data['signed_at'] !== '' ? (string) $data['signed_at'] : null);
+        $box->setSignatureData(isset($data['signature_data']) && $data['signature_data'] !== '' ? $data['signature_data'] : null);
+        $box->setSignedAt(isset($data['signed_at']) && $data['signed_at'] !== '' ? $data['signed_at'] : null);
 
         return $box;
     }

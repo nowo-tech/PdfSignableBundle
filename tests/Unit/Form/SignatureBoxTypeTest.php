@@ -109,7 +109,7 @@ final class SignatureBoxTypeTest extends TypeTestCase
     {
         $form        = $this->factory->create(SignatureBoxType::class, new SignatureBoxModel());
         $constraints = $form->get('name')->getConfig()->getOption('constraints');
-        $notBlanks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof NotBlank);
+        $notBlanks   = array_filter($constraints ?? [], static fn ($c): bool => $c instanceof NotBlank);
         self::assertCount(1, $notBlanks);
     }
 
@@ -150,7 +150,7 @@ final class SignatureBoxTypeTest extends TypeTestCase
             'allowed_pages' => [1, 2],
         ]);
         $constraints = $form->get('page')->getConfig()->getOption('constraints');
-        $choices     = array_filter($constraints ?? [], static fn ($c) => $c instanceof Choice);
+        $choices     = array_filter($constraints ?? [], static fn ($c): bool => $c instanceof Choice);
         self::assertCount(1, $choices);
     }
 

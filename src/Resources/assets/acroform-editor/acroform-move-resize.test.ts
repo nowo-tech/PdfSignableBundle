@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { viewportPixelsToPdfRect } from './acroform-move-resize';
+import { describe, it, expect, vi } from 'vitest';
+import { createAcroformMoveResize, viewportPixelsToPdfRect } from './acroform-move-resize';
 
 describe('viewportPixelsToPdfRect', () => {
   const viewport = {
@@ -40,5 +40,131 @@ describe('viewportPixelsToPdfRect', () => {
     const vp = { height: 600 }; // no scale
     const result = viewportPixelsToPdfRect(vp as any, 0, 0, 15, 15);
     expect(result[2]).toBeCloseTo(10); // 15 / 1.5
+  });
+});
+
+describe('createAcroformMoveResize', () => {
+  it('showOverlay/hideOverlay maneja flujo base y callbacks', () => {
+    const canvasWrapper = document.createElement('div');
+    canvasWrapper.innerHTML = `
+      <div class="pdf-page-wrapper" data-page="1">
+        <div class="acroform-field-outline" data-field-id="f1" style="left:10px;top:20px;width:100px;height:40px"></div>
+      </div>
+    `;
+    document.body.appendChild(canvasWrapper);
+
+    const onRectChanged = vi.fn();
+    const onRendered = vi.fn();
+    const controller = createAcroformMoveResize({
+      canvasWrapper,
+      getPageViewport: () => ({ scale: 1, width: 500, height: 600 } as any),
+      getTouchScale: () => 1,
+      onRectChanged,
+      onRendered,
+    });
+
+    controller.showOverlay('f1', '1');
+    const overlay = canvasWrapper.querySelector('.acroform-move-resize-overlay') as HTMLElement;
+    expect(overlay).not.toBeNull();
+
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100, clientY: 100 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 130, clientY: 140 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+    expect(onRectChanged).toHaveBeenCalledTimes(1);
+    expect((window as any).__pdfSignableAcroFormMoveResizeFieldId).toBe('f1');
+
+    controller.hideOverlay();
+    expect(canvasWrapper.querySelector('.acroform-move-resize-layer')).toBeNull();
+    expect((window as any).__pdfSignableAcroFormMoveResizeFieldId).toBeUndefined();
+  });
+
+  it('showOverlay hace return si no encuentra outline o viewport', () => {
+    const canvasWrapper = document.createElement('div');
+    canvasWrapper.innerHTML = `<div class="pdf-page-wrapper" data-page="1"></div>`;
+
+    const controllerNoOutline = createAcroformMoveResize({
+      canvasWrapper,
+      getPageViewport: () => ({ scale: 1, width: 200, height: 200 } as any),
+      getTouchScale: () => 1,
+      onRectChanged: vi.fn(),
+      onRendered: vi.fn(),
+    });
+    controllerNoOutline.showOverlay('missing', '1');
+    expect(canvasWrapper.querySelector('.acroform-move-resize-layer')).toBeNull();
+
+    const outline = document.createElement('div');
+    outline.className = 'acroform-field-outline';
+    outline.dataset.fieldId = 'f2';
+    (canvasWrapper.querySelector('.pdf-page-wrapper') as HTMLElement).appendChild(outline);
+    const controllerNoViewport = createAcroformMoveResize({
+      canvasWrapper,
+      getPageViewport: () => undefined,
+      getTouchScale: () => 1,
+      onRectChanged: vi.fn(),
+      onRendered: vi.fn(),
+    });
+    controllerNoViewport.showOverlay('f2', '1');
+    expect(canvasWrapper.querySelector('.acroform-move-resize-layer')).toBeNull();
+  });
+
+  it('cubre resize con handles y salida temprana en onEnd sin estado', () => {
+    const canvasWrapper = document.createElement('div');
+    canvasWrapper.innerHTML = `
+      <div class="pdf-page-wrapper" data-page="1">
+        <div class="acroform-field-outline" data-field-id="f3" style="left:10px;top:20px;width:80px;height:30px"></div>
+      </div>
+    `;
+    const onRectChanged = vi.fn();
+    const controller = createAcroformMoveResize({
+      canvasWrapper,
+      getPageViewport: () => ({ scale: 1, width: 300, height: 300 } as any),
+      getTouchScale: () => 1,
+      onRectChanged,
+      onRendered: vi.fn(),
+      minFieldWidthPt: 20,
+      minFieldHeightPt: 20,
+    });
+
+    controller.showOverlay('f3', '1');
+    const overlay = canvasWrapper.querySelector('.acroform-move-resize-overlay') as HTMLElement;
+    const handle = overlay.querySelector('.resize-handle.nw') as HTMLElement;
+    handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 10, clientY: 20 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 0, clientY: 0 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    // Mouseup extra para cubrir guard clause (state null)
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+    expect(onRectChanged).toHaveBeenCalledTimes(1);
+  });
+
+  it('cubre ramas de resize para se/sw/ne', () => {
+    const canvasWrapper = document.createElement('div');
+    canvasWrapper.innerHTML = `
+      <div class="pdf-page-wrapper" data-page="1">
+        <div class="acroform-field-outline" data-field-id="f4" style="left:20px;top:20px;width:100px;height:40px"></div>
+      </div>
+    `;
+    const onRectChanged = vi.fn();
+    const controller = createAcroformMoveResize({
+      canvasWrapper,
+      getPageViewport: () => ({ scale: 1, width: 400, height: 400 } as any),
+      getTouchScale: () => 1,
+      onRectChanged,
+      onRendered: vi.fn(),
+      minFieldWidthPt: 12,
+      minFieldHeightPt: 12,
+    });
+
+    const handles = ['se', 'sw', 'ne'] as const;
+    for (const h of handles) {
+      controller.showOverlay('f4', '1');
+      const handle = canvasWrapper.querySelector(`.resize-handle.${h}`) as HTMLElement;
+      handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100, clientY: 100 }));
+      document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 130, clientY: 130 }));
+      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    }
+
+    expect(onRectChanged).toHaveBeenCalledTimes(3);
   });
 });

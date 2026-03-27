@@ -13,7 +13,7 @@ final class AcroFormEditorExceptionTest extends TestCase
     public function testExtendsRuntimeException(): void
     {
         $e = new AcroFormEditorException('PDF has no form');
-        self::assertInstanceOf(RuntimeException::class, $e);
+        self::assertSame(RuntimeException::class, get_parent_class($e));
     }
 
     public function testGetMessage(): void

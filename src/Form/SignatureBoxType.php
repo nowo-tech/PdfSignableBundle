@@ -30,6 +30,8 @@ use function is_string;
  * Used as entry type in SignatureCoordinatesType's collection. Name can be
  * free text (input) or a choice list via name_mode and name_choices.
  * Optional rotation angle when angle_enabled is true; page can be restricted via allowed_pages.
+ *
+ * @extends AbstractType<SignatureBoxModel>
  */
 final class SignatureBoxType extends AbstractType
 {
@@ -42,7 +44,7 @@ final class SignatureBoxType extends AbstractType
     /**
      * Builds the form: name, page, width, height, x, y (and optionally angle).
      *
-     * @param FormBuilderInterface $builder Form builder
+     * @param FormBuilderInterface<SignatureBoxModel|null> $builder Form builder
      * @param array<string, mixed> $options Resolved options (name_mode, name_choices, allowed_pages, angle_enabled, etc.)
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -52,7 +54,7 @@ final class SignatureBoxType extends AbstractType
             $firstChoiceValue = array_values($options['name_choices'])[0] ?? null;
             $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($firstChoiceValue): void {
                 $data = $event->getData();
-                if ($data instanceof SignatureBoxModel && ($data->getName() === null || $data->getName() === '') && $firstChoiceValue !== null) {
+                if ($data instanceof SignatureBoxModel && $data->getName() === '' && $firstChoiceValue !== null) {
                     $data->setName($firstChoiceValue);
                 }
             });
@@ -89,8 +91,8 @@ final class SignatureBoxType extends AbstractType
 
         $allowedPages = $options['allowed_pages'];
         if ($allowedPages !== null && $allowedPages !== []) {
-            $allowedPages = array_map('intval', array_values($allowedPages));
-            $allowedPages = array_values(array_unique(array_filter($allowedPages, static fn (int $p) => $p >= 1)));
+            $allowedPages = array_map(intval(...), array_values($allowedPages));
+            $allowedPages = array_values(array_unique(array_filter($allowedPages, static fn (int $p): bool => $p >= 1)));
             $pageChoices  = array_combine($allowedPages, $allowedPages);
             $builder->add('page', ChoiceType::class, [
                 'label'       => 'signature_box_type.page.label',
@@ -123,12 +125,12 @@ final class SignatureBoxType extends AbstractType
             }
             if ($lockWidth && $defaultWidth !== null) {
                 $data->setWidth($defaultWidth);
-            } elseif ($data->getWidth() === null && $defaultWidth !== null) {
+            } elseif ($defaultWidth !== null) {
                 $data->setWidth($defaultWidth);
             }
             if ($lockHeight && $defaultHeight !== null) {
                 $data->setHeight($defaultHeight);
-            } elseif ($data->getHeight() === null && $defaultHeight !== null) {
+            } elseif ($defaultHeight !== null) {
                 $data->setHeight($defaultHeight);
             }
         });
@@ -180,7 +182,7 @@ final class SignatureBoxType extends AbstractType
      * Passes signature capture options to the view for the widget (draw pad / upload).
      *
      * @param FormView $view The form view
-     * @param FormInterface $form The form
+     * @param FormInterface<SignatureBoxModel> $form The form
      * @param array<string, mixed> $options Resolved options (enable_signature_capture, signing_only, lock_box_*, etc.)
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void

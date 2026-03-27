@@ -3,16 +3,10 @@
 
 parameters:
     level: 8
+    treatPhpDocTypesAsCertain: false
     paths:
         - src
         - tests
     excludePaths:
         - demo/*
-    memoryLimit: 512M
-    checkMissingIterableValueType: false
 
-includes:
-    - vendor/phpstan/phpstan-symfony/extension.neon
-    - vendor/phpstan/phpstan-symfony/rules.neon
-    - vendor/phpstan/phpstan-phpunit/extension.neon
-    - vendor/phpstan/phpstan-phpunit/rules.neon

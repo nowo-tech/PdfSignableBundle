@@ -24,7 +24,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
@@ -96,7 +95,7 @@ final class SignatureController extends AbstractController
             }
             if ($request->request->getBoolean('batch_sign', false)) {
                 $this->eventDispatcher->dispatch(
-                    new BatchSignRequestedEvent($model, $request, null),
+                    new BatchSignRequestedEvent($model, $request),
                     PdfSignableEvents::BATCH_SIGN_REQUESTED,
                 );
             }
@@ -132,7 +131,7 @@ final class SignatureController extends AbstractController
     private function wantsJson(Request $request): bool
     {
         return $request->isXmlHttpRequest()
-            || str_contains($request->headers->get('Accept', ''), 'application/json');
+            || str_contains((string) $request->headers->get('Accept', ''), 'application/json');
     }
 
     /**
@@ -196,7 +195,10 @@ final class SignatureController extends AbstractController
         $this->eventDispatcher->dispatch($requestEvent, PdfSignableEvents::PDF_PROXY_REQUEST);
         $url = $requestEvent->getUrl();
         if ($requestEvent->hasResponse()) {
-            return $requestEvent->getResponse();
+            $eventResponse = $requestEvent->getResponse();
+            if ($eventResponse instanceof Response) {
+                return $eventResponse;
+            }
         }
 
         try {
@@ -226,7 +228,7 @@ final class SignatureController extends AbstractController
             $this->eventDispatcher->dispatch($responseEvent, PdfSignableEvents::PDF_PROXY_RESPONSE);
 
             return $responseEvent->getResponse();
-        } catch (ExceptionInterface|Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->warning('PDF proxy could not fetch URL: {url}. Reason: {reason}', [
                 'url'       => $url,
                 'reason'    => $e->getMessage(),

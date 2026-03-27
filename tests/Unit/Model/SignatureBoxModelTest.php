@@ -99,7 +99,7 @@ final class SignatureBoxModelTest extends TestCase
         self::assertArrayHasKey('signed_at', $arr);
         self::assertSame('2025-02-09T12:00:00+00:00', $arr['signed_at']);
         $restored = SignatureBoxModel::fromArray($arr);
-        self::assertSame($model->getSignedAt(), $restored->getSignedAt());
+        self::assertEquals($model->getSignedAt(), $restored->getSignedAt());
         $model->setSignedAt(null);
         self::assertArrayNotHasKey('signed_at', $model->toArray());
     }

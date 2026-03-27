@@ -17,10 +17,15 @@ use function is_array;
  */
 final class AcroFormFieldPatch
 {
+    /**
+     * @param array<int, float|int>|null $rect
+     * @param list<array{value: scalar|null, label?: string|null}>|null $options
+     */
     public function __construct(
         /** Identifier: PDF.js annotation id or PDF field name */
         public readonly string $fieldId,
         /** Rect in PDF points [llx, lly, urx, ury] — optional; for move/resize */
+        /** @var array<int, float|int>|null */
         public readonly ?array $rect = null,
         /** Default value (PDF /DV or our override) */
         public readonly ?string $defaultValue = null,
@@ -31,6 +36,7 @@ final class AcroFormFieldPatch
         /** UI control type: text, textarea, checkbox, select (overrides only) */
         public readonly ?string $controlType = null,
         /** Options for select (overrides only); array of { value, label? } */
+        /** @var list<array{value: scalar|null, label?: string|null}>|null */
         public readonly ?array $options = null,
         /** Page 1-based (for rect or field identification) */
         public readonly ?int $page = null,
@@ -70,7 +76,7 @@ final class AcroFormFieldPatch
             isset($data['fieldType']) ? (string) $data['fieldType'] : (isset($data['field_type']) ? (string) $data['field_type'] : null),
             isset($data['label']) ? (string) $data['label'] : null,
             isset($data['controlType']) ? (string) $data['controlType'] : (isset($data['control_type']) ? (string) $data['control_type'] : null),
-            isset($data['options']) && is_array($data['options']) ? $data['options'] : null,
+            isset($data['options']) && is_array($data['options']) ? self::normalizeOptions($data['options']) : null,
             isset($data['page']) ? (int) $data['page'] : null,
             isset($data['hidden']) ? (bool) $data['hidden'] : null,
             isset($data['fieldName']) ? (string) $data['fieldName'] : (isset($data['field_name']) ? (string) $data['field_name'] : null),
@@ -78,6 +84,40 @@ final class AcroFormFieldPatch
             isset($data['fontSize']) ? (float) $data['fontSize'] : (isset($data['font_size']) ? (float) $data['font_size'] : null),
             isset($data['fontFamily']) ? (string) $data['fontFamily'] : (isset($data['font_family']) ? (string) $data['font_family'] : null),
         );
+    }
+
+    /**
+     * @param array<mixed, mixed> $options
+     *
+     * @return list<array{value: scalar|null, label?: string|null}>
+     */
+    private static function normalizeOptions(array $options): array
+    {
+        if (!array_is_list($options)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($options as $item) {
+            if (!is_array($item) || !array_key_exists('value', $item)) {
+                continue;
+            }
+
+            $value = $item['value'];
+            if (!is_string($value) && !is_int($value) && !is_float($value) && !is_bool($value) && $value !== null) {
+                continue;
+            }
+
+            $row = ['value' => $value];
+            $label = $item['label'] ?? null;
+            if ($label !== null) {
+                $row['label'] = (string) $label;
+            }
+
+            $out[] = $row;
+        }
+
+        return $out;
     }
 
     /**

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Checker;
 
+use Closure;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
-use Closure;
 
 use function extension_loaded;
 use function is_string;
@@ -76,7 +76,7 @@ final class DependencyChecker implements DependencyCheckerInterface
         }
 
         $this->checkAcroFormScripts($failures, $warnings);
-        $this->checkBundleAssets($failures, $warnings);
+        $this->checkBundleAssets($warnings);
 
         return ['failures' => $failures, 'warnings' => $warnings];
     }
@@ -135,7 +135,7 @@ final class DependencyChecker implements DependencyCheckerInterface
      */
     private function checkPypdfAvailable(array &$warnings, string $pythonCommand): void
     {
-        if ($this->isPypdfAvailable !== null) {
+        if ($this->isPypdfAvailable instanceof \Closure) {
             if (!(bool) ($this->isPypdfAvailable)($pythonCommand)) {
                 $warnings[] = 'Python pypdf module not installed. Install with: ' . $pythonCommand . ' -m pip install pypdf (required for AcroForm apply/extract scripts)';
             }
@@ -157,7 +157,7 @@ final class DependencyChecker implements DependencyCheckerInterface
 
     private function isExtensionLoaded(string $extension): bool
     {
-        if ($this->extensionLoaded !== null) {
+        if ($this->extensionLoaded instanceof \Closure) {
             return (bool) ($this->extensionLoaded)($extension);
         }
 
@@ -165,10 +165,9 @@ final class DependencyChecker implements DependencyCheckerInterface
     }
 
     /**
-     * @param list<string> $failures
      * @param list<string> $warnings
      */
-    private function checkBundleAssets(array &$failures, array &$warnings): void
+    private function checkBundleAssets(array &$warnings): void
     {
         $projectDir   = $this->kernel->getProjectDir();
         $publicDir    = $projectDir . DIRECTORY_SEPARATOR . 'public';

@@ -221,7 +221,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'prevent_box_overlap' => false,
         ]);
         $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
-        $callbacks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        $callbacks   = array_filter($constraints ?? [], static fn ($c): bool => $c instanceof Callback);
         self::assertCount(0, $callbacks);
     }
 
@@ -234,7 +234,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'prevent_box_overlap' => false,
         ]);
         $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
-        $callbacks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        $callbacks   = array_filter($constraints ?? [], static fn ($c): bool => $c instanceof Callback);
         self::assertCount(1, $callbacks);
     }
 
@@ -247,7 +247,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'prevent_box_overlap' => false,
         ]);
         $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
-        $callbacks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        $callbacks   = array_filter($constraints ?? [], static fn ($c): bool => $c instanceof Callback);
         self::assertCount(1, $callbacks);
     }
 
@@ -435,7 +435,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model->setUnit(SignatureCoordinatesModel::UNIT_MM);
         $model->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT);
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'sort_boxes' => true,
+            'sort_boxes'          => true,
             'prevent_box_overlap' => false,
         ]);
         // Submit boxes in "wrong" order: page 2 first, then page 1; on page 1, higher Y first
@@ -474,7 +474,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'unique_box_names'    => false,
         ]);
         $constraints = $form->get('signatureBoxes')->getConfig()->getOption('constraints');
-        $callbacks   = array_filter($constraints ?? [], static fn ($c) => $c instanceof Callback);
+        $callbacks   = array_filter($constraints ?? [], static fn ($c): bool => $c instanceof Callback);
         self::assertCount(1, $callbacks, 'Exactly one Callback (overlap) should be present when prevent_box_overlap is true and unique_box_names is false');
 
         // Ensure the overlap helper would detect overlapping boxes with the same coordinates as in the doc
@@ -875,7 +875,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'sort_boxes' => true,
+            'sort_boxes'          => true,
             'prevent_box_overlap' => false,
         ]);
         $form->submit([
@@ -915,7 +915,6 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     public function testBoxFromArrayViaReflection(): void
     {
         $ref = new ReflectionMethod(SignatureCoordinatesType::class, 'boxFromArray');
-        $ref->setAccessible(true);
 
         self::assertNull($ref->invoke(null, []));
         self::assertNull($ref->invoke(null, ['page' => 1]));

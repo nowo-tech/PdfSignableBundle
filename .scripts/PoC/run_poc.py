@@ -38,7 +38,7 @@ LOREM_FORM_LINES = [
 
 
 def _pdf_escape(s: str) -> str:
-    """Escape string for PDF text literal: \ ( )"""
+    r"""Escape string for PDF text literal: \ ( )"""
     return s.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
 
 
@@ -234,7 +234,7 @@ def step3_modify_and_add_fields(pdf_with_fields_path: Path) -> Path:
     log("3", f"Wrote patches to {patches_path}")
 
     import importlib.util
-    apply_script = REPO_ROOT / "scripts" / "apply_acroform_patches.py"
+    apply_script = REPO_ROOT / ".scripts" / "apply_acroform_patches.py"
     if not apply_script.is_file():
         log("3", f"FAIL: apply script not found: {apply_script}")
         raise SystemExit(1)

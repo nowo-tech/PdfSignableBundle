@@ -214,7 +214,14 @@ class SignatureCoordinatesModel
     /**
      * Exports the coordinates model to an array (e.g. for JSON/YAML export).
      *
-     * @return array{pdf_url: string|null, unit: string, origin: string, signature_boxes: array, signing_consent?: bool, audit_metadata?: array}
+     * @return array{
+     *     pdf_url: string|null,
+     *     unit: string,
+     *     origin: string,
+     *     signature_boxes: array<int, array<string, mixed>>,
+     *     signing_consent?: bool,
+     *     audit_metadata?: array<string, mixed>
+     * }
      */
     public function toArray(): array
     {
@@ -222,7 +229,7 @@ class SignatureCoordinatesModel
             'pdf_url'         => $this->pdfUrl,
             'unit'            => $this->unit,
             'origin'          => $this->origin,
-            'signature_boxes' => array_map(static fn (SignatureBoxModel $box) => $box->toArray(), $this->signatureBoxes),
+            'signature_boxes' => array_map(static fn (SignatureBoxModel $box): array => $box->toArray(), $this->signatureBoxes),
         ];
         if ($this->signingConsent) {
             $out['signing_consent'] = true;
@@ -237,7 +244,14 @@ class SignatureCoordinatesModel
     /**
      * Creates a coordinates model from an array (e.g. from JSON/YAML import).
      *
-     * @param array{pdf_url?: string|null, unit?: string, origin?: string, signature_boxes?: array<int, array>, signing_consent?: bool, audit_metadata?: array} $data Raw data; defaults applied for missing values
+     * @param array{
+     *     pdf_url?: string|null,
+     *     unit?: string,
+     *     origin?: string,
+     *     signature_boxes?: array<int, array<string, mixed>>,
+     *     signing_consent?: bool,
+     *     audit_metadata?: array<string, mixed>
+     * } $data Raw data; defaults applied for missing values
      *
      * @return self New instance with data applied
      */
@@ -249,12 +263,10 @@ class SignatureCoordinatesModel
         $model->setOrigin((string) ($data['origin'] ?? self::ORIGIN_BOTTOM_LEFT));
         $boxes = $data['signature_boxes'] ?? [];
         foreach ($boxes as $boxData) {
-            if (is_array($boxData)) {
-                $model->addSignatureBox(SignatureBoxModel::fromArray($boxData));
-            }
+            $model->addSignatureBox(SignatureBoxModel::fromArray($boxData));
         }
         $model->setSigningConsent(!empty($data['signing_consent']));
-        if (isset($data['audit_metadata']) && is_array($data['audit_metadata'])) {
+        if (isset($data['audit_metadata'])) {
             $model->setAuditMetadata($data['audit_metadata']);
         }
 

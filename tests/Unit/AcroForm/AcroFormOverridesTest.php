@@ -24,6 +24,7 @@ final class AcroFormOverridesTest extends TestCase
 
         $out = $o->toArray();
         self::assertSame($data['overrides'], $out['overrides']);
+        self::assertArrayHasKey('document_key', $out);
         self::assertSame('doc-123', $out['document_key']);
     }
 
@@ -53,7 +54,7 @@ final class AcroFormOverridesTest extends TestCase
 
     public function testToArrayExcludesFieldsWhenNull(): void
     {
-        $o   = new AcroFormOverrides([], 'doc1', null);
+        $o   = new AcroFormOverrides([], 'doc1');
         $out = $o->toArray();
         self::assertArrayNotHasKey('fields', $out);
     }

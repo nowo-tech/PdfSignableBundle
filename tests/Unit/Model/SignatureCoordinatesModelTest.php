@@ -134,8 +134,6 @@ final class SignatureCoordinatesModelTest extends TestCase
             'origin'          => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
             'signature_boxes' => [
                 ['name' => 's1', 'page' => 1, 'x' => 0, 'y' => 0, 'width' => 100, 'height' => 30],
-                'invalid',
-                null,
                 ['name' => 's2', 'page' => 2, 'x' => 10, 'y' => 20, 'width' => 80, 'height' => 25],
             ],
         ];

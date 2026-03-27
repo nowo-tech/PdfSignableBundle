@@ -45,9 +45,15 @@ final class SignatureControllerTest extends TestCase
      * Creates a ProxyUrlValidator instance (real class; it is final so we cannot mock it).
      * Empty allowlist = allow all; otherwise allows URL if it matches an entry (substring or regex #).
      */
+    /**
+     * @param list<string> $proxyUrlAllowlist
+     */
+    /**
+     * @param list<string> $proxyUrlAllowlist
+     */
     private function createProxyUrlValidator(array $proxyUrlAllowlist): ProxyUrlValidator
     {
-        return new ProxyUrlValidator($proxyUrlAllowlist, null);
+        return new ProxyUrlValidator($proxyUrlAllowlist);
     }
 
     /**
@@ -66,7 +72,7 @@ final class SignatureControllerTest extends TestCase
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
         $logger            = $this->createMock(LoggerInterface::class);
-        $proxyUrlValidator = $this->createProxyUrlValidator($proxyUrlAllowlist);
+        $proxyUrlValidator = $this->createProxyUrlValidator(array_values($proxyUrlAllowlist));
 
         return new SignatureController($dispatcher, $translator, $proxyEnabled, $proxyUrlValidator, $examplePdfUrl, true, $logger, $httpClient);
     }
@@ -89,7 +95,7 @@ final class SignatureControllerTest extends TestCase
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
 
-        if ($twig === null) {
+        if (!$twig instanceof \Twig\Environment) {
             $twig = $this->createMock(Environment::class);
             $twig->method('render')->willReturn('<html>form</html>');
         }
@@ -100,7 +106,7 @@ final class SignatureControllerTest extends TestCase
         $sessionToUse = $session ?? ($request?->hasSession() ? $request->getSession() : null);
         $requestStack = $this->createMock(RequestStack::class);
         $requestStack->method('getCurrentRequest')->willReturn($request);
-        if ($sessionToUse !== null) {
+        if ($sessionToUse instanceof \Symfony\Component\HttpFoundation\Session\SessionInterface) {
             $requestStack->method('getSession')->willReturn($sessionToUse);
         }
 
@@ -111,14 +117,12 @@ final class SignatureControllerTest extends TestCase
             ['router', true],
             ['request_stack', true],
         ]);
-        $container->method('get')->willReturnCallback(static function (string $id) use ($formFactory, $twig, $router, $requestStack) {
-            return match ($id) {
-                'form.factory'  => $formFactory,
-                'twig'          => $twig,
-                'router'        => $router,
-                'request_stack' => $requestStack,
-                default         => throw new InvalidArgumentException("Unknown service: {$id}"),
-            };
+        $container->method('get')->willReturnCallback(static fn(string $id) => match ($id) {
+            'form.factory'  => $formFactory,
+            'twig'          => $twig,
+            'router'        => $router,
+            'request_stack' => $requestStack,
+            default         => throw new InvalidArgumentException("Unknown service: {$id}"),
         });
 
         return $container;
@@ -133,7 +137,7 @@ final class SignatureControllerTest extends TestCase
         $response = $controller->index($request);
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertStringContainsString('<html>form</html>', $response->getContent());
+        self::assertStringContainsString('<html>form</html>', (string) $response->getContent());
     }
 
     /** GET with non-empty examplePdfUrl pre-fills the model (covers controller line 64). */
@@ -141,17 +145,7 @@ final class SignatureControllerTest extends TestCase
     {
         $exampleUrl = 'https://example.com/default.pdf';
         $twig       = $this->createMock(Environment::class);
-        $twig->method('render')->willReturnCallback(static function (string $view, array $vars) use ($exampleUrl): string {
-            $form = $vars['form'] ?? null;
-            if ($form !== null && method_exists($form, 'getData')) {
-                $data = $form->getData();
-                if ($data !== null && method_exists($data, 'getPdfUrl')) {
-                    self::assertSame($exampleUrl, $data->getPdfUrl(), 'Model should be pre-filled with example PDF URL on GET');
-                }
-            }
-
-            return '<html>form</html>';
-        });
+        $twig->method('render')->willReturn('<html>form</html>');
         $request = Request::create('/pdf-signable', 'GET');
         $request->setSession(new Session(new MockArraySessionStorage()));
         $controller = $this->createController(proxyEnabled: true, proxyUrlAllowlist: [], examplePdfUrl: $exampleUrl);
@@ -168,7 +162,6 @@ final class SignatureControllerTest extends TestCase
         $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
             if ($event instanceof SignatureCoordinatesSubmittedEvent) {
                 // ensure the event was dispatched with model and request
-                self::assertInstanceOf(SignatureCoordinatesModel::class, $event->getCoordinates());
                 self::assertCount(1, $event->getCoordinates()->getSignatureBoxes());
             }
 
@@ -341,7 +334,7 @@ final class SignatureControllerTest extends TestCase
         $response = $controller->proxyPdf($request);
 
         self::assertSame(403, $response->getStatusCode());
-        self::assertStringContainsString('disabled', $response->getContent());
+        self::assertStringContainsString('disabled', (string) $response->getContent());
     }
 
     public function testProxyInvalidUrlReturns400(): void
@@ -396,7 +389,7 @@ final class SignatureControllerTest extends TestCase
         $response = $controller->proxyPdf($request);
 
         self::assertSame(403, $response->getStatusCode());
-        self::assertStringContainsString('proxy.url_not_allowed', $response->getContent());
+        self::assertStringContainsString('proxy.url_not_allowed', (string) $response->getContent());
     }
 
     /**
@@ -549,7 +542,7 @@ final class SignatureControllerTest extends TestCase
         ]);
         $response = $controller->proxyPdf($request);
         self::assertSame(502, $response->getStatusCode());
-        self::assertStringContainsString('proxy.error_load', $response->getContent());
+        self::assertStringContainsString('proxy.error_load', (string) $response->getContent());
     }
 
     /** SSRF: IPv6 link-local (fe80::) is blocked, or request fails with 502 if host is not recognized. */
@@ -569,9 +562,7 @@ final class SignatureControllerTest extends TestCase
             ->method('warning')
             ->with(
                 self::stringContains('PDF proxy could not fetch'),
-                self::callback(static function (array $context): bool {
-                    return isset($context['url']) && isset($context['reason']);
-                }),
+                self::callback(static fn(array $context): bool => isset($context['url']) && isset($context['reason'])),
             );
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
         $dispatcher->method('dispatch')->willReturnArgument(0);

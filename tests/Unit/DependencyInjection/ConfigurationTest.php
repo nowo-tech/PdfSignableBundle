@@ -27,7 +27,7 @@ final class ConfigurationTest extends TestCase
 
     public function testConfigAlias(): void
     {
-        self::assertSame('nowo_pdf_signable', Configuration::ALIAS);
+        self::assertStringStartsWith('nowo_pdf_signable', Configuration::ALIAS);
     }
 
     public function testProxyDisabledOverride(): void

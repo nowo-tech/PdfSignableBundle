@@ -17,6 +17,9 @@ use Symfony\Component\Validator\Validation;
  */
 final class AcroFormEditorTypeTest extends TypeTestCase
 {
+    /**
+     * @return array<int, PreloadedExtension|ValidatorExtension>
+     */
     protected function getExtensions(): array
     {
         $type = new AcroFormEditorType(
@@ -190,7 +193,7 @@ final class AcroFormEditorTypeTest extends TypeTestCase
     public function testBuildViewUrlFieldAndDocumentKeyFieldFalse(): void
     {
         $form = $this->factory->create(AcroFormEditorType::class, new AcroFormPageModel(), [
-            'url_field' => false,
+            'url_field'          => false,
             'document_key_field' => false,
         ]);
         $view = $form->createView();

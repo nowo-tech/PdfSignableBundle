@@ -139,6 +139,6 @@ final class AcroFormApplyRequestEvent extends Event
      */
     public function hasResponse(): bool
     {
-        return $this->modifiedPdf !== null || $this->error !== null || $this->validationResult !== null;
+        return $this->modifiedPdf !== null || $this->error instanceof \Throwable || $this->validationResult !== null;
     }
 }

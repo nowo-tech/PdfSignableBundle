@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Controller;
 
+use Closure;
 use InvalidArgumentException;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides;
@@ -27,10 +28,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Closure;
 use Throwable;
 
 use function count;
@@ -128,7 +127,7 @@ final class AcroFormOverridesController extends AbstractController
             return new JsonResponse(['error' => 'document_key required'], Response::HTTP_BAD_REQUEST);
         }
         $overrides = $this->storage->get($documentKey);
-        if ($overrides === null) {
+        if (!$overrides instanceof \Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides) {
             return new JsonResponse(['error' => 'Not found'], Response::HTTP_NOT_FOUND);
         }
 
@@ -162,7 +161,7 @@ final class AcroFormOverridesController extends AbstractController
         }
 
         $overrides     = $this->storage->get($documentKey);
-        $overridesData = $overrides !== null ? $overrides->toArray()['overrides'] ?? [] : [];
+        $overridesData = $overrides instanceof \Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides ? $overrides->toArray()['overrides'] : [];
         $out           = ['overrides' => $overridesData, 'document_key' => $documentKey];
 
         // 1) Use "fields" from request body if the frontend sent them (e.g. from PDF.js in the browser).
@@ -203,7 +202,7 @@ final class AcroFormOverridesController extends AbstractController
                     } catch (Throwable $e) {
                         $out['fields_extractor_error'] = 'Error running the fields extractor (e.g. python3 is not installed or not in PATH): ' . $e->getMessage();
                     } finally {
-                        if ($tmpFile !== null && is_file($tmpFile)) {
+                        if (is_string($tmpFile) && is_file($tmpFile)) {
                             @unlink($tmpFile);
                         }
                     }
@@ -227,7 +226,7 @@ final class AcroFormOverridesController extends AbstractController
             $fullOverrides = [];
             foreach ($overridesData as $id => $stored) {
                 $base               = $byId[$id] ?? [];
-                $fullOverrides[$id] = is_array($stored) ? array_merge($base, $stored) : $base;
+                $fullOverrides[$id] = array_merge($base, $stored);
             }
             // Include all extracted fields as keys with at least full info (user can add overrides later)
             foreach ($byId as $id => $fieldData) {
@@ -429,7 +428,7 @@ final class AcroFormOverridesController extends AbstractController
                     throw new RuntimeException('Upstream error');
                 }
                 $pdfContents = $response->getContent();
-            } catch (ExceptionInterface|Throwable) {
+            } catch (Throwable) {
                 return new Response(
                     $this->translator->trans('proxy.error_load', [], 'nowo_pdf_signable'),
                     Response::HTTP_BAD_GATEWAY,
@@ -450,7 +449,7 @@ final class AcroFormOverridesController extends AbstractController
         }
 
         $validateOnly = $this->debug && !empty($data['validate_only']);
-        if ($this->debug && $this->logger !== null) {
+        if ($this->debug && $this->logger instanceof \Psr\Log\LoggerInterface) {
             $this->logger->info('AcroForm apply request', [
                 'has_pdf_content' => isset($data['pdf_content']),
                 'has_pdf_url'     => isset($data['pdf_url']),
@@ -464,18 +463,18 @@ final class AcroFormOverridesController extends AbstractController
         $this->eventDispatcher->dispatch($event, PdfSignableEvents::ACROFORM_APPLY_REQUEST);
 
         if ($event->getValidationResult() !== null) {
-            if ($this->debug && $this->logger !== null) {
+            if ($this->debug && $this->logger instanceof \Psr\Log\LoggerInterface) {
                 $this->logger->info('AcroForm apply response: validation_result (JSON)');
             }
 
             return new JsonResponse($event->getValidationResult(), Response::HTTP_OK);
         }
-        if ($event->getError() !== null) {
+        if ($event->getError() instanceof \Throwable) {
             $payload = ['error' => $event->getError()->getMessage()];
             if ($event->getErrorDetail() !== null) {
                 $payload['detail'] = $event->getErrorDetail();
             }
-            if ($this->debug && $this->logger !== null) {
+            if ($this->debug && $this->logger instanceof \Psr\Log\LoggerInterface) {
                 $this->logger->warning('AcroForm apply response: error', ['error' => $payload['error'], 'detail' => $payload['detail'] ?? null]);
             }
 
@@ -483,7 +482,7 @@ final class AcroFormOverridesController extends AbstractController
         }
         if ($event->getModifiedPdf() !== null) {
             $modified = $event->getModifiedPdf();
-            if ($this->debug && $this->logger !== null) {
+            if ($this->debug && $this->logger instanceof \Psr\Log\LoggerInterface) {
                 $this->logger->info('AcroForm apply response: modified PDF', ['pdf_output_bytes' => strlen($modified)]);
             }
 
@@ -492,7 +491,7 @@ final class AcroFormOverridesController extends AbstractController
                 'Content-Disposition' => 'inline; filename="document.pdf"',
             ]);
         }
-        if ($this->editor !== null) {
+        if ($this->editor instanceof \Nowo\PdfSignableBundle\AcroForm\PdfAcroFormEditorInterface) {
             try {
                 $modified = $this->editor->applyPatches($pdfContents, $patches);
                 if ($validateOnly) {
@@ -516,7 +515,7 @@ final class AcroFormOverridesController extends AbstractController
             }
         }
 
-        if ($this->debug && $this->logger !== null) {
+        if ($this->debug && $this->logger instanceof \Psr\Log\LoggerInterface) {
             $this->logger->warning('AcroForm apply response: 501 No editor configured and event did not set modified PDF');
         }
 
@@ -592,9 +591,12 @@ final class AcroFormOverridesController extends AbstractController
                 ], Response::HTTP_BAD_REQUEST);
             }
 
-            $processedPdf = is_file($tmpOutput) ? file_get_contents($tmpOutput) : '';
+            $processedPdf = is_file($tmpOutput) ? file_get_contents($tmpOutput) : false;
             if ($processedPdf === '') {
                 return new JsonResponse(['error' => 'Process script produced no output file'], Response::HTTP_BAD_REQUEST);
+            }
+            if ($processedPdf === false) {
+                return new JsonResponse(['error' => 'Failed to read process output file'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             $this->eventDispatcher->dispatch(
@@ -603,7 +605,7 @@ final class AcroFormOverridesController extends AbstractController
             );
 
             $accept = $request->headers->get('Accept', '');
-            if (str_contains($accept, 'application/pdf')) {
+            if (str_contains((string) $accept, 'application/pdf')) {
                 return new Response($processedPdf, Response::HTTP_OK, [
                     'Content-Type'        => 'application/pdf',
                     'Content-Disposition' => 'inline; filename="processed.pdf"',
@@ -615,8 +617,12 @@ final class AcroFormOverridesController extends AbstractController
                 'document_key' => $documentKey,
             ], Response::HTTP_OK);
         } finally {
-            @unlink($tmpInput);
-            @unlink($tmpOutput);
+            if (is_string($tmpInput) && is_file($tmpInput)) {
+                @unlink($tmpInput);
+            }
+            if (is_string($tmpOutput) && is_file($tmpOutput)) {
+                @unlink($tmpOutput);
+            }
         }
     }
 
@@ -655,7 +661,7 @@ final class AcroFormOverridesController extends AbstractController
                 }
 
                 return $response->getContent();
-            } catch (ExceptionInterface|Throwable) {
+            } catch (Throwable) {
                 return null;
             }
         }
@@ -674,6 +680,7 @@ final class AcroFormOverridesController extends AbstractController
      * Prefer body['document_key'] when body is provided; otherwise query or request parameter.
      *
      * @param Request $request Request to read document_key from
+     *
      * @return string|null The document key if present and valid, null otherwise
      */
     private function resolveDocumentKey(Request $request): ?string
@@ -706,11 +713,11 @@ final class AcroFormOverridesController extends AbstractController
     }
 
     /**
-     * @return string|false
+     * @return false|string
      */
     private function createTempFile(string $prefix)
     {
-        if ($this->createTempFile !== null) {
+        if ($this->createTempFile instanceof \Closure) {
             return ($this->createTempFile)($prefix);
         }
 
@@ -719,7 +726,7 @@ final class AcroFormOverridesController extends AbstractController
 
     private function writeTempFile(string $path, string $contents): int|false
     {
-        if ($this->writeFile !== null) {
+        if ($this->writeFile instanceof \Closure) {
             return ($this->writeFile)($path, $contents);
         }
 
