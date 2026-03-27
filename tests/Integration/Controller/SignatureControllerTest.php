@@ -95,7 +95,7 @@ final class SignatureControllerTest extends TestCase
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
 
-        if (!$twig instanceof \Twig\Environment) {
+        if (!$twig instanceof Environment) {
             $twig = $this->createMock(Environment::class);
             $twig->method('render')->willReturn('<html>form</html>');
         }
@@ -117,7 +117,7 @@ final class SignatureControllerTest extends TestCase
             ['router', true],
             ['request_stack', true],
         ]);
-        $container->method('get')->willReturnCallback(static fn(string $id) => match ($id) {
+        $container->method('get')->willReturnCallback(static fn (string $id) => match ($id) {
             'form.factory'  => $formFactory,
             'twig'          => $twig,
             'router'        => $router,
@@ -562,7 +562,7 @@ final class SignatureControllerTest extends TestCase
             ->method('warning')
             ->with(
                 self::stringContains('PDF proxy could not fetch'),
-                self::callback(static fn(array $context): bool => isset($context['url']) && isset($context['reason'])),
+                self::callback(static fn (array $context): bool => isset($context['url']) && isset($context['reason'])),
             );
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
         $dispatcher->method('dispatch')->willReturnArgument(0);

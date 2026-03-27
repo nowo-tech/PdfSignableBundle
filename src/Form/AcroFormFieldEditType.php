@@ -18,7 +18,11 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use function array_key_exists;
 use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
 use function is_string;
 
 /**
@@ -40,7 +44,7 @@ use function is_string;
 final class AcroFormFieldEditType extends AbstractType
 {
     /**
-     * @param array<int|string, scalar|array{value: scalar|null, label?: scalar|null}> $fieldNameChoices
+     * @param array<int|string, array{value: scalar|null, label?: scalar|null}|scalar> $fieldNameChoices
      * @param array<int, int> $fontSizes
      * @param array<int, array<string, mixed>|string> $fontFamilies
      */
@@ -225,7 +229,7 @@ final class AcroFormFieldEditType extends AbstractType
     }
 
     /**
-     * @param array<int|string, scalar|array{value: scalar|null, label?: scalar|null}> $fieldNameChoices
+     * @param array<int|string, array{value: scalar|null, label?: scalar|null}|scalar> $fieldNameChoices
      */
     private function getFieldNameFieldType(string $fieldNameMode, array $fieldNameChoices): string
     {
@@ -237,7 +241,7 @@ final class AcroFormFieldEditType extends AbstractType
     }
 
     /**
-     * @param array<int|string, scalar|array{value: scalar|null, label?: scalar|null}> $fieldNameChoices
+     * @param array<int|string, array{value: scalar|null, label?: scalar|null}|scalar> $fieldNameChoices
      *
      * @return array<string, mixed>
      */
@@ -250,7 +254,7 @@ final class AcroFormFieldEditType extends AbstractType
                     if (!is_string($value) && !is_int($value) && !is_float($value) && !is_bool($value) && $value !== null) {
                         continue;
                     }
-                    $valueString = (string) $value;
+                    $valueString                                        = (string) $value;
                     $choices[is_string($label) ? $label : $valueString] = $valueString;
                 }
             } else {
@@ -260,7 +264,7 @@ final class AcroFormFieldEditType extends AbstractType
                         if (!is_string($value) && !is_int($value) && !is_float($value) && !is_bool($value) && $value !== null) {
                             continue;
                         }
-                        $label = $item['label'] ?? $value;
+                        $label                    = $item['label'] ?? $value;
                         $choices[(string) $label] = (string) $value;
                     } elseif (is_string($item)) {
                         $pipe = strpos($item, '|');
@@ -319,7 +323,7 @@ final class AcroFormFieldEditType extends AbstractType
                 if (!is_string($value) || $value === '') {
                     continue;
                 }
-                $label = $item['label'] ?? $value;
+                $label                = $item['label'] ?? $value;
                 $out[(string) $label] = $value;
             } elseif (is_string($item)) {
                 $pipe = strpos($item, '|');

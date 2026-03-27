@@ -51,7 +51,7 @@ final class AuditMetadataTest extends TestCase
 
     public function testClassIsNotInstantiable(): void
     {
-        $ref = new ReflectionClass(AuditMetadata::class);
+        $ref         = new ReflectionClass(AuditMetadata::class);
         $constructor = $ref->getConstructor();
         self::assertNotNull($constructor);
         self::assertTrue($constructor->isPrivate());

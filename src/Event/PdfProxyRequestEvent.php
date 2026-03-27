@@ -84,6 +84,6 @@ final class PdfProxyRequestEvent extends Event
      */
     public function hasResponse(): bool
     {
-        return $this->response instanceof \Symfony\Component\HttpFoundation\Response;
+        return $this->response instanceof Response;
     }
 }

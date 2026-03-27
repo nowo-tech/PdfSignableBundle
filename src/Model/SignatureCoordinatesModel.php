@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Model;
 
-use function is_array;
-
 /**
  * Main model for signature coordinates: PDF URL, unit, origin and signature boxes.
  *

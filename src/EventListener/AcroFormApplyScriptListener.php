@@ -196,7 +196,7 @@ final class AcroFormApplyScriptListener
      */
     private function createTempFile(string $prefix)
     {
-        if ($this->createTempFile instanceof \Closure) {
+        if ($this->createTempFile instanceof Closure) {
             return ($this->createTempFile)($prefix);
         }
 
@@ -205,7 +205,7 @@ final class AcroFormApplyScriptListener
 
     private function writeTempFile(string $path, string $contents): int|false
     {
-        if ($this->writeFile instanceof \Closure) {
+        if ($this->writeFile instanceof Closure) {
             return ($this->writeFile)($path, $contents);
         }
 

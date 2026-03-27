@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Tests\Controller;
 
+use function function_exists;
+
 if (!function_exists(__NAMESPACE__ . '\json_decode')) {
     /**
      * Local shim for tests: accepts Response::getContent() output (string|false).
@@ -12,6 +14,6 @@ if (!function_exists(__NAMESPACE__ . '\json_decode')) {
     {
         $safeDepth = $depth > 0 ? $depth : 512;
 
-        return \json_decode((string) $json, $associative, $safeDepth, $flags);
+        return json_decode((string) $json, $associative, $safeDepth, $flags);
     }
 }

@@ -135,7 +135,7 @@ final class DependencyChecker implements DependencyCheckerInterface
      */
     private function checkPypdfAvailable(array &$warnings, string $pythonCommand): void
     {
-        if ($this->isPypdfAvailable instanceof \Closure) {
+        if ($this->isPypdfAvailable instanceof Closure) {
             if (!(bool) ($this->isPypdfAvailable)($pythonCommand)) {
                 $warnings[] = 'Python pypdf module not installed. Install with: ' . $pythonCommand . ' -m pip install pypdf (required for AcroForm apply/extract scripts)';
             }
@@ -157,7 +157,7 @@ final class DependencyChecker implements DependencyCheckerInterface
 
     private function isExtensionLoaded(string $extension): bool
     {
-        if ($this->extensionLoaded instanceof \Closure) {
+        if ($this->extensionLoaded instanceof Closure) {
             return (bool) ($this->extensionLoaded)($extension);
         }
 

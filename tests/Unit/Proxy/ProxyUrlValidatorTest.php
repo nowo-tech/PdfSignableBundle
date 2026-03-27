@@ -49,7 +49,7 @@ final class ProxyUrlValidatorTest extends TestCase
             ->method('warning')
             ->with(
                 'Invalid regex in proxy_url_allowlist, pattern skipped',
-                self::callback(static fn(array $context): bool => isset($context['pattern'], $context['preg_error'])
+                self::callback(static fn (array $context): bool => isset($context['pattern'], $context['preg_error'])
                     && $context['pattern'] === '#invalid(regex'),
             );
         $validator = new ProxyUrlValidator(['#invalid(regex'], $logger);

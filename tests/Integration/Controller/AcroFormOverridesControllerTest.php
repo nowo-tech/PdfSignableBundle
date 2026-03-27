@@ -66,7 +66,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $storage ??= $this->createMock(AcroFormOverridesStorageInterface::class);
         /** @var EventDispatcherInterface&\PHPUnit\Framework\MockObject\MockObject $dispatcher */
         $dispatcher = $eventDispatcher ?? $this->createMock(EventDispatcherInterface::class);
-        $dispatcher->method('dispatch')->willReturnCallback(static fn(object $event): object => $event);
+        $dispatcher->method('dispatch')->willReturnCallback(static fn (object $event): object => $event);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
         $proxyUrlValidator = $this->createProxyUrlValidator(array_values($proxyUrlAllowlist));
@@ -174,7 +174,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesValidCallsStorageAndReturns200(): void
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
-        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static fn(AcroFormOverrides $o): bool => $o->documentKey === 'doc1' && $o->overrides === ['f1' => ['label' => 'Field 1']]));
+        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static fn (AcroFormOverrides $o): bool => $o->documentKey === 'doc1' && $o->overrides === ['f1' => ['label' => 'Field 1']]));
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
@@ -512,7 +512,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesWithFieldsInBody(): void
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
-        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static fn(AcroFormOverrides $o): bool => $o->documentKey === 'doc1'
+        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static fn (AcroFormOverrides $o): bool => $o->documentKey === 'doc1'
             && $o->overrides === ['f1' => ['label' => 'x']]
             && $o->fields === [['id' => 'f1', 'rect' => [0, 0, 100, 20]]]));
         $controller = $this->createController(storage: $storage);
@@ -534,7 +534,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesWithNonArrayOverridesTreatedAsEmpty(): void
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
-        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static fn(AcroFormOverrides $o): bool => $o->overrides === []));
+        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static fn (AcroFormOverrides $o): bool => $o->overrides === []));
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
@@ -563,7 +563,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testSaveOverridesWithFieldsNotArrayTreatedAsNull(): void
     {
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
-        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static fn(AcroFormOverrides $o): bool => $o->documentKey === 'doc1' && $o->overrides === [] && $o->fields === null));
+        $storage->expects(self::once())->method('set')->with('doc1', self::callback(static fn (AcroFormOverrides $o): bool => $o->documentKey === 'doc1' && $o->overrides === [] && $o->fields === null));
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
