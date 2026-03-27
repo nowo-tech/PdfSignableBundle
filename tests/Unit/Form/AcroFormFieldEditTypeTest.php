@@ -241,7 +241,7 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
 
         $choices = $form->get('fieldName')->getConfig()->getOption('choices');
         self::assertSame([
-            'Nombre' => 'name',
+            'Nombre'  => 'name',
             'surname' => 'surname',
         ], $choices);
     }
@@ -249,15 +249,15 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
     public function testBuildFormWithFieldNameChoicesPipeSyntax(): void
     {
         $form = $this->factory->create(AcroFormFieldEditType::class, new AcroFormFieldEdit(), [
-            'field_name_mode'    => 'choice',
-            'field_name_choices' => ['dni|Documento', 'email'],
+            'field_name_mode'       => 'choice',
+            'field_name_choices'    => ['dni|Documento', 'email'],
             'field_name_other_text' => '',
         ]);
 
         $choices = $form->get('fieldName')->getConfig()->getOption('choices');
         self::assertSame([
             'Documento' => 'dni',
-            'email' => 'email',
+            'email'     => 'email',
         ], $choices);
     }
 

@@ -10,7 +10,6 @@ use Nowo\PdfSignableBundle\EventListener\AcroFormApplyScriptListener;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-
 final class AcroFormApplyScriptListenerTest extends TestCase
 {
     public function testReturnsEarlyWhenEventHasResponse(): void

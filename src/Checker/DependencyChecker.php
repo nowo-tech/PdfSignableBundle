@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Checker;
 
+use Closure;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
-use Closure;
 
 use function extension_loaded;
 use function is_string;

@@ -435,7 +435,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model->setUnit(SignatureCoordinatesModel::UNIT_MM);
         $model->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT);
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'sort_boxes' => true,
+            'sort_boxes'          => true,
             'prevent_box_overlap' => false,
         ]);
         // Submit boxes in "wrong" order: page 2 first, then page 1; on page 1, higher Y first
@@ -875,7 +875,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'sort_boxes' => true,
+            'sort_boxes'          => true,
             'prevent_box_overlap' => false,
         ]);
         $form->submit([

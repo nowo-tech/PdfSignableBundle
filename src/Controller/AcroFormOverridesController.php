@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Controller;
 
+use Closure;
 use InvalidArgumentException;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides;
@@ -30,7 +31,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Closure;
 use Throwable;
 
 use function count;
@@ -674,6 +674,7 @@ final class AcroFormOverridesController extends AbstractController
      * Prefer body['document_key'] when body is provided; otherwise query or request parameter.
      *
      * @param Request $request Request to read document_key from
+     *
      * @return string|null The document key if present and valid, null otherwise
      */
     private function resolveDocumentKey(Request $request): ?string
@@ -706,7 +707,7 @@ final class AcroFormOverridesController extends AbstractController
     }
 
     /**
-     * @return string|false
+     * @return false|string
      */
     private function createTempFile(string $prefix)
     {

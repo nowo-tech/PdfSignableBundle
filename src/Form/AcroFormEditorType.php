@@ -14,6 +14,7 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use function is_array;
+use function is_string;
 
 /**
  * Form type for AcroForm page: PDF viewer + AcroForm editor panel.
@@ -209,7 +210,7 @@ final class AcroFormEditorType extends AbstractType
      * Normalize field_name_choices / label_choices to a list for the view and JSON.
      * Accepts: list of strings, list of {value, label?}, or associative array (value => label).
      *
-     * @param array<int|string, array{value: string, label?: string}|string|mixed> $choices
+     * @param array<int|string, array{value: string, label?: string}|mixed|string> $choices
      *
      * @return list<array{value: string, label?: string}|string>
      */
@@ -223,8 +224,10 @@ final class AcroFormEditorType extends AbstractType
             foreach ($choices as $label => $value) {
                 $out[] = ['value' => (string) $value, 'label' => is_string($label) ? $label : (string) $value];
             }
+
             return $out;
         }
+
         return $choices;
     }
 }

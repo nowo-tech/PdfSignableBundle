@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Tests\Controller;
 
+use Closure;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides;
 use Nowo\PdfSignableBundle\AcroForm\Exception\AcroFormEditorException;
 use Nowo\PdfSignableBundle\AcroForm\PdfAcroFormEditorInterface;
@@ -56,8 +57,8 @@ final class AcroFormOverridesControllerTest extends TestCase
         bool $debug = false,
         ?LoggerInterface $logger = null,
         ?HttpClientInterface $httpClient = null,
-        ?\Closure $createTempFile = null,
-        ?\Closure $writeFile = null,
+        ?Closure $createTempFile = null,
+        ?Closure $writeFile = null,
     ): AcroFormOverridesController {
         $storage ??= $this->createMock(AcroFormOverridesStorageInterface::class);
         /** @var EventDispatcherInterface&\PHPUnit\Framework\MockObject\MockObject $dispatcher */
@@ -1683,8 +1684,8 @@ final class AcroFormOverridesControllerTest extends TestCase
         $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
-            'pdf_url'  => 'https://allowed.example.com/doc.pdf',
-            'patches'  => [['fieldId' => 'f1']],
+            'pdf_url' => 'https://allowed.example.com/doc.pdf',
+            'patches' => [['fieldId' => 'f1']],
         ], JSON_THROW_ON_ERROR));
 
         $result = $controller->apply($request);
