@@ -50,7 +50,7 @@ final class PdfSignableEventsTest extends TestCase
 
     public function testClassIsNotInstantiable(): void
     {
-        $ref = new ReflectionClass(PdfSignableEvents::class);
+        $ref         = new ReflectionClass(PdfSignableEvents::class);
         $constructor = $ref->getConstructor();
         self::assertNotNull($constructor);
         self::assertTrue($constructor->isPrivate());

@@ -39,7 +39,7 @@ final class NowoPdfSignableBundle extends Bundle
      *
      * @return ExtensionInterface The bundle extension instance
      */
-    public function getContainerExtension(): \Symfony\Component\DependencyInjection\Extension\ExtensionInterface
+    public function getContainerExtension(): ExtensionInterface
     {
         return $this->extension ??= new PdfSignableExtension();
     }

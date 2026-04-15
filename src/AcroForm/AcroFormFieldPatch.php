@@ -6,7 +6,12 @@ namespace Nowo\PdfSignableBundle\AcroForm;
 
 use InvalidArgumentException;
 
+use function array_key_exists;
 use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_string;
 
 /**
  * DTO for a single AcroForm field patch (frontend to backend).
@@ -108,7 +113,7 @@ final class AcroFormFieldPatch
                 continue;
             }
 
-            $row = ['value' => $value];
+            $row   = ['value' => $value];
             $label = $item['label'] ?? null;
             if ($label !== null) {
                 $row['label'] = (string) $label;

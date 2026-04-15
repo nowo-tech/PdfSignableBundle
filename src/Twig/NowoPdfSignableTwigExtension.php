@@ -123,10 +123,10 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
      *
      * @return array{
      *     label_mode: string,
-     *     label_choices: array<int|string, scalar|array<string, mixed>>,
+     *     label_choices: array<int|string, array<string, mixed>|scalar>,
      *     label_other_text: string,
      *     field_name_mode: string,
-     *     field_name_choices: array<int|string, scalar|array<string, mixed>>,
+     *     field_name_choices: array<int|string, array<string, mixed>|scalar>,
      *     field_name_other_text: string,
      *     show_field_rect: bool,
      *     font_sizes: array<int, int>,

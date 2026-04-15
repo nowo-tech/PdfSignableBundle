@@ -351,7 +351,7 @@ final class SignatureCoordinatesType extends AbstractType
                     $model = $box instanceof SignatureBoxModel
                         ? $box
                         : self::boxFromArray(is_array($box) ? $box : []);
-                    if (!$model instanceof \Nowo\PdfSignableBundle\Model\SignatureBoxModel) {
+                    if (!$model instanceof SignatureBoxModel) {
                         continue;
                     }
                     $list[] = ['index' => $index, 'box' => $model];
