@@ -39,6 +39,28 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 2.0.5 (2026-04-15)
+
+**Release date:** 2026-04-15
+
+**Patch release:** No breaking changes for bundle consumers (`composer.json` constraints unchanged). Tooling and repository layout change for **contributors** (see below).
+
+#### Upgrade steps (from 2.0.x)
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Clear cache: `php bin/console cache:clear`.
+
+No YAML or runtime config changes are required for applications using the bundle.
+
+#### Contributors and custom automation
+
+- **Script paths:** Maintenance scripts now live under **`.scripts/`** (was `scripts/`). Update any local commands, CI, or forks that referenced `scripts/validate-translations-yaml.php`, `scripts/PoC/`, or `scripts/test/` to use **`.scripts/`** instead. The Composer script `validate-translations` already points to `.scripts/`.
+- **Demos:** If you use the Symfony **7** demo with Docker, `demo/symfony7/composer.json` uses Symfony Flex **`extra.symfony.require: "7.4.*"`** so `composer update` works with Composer’s security audit; run `composer update -W` inside the demo container after pulling.
+
+See [CHANGELOG.md](CHANGELOG.md) for the full list of changes.
+
+---
+
 ### Upgrading to 2.0.4 (2026-03-02)
 
 **Release date:** 2026-03-02

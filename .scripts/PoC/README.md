@@ -22,7 +22,7 @@ make test-poc
 O con Python local (requiere `pip install pypdf`):
 
 ```bash
-python3 scripts/PoC/run_poc.py
+python3 .scripts/PoC/run_poc.py
 ```
 
-Los PDFs generados se guardan en `scripts/PoC/output/`.
+Los PDFs generados se guardan en `.scripts/PoC/output/`.

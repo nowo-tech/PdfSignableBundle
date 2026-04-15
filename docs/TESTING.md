@@ -14,7 +14,7 @@ make test-coverage # PHPUnit + HTML (coverage/) and Clover (coverage.xml). Requi
 make qa            # cs-check + test
 ```
 
-Or locally: `composer test`, `composer test-coverage`, `composer qa` for PHP; `pnpm test` for TypeScript; `python3 -m pytest scripts/test -v` for Python.
+Or locally: `composer test`, `composer test-coverage`, `composer qa` for PHP; `pnpm test` for TypeScript; `python3 -m pytest .scripts/test -v` for Python.
 
 ## Test structure
 
@@ -30,7 +30,7 @@ Or locally: `composer test`, `composer test-coverage`, `composer qa` for PHP; `p
 | `tests/Model/` | `SignatureBoxModel`, `SignatureCoordinatesModel`, `AcroFormPageModel` (getters/setters, serialization, empty string), `AuditMetadata` (constants) |
 | `tests/Twig/` | `NowoPdfSignableTwigExtension` (`nowo_pdf_signable_include_assets` once per request) |
 | `src/Resources/assets/**/*.test.ts` | TypeScript unit tests (Vitest): `signable-editor/utils`, `signable-editor/constants`, `signable-editor/coordinates`, `signable-editor/box-drag` (getRotatedAabbSize, boxesOverlap), `acroform-editor/config`, `acroform-editor/strings`, `acroform-editor/acroform-move-resize`, `shared/constants`, `shared/url-and-scale`, `shared/pdfjs-loader` |
-| `scripts/test/` | Python unit tests (pytest): AcroForm scripts (`extract_acroform_fields` — parse_font_size_from_da, CLI, stdin; `apply_acroform_patches` — patches empty/rect/font, CLI, dry-run, empty object in array; `process_modified_pdf` — copy input, document-key, output writable). Requires `pypdf` and `pytest`. |
+| `.scripts/test/` | Python unit tests (pytest): AcroForm scripts (`extract_acroform_fields` — parse_font_size_from_da, CLI, stdin; `apply_acroform_patches` — patches empty/rect/font, CLI, dry-run, empty object in array; `process_modified_pdf` — copy input, document-key, output writable). Requires `pypdf` and `pytest`. |
 
 Controller tests for `index()` use a minimal container (form factory with HttpFoundation extension, Twig, router, request stack) so that GET renders the form and POST validates and either redirects with flash or returns JSON when `Accept: application/json`. AcroForm controller tests use mocks for storage, event dispatcher, and optional editor; they do not require the demo app or a running server.
 

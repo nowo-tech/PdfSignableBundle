@@ -290,7 +290,7 @@ When you prefer **Python** to apply patches (e.g. with pypdf) instead of a PHP e
 - **Dependencies:** **Python 3.9+** and **pypdf** (`pip install pypdf`). The bundle does not depend on Python; these are only required if you configure `apply_script` to use the bundled script or your own Python script that uses pypdf.
 - **Config:** `acroform.apply_script`: path to a Python script. `acroform.apply_script_command`: executable to run it (default `python3`; use full path if not in PATH).
 - **Contract:** The script is invoked with `--pdf <path>` and `--patches <path>` (JSON file). It must write the **modified PDF to stdout** (binary).
-- **Bundle script:** `scripts/apply_acroform_patches.py` applies `rect`, `defaultValue`, `hidden` (removes widget), `label` (/TU), `fieldType` (/FT), `options` (/Opt), `maxLen` (/MaxLen), and `fontSize`/`fontFamily` (default appearance /DA) per patch. FieldId can be `p{N}-{idx}` (page and annotation index) or a field name.
+- **Bundle script:** `.scripts/apply_acroform_patches.py` applies `rect`, `defaultValue`, `hidden` (removes widget), `label` (/TU), `fieldType` (/FT), `options` (/Opt), `maxLen` (/MaxLen), and `fontSize`/`fontFamily` (default appearance /DA) per patch. FieldId can be `p{N}-{idx}` (page and annotation index) or a field name.
 - A listener runs this script when no other listener or editor has set the modified PDF on `AcroFormApplyRequestEvent`.
 
 **How Symfony passes the PDF to the script:** Symfony does **not** stream the PDF via stdin. It writes the PDF bytes to a **temporary file** and the patches to a second **temporary JSON file**, then runs e.g. `python3 /path/to/apply_acroform_patches.py --pdf /tmp/pdf_apply_xxxx --patches /tmp/patches_xxxx`. The script **reads** those two files and must output the modified PDF to **stdout** (binary). Symfony captures that stdout and sends it as the HTTP response (so the browser receives the PDF for download). The script does **not** write the result to a file; there is no “output path” for apply. The temp input files are deleted after the process finishes.
@@ -299,11 +299,11 @@ When you prefer **Python** to apply patches (e.g. with pypdf) instead of a PHP e
 
 After the user has applied changes and obtained the modified PDF, you can run a **process script** (e.g. fill, sign, flatten) and then let PHP save or use the result:
 
-- **Dependencies:** **Python 3.x** (or the executable you set in `process_script_command`). The bundled `scripts/process_modified_pdf.py` is a stub with no extra packages; replace it with your own script and install any Python dependencies you need.
+- **Dependencies:** **Python 3.x** (or the executable you set in `process_script_command`). The bundled `.scripts/process_modified_pdf.py` is a stub with no extra packages; replace it with your own script and install any Python dependencies you need.
 - **Config:** `acroform.process_script`: path to a Python script. `acroform.process_script_command`: executable to run it (default `python3`; use full path if not in PATH).
 - **Endpoint:** POST `/pdf-signable/acroform/process`. Body: `pdf_content` (base64, required), `document_key` (optional). The bundle writes the PDF to a temp file, runs the script with `--input <path>` and `--output <path>` (and `--document-key` if provided). The script must write the result to the output path. The bundle then dispatches **`AcroFormModifiedPdfProcessedEvent`** with the processed PDF bytes and the request; a listener in your app can save the file or send it elsewhere.
 - **Response:** 200 JSON `{ success: true, document_key?: string }`, or 200 `application/pdf` if the client sends `Accept: application/pdf`.
-- **Bundle script:** `scripts/process_modified_pdf.py` is a stub that copies input to output; replace it with your own logic.
+- **Bundle script:** `.scripts/process_modified_pdf.py` is a stub that copies input to output; replace it with your own logic.
 
 ### 9.3 Frontend flow
 

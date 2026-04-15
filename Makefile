@@ -36,7 +36,7 @@ help:
 	@echo "  assets-clean        Clean built assets"
 	@echo "  validate-translations  Validate translation YAML files"
 	@echo "  test-python         Run Python (pytest) tests"
-	@echo "  test-poc            Run PoC: blank PDF → add fields → modify (scripts/PoC)"
+	@echo "  test-poc            Run PoC: blank PDF → add fields → modify (.scripts/PoC)"
 	@echo ""
 	@echo "Demos:"
 	@echo "  (use make -C demo or make -C demo/symfonyX)"

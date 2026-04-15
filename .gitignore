@@ -18,6 +18,10 @@
 /.coverage
 
 
+# Python
+**/__pycache__/
+*.py[cod]
+
 # PHP tool caches
 /.php-cs-fixer.cache
 /.phpunit.cache

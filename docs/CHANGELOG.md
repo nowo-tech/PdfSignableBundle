@@ -7,9 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.5] - 2026-04-15
+
+### Added
+
+- **PHPStan:** Baseline (`phpstan-baseline.neon`) and `phpstan.neon.dist` updates (e.g. `treatPhpDocTypesAsCertain`).
+- **GitHub:** Issue templates, PR template, `SECURITY.md`, `CODEOWNERS`, `FUNDING.yml`, Dependabot adjustments, `sync-releases.yml` workflow; additional workflows `pr-lint.yml` and `stale.yml`; Copilot instructions for contributors.
+- **Scrutinizer:** `.scrutinizer.yml` for external code quality integration.
+- **Documentation:** [DEMO-FRANKENPHP](DEMO-FRANKENPHP.md), [ENGRAM](ENGRAM.md).
+- **QA:** Expanded Python pytest coverage under `.scripts/test/`; helper scripts `.scripts/php-coverage-percent.sh` and `.scripts/ts-coverage-percent.sh`.
+
+### Changed
+
+- **Repository layout:** Maintenance scripts moved from `scripts/` to **`.scripts/`** (translation validation, PoC, Python helpers). `composer validate-translations` and Make targets use the new paths. **Contributors:** update any automation or docs that still reference `scripts/`.
+- **Tests:** PHPUnit organized into `tests/Unit` and `tests/Integration`; TypeScript/Vite/Vitest config tweaks; Vitest tests live under `src/Resources/assets/` next to the TS sources.
+- **Demos (Symfony 7 & 8):** Docker/Caddy dev flow (`Caddyfile.dev`), `.env.example`, demo bundle config and dev Twig packages, AcroForm controller/menu updates; nginx demo configs removed in favour of Caddy.
+- **Makefile / demo Makefiles:** Additional targets (coverage helpers, pytest against `.scripts/test`, PoC path).
+- **README:** Coverage and tooling notes updated.
+- **PHP:** PHP-CS-Fixer pass and PHPStan-oriented type/docblock adjustments (controllers, forms, models, events, AcroForm).
+- **Composer (root):** Lock file refreshed with current dev tooling.
+
+### Demo (Symfony 7)
+
+- **Symfony Flex:** `extra.symfony.require` updated from **`7.0.*` to `7.4.*`** so `composer update` can resolve Symfony **7.4.x** when Composer’s security audit blocks unmaintained 7.0.x ranges (see Symfony security advisories).
+
 ### Documentation
 
-- **README**: Configuration snippet no longer implies `example_pdf_url` defaults to empty (it matches `Configuration.php`: sample public PDF unless set to `''`). Demos section clarifies **dev** demos use `Caddyfile.dev` without FrankenPHP workers vs production Caddyfile; points to full config reference.
+- **README:** Configuration snippet clarifies `example_pdf_url` (matches `Configuration.php`: sample public PDF unless set to `''`). Demos section distinguishes **dev** (`Caddyfile.dev`) vs production Caddyfile; links to the full config reference.
+- **Paths:** [INSTALLATION](INSTALLATION.md), [TESTING](TESTING.md), [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md), and `.scripts/PoC/README.md` now refer to **`.scripts/`** instead of `scripts/`.
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 2.0.5.
+- Removed accidentally tracked Python `__pycache__` files; ignore rules extended so they are not committed again.
+
+For upgrade steps from 2.0.4, see [UPGRADING](UPGRADING.md).
 
 ---
 
@@ -394,7 +426,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.4...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.5...HEAD
+[2.0.5]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.5
 [2.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.4
 [2.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.3
 [2.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.2

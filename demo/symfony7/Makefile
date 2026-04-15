@@ -22,17 +22,16 @@ help:
 	@echo "After make run: http://localhost:8001 (HTTP on port 80)"
 
 up:
-	@if [ ! -f .env ]; then \
-		cp .env.example .env; \
-		echo "✅ .env created from .env.example"; \
-	fi
-	docker-compose up -d --build
-	@echo "⏳ Waiting for container to be ready..."
+	@if [ ! -f .env ]; then cp .env.example .env 2>/dev/null || true; fi
+	docker-compose up -d
+	@echo "Waiting for container to be ready..."
 	@sleep 5
-	@echo "📦 Installing dependencies (composer + pnpm)..."
+	@echo "Installing dependencies..."
+	@docker-compose exec -T -e COMPOSER_MEMORY_LIMIT=-1 php composer install --no-interaction
 	@$(MAKE) install
-	@echo "✅ Containers up. Run: make setup for cache:clear"
-
+	@PORT=$$(grep "^PORT=" .env 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
+	[ -z "$$PORT" ] && PORT=$$(grep "^PORT=" .env.example 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
+	echo "Demo started at: http://localhost:$$PORT"
 down:
 	docker-compose down
 	@echo "✅ Containers stopped"
