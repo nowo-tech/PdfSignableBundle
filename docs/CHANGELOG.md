@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.6] - 2026-05-14
+
+### Changed
+
+- **PHP:** Additional PHP-CS-Fixer alignment across bundle `src/` and tests (no public API changes).
+- **Demos:** Refreshed `composer.lock` for Symfony **7** and **8** demos; regenerated `config/reference.php` (Symfony config reference dump).
+- **Viewer assets:** Rebuilt `src/Resources/public/js/acroform-editor.js` and `pdf-signable.js` (Vite output).
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 2.0.6.
+
+For upgrade steps from 2.0.5, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [2.0.5] - 2026-04-15
 
 ### Added
@@ -426,7 +442,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.5...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.6...HEAD
+[2.0.6]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.6
 [2.0.5]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.5
 [2.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.4
 [2.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.3
