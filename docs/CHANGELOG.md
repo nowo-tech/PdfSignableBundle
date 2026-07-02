@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-07-01
+
+### Fixed
+
+- **Forms:** `Choice` validator constraints in `SignatureCoordinatesType` use named arguments (`choices:`) for compatibility with Symfony Validator **7.4+** and **8.x** (array options are no longer supported).
+- **CI:** Symfony **8.x** matrix cells run on PHP **8.4+** only; all Symfony packages are pinned to the matrix version so jobs labeled 7.4 do not resolve Validator 8.x by mistake.
+
+### Changed
+
+- **Documentation:** [INSTALLATION](INSTALLATION.md) clarifies Symfony **8.x** requires PHP **8.4+** (Symfony **7.x** runs on PHP 8.2+).
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 3.0.1.
+
+For upgrade steps from 3.0.0, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [3.0.0] - 2026-07-01
 
 ### Changed
@@ -490,7 +509,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.1
 [3.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.0
 [2.0.7]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.7
 [2.0.6]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.6

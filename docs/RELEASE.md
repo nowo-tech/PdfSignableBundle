@@ -57,17 +57,22 @@ Tag `v2.0.5` published from commit `d847e85` (prepare release). Follow-up checkl
 
 ---
 
-## Ready for v3.0.0 (2026-07-01)
+## Ready for v3.0.1 (2026-07-01)
 
-- [x] CHANGELOG: [3.0.0] with date; [Unreleased] at top; links updated.
-- [x] UPGRADING: “Upgrading to 3.0.0” with breaking changes and upgrade steps; compatibility table updated.
-- [x] RELEASE: this checklist for v3.0.0.
-- [x] README and INSTALLATION: PHP 8.2+ and Symfony 7+.
+- [x] CHANGELOG: [3.0.1] with date; [Unreleased] at top; links updated.
+- [x] UPGRADING: “Upgrading to 3.0.1” with upgrade steps; compatibility table updated.
+- [x] RELEASE: this checklist for v3.0.1.
 - [ ] Run locally: `make test` and `make cs-check`.
 - [ ] Run locally: `make validate-translations`.
 - [ ] Run locally: `composer validate --strict` (root `composer.json`).
-- [ ] Commit and push: `git add -A && git commit -m "Prepare v3.0.0 release" && git push origin HEAD`
-- [ ] Create and push tag: `git tag -a v3.0.0 -m "Release v3.0.0"` then `git push origin v3.0.0`
+- [ ] Commit and push: `git add -A && git commit -m "Prepare v3.0.1 release" && git push origin HEAD`
+- [ ] Create and push tag: `git tag -a v3.0.1 -m "Release v3.0.1"` then `git push origin v3.0.1`
+
+---
+
+## Released v3.0.0 (2026-07-01)
+
+Tag `v3.0.0` published from commit `d6e6c6d` (prepare release).
 
 ---
 
@@ -83,7 +88,7 @@ Tag `v2.0.6` published from commit `2191d01` (prepare release).
 
 ---
 
-## Next release (e.g. v3.0.1)
+## Next release (e.g. v3.0.2)
 
 - [ ] CHANGELOG: Move [Unreleased] entries into `[X.Y.Z]` with date; add new empty [Unreleased] at top; update version links at bottom.
 - [ ] UPGRADING: Add section "Upgrading to X.Y.Z" with release date, what's new, breaking changes (if any), and upgrade steps; update version compatibility table.
