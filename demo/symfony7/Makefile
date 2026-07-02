@@ -1,5 +1,8 @@
 # PdfSignable Bundle Demo - Symfony 7 (Docker, FrankenPHP + Caddy, HTTPS)
-.PHONY: help up down shell install setup run ensure-up update-bundle clean logs
+COMPOSE := docker-compose
+SERVICE_PHP := php
+
+.PHONY: help up down shell install setup run ensure-up update-bundle clean logs update-deps
 
 help:
 	@echo "PdfSignable Demo (Symfony 7) - Docker (FrankenPHP + Caddy)"
@@ -46,22 +49,15 @@ build:
 
 ensure-up:
 	@if ! docker-compose exec -T php true 2>/dev/null; then \
-		echo "Starting container..."; \
-		docker-compose up -d; \
-		sleep 5; \
-	fi
-
-shell: ensure-up
-	docker-compose exec php sh
-
-ensure-up:
-	@if ! docker-compose exec -T php true 2>/dev/null; then \
 		echo "Starting containers..."; \
 		[ ! -f .env ] && cp .env.example .env || true; \
 		docker-compose up -d; \
 		sleep 5; \
 		docker-compose exec -T php sh -c "composer install --no-interaction || true"; \
 	fi
+
+shell: ensure-up
+	docker-compose exec php sh
 
 install:
 	@echo "📦 Building bundle assets (pnpm)..."
@@ -106,3 +102,8 @@ clean: down
 
 logs:
 	docker-compose logs -f
+
+
+# REQ-MAKE-008: update-deps (REQ-MAKE-008)
+BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
+include $(BUNDLE_ROOT)/../.scripts/Makefile.demo-update-deps.mk

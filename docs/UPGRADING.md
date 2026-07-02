@@ -39,6 +39,28 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 ## Upgrading by version
 
+### Upgrading to 2.0.7 (2026-07-01)
+
+**Release date:** 2026-07-01
+
+**Patch release:** No breaking changes and no new bundle configuration keys. Maintenance release: Makefile `update-deps` fix, CI matrix (Symfony 7.4 / 8.1), refreshed demo lock files, and contributor documentation.
+
+#### Upgrade steps (from 2.0.x)
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Clear cache: `php bin/console cache:clear`.
+
+No YAML or runtime config changes are required for applications using the bundle.
+
+#### Contributors and demos (Docker)
+
+- **`make update-deps`** now works on the bundle root and each demo (`demo/symfony7`, `demo/symfony8`). Requires `COMPOSE` / `SERVICE_PHP` variables (already set in this repository’s Makefiles).
+- If you run the Symfony **8** demo from this repository, `demo/symfony8/composer.json` uses Symfony Flex **`extra.symfony.require: "8.1.*"`**; run `composer update -W` inside the demo container (or `make update-deps`) after pulling.
+
+See [CHANGELOG.md](CHANGELOG.md) for the full list of changes.
+
+---
+
 ### Upgrading to 2.0.6 (2026-05-14)
 
 **Release date:** 2026-05-14
