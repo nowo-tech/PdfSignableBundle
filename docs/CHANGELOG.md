@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-07-01
+
+### Fixed
+
+- **Forms:** `Choice` validator constraints in `SignatureCoordinatesType` use named arguments (`choices:`) for compatibility with Symfony Validator **7.4+** and **8.x** (array options are no longer supported).
+- **CI:** Symfony **8.x** matrix cells run on PHP **8.4+** only; all Symfony packages are pinned to the matrix version so jobs labeled 7.4 do not resolve Validator 8.x by mistake.
+
+### Changed
+
+- **Documentation:** [INSTALLATION](INSTALLATION.md) clarifies Symfony **8.x** requires PHP **8.4+** (Symfony **7.x** runs on PHP 8.2+).
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 3.0.1.
+
+For upgrade steps from 3.0.0, see [UPGRADING](UPGRADING.md).
+
+---
+
+## [3.0.0] - 2026-07-01
+
+### Changed
+
+- **Breaking:** Minimum **PHP 8.2** (was 8.1). `composer.json` `require.php` and `config.platform.php` updated accordingly.
+- **Breaking:** Minimum **Symfony 7.0** (was 6.1+). Symfony component constraints are now `^7.0 || ^8.0` only; Symfony 6.x is no longer supported.
+- **CI:** Test matrix aligned with new minimums — PHP **8.2–8.5** × Symfony **7.0**, **7.4**, **8.0**, **8.1** (Symfony 8.1 cells run on PHP 8.4+ only).
+- **Documentation:** README, [INSTALLATION](INSTALLATION.md), [UPGRADING](UPGRADING.md), and PHPStan config updated for PHP 8.2+ and Symfony 7+.
+
+### Fixed
+
+- **AcroForm Python scripts:** Detect missing Python executable via Process exit code **127** (Symfony 7 no longer populates stderr when the command is not found).
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 3.0.0.
+
+For upgrade steps from 2.0.x, see [UPGRADING](UPGRADING.md).
+
+---
+
+## [2.0.7] - 2026-07-01
+
+### Added
+
+- **Makefiles:** Standard **`update-deps`** target (REQ-MAKE-008) on the bundle root, demo aggregator, and each Symfony demo — refreshes Composer dependencies via shared `bundles/.scripts/` Makefiles. Root Makefile defines `COMPOSE`, `SERVICE_PHP`, and documents `make update-deps` in `help`.
+- **Documentation:** [SPEC-DRIVEN-DEVELOPMENT](SPEC-DRIVEN-DEVELOPMENT.md) — product scope, user stories, and `REQ-*` traceability for maintainers; cross-linked from [ENGRAM](ENGRAM.md) and the root README.
+- **GitHub:** CodeRabbit configuration (`.coderabbit.yaml`, workflow) for optional automated PR review.
+
+### Changed
+
+- **CI:** Test matrix extended to Symfony **7.4** and **8.1** (PHP 8.1–8.5; exclusions for incompatible PHP/Symfony pairs).
+- **Demos:** Refreshed `composer.lock` for the bundle root and Symfony **7** / **8** demos after dependency update; regenerated `config/reference.php` where applicable.
+- **Demo (Symfony 8):** Symfony Flex `extra.symfony.require` updated from **`8.0.*` to `8.1.*`** so `composer update` resolves Symfony **8.1.x** when Composer’s security audit blocks unmaintained 8.0.x ranges.
+- **README:** Symfony compatibility badge aligned with supported ranges (6.0+, 7.4+, 8.0+, 8.1+).
+
+### Fixed
+
+- **Makefiles:** `make update-deps` failed with `exec: -T: not found` because `COMPOSE` and `SERVICE_PHP` were undefined before including the shared update-deps Makefile; demo Makefiles had the same issue (`run: not found`). Duplicate `ensure-up` target in demo Makefiles removed (Make warnings).
+
+### Developer
+
+- CHANGELOG, UPGRADING, RELEASE checklist, and SPEC-DRIVEN-DEVELOPMENT `REQ-*` table updated for 2.0.7.
+
+For upgrade steps from 2.0.6, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [2.0.6] - 2026-05-14
 
 ### Changed
@@ -442,7 +509,10 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.6...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.1
+[3.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.0
+[2.0.7]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.7
 [2.0.6]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.6
 [2.0.5]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.5
 [2.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.4

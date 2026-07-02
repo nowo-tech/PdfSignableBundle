@@ -125,3 +125,8 @@ release-check: test-coverage-all release-verify
 clean-all:
 	@for d in $(DEMOS); do $(MAKE) -C $$d clean; done
 	@echo "✅ Cleanup completed"
+
+
+# REQ-MAKE-008: update-deps-all (REQ-MAKE-008)
+BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
+include $(BUNDLE_ROOT)/../.scripts/Makefile.demo-aggregate-update-deps.mk

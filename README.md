@@ -1,10 +1,10 @@
 # PdfSignable Bundle
 
-[![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![Packagist Version](https://img.shields.io/packagist/v/nowo-tech/pdf-signable-bundle.svg?style=flat)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![Packagist Downloads](https://img.shields.io/packagist/dt/nowo-tech/pdf-signable-bundle.svg)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-6.1%2B%20%7C%207%20%7C%208-000000?logo=symfony)](https://symfony.com) [![GitHub stars](https://img.shields.io/github/stars/nowo-tech/pdf-signable-bundle.svg?style=social&label=Star)](https://github.com/nowo-tech/PdfSignableBundle) [![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen)](#tests-and-coverage)
+[![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![Packagist Version](https://img.shields.io/packagist/v/nowo-tech/pdf-signable-bundle.svg?style=flat)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![Packagist Downloads](https://img.shields.io/packagist/dt/nowo-tech/pdf-signable-bundle.svg)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-7.0%2B%20%7C%208.0%2B-000000?logo=symfony)](https://symfony.com)
 
 > ⭐ **Found this useful?** [Install from Packagist](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) · Give it a star on [GitHub](https://github.com/nowo-tech/PdfSignableBundle) to help others find it.
 
-**Symfony bundle to define signature box coordinates on PDFs.** Form type with an in-browser PDF.js viewer: users place and resize signature areas by clicking and dragging. Supports units (mm, cm, pt), validation, proxy for external PDFs, and hooks for PKI/timestamp/batch signing. Symfony 6.1+, 7.x, 8.x · PHP 8.1+.
+**Symfony bundle to define signature box coordinates on PDFs.** Form type with an in-browser PDF.js viewer: users place and resize signature areas by clicking and dragging. Supports units (mm, cm, pt), validation, proxy for external PDFs, and hooks for PKI/timestamp/batch signing. Symfony 7.x, 8.x · PHP 8.2+.
 
 ## What is this?
 
@@ -32,7 +32,7 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Viewer** — **Thumbnails**: page strip to jump to a page; **Zoom**: toolbar (zoom in, zoom out, fit width, translated); **Touch**: pinch to zoom, two-finger pan on tablets
 - ✅ **Validation** — Required box name (NotBlank); `unique_box_names` global (`true`/`false`) or per-name (array) to enforce unique box names
 - ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent`, `BatchSignRequestedEvent`, `PdfSignRequestEvent` for integration (see [EVENTS](docs/EVENTS.md) and [SIGNING_ADVANCED](docs/SIGNING_ADVANCED.md))
-- ✅ **Compatibility** — Symfony 6.1+, 7.x, 8.x and PHP 8.1+
+- ✅ **Compatibility** — Symfony 7.x, 8.x and PHP 8.2+
 
 ## Screenshots
 
@@ -84,8 +84,8 @@ Configure `nowo_pdf_signable` (proxy, example URL, optional [named configs](docs
 
 ## Requirements
 
-- PHP >= 8.1
-- **Symfony >= 6.1** || >= 7.0 || >= 8.0
+- PHP >= 8.2 (Symfony **8.x** requires PHP **8.4+**)
+- **Symfony >= 7.0** || >= 8.0
 - PHP extensions required by Symfony (e.g. json, mbstring, ctype, xml, fileinfo). **Optional:** `ext-yaml` for faster YAML config parsing (see `composer suggest`)
 
 ## Configuration
@@ -161,6 +161,7 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 - [Release](docs/RELEASE.md)
 - [Security](docs/SECURITY.md)
 - [Engram](docs/ENGRAM.md)
+- [Spec-driven development](docs/SPEC-DRIVEN-DEVELOPMENT.md)
 - [Roadmap](docs/ROADMAP.md)
 
 ### Additional documentation
