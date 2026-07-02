@@ -64,6 +64,9 @@ jobs:
             ${{ runner.os }}-php-${{ matrix.php }}-symfony-${{ matrix.symfony }}-composer-
             ${{ runner.os }}-php-${{ matrix.php }}-composer-
 
+      - name: Override Composer platform PHP (composer.json pins 8.1.0 for lock compatibility)
+        run: composer config platform.php ${{ matrix.php }}
+
       - name: Install dependencies with Symfony ${{ matrix.symfony }}
         run: |
           composer require symfony/config:^${{ matrix.symfony }} symfony/dependency-injection:^${{ matrix.symfony }} symfony/http-kernel:^${{ matrix.symfony }} symfony/yaml:^${{ matrix.symfony }} --no-interaction --no-update
@@ -183,6 +186,9 @@ jobs:
           extensions: json
           coverage: pcov
           tools: composer:v2
+
+      - name: Override Composer platform PHP (Symfony 7 requires PHP >= 8.2)
+        run: composer config platform.php 8.2
 
       - name: Install dependencies (Symfony 7.0)
         run: |
