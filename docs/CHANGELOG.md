@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-07-01
+
+### Changed
+
+- **Breaking:** Minimum **PHP 8.2** (was 8.1). `composer.json` `require.php` and `config.platform.php` updated accordingly.
+- **Breaking:** Minimum **Symfony 7.0** (was 6.1+). Symfony component constraints are now `^7.0 || ^8.0` only; Symfony 6.x is no longer supported.
+- **CI:** Test matrix aligned with new minimums — PHP **8.2–8.5** × Symfony **7.0**, **7.4**, **8.0**, **8.1** (Symfony 8.1 cells run on PHP 8.4+ only).
+- **Documentation:** README, [INSTALLATION](INSTALLATION.md), [UPGRADING](UPGRADING.md), and PHPStan config updated for PHP 8.2+ and Symfony 7+.
+
+### Fixed
+
+- **AcroForm Python scripts:** Detect missing Python executable via Process exit code **127** (Symfony 7 no longer populates stderr when the command is not found).
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 3.0.0.
+
+For upgrade steps from 2.0.x, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [2.0.7] - 2026-07-01
 
 ### Added
@@ -33,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For upgrade steps from 2.0.6, see [UPGRADING](UPGRADING.md).
 
 ---
+
+## [2.0.6] - 2026-05-14
 
 ### Changed
 
@@ -467,7 +490,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.7...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.0
 [2.0.7]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.7
 [2.0.6]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.6
 [2.0.5]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.5
