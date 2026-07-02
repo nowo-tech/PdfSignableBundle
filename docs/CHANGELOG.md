@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-07-01
+
+### Changed
+
+- **Documentation:** README and [INSTALLATION](INSTALLATION.md) distinguish Symfony **8.0** (PHP **8.4+**) from Symfony **8.1+** (PHP **8.4.1+**).
+- **CI:** Dependabot bumps — `actions/checkout` v7, `codecov/codecov-action` v7, `actions/github-script` v9.
+
+### Fixed
+
+- **CI:** Symfony **8.1** matrix cell on PHP **8.4** uses Composer `platform.php` **8.4.1** (Symfony 8.1 requires PHP ≥ 8.4.1; `platform.php 8.4` is resolved as 8.4.0).
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 3.0.2.
+
+For upgrade steps from 3.0.1, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [3.0.1] - 2026-07-01
 
 ### Fixed
@@ -509,7 +528,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.2...HEAD
+[3.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.2
 [3.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.1
 [3.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.0
 [2.0.7]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.7
