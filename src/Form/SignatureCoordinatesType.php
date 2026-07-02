@@ -181,7 +181,7 @@ final class SignatureCoordinatesType extends AbstractType
                 'label'       => $options['unit_label'],
                 'attr'        => ['class' => 'unit-selector form-control form-control-sm', 'data-pdf-signable' => 'unit'],
                 'data'        => $options['unit_default'],
-                'constraints' => [new Choice(['choices' => $units])],
+                'constraints' => [new Choice(choices: $units)],
             ]);
         } else {
             $builder->add('unit', ChoiceType::class, [
@@ -202,7 +202,7 @@ final class SignatureCoordinatesType extends AbstractType
                 'label'       => $options['origin_label'],
                 'attr'        => ['class' => 'origin-selector form-control form-control-sm', 'data-pdf-signable' => 'origin'],
                 'data'        => $options['origin_default'],
-                'constraints' => [new Choice(['choices' => $origins])],
+                'constraints' => [new Choice(choices: $origins)],
             ]);
         } else {
             $builder->add('origin', ChoiceType::class, [
