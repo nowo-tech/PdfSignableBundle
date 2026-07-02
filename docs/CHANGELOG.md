@@ -7,7 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.6] - 2026-05-14
+## [2.0.7] - 2026-07-01
+
+### Added
+
+- **Makefiles:** Standard **`update-deps`** target (REQ-MAKE-008) on the bundle root, demo aggregator, and each Symfony demo — refreshes Composer dependencies via shared `bundles/.scripts/` Makefiles. Root Makefile defines `COMPOSE`, `SERVICE_PHP`, and documents `make update-deps` in `help`.
+- **Documentation:** [SPEC-DRIVEN-DEVELOPMENT](SPEC-DRIVEN-DEVELOPMENT.md) — product scope, user stories, and `REQ-*` traceability for maintainers; cross-linked from [ENGRAM](ENGRAM.md) and the root README.
+- **GitHub:** CodeRabbit configuration (`.coderabbit.yaml`, workflow) for optional automated PR review.
+
+### Changed
+
+- **CI:** Test matrix extended to Symfony **7.4** and **8.1** (PHP 8.1–8.5; exclusions for incompatible PHP/Symfony pairs).
+- **Demos:** Refreshed `composer.lock` for the bundle root and Symfony **7** / **8** demos after dependency update; regenerated `config/reference.php` where applicable.
+- **Demo (Symfony 8):** Symfony Flex `extra.symfony.require` updated from **`8.0.*` to `8.1.*`** so `composer update` resolves Symfony **8.1.x** when Composer’s security audit blocks unmaintained 8.0.x ranges.
+- **README:** Symfony compatibility badge aligned with supported ranges (6.0+, 7.4+, 8.0+, 8.1+).
+
+### Fixed
+
+- **Makefiles:** `make update-deps` failed with `exec: -T: not found` because `COMPOSE` and `SERVICE_PHP` were undefined before including the shared update-deps Makefile; demo Makefiles had the same issue (`run: not found`). Duplicate `ensure-up` target in demo Makefiles removed (Make warnings).
+
+### Developer
+
+- CHANGELOG, UPGRADING, RELEASE checklist, and SPEC-DRIVEN-DEVELOPMENT `REQ-*` table updated for 2.0.7.
+
+For upgrade steps from 2.0.6, see [UPGRADING](UPGRADING.md).
+
+---
 
 ### Changed
 
@@ -442,7 +467,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.6...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v2.0.7...HEAD
+[2.0.7]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.7
 [2.0.6]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.6
 [2.0.5]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.5
 [2.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.4

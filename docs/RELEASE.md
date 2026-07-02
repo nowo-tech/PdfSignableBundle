@@ -57,21 +57,27 @@ Tag `v2.0.5` published from commit `d847e85` (prepare release). Follow-up checkl
 
 ---
 
-## Ready for v2.0.6 (2026-05-14)
+## Ready for v2.0.7 (2026-07-01)
 
-- [x] CHANGELOG: [2.0.6] with date; [Unreleased] at top; links updated.
-- [x] UPGRADING: “Upgrading to 2.0.6” with release date and upgrade steps.
-- [x] RELEASE: this checklist for v2.0.6.
+- [x] CHANGELOG: [2.0.7] with date; [Unreleased] at top; links updated.
+- [x] UPGRADING: “Upgrading to 2.0.7” with release date and upgrade steps.
+- [x] RELEASE: this checklist for v2.0.7.
+- [x] SPEC-DRIVEN-DEVELOPMENT: REQ-MAKE-008 documented in `REQ-*` table.
 - [ ] Run locally: `make test` and `make cs-check`.
-- [ ] Run locally: `make assets` (bundle JS + worker built).
 - [ ] Run locally: `make validate-translations`.
 - [ ] Run locally: `composer validate --strict` (root `composer.json`).
-- [ ] Commit and push: `git add -A && git commit -m "Prepare v2.0.6 release" && git push origin HEAD`
-- [ ] Create and push tag: `git tag -a v2.0.6 -m "Release v2.0.6"` then `git push origin v2.0.6`
+- [ ] Commit and push: `git add -A && git commit -m "Prepare v2.0.7 release" && git push origin HEAD`
+- [ ] Create and push tag: `git tag -a v2.0.7 -m "Release v2.0.7"` then `git push origin v2.0.7`
 
 ---
 
-## Next release (e.g. v2.0.7)
+## Released v2.0.6 (2026-05-14)
+
+Tag `v2.0.6` published from commit `2191d01` (prepare release).
+
+---
+
+## Next release (e.g. v2.0.8)
 
 - [ ] CHANGELOG: Move [Unreleased] entries into `[X.Y.Z]` with date; add new empty [Unreleased] at top; update version links at bottom.
 - [ ] UPGRADING: Add section "Upgrading to X.Y.Z" with release date, what's new, breaking changes (if any), and upgrade steps; update version compatibility table.

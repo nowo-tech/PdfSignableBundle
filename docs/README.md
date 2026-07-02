@@ -63,3 +63,5 @@ Quick guide to find each topic. AcroForm: [ACROFORM](ACROFORM.md) (unified guide
 | [RELEASE](RELEASE.md) | Release and versioning process; [registering on Packagist](RELEASE.md#registering-on-packagist) for maintainers. |
 | [CHANGELOG](CHANGELOG.md) | Change history. |
 | [UPGRADING](UPGRADING.md) | Upgrade guide between versions. |
+| [SPEC-DRIVEN-DEVELOPMENT](SPEC-DRIVEN-DEVELOPMENT.md) | Product scope, verification, and `REQ-*` traceability for maintainers. |
+| [ENGRAM](ENGRAM.md) | Engram (AI persistent memory) setup for this repository. |

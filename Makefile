@@ -1,5 +1,9 @@
 # Makefile for PdfSignable Bundle (tests and QA at bundle root)
-.PHONY: help up down build shell install assets test test-coverage coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc
+COMPOSE_FILE := docker-compose.yml
+COMPOSE     := docker-compose -f $(COMPOSE_FILE)
+SERVICE_PHP := php
+
+.PHONY: help up down build shell install assets test test-coverage coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc update-deps update-deps-demos
 
 help:
 	@echo "PdfSignable Bundle - Development Commands"
@@ -25,6 +29,7 @@ help:
 	@echo "  composer-sync       Validate composer.json and align composer.lock"
 	@echo "  clean               Remove vendor, cache, coverage"
 	@echo "  update              Update composer.lock (composer update)"
+	@echo "  update-deps         Update bundle + demo Composer dependencies"
 	@echo "  validate            Run composer validate --strict"
 	@echo ""
 	@echo "Bundle-specific:"
@@ -181,3 +186,8 @@ clean:
 	rm -rf coverage
 	rm -f coverage.xml
 	rm -f .php-cs-fixer.cache
+
+
+# REQ-MAKE-008: update-deps (REQ-MAKE-008)
+BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+include $(BUNDLE_ROOT)/../.scripts/Makefile.update-deps.mk
