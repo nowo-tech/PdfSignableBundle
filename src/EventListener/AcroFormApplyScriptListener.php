@@ -130,7 +130,8 @@ final class AcroFormApplyScriptListener
                     'stdout'    => $stdout,
                 ]);
 
-                if (str_contains(strtolower($err), 'not found') && str_contains(strtolower($err), 'python')) {
+                if ($proc->getExitCode() === 127
+                    || (str_contains(strtolower($err), 'not found') && str_contains(strtolower($err), 'python'))) {
                     $event->setError(new RuntimeException(
                         'Apply script failed: Python 3 is not installed or not in PATH. Install python3 on the server or configure a PHP-based editor (PdfAcroFormEditorInterface). You can set apply_script_command to the full path of your Python executable if needed.',
                     ));

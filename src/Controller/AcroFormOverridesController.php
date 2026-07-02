@@ -581,7 +581,8 @@ final class AcroFormOverridesController extends AbstractController
 
             if (!$proc->isSuccessful()) {
                 $err              = $proc->getErrorOutput() . "\n" . $proc->getOutput();
-                $isPythonNotFound = str_contains(strtolower($err), 'not found') && str_contains(strtolower($err), 'python');
+                $isPythonNotFound = $proc->getExitCode() === 127
+                    || (str_contains(strtolower($err), 'not found') && str_contains(strtolower($err), 'python'));
 
                 return new JsonResponse([
                     'error' => $isPythonNotFound
