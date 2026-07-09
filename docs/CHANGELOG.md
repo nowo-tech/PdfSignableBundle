@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.3] - 2026-07-09
+
+### Added
+
+- **GitHub Spec Kit:** Baseline under `specs/001-baseline/` (`spec.md`, `code-inventory.md` covering 100% of `src/`), `.specify/` scaffolding, Cursor Agent skills (`.cursor/skills/speckit-*`), and maintainer manual [SPEC-KIT](SPEC-KIT.md). [SPEC-DRIVEN-DEVELOPMENT](SPEC-DRIVEN-DEVELOPMENT.md) updated with a third documentation layer and product-focused user stories.
+
+### Changed
+
+- **Flex recipe:** `proxy_url_allowlist` now ships with a placeholder entry and a **SECURITY** comment requiring a non-empty allowlist in production (SSRF private-IP blocking alone is not enough).
+- **Translations:** French (`fr`) and Dutch (`nl`) copy improvements (placeholders, unit labels, AcroForm UI strings).
+- **Demos:** Docker images install PHP **intl** extension (Symfony 7/8 demos).
+- **Composer:** Root and demo `composer.lock` refreshed.
+
+### Developer
+
+- CHANGELOG, UPGRADING, RELEASE checklist, and docs index updated for 3.0.3.
+
+For upgrade steps from 3.0.2, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [3.0.2] - 2026-07-01
 
 ### Changed
@@ -528,7 +549,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.2...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.3...HEAD
+[3.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.3
 [3.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.2
 [3.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.1
 [3.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.0

@@ -18,14 +18,14 @@ page:
 signature_coordinates_type:
   pdf_url:
     label: 'URL du PDF'
-    placeholder: 'https://example.com/document.pdf'
+    placeholder: 'https://exemple.com/document.pdf'
   unit:
     label: 'Unités'
     option:
-      pt: 'Points (pt)'
+      pt: 'Points typographiques (pt)'
       mm: 'Millimètres (mm)'
       cm: 'Centimètres (cm)'
-      px: 'Pixels (px)'
+      px: 'Points pixels (px)'
       in: 'Pouces (in)'
   origin:
     label: 'Origine'
@@ -46,7 +46,7 @@ signature_box_type:
     placeholder: 'Nom de la zone (ex. signataire_1)'
     required: 'Le nom de la zone est obligatoire.'
   page:
-    label: 'Page'
+    label: 'Numéro de page'
     not_allowed: 'Cette page n’est pas autorisée. Choisissez l’une des pages autorisées.'
   width:
     label: 'Largeur'
@@ -57,7 +57,7 @@ signature_box_type:
   y:
     label: 'Y'
   angle:
-    label: 'Rotation (°)'
+    label: 'Angle (°)'
   signature:
     label: 'Signature (dessin ou fichier)'
     clear: 'Effacer'
@@ -82,7 +82,7 @@ js:
   alert_url_required: 'Veuillez saisir une URL PDF.'
   loading_state: 'Chargement...'
   load_pdf_btn: 'Charger le PDF'
-  default_box_name: 'signature'
+  default_box_name: 'zone-signature'
   zoom_in: 'Zoom avant'
   zoom_out: 'Zoom arrière'
   zoom_fit: 'Ajuster la largeur'
@@ -96,7 +96,7 @@ js:
 
 acroform_editor:
   page_title_default: 'Démo éditeur AcroForm'
-  config_header: 'Configuration'
+  config_header: 'Paramètres'
   form_errors_intro: 'Le formulaire contient des erreurs. Veuillez corriger les champs indiqués.'
   close_aria: 'Fermer'
   panel_title: 'Overrides AcroForm'

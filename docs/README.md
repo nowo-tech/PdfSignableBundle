@@ -64,4 +64,5 @@ Quick guide to find each topic. AcroForm: [ACROFORM](ACROFORM.md) (unified guide
 | [CHANGELOG](CHANGELOG.md) | Change history. |
 | [UPGRADING](UPGRADING.md) | Upgrade guide between versions. |
 | [SPEC-DRIVEN-DEVELOPMENT](SPEC-DRIVEN-DEVELOPMENT.md) | Product scope, verification, and `REQ-*` traceability for maintainers. |
+| [SPEC-KIT](SPEC-KIT.md) | GitHub Spec Kit — install, structure, and usage for maintainers. |
 | [ENGRAM](ENGRAM.md) | Engram (AI persistent memory) setup for this repository. |

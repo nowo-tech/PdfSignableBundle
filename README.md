@@ -162,6 +162,7 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 - [Security](docs/SECURITY.md)
 - [Engram](docs/ENGRAM.md)
 - [Spec-driven development](docs/SPEC-DRIVEN-DEVELOPMENT.md)
+- [GitHub Spec Kit](docs/SPEC-KIT.md)
 - [Roadmap](docs/ROADMAP.md)
 
 ### Additional documentation
