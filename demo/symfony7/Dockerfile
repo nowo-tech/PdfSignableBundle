@@ -13,7 +13,7 @@ RUN apk add --no-cache git unzip bash python3 && \
     python3 -c "from pypdf import PdfReader, PdfWriter; print('pypdf OK')"
 
 # PHP extensions (script provided by base image)
-RUN install-php-extensions zip xdebug
+RUN install-php-extensions intl zip xdebug
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

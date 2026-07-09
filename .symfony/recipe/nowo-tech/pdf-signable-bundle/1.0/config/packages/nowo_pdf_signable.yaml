@@ -11,13 +11,10 @@ nowo_pdf_signable:
 
     # Optional allowlist: when non-empty, the proxy only fetches URLs matching at least one entry.
     # Each entry: substring of URL, or regex if prefixed with # (e.g. #^https://example\.com/#).
-    # proxy_url_allowlist: []
-
-    # Example allowlist (uncomment and adjust to your domains):
-    # proxy_url_allowlist:
-    #     - 'https://cdn.example.com/'
-    #     - 'transportes.gob.es'
-    #     - '#^https://internal\.corp/#'
+    # SECURITY: In production you MUST configure a non-empty allowlist. SSRF private-IP blocking
+    # is always applied, but an empty allowlist still permits any public URL.
+    proxy_url_allowlist:
+        - 'your-cdn.example.com'
 
     # ─── Default PDF and debug ─────────────────────────────────────────────
     # Default PDF URL used when the form has no pdf_url and no config sets it. Set '' to disable preload.

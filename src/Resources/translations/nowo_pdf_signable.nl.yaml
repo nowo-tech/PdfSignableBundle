@@ -18,15 +18,15 @@ page:
 signature_coordinates_type:
   pdf_url:
     label: 'PDF-URL'
-    placeholder: 'https://example.com/document.pdf'
+    placeholder: 'https://voorbeeld.com/document.pdf'
   unit:
     label: 'Eenheden'
     option:
       pt: 'Punten (pt)'
-      mm: 'Millimeters (mm)'
-      cm: 'Centimeters (cm)'
-      px: 'Pixels (px)'
-      in: 'Inches (in)'
+      mm: 'Millimeter (mm)'
+      cm: 'Centimeter (cm)'
+      px: 'Beeldpunten (px)'
+      in: 'Duim (in)'
   origin:
     label: 'Oorsprong'
     option:
@@ -165,9 +165,9 @@ acroform_editor:
   btn_process: 'Verzenden / Verwerken'
   btn_process_title: 'Gewijzigd PDF naar het Python-script sturen; resultaat wordt teruggestuurd naar PHP om op te slaan'
   list_id: 'id: '
-  list_type: 'type: '
+  list_type: 'soort: '
   list_page: 'pag: '
-  list_label: 'label: '
+  list_label: 'etiket: '
   list_field_name: 'veldnaam: '
   list_current_value: 'huidige waarde: '
   list_no_fields: 'Geen velden'
