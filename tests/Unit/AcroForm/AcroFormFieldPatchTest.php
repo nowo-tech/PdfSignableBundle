@@ -7,6 +7,7 @@ namespace Nowo\PdfSignableBundle\Tests\AcroForm;
 use InvalidArgumentException;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldPatch;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 final class AcroFormFieldPatchTest extends TestCase
 {
@@ -160,5 +161,29 @@ final class AcroFormFieldPatchTest extends TestCase
         $p   = AcroFormFieldPatch::fromArray(['fieldId' => 'f1', 'fontFamily' => '']);
         $out = $p->toArray();
         self::assertArrayNotHasKey('fontFamily', $out);
+    }
+
+    public function testFromArrayRejectsNonListOptions(): void
+    {
+        $p = AcroFormFieldPatch::fromArray([
+            'fieldId' => 'f1',
+            'options' => ['a' => ['value' => 'a']],
+        ]);
+
+        self::assertSame([], $p->options);
+    }
+
+    public function testFromArraySkipsInvalidOptionEntries(): void
+    {
+        $p = AcroFormFieldPatch::fromArray([
+            'fieldId' => 'f1',
+            'options' => [
+                ['label' => 'Missing value'],
+                ['value' => new stdClass()],
+                ['value' => 'ok', 'label' => 'OK'],
+            ],
+        ]);
+
+        self::assertSame([['value' => 'ok', 'label' => 'OK']], $p->options);
     }
 }

@@ -57,17 +57,24 @@ Tag `v2.0.5` published from commit `d847e85` (prepare release). Follow-up checkl
 
 ---
 
-## Ready for v3.0.3 (2026-07-09)
+## Ready for v3.0.4 (2026-07-16)
 
-- [x] CHANGELOG: [3.0.3] with date; [Unreleased] at top; links updated.
-- [x] UPGRADING: “Upgrading to 3.0.3” with Flex recipe note; compatibility table updated.
-- [x] RELEASE: this checklist for v3.0.3.
-- [x] docs/README: link to SPEC-KIT.md.
-- [ ] Run locally: `make test` and `make cs-check`.
+- [x] CHANGELOG: [3.0.4] with date; [Unreleased] at top; links updated.
+- [x] UPGRADING: “Upgrading to 3.0.4” with contributor/maintainer notes; compatibility table updated.
+- [x] RELEASE: this checklist for v3.0.4.
+- [x] CODE_OF_CONDUCT, GITHUB_CI, REQ-GIT-001 hooks/scripts/CI wired.
+- [ ] Run locally: `make check-no-cursor-coauthor`, `make test`, `make cs-check`.
 - [ ] Run locally: `make validate-translations`.
 - [ ] Run locally: `composer validate --strict` (root `composer.json`).
-- [ ] Commit and push: `git add -A && git commit -m "Prepare v3.0.3 release" && git push origin HEAD`
-- [ ] Create and push tag: `git tag -a v3.0.3 -m "Release v3.0.3"` then `git push origin v3.0.3`
+- [ ] Commit and push: `git add -A && git commit -m "Prepare v3.0.4 release" && git push origin HEAD`
+- [ ] Create and push tag: `git tag -a v3.0.4 -m "Release v3.0.4"` then `git push origin v3.0.4`
+- [ ] After tag commit: `make check-no-cursor-coauthor` before push (REQ-GIT-001).
+
+---
+
+## Released v3.0.3 (2026-07-09)
+
+Tag `v3.0.3` published from commit `43e1396` (prepare release).
 
 ---
 
@@ -101,10 +108,12 @@ Tag `v2.0.6` published from commit `2191d01` (prepare release).
 
 ---
 
-## Next release (e.g. v3.0.4)
+## Next release (e.g. v3.0.5)
 
 - [ ] CHANGELOG: Move [Unreleased] entries into `[X.Y.Z]` with date; add new empty [Unreleased] at top; update version links at bottom.
 - [ ] UPGRADING: Add section "Upgrading to X.Y.Z" with release date, what's new, breaking changes (if any), and upgrade steps; update version compatibility table.
 - [ ] RELEASE: Replace "Next release" checklist with "Ready for vX.Y.Z" and complete the steps above.
 - [ ] Run `make test`, `make cs-check`, `make assets`, `make validate-translations`.
 - [ ] Tag and push; create GitHub Release if workflow is configured.
+
+After creating the release commit and tag, run `make check-no-cursor-coauthor` again **before** `git push` (REQ-GIT-001). The release commit itself is not covered by an earlier `release-check` run.

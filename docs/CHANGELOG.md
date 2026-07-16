@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.4] - 2026-07-16
+
+### Added
+
+- **Governance:** [Contributor Covenant Code of Conduct](../CODE_OF_CONDUCT.md); linked from [CONTRIBUTING](CONTRIBUTING.md) and the root README.
+- **Git hygiene (REQ-GIT-001):** Scripts `.scripts/check-no-cursor-coauthor.sh` and `.scripts/strip-cursor-coauthor-from-history.sh`, `.githooks/commit-msg`, Cursor rule `.cursor/rules/01-git-commits.mdc`, Makefile targets `setup-hooks`, `check-no-cursor-coauthor`, `strip-cursor-coauthor-from-history`, CI job `git-hygiene`, and maintainer doc [GITHUB_CI](GITHUB_CI.md).
+- **Tests:** Additional unit coverage for `AcroFormFieldPatch::fromArray` (invalid options) and `AuditMetadata` private constructor via reflection.
+
+### Changed
+
+- **Makefile:** `release-check` depends on `check-no-cursor-coauthor` first.
+- **Documentation:** Root README links to GITHUB_CI and Code of Conduct; removed redundant `docs/README.md` index (documentation entry points remain in the root README).
+- **`.gitignore`:** Ignore `.cursor/sandbox.json` (machine-specific).
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 3.0.4.
+
+For upgrade steps from 3.0.3, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [3.0.3] - 2026-07-09
 
 ### Added
@@ -549,7 +571,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.3...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.4...HEAD
+[3.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.4
 [3.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.3
 [3.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.2
 [3.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.1

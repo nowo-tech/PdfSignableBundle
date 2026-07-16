@@ -41,6 +41,27 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Upgrading by version
 
+### Upgrading to 3.0.4 (2026-07-16)
+
+**Release date:** 2026-07-16
+
+**Patch release:** No breaking changes and no new bundle configuration keys. Contributor governance (Code of Conduct), Git hygiene tooling for maintainers (REQ-GIT-001), and additional unit tests.
+
+#### Upgrade steps (from 3.0.x)
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Clear cache: `php bin/console cache:clear`.
+
+No YAML or runtime config changes are required for applications using the bundle.
+
+#### Contributors / maintainers
+
+- After cloning, run `make setup-hooks` once so `.githooks/commit-msg` strips Cursor co-author trailers (REQ-GIT-001). See [GITHUB_CI](GITHUB_CI.md) and [CONTRIBUTING](CONTRIBUTING.md).
+
+See [CHANGELOG.md](CHANGELOG.md) for the full list of changes.
+
+---
+
 ### Upgrading to 3.0.3 (2026-07-09)
 
 **Release date:** 2026-07-09
@@ -633,7 +654,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 3.0.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.0.0 breaking:** Minimum PHP 8.2 and Symfony 7.0. **3.0.1:** `Choice` constraints for Validator 7.4+/8.x. **3.0.2:** Symfony 8.1 PHP 8.4.1+ documented. **3.0.3:** Flex recipe `proxy_url_allowlist` placeholder + security note; Spec Kit baseline; `fr`/`nl` translations. |
+| 3.0.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.0.0 breaking:** Minimum PHP 8.2 and Symfony 7.0. **3.0.1:** `Choice` constraints for Validator 7.4+/8.x. **3.0.2:** Symfony 8.1 PHP 8.4.1+ documented. **3.0.3:** Flex recipe `proxy_url_allowlist` placeholder + security note; Spec Kit baseline; `fr`/`nl` translations. **3.0.4:** Code of Conduct; REQ-GIT-001 (no Cursor co-author in git history / CI). |
 | 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **2.0.0 breaking:** Signature under `signature` node; AcroForm under single `acroform` node. **2.0.1:** PDF.js worker default `.js` (MIME fix), worker URL absolute/fallback, translations (AcroForm modal keys + tr YAML), tests. **2.0.2:** Routes YAML copy-paste example, allowlist regex validation in dev (compiler pass), extended tests, `@group integration` for env-dependent tests. **2.0.4:** PHP-CS-Fixer (PSR-12/Symfony), Docker PHP 8.2 Alpine, demo Makefiles/HTTP/READMEs, CI simplified. |
 | 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging. 1.5.4: show_acroform option (default true), AcroForm outline overlay; recipe and demos set show_acroform: true in signature.configs / acroform.configs. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |

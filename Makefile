@@ -3,7 +3,7 @@ COMPOSE_FILE := docker-compose.yml
 COMPOSE     := docker-compose -f $(COMPOSE_FILE)
 SERVICE_PHP := php
 
-.PHONY: help up down build shell install assets test test-coverage coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc update-deps update-deps-demos
+.PHONY: help up down build shell install assets test test-coverage coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc update-deps update-deps-demos check-no-cursor-coauthor strip-cursor-coauthor-from-history
 
 help:
 	@echo "PdfSignable Bundle - Development Commands"
@@ -171,7 +171,7 @@ update: ensure-up
 validate: ensure-up
 	docker-compose -f docker-compose.yml exec -T php composer validate --strict
 
-release-check: ensure-up composer-sync cs-fix cs-check rector-dry phpstan test-coverage test-ts test-python release-check-demos
+release-check: check-no-cursor-coauthor ensure-up composer-sync cs-fix cs-check rector-dry phpstan test-coverage test-ts test-python release-check-demos
 
 release-check-demos:
 	@$(MAKE) -C demo release-check
@@ -188,6 +188,20 @@ clean:
 	rm -f .php-cs-fixer.cache
 
 
+
+setup-hooks:
+	@chmod +x .githooks/pre-commit 2>/dev/null || true
+	@chmod +x .githooks/commit-msg 2>/dev/null || true
+	@git config core.hooksPath .githooks
+	@echo "✅ Git hooks installed (.githooks — includes commit-msg for REQ-GIT-001)."
+
 # REQ-MAKE-008: update-deps (REQ-MAKE-008)
 BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 include $(BUNDLE_ROOT)/../.scripts/Makefile.update-deps.mk
+check-no-cursor-coauthor:
+	@chmod +x .scripts/check-no-cursor-coauthor.sh
+	@./.scripts/check-no-cursor-coauthor.sh HEAD
+
+strip-cursor-coauthor-from-history:
+	@chmod +x .scripts/strip-cursor-coauthor-from-history.sh
+	@./.scripts/strip-cursor-coauthor-from-history.sh main
