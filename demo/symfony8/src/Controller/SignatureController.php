@@ -33,7 +33,7 @@ class SignatureController extends AbstractController
     #[Route('/demo-signature', name: 'app_signature', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li>No <code>config</code> passed to the type</li><li>Units, origin and example URL from form baseOptions + bundle <code>example_pdf_url</code></li><li>Nothing from <code>nowo_pdf_signable.signature.configs</code></li></ul>';
+        $explanation = '<ul class="mb-0"><li>No <code>config</code> passed to the type</li><li>Units, origin and example URL from form baseOptions + bundle <code>example_pdf_url</code></li><li>Nothing from <code>nowo_pdf_signable.signature.profiles</code></li></ul>';
 
         return $this->signaturePage($request, 'No config (inline options only)', [], $explanation);
     }
@@ -41,7 +41,7 @@ class SignatureController extends AbstractController
     #[Route('/demo-signature/default-config', name: 'app_signature_default_config', methods: ['GET', 'POST'])]
     public function defaultConfig(Request $request): Response
     {
-        $explanation = '<ul class="mb-0"><li><code>config: \'default\'</code></li><li><code>units</code>, <code>unit_default</code>, <code>origin_default</code> from <code>configs.default</code></li><li>Options passed in code override the config</li></ul>';
+        $explanation = '<ul class="mb-0"><li><code>config: \'default\'</code></li><li><code>units</code>, <code>unit_default</code>, <code>origin_default</code> from <code>profiles.default</code></li><li>Options passed in code override the config</li></ul>';
 
         return $this->signaturePage($request, 'Default config (from YAML)', ['config' => 'default'], $explanation);
     }

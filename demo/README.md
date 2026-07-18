@@ -44,6 +44,6 @@ With `APP_ENV=dev` (default in demos), Symfony's **debug toolbar** appears at th
 
 ## Assets (pnpm)
 
-The demos build the bundle's PDF viewer assets automatically during `make run` / `make install`. The PHP container includes Node.js and pnpm; the build runs from the bundle root before `composer install`. They do not set `pdfjs_source` so they work with any bundle version; if your bundle supports the option (e.g. from path or v1.6+), you can add `pdfjs_source: 'npm'` in the form options or in `configs` to use PDF.js from the package.
+The demos build the bundle's PDF viewer assets automatically during `make run` / `make install`. The PHP container includes Node.js and pnpm; the build runs from the bundle root before `composer install`. They do not set `pdfjs_source` so they work with any bundle version; if your bundle supports the option (e.g. from path or v1.6+), you can add `pdfjs_source: 'npm'` in the form options or in a named profile to use PDF.js from the package.
 
 After changing code in the bundle, refresh the demo so it uses the updated bundle: from the demo directory run `make update-bundle` (or from `demo/` run `make update-bundle-symfony7`, `make update-bundle-symfony8`, or `make update-bundle-all`). This rebuilds the bundle assets, runs `assets:install`, and clears the cache.

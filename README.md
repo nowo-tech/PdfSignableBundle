@@ -13,7 +13,7 @@ This bundle helps you **define signature box coordinates on PDFs** in your Symfo
 - 📄 **PDF signature placement** — Let users visually place and resize signature areas on a PDF
 - 📐 **Units and origin** — Work in mm, cm, pt, px or in; choose coordinate origin (e.g. bottom-left)
 - 🔗 **External PDFs** — Optional proxy to load external PDFs without CORS issues
-- ⚙️ **Named configs** — Reuse presets (fixed URL, units, limits) via `config: 'name'` in YAML
+- ⚙️ **Named profiles** — Reuse presets (fixed URL, units, limits) via `config: 'name'` in YAML
 - ✅ **Validation** — Required box names, unique names per form, min/max entries
 - 🎯 **Events** — Hook into proxy request/response and coordinate submission for custom logic
 
@@ -26,7 +26,7 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Form type** — `SignatureCoordinatesType` with PDF URL, units (mm, cm, pt, px, in), coordinate origin (corners) and collection of signature boxes
 - ✅ **PDF viewer** — In-browser viewer (PDF.js) with overlays for each box; click to add, drag to move, drag corners to resize
 - ✅ **Optional proxy** — Load external PDFs without CORS; configurable via `nowo_pdf_signable.proxy_enabled`
-- ✅ **Named configurations** — Define presets in `nowo_pdf_signable.signature.configs` (or `acroform.configs`) and use `config: 'alias'` when adding the form type
+- ✅ **Named configurations** — Define presets in `nowo_pdf_signable.signature.profiles` (or `acroform.profiles`) and use `config: 'alias'` when adding the form type
 - ✅ **URL modes** — Free-text URL input or dropdown choice (`url_mode: choice`, `url_choices`)
 - ✅ **Box options** — Name as text or dropdown (`name_mode: choice`); min/max entries; optional **unique box names** validation; **page restriction** (`allowed_pages`); **sort order** on submit (`sort_boxes`); **no overlapping boxes** (`prevent_box_overlap`, default true); **minimum box size** (`min_box_width`, `min_box_height`); **optional rotation** (`enable_rotation`); **default values per name** (`box_defaults_by_name`); **snap to grid** (`snap_to_grid`) and **snap to other boxes** (`snap_to_boxes`, default true); **guides and grid** (`show_grid`, `grid_step`); **viewer lazy load** (`viewer_lazy_load`); **batch signing** (`batch_sign_enabled`, “Sign all” button). **Audit**: optional fill from request (`audit.fill_from_request`), placeholders for TSA and signing service (see [SIGNING_ADVANCED](docs/SIGNING_ADVANCED.md))
 - ✅ **Viewer** — **Thumbnails**: page strip to jump to a page; **Zoom**: toolbar (zoom in, zoom out, fit width, translated); **Touch**: pinch to zoom, two-finger pan on tablets
@@ -36,7 +36,7 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 
 ## Screenshots
 
-**Demo index** — Each card shows a different way to configure `SignatureCoordinatesType` (named configs, URL options, box validation, model prefill):
+**Demo index** — Each card shows a different way to configure `SignatureCoordinatesType` (named profiles, URL options, box validation, model prefill):
 
 ![Demo home — configuration overview](docs/img/demo-home.png)
 
@@ -80,7 +80,7 @@ $form = $this->createForm(SignatureCoordinatesType::class, $model);
 
 3. **On submit** you get a `SignatureCoordinatesModel` with `pdfUrl`, `unit`, `origin` and `signatureBoxes` (each with name, page, x, y, width, height, and angle when `enable_rotation` is true).
 
-Configure `nowo_pdf_signable` (proxy, example URL, optional [named configs](docs/CONFIGURATION.md)) as needed. See [Usage](docs/USAGE.md) for full options and examples.
+Configure `nowo_pdf_signable` (proxy, example URL, optional [named profiles](docs/CONFIGURATION.md)) as needed. See [Usage](docs/USAGE.md) for full options and examples.
 
 ## Requirements
 
@@ -98,7 +98,7 @@ nowo_pdf_signable:
   # example_pdf_url: bundle default is a sample public PDF URL; set to '' to disable preload
   # debug: false    # Browser console logging for the viewer (default false)
   signature:
-    configs: {}    # Named presets; see CONFIGURATION.md
+    profiles: {}    # Named presets; see CONFIGURATION.md
 ```
 
 See [CONFIGURATION.md](docs/CONFIGURATION.md) for the full tree (`proxy_url_allowlist`, `audit`, `tsa_url`, `signing_service_id`, `acroform.*`, etc.) and default values.

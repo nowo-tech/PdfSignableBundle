@@ -49,13 +49,13 @@ As an integrator, I enable the proxy so browsers load third-party PDFs without C
 
 ---
 
-### User Story 3 — Named configs and validation (Priority: P2)
+### User Story 3 — Named profiles and validation (Priority: P2)
 
-As an integrator, I define YAML presets under `signature.configs` and reference them via `config: 'alias'` on the form type for reusable PDF URLs, units, and box rules.
+As an integrator, I define YAML presets under `signature.profiles` and reference them via `config: 'alias'` on the form type for reusable PDF URLs, units, and box rules.
 
 **Acceptance Scenarios**:
 
-1. **Given** `signature.configs.fixed_url`, **When** the form uses `['config' => 'fixed_url']`, **Then** resolved options merge global defaults with alias-specific overrides.
+1. **Given** `signature.profiles.fixed_url`, **When** the form uses `['config' => 'fixed_url']`, **Then** resolved options merge global defaults with alias-specific overrides.
 2. **Given** `unique_box_names` enabled, **When** duplicate names are submitted, **Then** Symfony validation fails with a translated message.
 3. **Given** units `mm|cm|pt|px|in` and origin corners, **When** coordinates are submitted, **Then** values are stored in the selected unit/origin system.
 
@@ -100,7 +100,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 ### Bundle & DI
 
 - **FR-BUNDLE-001**: `NowoPdfSignableBundle` MUST register `ProxyUrlAllowlistValidationPass`, expose alias `nowo_pdf_signable`, and resolve bundle path for `@NowoPdfSignableBundle` templates.
-- **FR-CFG-001**: `Configuration` MUST define `nowo_pdf_signable` with `proxy_enabled`, `proxy_url_allowlist`, `example_pdf_url`, `debug`, `signature` (defaults + `configs`), `audit`, `tsa_url`, `signing_service_id`, and `acroform` trees.
+- **FR-CFG-001**: `Configuration` MUST define `nowo_pdf_signable` with `proxy_enabled`, `proxy_url_allowlist`, `example_pdf_url`, `debug`, `signature` (defaults + `profiles`), `audit`, `tsa_url`, `signing_service_id`, and `acroform` trees.
 - **FR-CFG-002**: `PdfSignableExtension` MUST load `services.yaml`, set `%nowo_pdf_signable.*%` parameters, and conditionally register acroform services when enabled.
 - **FR-DI-001**: `services.yaml` and `routes.yaml` MUST wire controllers, form types, Twig extension, event listeners, and proxy route prefix documented in `docs/CONFIGURATION.md`.
 
@@ -111,7 +111,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 
 ### Form types & models
 
-- **FR-FORM-001**: `SignatureCoordinatesType` with `SignatureBoxType` and `SignatureCoordinatesTypeExtension` MUST support documented options: units, origin, URL modes, box limits, snap/grid, rotation, batch sign, named configs, and validation constraints.
+- **FR-FORM-001**: `SignatureCoordinatesType` with `SignatureBoxType` and `SignatureCoordinatesTypeExtension` MUST support documented options: units, origin, URL modes, box limits, snap/grid, rotation, batch sign, named profiles, and validation constraints.
 - **FR-MDL-001**: `SignatureCoordinatesModel` and `SignatureBoxModel` MUST represent PDF URL, unit/origin, and a collection of boxes with normalized scalar fields for persistence.
 - **FR-MDL-002**: `AuditMetadata` MUST hold optional evidence fields (IP, user agent, timestamps, TSA token placeholders) filled per config/listeners.
 - **FR-MDL-003**: `AcroFormPageModel` MUST represent per-page AcroForm field state for the editor.

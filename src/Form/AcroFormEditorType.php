@@ -21,7 +21,7 @@ use function is_string;
  * Renders a full widget (viewer left, editor panel right). Options control
  * pdf_url, url visibility, document_key, load/post/apply/process URLs, and
  * editor config (label_mode, font_sizes, etc.). Use option "config" to apply
- * a named config from nowo_pdf_signable.acroform.configs (alias; default alias is "default").
+ * a named profile from nowo_pdf_signable.acroform.profiles (default profile is "default").
  *
  * @extends AbstractType<AcroFormPageModel>
  */
@@ -29,8 +29,8 @@ final class AcroFormEditorType extends AbstractType
 {
     /**
      * @param string $examplePdfUrl Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array<string, mixed>> $acroformConfigs Configs by alias from nowo_pdf_signable.acroform.configs
-     * @param string $defaultConfigAlias Default alias when config option is null (e.g. "default")
+     * @param array<string, array<string, mixed>> $acroformConfigs Profiles by name from nowo_pdf_signable.acroform.profiles
+     * @param string $defaultConfigAlias Default profile when config option is null (e.g. "default")
      * @param bool $debug When true, the frontend emits console logs
      * @param string $labelMode acroform.label_mode (deprecated)
      * @param array<int, string> $labelChoices acroform.label_choices (deprecated)
@@ -47,9 +47,9 @@ final class AcroFormEditorType extends AbstractType
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.example_pdf_url')]
         private readonly string $examplePdfUrl = '',
-        #[Autowire(param: 'nowo_pdf_signable.acroform.configs')]
+        #[Autowire(param: 'nowo_pdf_signable.acroform.profiles')]
         private readonly array $acroformConfigs = [],
-        #[Autowire(param: 'nowo_pdf_signable.acroform.default_config_alias')]
+        #[Autowire(param: 'nowo_pdf_signable.acroform.default_profile')]
         private readonly string $defaultConfigAlias = 'default',
         #[Autowire(param: 'nowo_pdf_signable.debug')]
         private readonly bool $debug = false,

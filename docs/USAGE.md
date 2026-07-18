@@ -140,14 +140,14 @@ You can persist `toArray()` to a database or send it to an API; restore later wi
 
 ## Named configurations
 
-You can define **named configs** in `nowo_pdf_signable.signature.configs` and reference them when adding the form type so you don’t repeat the same options everywhere.
+You can define **named profiles** in `nowo_pdf_signable.signature.profiles` and reference them when adding the form type so you don’t repeat the same options everywhere.
 
-**1. Define configs** in `config/packages/nowo_pdf_signable.yaml`:
+**1. Define profiles** in `config/packages/nowo_pdf_signable.yaml`:
 
 ```yaml
 nowo_pdf_signable:
     signature:
-        configs:
+        profiles:
             default: {}
             fixed_url:
                 pdf_url: 'https://example.com/template.pdf'
@@ -181,7 +181,7 @@ If `config` is set, the named config is merged first; any option you pass when c
 
 | Option   | Type   | Default | Description |
 |----------|--------|---------|-------------|
-| `config` | string \| null | `null` | Alias of a config from `nowo_pdf_signable.signature.configs`. That config is merged with the options passed here (passed options win). When null, the default alias (`signature.default_config_alias`, e.g. `default`) is used. |
+| `config` | string \| null | `null` | Name of a profile from `nowo_pdf_signable.signature.profiles`. That profile is merged with the options passed here (passed options win). When null, the default profile (`signature.default_profile`, e.g. `default`) is used. |
 
 ### URL
 

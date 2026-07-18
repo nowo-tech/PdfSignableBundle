@@ -755,22 +755,22 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     proxy_url_allowlist?: list<scalar|Param|null>,
  *     example_pdf_url?: scalar|Param|null, // Default PDF URL for demo/preload // Default: "https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf"
  *     debug?: bool|Param, // Enable console logging in the browser (PDF viewer and signature boxes) // Default: false
- *     signature?: array{ // Signature: global defaults (box dimensions, lock) and configs by alias. Default alias is "default".
- *         default_config_alias?: scalar|Param|null, // Default config alias when form option config is not set (e.g. "default"). Resolved from signature.configs[alias]. // Default: "default"
- *         default_box_width?: float|Param, // Default width for new signature boxes (in form unit). Global default; overridable per config alias. // Default: null
- *         default_box_height?: float|Param, // Default height for new signature boxes (in form unit). Global default; overridable per config alias. // Default: null
- *         lock_box_width?: bool|Param, // When true, width is fixed (use default_box_width) and the field is hidden. Global default; overridable per config alias. // Default: false
- *         lock_box_height?: bool|Param, // When true, height is fixed (use default_box_height) and the field is hidden. Global default; overridable per config alias. // Default: false
- *         min_box_width?: float|Param, // Minimum width for signature boxes (in form unit). Global default; overridable per config alias. // Default: null
- *         min_box_height?: float|Param, // Minimum height for signature boxes (in form unit). Global default; overridable per config alias. // Default: null
- *         configs?: array<string, mixed>,
+ *     signature?: array{ // Signature: global defaults (box dimensions, lock) and profiles by name. Default profile is "default".
+ *         default_profile?: scalar|Param|null, // Default profile when form option config is not set (e.g. "default"). Resolved from signature.profiles[alias]. // Default: "default"
+ *         default_box_width?: float|Param, // Default width for new signature boxes (in form unit). Global default; overridable per profile. // Default: null
+ *         default_box_height?: float|Param, // Default height for new signature boxes (in form unit). Global default; overridable per profile. // Default: null
+ *         lock_box_width?: bool|Param, // When true, width is fixed (use default_box_width) and the field is hidden. Global default; overridable per profile. // Default: false
+ *         lock_box_height?: bool|Param, // When true, height is fixed (use default_box_height) and the field is hidden. Global default; overridable per profile. // Default: false
+ *         min_box_width?: float|Param, // Minimum width for signature boxes (in form unit). Global default; overridable per profile. // Default: null
+ *         min_box_height?: float|Param, // Minimum height for signature boxes (in form unit). Global default; overridable per profile. // Default: null
+ *         profiles?: array<string, mixed>,
  *     },
  *     audit?: array{ // Audit metadata options for evidence trail.
  *         fill_from_request?: bool|Param, // When true, the controller merges IP, user_agent and submitted_at into the model audit_metadata before dispatching SIGNATURE_COORDINATES_SUBMITTED. // Default: true
  *     },
  *     tsa_url?: scalar|Param|null, // Optional TSA URL for RFC 3161 timestamps. The bundle does not call it; use in your listener to obtain a timestamp token and set it in audit_metadata. // Default: null
  *     signing_service_id?: scalar|Param|null, // Optional service ID for PKI/PAdES signing. The bundle does not use it; reference in your listener to call your signing service or HSM. // Default: null
- *     acroform?: array{ // AcroForm: platform settings (enabled, scripts, storage) and configs by alias. Default alias is "default".
+ *     acroform?: array{ // AcroForm: platform settings (enabled, scripts, storage) and profiles by name. Default profile is "default".
  *         enabled?: bool|Param, // Enable overrides storage and acroform endpoints. // Default: false
  *         overrides_storage?: scalar|Param|null, // Storage for overrides: 'session' or service id implementing AcroFormOverridesStorageInterface. // Default: "session"
  *         document_key_mode?: scalar|Param|null, // 'request' = use document_key from request only; 'derive_from_url' = allow pdf_url and derive key from allowlisted URL. // Default: "request"
@@ -783,19 +783,19 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         apply_script_command?: scalar|Param|null, // Executable used to run the apply_script (e.g. python3, python, or /usr/bin/python3). Used only when apply_script is set. // Default: "python3"
  *         process_script?: scalar|Param|null, // Optional path to Python script that processes the modified PDF (e.g. fill, sign). Receives --input <path> [--document-key <key>]; writes result to --output <path>. When set, POST /acroform/process is available; after the script runs, an event is dispatched so the app can save the result. // Default: null
  *         process_script_command?: scalar|Param|null, // Executable used to run the process_script (e.g. python3, python, or /usr/bin/python3). Used only when process_script is set. // Default: "python3"
- *         default_config_alias?: scalar|Param|null, // Default config alias when form option config is not set (e.g. "default"). Resolved from acroform.configs[alias]. // Default: "default"
- *         min_field_width?: float|Param, // Minimum width for AcroForm fields when moving/resizing (in PDF points). Global default; overridable per config alias. // Default: 12.0
- *         min_field_height?: float|Param, // Minimum height for AcroForm fields when moving/resizing (in PDF points). Global default; overridable per config alias. // Default: 12.0
- *         label_mode?: scalar|Param|null, // When editing a field, label can be: "input" (free text) or "choice" (select from label_choices plus optional "Other" free text). Global default; overridable per config alias. // Default: "input"
+ *         default_profile?: scalar|Param|null, // Default profile when form option config is not set (e.g. "default"). Resolved from acroform.profiles[alias]. // Default: "default"
+ *         min_field_width?: float|Param, // Minimum width for AcroForm fields when moving/resizing (in PDF points). Global default; overridable per profile. // Default: 12.0
+ *         min_field_height?: float|Param, // Minimum height for AcroForm fields when moving/resizing (in PDF points). Global default; overridable per profile. // Default: 12.0
+ *         label_mode?: scalar|Param|null, // When editing a field, label can be: "input" (free text) or "choice" (select from label_choices plus optional "Other" free text). Global default; overridable per profile. // Default: "input"
  *         label_choices?: list<scalar|Param|null>,
  *         label_other_text?: scalar|Param|null, // Deprecated: use field_name_other_text. When set, shows "Other" in the (legacy) label select. // Default: ""
- *         field_name_mode?: scalar|Param|null, // When editing a field, field name can be: "input" (free text) or "choice" (select from field_name_choices plus optional "Other" free text). Global default; overridable per config alias. // Default: "input"
+ *         field_name_mode?: scalar|Param|null, // When editing a field, field name can be: "input" (free text) or "choice" (select from field_name_choices plus optional "Other" free text). Global default; overridable per profile. // Default: "input"
  *         field_name_choices?: list<mixed>,
- *         field_name_other_text?: scalar|Param|null, // When set (non-empty), shows an "Other" option in the field name select with this text and a free-text input. Leave empty to hide. Global default; overridable per config alias. // Default: ""
- *         show_field_rect?: bool|Param, // When editing a field, show the coordinates (rect) input in the modal. Global default; overridable per config alias. // Default: true
+ *         field_name_other_text?: scalar|Param|null, // When set (non-empty), shows an "Other" option in the field name select with this text and a free-text input. Leave empty to hide. Global default; overridable per profile. // Default: ""
+ *         show_field_rect?: bool|Param, // When editing a field, show the coordinates (rect) input in the modal. Global default; overridable per profile. // Default: true
  *         font_sizes?: list<int|Param>,
  *         font_families?: list<scalar|Param|null>,
- *         configs?: array<string, mixed>,
+ *         profiles?: array<string, mixed>,
  *     },
  * }
  * @psalm-type NowoTwigInspectorConfig = array{

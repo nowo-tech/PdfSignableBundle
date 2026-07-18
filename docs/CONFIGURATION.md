@@ -16,9 +16,9 @@ nowo_pdf_signable:
     # Enable console logging in the browser dev tools (PDF viewer, load, add/remove box)
     # debug: false
 
-    # Signature: global defaults and named configs by alias (use form option config: "alias" to apply).
+    # Signature: global defaults and named profiles by name (use form option config: "alias" to apply).
     signature:
-        configs:
+        profiles:
             default:
                 units: ['mm', 'cm', 'pt']
                 unit_default: 'mm'
@@ -51,19 +51,19 @@ nowo_pdf_signable:
 | `proxy_url_allowlist`   | string[] | `[]` | When non-empty, the proxy only fetches URLs that match at least one entry. Each entry: a **substring** of the URL (e.g. `transportes.gob.es`), or a **regex** if prefixed with `#` (e.g. `#^https://example\.com/.*#`). Empty list = no restriction. |
 | `example_pdf_url`       | string | (sample URL in code) | Default PDF URL for form preload when no pdf_url is set in form/config. Set `''` to disable. |
 | `debug`                 | bool   | `false` | When `true`, the frontend uses the bundle logger with debug enabled: all `debug`/`info`/`warn` messages are shown in the browser console (e.g. DOM resolution, load PDF, add/remove box, overlay updates, AcroForm apply). When `false`, only the “script loaded” line is shown. The AcroForm editor panel also supports `data-debug="1"` or `data-debug="true"` on its root element to enable the same logger output for that script. |
-| `signature.*`           | —      | see below | Signature: global defaults (box dimensions, lock) and configs by alias (default alias `default`). See [Signature](#signature). |
+| `signature.*`           | —      | see below | Signature: global defaults (box dimensions, lock) and profiles by name (default profile `default`). See [Signature](#signature). |
 | `audit.fill_from_request` | bool | `true` | When `true`, the bundle controller merges `submitted_at`, `ip`, and `user_agent` into the model’s `audit_metadata` before dispatching `SIGNATURE_COORDINATES_SUBMITTED`. Your listeners can add more (e.g. `user_id`, `tsa_token`). See [SIGNING_ADVANCED](SIGNING_ADVANCED.md). |
 | `tsa_url`               | string \| null | `null` | **Placeholder.** The bundle does not call it. Set your RFC 3161 TSA URL and use it in a listener to obtain a timestamp token; store it in `audit_metadata` (e.g. key `AuditMetadata::TSA_TOKEN`). |
 | `signing_service_id`    | string \| null | `null` | **Placeholder.** The bundle does not use it. Set your signing service or HSM service ID and resolve it in a listener for `PDF_SIGN_REQUEST` or `SIGNATURE_COORDINATES_SUBMITTED` to perform PKI/PAdES signing. |
-| `acroform.*`             | —              | see below | AcroForm: platform (enabled, scripts, storage) and configs by alias. See [AcroForm](#acroform) and [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md). |
+| `acroform.*`             | —              | see below | AcroForm: platform (enabled, scripts, storage) and profiles by name. See [AcroForm](#acroform) and [ACROFORM_BACKEND_EXTENSION](ACROFORM_BACKEND_EXTENSION.md). |
 
 ### Signature
 
-Signature (coordinates + boxes) uses a **`signature`** node: global defaults (box dimensions, lock) and **configs by alias** (default alias `default`). Use form option `config: 'alias'` to apply. Define `signature.default_config_alias`, `signature.default_box_width`, `signature.default_box_height`, `signature.lock_box_width`, `signature.lock_box_height`, `signature.min_box_width`, `signature.min_box_height`, and `signature.configs` (map alias → form options). See demo YAML and [USAGE](USAGE.md).
+Signature (coordinates + boxes) uses a **`signature`** node: global defaults (box dimensions, lock) and **profiles by name** (default profile `default`). Use form option `config: 'alias'` to apply. Define `signature.default_profile`, `signature.default_box_width`, `signature.default_box_height`, `signature.lock_box_width`, `signature.lock_box_height`, `signature.min_box_width`, `signature.min_box_height`, and `signature.profiles` (map alias → form options). See demo YAML and [USAGE](USAGE.md).
 
 ### AcroForm
 
-When you need to **persist AcroForm overrides** (default value, label, control type, position per field) or **apply patches to the PDF** (return a modified PDF with updated fields), enable AcroForm and optionally configure storage and the apply endpoint. Config is under a single **`acroform`** node (platform settings + editor defaults + configs by alias; default alias is `default`):
+When you need to **persist AcroForm overrides** (default value, label, control type, position per field) or **apply patches to the PDF** (return a modified PDF with updated fields), enable AcroForm and optionally configure storage and the apply endpoint. Config is under a single **`acroform`** node (platform settings + editor defaults + profiles by name; default profile is `default`):
 
 ```yaml
 nowo_pdf_signable:
@@ -80,7 +80,7 @@ nowo_pdf_signable:
         apply_script_command: 'python3'   # Executable to run apply_script (use full path if python3 is not in PATH; set apply_script: null if Python is not installed)
         process_script: null               # Optional: path to Python script to process modified PDF (--input, --output, --document-key). Enables POST /pdf-signable/acroform/process; event dispatched with result.
         process_script_command: 'python3'  # Executable to run process_script (use full path if python3 is not in PATH)
-        default_config_alias: default      # Alias used when form option config is not set (resolved from configs below)
+        default_profile: default      # Profile used when form option config is not set (resolved from profiles below)
         min_field_width: 12                # Minimum width for AcroForm fields when moving/resizing (PDF points). Global default; overridable per config alias.
         min_field_height: 12               # Minimum height for AcroForm fields when moving/resizing (PDF points). Global default; overridable per config alias.
         # Edit-field modal options (global defaults; overridable per config alias)
@@ -90,7 +90,7 @@ nowo_pdf_signable:
         # show_field_rect: true            # false = hide coordinates (rect) input in the edit-field modal
         # font_sizes: []                   # e.g. [8, 10, 11, 12, 14, 18] for select; empty = number input (1-72)
         # font_families: []                # e.g. ['sans-serif', 'Arial', 'Times New Roman|Times New Roman']; empty = built-in list
-        configs:                           # Configs by alias (form option config: 'alias'). Default alias = default_config_alias
+        profiles:                           # Profiles by name (form option config: 'alias'). Default profile = default_profile
             default: {}                    # Used when no config is specified
             # with_fonts: { font_sizes: [8, 10, 12], font_families: ['Arial', 'Times New Roman|Times New Roman'] }
             # field_dropdown: { field_name_mode: choice, field_name_choices: ['Name', 'Surname', 'ID'], field_name_other_text: 'Other' }
@@ -124,7 +124,7 @@ If the list is non-empty and the requested URL does not match any entry, the pro
 
 ## Complete configuration reference
 
-Below is a full example with **every option** documented. Use it as a reference; you only need to set the options you use. For form-type options (inside `signature.configs.*`), see also [USAGE](USAGE.md).
+Below is a full example with **every option** documented. Use it as a reference; you only need to set the options you use. For form-type options (inside `signature.profiles.*`), see also [USAGE](USAGE.md).
 
 ```yaml
 nowo_pdf_signable:
@@ -147,16 +147,16 @@ nowo_pdf_signable:
     # When true, the viewer script logs to the browser console (load, add/remove box, errors).
     # debug: false
 
-    # signature (object): global defaults (box dimensions, lock) and configs by alias (default alias: default).
+    # signature (object): global defaults (box dimensions, lock) and profiles by name (default profile: default).
     signature:
-        default_config_alias: default
+        default_profile: default
         # default_box_width: null
         # default_box_height: null
         # lock_box_width: false
         # lock_box_height: false
         # min_box_width: null
         # min_box_height: null
-        configs:
+        profiles:
             # Example: minimal preset (units and origin only)
             default:
                 units: ['mm', 'cm', 'pt']

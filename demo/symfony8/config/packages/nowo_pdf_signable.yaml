@@ -16,16 +16,16 @@ nowo_pdf_signable:
     # When true, the PDF viewer and signature boxes emit console.log/warn in the browser (useful for development).
     debug: true
 
-    # Signature: global defaults (box dimensions, lock) and configs by alias. Default alias is "default".
+    # Signature: global defaults (box dimensions, lock) and profiles by name. Default profile is "default".
     signature:
-    #     default_config_alias: default
+    #     default_profile: default
     #     default_box_width: null
     #     default_box_height: null
     #     lock_box_width: false
     #     lock_box_height: false
     #     min_box_width: null
     #     min_box_height: null
-        configs:
+        profiles:
             default:
                 units: ['mm', 'cm', 'pt']
                 unit_default: 'mm'
@@ -42,7 +42,7 @@ nowo_pdf_signable:
                 origin_default: 'bottom_left'
                 show_acroform: true
 
-    # AcroForm: platform settings (enabled, scripts, storage) and configs by alias. Default alias is "default".
+    # AcroForm: platform settings (enabled, scripts, storage) and profiles by name. Default profile is "default".
     acroform:
         enabled: true
         fields_extractor_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/.scripts/extract_acroform_fields.py'
@@ -51,12 +51,12 @@ nowo_pdf_signable:
         apply_script_command: '/usr/bin/python3'
         process_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/.scripts/process_modified_pdf.py'
         process_script_command: '/usr/bin/python3'
-    #     default_config_alias: default
+    #     default_profile: default
     #     label_mode: input
     #     label_choices: []
     #     font_sizes: []
     #     font_families: []
-        configs:
+        profiles:
             # url_field: false and document_key_field: false hide the PDF URL and document key input rows.
             default:
                 url_field: false

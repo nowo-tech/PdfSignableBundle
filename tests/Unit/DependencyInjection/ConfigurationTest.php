@@ -52,23 +52,24 @@ final class ConfigurationTest extends TestCase
         self::assertSame('https://example.com/doc.pdf', $config['example_pdf_url']);
     }
 
-    public function testConfigsDefaultEmpty(): void
+    public function testProfilesDefaultEmpty(): void
     {
         $configuration = new Configuration();
         $processor     = new Processor();
         $config        = $processor->processConfiguration($configuration, []);
 
-        self::assertSame([], $config['signature']['configs']);
+        self::assertSame([], $config['signature']['profiles']);
     }
 
-    public function testConfigsOverride(): void
+    public function testProfilesOverride(): void
     {
         $configuration = new Configuration();
         $processor     = new Processor();
         $config        = $processor->processConfiguration($configuration, [
             [
                 'signature' => [
-                    'configs' => [
+                    'default_profile' => 'fixed_url',
+                    'profiles'        => [
                         'fixed_url' => [
                             'pdf_url'   => 'https://example.com/template.pdf',
                             'url_field' => false,
@@ -78,9 +79,29 @@ final class ConfigurationTest extends TestCase
             ],
         ]);
 
-        self::assertArrayHasKey('fixed_url', $config['signature']['configs']);
-        self::assertSame('https://example.com/template.pdf', $config['signature']['configs']['fixed_url']['pdf_url']);
-        self::assertFalse($config['signature']['configs']['fixed_url']['url_field']);
+        self::assertArrayHasKey('fixed_url', $config['signature']['profiles']);
+        self::assertSame('https://example.com/template.pdf', $config['signature']['profiles']['fixed_url']['pdf_url']);
+        self::assertFalse($config['signature']['profiles']['fixed_url']['url_field']);
+    }
+
+    public function testLegacyConfigsKeyNormalizedToProfiles(): void
+    {
+        $configuration = new Configuration();
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
+            [
+                'signature' => [
+                    'default_config_alias' => 'legacy',
+                    'configs'              => [
+                        'legacy' => ['unit_default' => 'pt'],
+                    ],
+                ],
+            ],
+        ]);
+
+        self::assertSame(['legacy' => ['unit_default' => 'pt']], $config['signature']['profiles']);
+        self::assertSame('legacy', $config['signature']['default_profile']);
+        self::assertArrayNotHasKey('configs', $config['signature']);
     }
 
     public function testProxyUrlAllowlistOverride(): void
@@ -261,27 +282,77 @@ final class ConfigurationTest extends TestCase
         self::assertFalse($configOverride['audit']['fill_from_request']);
     }
 
-    public function testAcroformDefaultConfigAliasDefaultAndOverride(): void
+    public function testAcroformDefaultProfileDefaultAndOverride(): void
     {
         $configuration = new Configuration();
         $processor     = new Processor();
         $config        = $processor->processConfiguration($configuration, []);
 
-        self::assertSame('default', $config['acroform']['default_config_alias']);
+        self::assertSame('default', $config['acroform']['default_profile']);
 
         $configOverride = $processor->processConfiguration($configuration, [
-            ['acroform' => ['default_config_alias' => 'minimal']],
+            ['acroform' => ['default_profile' => 'minimal', 'profiles' => ['minimal' => []]]],
         ]);
-        self::assertSame('minimal', $configOverride['acroform']['default_config_alias']);
+        self::assertSame('minimal', $configOverride['acroform']['default_profile']);
     }
 
-    public function testSignatureDefaultConfigAliasDefault(): void
+    public function testSignatureDefaultProfileDefault(): void
     {
         $configuration = new Configuration();
         $processor     = new Processor();
         $config        = $processor->processConfiguration($configuration, []);
 
-        self::assertSame('default', $config['signature']['default_config_alias']);
+        self::assertSame('default', $config['signature']['default_profile']);
+    }
+
+    public function testLegacyDefaultConfigAliasNormalized(): void
+    {
+        $configuration = new Configuration();
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
+            [
+                'signature' => [
+                    'default_config_alias' => 'fixed_url',
+                    'profiles'             => ['fixed_url' => ['url_field' => false]],
+                ],
+            ],
+        ]);
+
+        self::assertSame('fixed_url', $config['signature']['default_profile']);
+        self::assertArrayNotHasKey('default_config_alias', $config['signature']);
+    }
+
+    public function testInvalidDefaultProfileThrowsWhenProfilesNonEmpty(): void
+    {
+        $this->expectException(\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException::class);
+
+        $configuration = new Configuration();
+        $processor     = new Processor();
+        $processor->processConfiguration($configuration, [
+            [
+                'signature' => [
+                    'default_profile' => 'missing',
+                    'profiles'        => ['default' => []],
+                ],
+            ],
+        ]);
+    }
+
+    public function testEmptyProfilesAllowsDefaultProfileDefault(): void
+    {
+        $configuration = new Configuration();
+        $processor     = new Processor();
+        $config        = $processor->processConfiguration($configuration, [
+            [
+                'signature' => [
+                    'default_profile' => 'default',
+                    'profiles'        => [],
+                ],
+            ],
+        ]);
+
+        self::assertSame('default', $config['signature']['default_profile']);
+        self::assertSame([], $config['signature']['profiles']);
     }
 
     public function testAcroformLabelModeAndFontSizesDefaults(): void

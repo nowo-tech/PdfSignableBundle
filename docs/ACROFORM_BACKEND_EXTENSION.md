@@ -237,7 +237,7 @@ nowo_pdf_signable:
 - `overrides_storage: session` registers `SessionAcroFormOverridesStorage` and aliases it to the interface.
 - `allow_pdf_modify: true` exposes the apply endpoint; the implementation can be `editor_service_id` or event-only.
 
-For the **full list** of options (including `process_script`, `process_script_command`, `fields_extractor_script`, `default_config_alias`, `configs`, and editor defaults such as `label_mode`, `font_sizes`), see [CONFIGURATION](CONFIGURATION.md#acroform).
+For the **full list** of options (including `process_script`, `process_script_command`, `fields_extractor_script`, `default_profile`, `profiles`, and editor defaults such as `label_mode`, `font_sizes`), see [CONFIGURATION](CONFIGURATION.md#acroform).
 
 ---
 
@@ -438,7 +438,7 @@ See [CONFIGURATION](CONFIGURATION.md) for `acroform.apply_script`, `acroform.pro
 
 Implemented in the bundle (steps 1–4 above):
 
-- **Config:** `acroform` node in `Configuration.php` with platform options (`enabled`, `overrides_storage`, `document_key_mode`, `allow_pdf_modify`, `editor_service_id`, `max_pdf_size`, `max_patches`, `apply_script`, `apply_script_command`, `process_script`, `process_script_command`), editor defaults (`min_field_width`, `min_field_height`, `label_mode`, etc.), `default_config_alias`, and `configs` (by alias). Parameters and conditional loading in `PdfSignableExtension.php`.
+- **Config:** `acroform` node in `Configuration.php` with platform options (`enabled`, `overrides_storage`, `document_key_mode`, `allow_pdf_modify`, `editor_service_id`, `max_pdf_size`, `max_patches`, `apply_script`, `apply_script_command`, `process_script`, `process_script_command`), editor defaults (`min_field_width`, `min_field_height`, `label_mode`, etc.), `default_profile`, and `profiles` (by name). Parameters and conditional loading in `PdfSignableExtension.php`.
 - **DTOs:** `AcroFormFieldPatch`, `AcroFormOverrides` in `src/AcroForm/`.
 - **Layer 1:** `AcroFormOverridesStorageInterface`, `SessionAcroFormOverridesStorage`; `AcroFormOverridesController` with GET/POST/DELETE `/pdf-signable/acroform/overrides`. Session storage by default; alias is configurable.
 - **Layer 2:** `PdfAcroFormEditorInterface`, `AcroFormEditorException`, `AcroFormApplyRequestEvent`; POST `/pdf-signable/acroform/apply` (pdf_url or pdf_content + patches); `ACROFORM_APPLY_REQUEST` event; optional service implementing the interface.

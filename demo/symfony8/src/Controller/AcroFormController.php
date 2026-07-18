@@ -125,7 +125,7 @@ class AcroFormController extends AbstractController
         $configName = $options['config'] ?? null;
         $resolved   = $options;
         if ($configName !== null && $configName !== '') {
-            $acroformConfigs = $this->getParameter('nowo_pdf_signable.acroform.configs');
+            $acroformConfigs = $this->getParameter('nowo_pdf_signable.acroform.profiles');
             if (is_array($acroformConfigs) && isset($acroformConfigs[$configName]) && is_array($acroformConfigs[$configName])) {
                 $resolved = array_merge($resolved, $acroformConfigs[$configName]);
             }

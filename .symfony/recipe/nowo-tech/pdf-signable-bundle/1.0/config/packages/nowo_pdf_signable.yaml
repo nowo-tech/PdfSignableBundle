@@ -24,11 +24,11 @@ nowo_pdf_signable:
     # debug: false
 
     # ─── Signature (coordinates + boxes) ───────────────────────────────────
-    # Signature config is under a single "signature" node: global defaults (box dimensions, lock) and named configs by alias.
-    # Use form option config: "alias" to apply a config. Default alias when not set is "default" (see default_config_alias).
+    # Signature config is under a single "signature" node: global defaults (box dimensions, lock) and named profiles by name.
+    # Use form option config: "alias" to apply a config. Default profile when not set is "default" (see default_profile).
     signature:
-        # Alias used when the form is created without config option. Must exist in signature.configs below.
-        # default_config_alias: default
+        # Alias used when the form is created without config option. Must exist in signature.profiles below.
+        # default_profile: default
 
         # Default width for new signature boxes (in form unit). Overridable per config alias or when creating the form.
         # When lock_box_width is true, this value is used and the width field is hidden.
@@ -48,10 +48,10 @@ nowo_pdf_signable:
         # min_box_width: null
         # min_box_height: null
 
-        # Named configs (presets) for SignatureCoordinatesType. Keys are aliases; reference with form option config: "alias".
+        # Named profiles (presets) for SignatureCoordinatesType. Keys are aliases; reference with form option config: "alias".
         # Each value is a map of form-type options (units, pdf_url, box options, etc.). See docs/USAGE.md for the full list.
         # You can override the global box defaults above per config (e.g. default_box_width, lock_box_width).
-        configs:
+        profiles:
             # Minimal preset: units and origin only. Use as config: "default" in the form.
             default:
                 units: ['mm', 'cm', 'pt']
@@ -154,7 +154,7 @@ nowo_pdf_signable:
     # signing_service_id: null
 
     # ─── AcroForm (overrides and PDF apply) ─────────────────────────────────
-    # AcroForm config is under a single "acroform" node: platform settings (enabled, scripts, storage) and named configs by alias.
+    # AcroForm config is under a single "acroform" node: platform settings (enabled, scripts, storage) and named profiles by name.
     # Enable when you need to persist AcroForm overrides (default value, label, type, rect per field) or apply patches to the PDF.
     # See docs/CONFIGURATION.md and docs/ACROFORM_BACKEND_EXTENSION.md.
     acroform:
@@ -197,8 +197,8 @@ nowo_pdf_signable:
         # Executable used to run the process_script (e.g. python3, python). Used only when process_script is set.
         # process_script_command: 'python3'
 
-        # Alias used when the AcroForm form is created without config option. Must exist in acroform.configs below.
-        # default_config_alias: default
+        # Alias used when the AcroForm form is created without config option. Must exist in acroform.profiles below.
+        # default_profile: default
 
         # Editor defaults (overridable per config alias): minimum field size, label mode, fonts, etc.
         # Minimum width/height for AcroForm fields when moving/resizing in the editor overlay (PDF points).
@@ -223,8 +223,8 @@ nowo_pdf_signable:
         # Allowed font families in the edit-field modal. Each entry: string (value and label) or "value|Label". Empty = use built-in list.
         # font_families: []
 
-        # Named configs (presets) for the AcroForm editor. Keys are aliases; reference with form option config: "alias".
-        # configs:
+        # Named profiles (presets) for the AcroForm editor. Keys are aliases; reference with form option config: "alias".
+        # profiles:
         #     default: {}
         #     label_dropdown:
         #         label_mode: choice

@@ -41,6 +41,75 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Upgrading by version
 
+### Upgrading to 3.0.5 (2026-07-18)
+
+**Release date:** 2026-07-18
+
+**Patch release with preferred config rename (legacy keys still accepted):** Aligns with AuditKit-style multi-config naming (REQ-SF-003). Existing YAML using `default_config_alias` / `configs` continues to work; migrate when convenient.
+
+#### What changed
+
+Under both `signature` and `acroform`:
+
+| Old key | New key |
+|---------|---------|
+| `default_config_alias` | `default_profile` |
+| `configs` | `profiles` |
+
+Container parameters:
+
+| Old parameter | New parameter |
+|---------------|---------------|
+| `nowo_pdf_signable.signature.default_config_alias` | `nowo_pdf_signable.signature.default_profile` |
+| `nowo_pdf_signable.signature.configs` | `nowo_pdf_signable.signature.profiles` |
+| `nowo_pdf_signable.acroform.default_config_alias` | `nowo_pdf_signable.acroform.default_profile` |
+| `nowo_pdf_signable.acroform.configs` | `nowo_pdf_signable.acroform.profiles` |
+
+Legacy YAML keys and legacy parameter names remain for BC (parameters are set under both names). Prefer the new names in new config and code.
+
+Validation: when `profiles` is non-empty, `default_profile` must be a key in that map. When `profiles` is empty, `default_profile` may stay `'default'`.
+
+Form option `config: 'name'` is unchanged.
+
+#### Migration example
+
+```yaml
+# Before
+nowo_pdf_signable:
+    signature:
+        default_config_alias: default
+        configs:
+            default: { units: ['mm'] }
+    acroform:
+        default_config_alias: default
+        configs:
+            default: {}
+
+# After
+nowo_pdf_signable:
+    signature:
+        default_profile: default
+        profiles:
+            default: { units: ['mm'] }
+    acroform:
+        default_profile: default
+        profiles:
+            default: {}
+```
+
+If you inject `%nowo_pdf_signable.signature.configs%` (or AcroForm equivalents) in PHP, switch to `.profiles` / `.default_profile`.
+
+#### Upgrade steps (from 3.0.x)
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Optionally rename YAML keys to `default_profile` / `profiles` as above (legacy keys still work).
+3. If you inject container parameters for configs, prefer `.profiles` / `.default_profile`.
+4. Clear cache: `php bin/console cache:clear`.
+
+See [CHANGELOG.md](CHANGELOG.md) and [CONFIGURATION.md](CONFIGURATION.md) for the full option list.
+
+---
+
 ### Upgrading to 3.0.4 (2026-07-16)
 
 **Release date:** 2026-07-16
@@ -654,7 +723,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 3.0.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.0.0 breaking:** Minimum PHP 8.2 and Symfony 7.0. **3.0.1:** `Choice` constraints for Validator 7.4+/8.x. **3.0.2:** Symfony 8.1 PHP 8.4.1+ documented. **3.0.3:** Flex recipe `proxy_url_allowlist` placeholder + security note; Spec Kit baseline; `fr`/`nl` translations. **3.0.4:** Code of Conduct; REQ-GIT-001 (no Cursor co-author in git history / CI). |
+| 3.0.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.0.0 breaking:** Minimum PHP 8.2 and Symfony 7.0. **3.0.1:** `Choice` constraints for Validator 7.4+/8.x. **3.0.2:** Symfony 8.1 PHP 8.4.1+ documented. **3.0.3:** Flex recipe `proxy_url_allowlist` placeholder + security note; Spec Kit baseline; `fr`/`nl` translations. **3.0.4:** Code of Conduct; REQ-GIT-001 (no Cursor co-author in git history / CI). **3.0.5:** `default_profile` / `profiles` (legacy `default_config_alias` / `configs` still accepted). |
 | 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **2.0.0 breaking:** Signature under `signature` node; AcroForm under single `acroform` node. **2.0.1:** PDF.js worker default `.js` (MIME fix), worker URL absolute/fallback, translations (AcroForm modal keys + tr YAML), tests. **2.0.2:** Routes YAML copy-paste example, allowlist regex validation in dev (compiler pass), extended tests, `@group integration` for env-dependent tests. **2.0.4:** PHP-CS-Fixer (PSR-12/Symfony), Docker PHP 8.2 Alpine, demo Makefiles/HTTP/READMEs, CI simplified. |
 | 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging. 1.5.4: show_acroform option (default true), AcroForm outline overlay; recipe and demos set show_acroform: true in signature.configs / acroform.configs. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |

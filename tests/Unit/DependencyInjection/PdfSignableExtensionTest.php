@@ -33,13 +33,19 @@ final class PdfSignableExtensionTest extends TestCase
             [
                 'proxy_enabled'   => false,
                 'example_pdf_url' => 'https://example.com/default.pdf',
-                'signature'       => ['configs' => ['preset' => ['unit_default' => 'pt']]],
+                'signature'       => [
+                    'default_profile' => 'preset',
+                    'profiles'        => ['preset' => ['unit_default' => 'pt']],
+                ],
             ],
         ], $container);
 
         self::assertFalse($container->getParameter('nowo_pdf_signable.proxy_enabled'));
         self::assertSame('https://example.com/default.pdf', $container->getParameter('nowo_pdf_signable.example_pdf_url'));
+        self::assertSame(['preset' => ['unit_default' => 'pt']], $container->getParameter('nowo_pdf_signable.signature.profiles'));
         self::assertSame(['preset' => ['unit_default' => 'pt']], $container->getParameter('nowo_pdf_signable.signature.configs'));
+        self::assertSame('preset', $container->getParameter('nowo_pdf_signable.signature.default_profile'));
+        self::assertSame('preset', $container->getParameter('nowo_pdf_signable.signature.default_config_alias'));
         self::assertNull($container->getParameter('nowo_pdf_signable.signature.default_box_width'));
         self::assertNull($container->getParameter('nowo_pdf_signable.signature.default_box_height'));
         self::assertFalse($container->getParameter('nowo_pdf_signable.signature.lock_box_width'));

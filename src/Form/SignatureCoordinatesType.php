@@ -45,16 +45,16 @@ final class SignatureCoordinatesType extends AbstractType
 {
     /**
      * @param string $examplePdfUrl Fallback PDF URL when pdf_url option is not set
-     * @param array<string, array<string, mixed>> $namedConfigs Configs by alias from nowo_pdf_signable.signature.configs
-     * @param string $defaultConfigAlias Default alias when form option config is not set (e.g. "default")
+     * @param array<string, array<string, mixed>> $namedConfigs Profiles by name from nowo_pdf_signable.signature.profiles
+     * @param string $defaultConfigAlias Default profile when form option config is not set (e.g. "default")
      * @param bool $debug When true, the frontend emits console logs (browser dev tools)
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.example_pdf_url')]
         private readonly string $examplePdfUrl = '',
-        #[Autowire(param: 'nowo_pdf_signable.signature.configs')]
+        #[Autowire(param: 'nowo_pdf_signable.signature.profiles')]
         private readonly array $namedConfigs = [],
-        #[Autowire(param: 'nowo_pdf_signable.signature.default_config_alias')]
+        #[Autowire(param: 'nowo_pdf_signable.signature.default_profile')]
         private readonly string $defaultConfigAlias = 'default',
         #[Autowire(param: 'nowo_pdf_signable.debug')]
         private readonly bool $debug = false,
@@ -459,7 +459,7 @@ final class SignatureCoordinatesType extends AbstractType
             'data_class'         => SignatureCoordinatesModel::class,
             'translation_domain' => 'nowo_pdf_signable',
 
-            // Named config from nowo_pdf_signable.signature.configs (options merged; passed options override; default alias = default_config_alias)
+            // Named profile from nowo_pdf_signable.signature.profiles (options merged; passed options override; default = default_profile)
             'config' => null,
 
             // URL (null = use bundle example_pdf_url when set)

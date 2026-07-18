@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- (None yet.)
+
+### Changed
+
+- (None yet.)
+
+### Fixed
+
+- (None yet.)
+
+---
+
+## [3.0.5] - 2026-07-18
+
+### Changed
+
+- **REQ-SF-003 profile naming:** Under `signature` and `acroform`, YAML keys `default_config_alias` / `configs` are renamed to `default_profile` / `profiles` (AuditKit-style). Legacy keys are still accepted via `beforeNormalization`. Container parameters: `nowo_pdf_signable.signature.default_profile`, `.signature.profiles`, `.acroform.default_profile`, `.acroform.profiles` (legacy `.default_config_alias` / `.configs` parameters remain for BC). Form option `config: 'alias'` is unchanged. See [UPGRADING](UPGRADING.md).
+- **Docs / demos / recipe:** CONFIGURATION, USAGE, ACROFORM_BACKEND_EXTENSION, README, Flex recipe, Symfony 7/8 demos, and baseline spec updated to the new `default_profile` / `profiles` keys.
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 3.0.5.
+
+For upgrade steps from 3.0.4, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [3.0.4] - 2026-07-16
 
 ### Added
@@ -571,7 +600,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.4...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.5...HEAD
+[3.0.5]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.5
 [3.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.4
 [3.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.3
 [3.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.2

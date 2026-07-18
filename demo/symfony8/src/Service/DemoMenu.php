@@ -130,10 +130,10 @@ final class DemoMenu
             [
                 'title' => 'Define signature areas',
                 'items' => [
-                    ['type' => 'subsection', 'title' => 'Named configs usage (nowo_pdf_signable.signature.configs)'],
+                    ['type' => 'subsection', 'title' => 'Named profiles usage (nowo_pdf_signable.signature.profiles)'],
                     ['type' => 'cards', 'col_class' => 'col-md-6 col-lg-3', 'cards' => [
-                        ['title' => 'No config', 'bullets' => ['No <code>config</code> passed to the type', 'Units, origin and example URL from form baseOptions + bundle <code>example_pdf_url</code>', 'Nothing from <code>signature.configs</code>'], 'route' => 'app_signature', 'btn_class' => 'btn-primary'],
-                        ['title' => 'Config <code>default</code>', 'bullets' => ['<code>config: \'default\'</code>', '<code>units</code>, <code>unit_default</code>, <code>origin_default</code> from <code>signature.configs.default</code>', 'Options in code override the config'], 'route' => 'app_signature_default_config', 'btn_class' => 'btn-primary'],
+                        ['title' => 'No config', 'bullets' => ['No <code>config</code> passed to the type', 'Units, origin and example URL from form baseOptions + bundle <code>example_pdf_url</code>', 'Nothing from <code>signature.profiles</code>'], 'route' => 'app_signature', 'btn_class' => 'btn-primary'],
+                        ['title' => 'Config <code>default</code>', 'bullets' => ['<code>config: \'default\'</code>', '<code>units</code>, <code>unit_default</code>, <code>origin_default</code> from <code>signature.profiles.default</code>', 'Options in code override the config'], 'route' => 'app_signature_default_config', 'btn_class' => 'btn-primary'],
                         ['title' => 'Config <code>fixed_url</code>', 'bullets' => ['<code>config: \'fixed_url\'</code>', '<code>url_field: false</code>, <code>show_load_pdf_button: false</code> — URL hidden, no Load PDF button', '<code>unit_field: false</code>, <code>origin_field: false</code> — unit and origin hidden (fixed to default)', 'Single document (template/contract); only boxes form visible'], 'route' => 'app_signature_fixed_url', 'btn_class' => 'btn-primary'],
                         ['title' => 'Config overridden', 'bullets' => ['Same <code>fixed_url</code> config', 'Override in code: <code>unit_default: \'pt\'</code>', 'Shows form options override named config'], 'route' => 'app_signature_fixed_url_overridden', 'btn_class' => 'btn-primary'],
                     ]],
