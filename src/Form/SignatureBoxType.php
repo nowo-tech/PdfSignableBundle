@@ -209,7 +209,7 @@ final class SignatureBoxType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class'         => SignatureBoxModel::class,
-            'translation_domain' => 'nowo_pdf_signable',
+            'translation_domain' => 'NowoPdfSignableBundle',
 
             'name_mode'          => self::NAME_MODE_INPUT,
             'name_choices'       => [],

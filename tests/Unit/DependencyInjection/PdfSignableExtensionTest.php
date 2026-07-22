@@ -135,7 +135,7 @@ final class PdfSignableExtensionTest extends TestCase
     }
 
     /**
-     * Prepend adds Twig paths/form_themes and Framework translator paths when those extensions are present.
+     * Prepend adds Twig form themes and Framework translator paths when those extensions are present.
      */
     public function testPrependAddsTwigAndFrameworkConfig(): void
     {
@@ -166,12 +166,8 @@ final class PdfSignableExtensionTest extends TestCase
 
         $twigConfigs = $container->getExtensionConfig('twig');
         self::assertNotEmpty($twigConfigs);
-        self::assertArrayHasKey('paths', $twigConfigs[0]);
         self::assertArrayHasKey('form_themes', $twigConfigs[0]);
-        $paths       = $twigConfigs[0]['paths'];
-        $pathsString = implode('', array_merge(array_keys($paths), array_values($paths)));
-        self::assertTrue(str_contains($pathsString, 'Resources/views'), 'Twig paths should contain bundle views path');
-        self::assertContains('@NowoPdfSignable/form/theme.html.twig', $twigConfigs[0]['form_themes']);
+        self::assertContains('@NowoPdfSignableBundle/form/theme.html.twig', $twigConfigs[0]['form_themes']);
 
         $frameworkConfigs = $container->getExtensionConfig('framework');
         self::assertNotEmpty($frameworkConfigs);

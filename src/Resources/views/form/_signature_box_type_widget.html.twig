@@ -35,13 +35,13 @@
   </div>
   {% if form.signatureData is defined and (form.vars.enable_signature_capture or form.vars.enable_signature_upload) %}
   <div class="signature-capture-row w-100 mb-2">
-    <label class="form-label small">{{ 'signature_box_type.signature.label'|trans({}, 'nowo_pdf_signable') }}</label>
+    <label class="form-label small">{{ 'signature_box_type.signature.label'|trans({}, 'NowoPdfSignableBundle') }}</label>
     {{ form_widget(form.signatureData) }}
     {% if form.signedAt is defined %}{{ form_widget(form.signedAt) }}{% endif %}
     {% if form.vars.enable_signature_capture %}
     <div class="signature-pad-wrapper w-100">
       <canvas class="signature-pad-canvas" width="280" height="120"></canvas>
-      <button type="button" class="btn btn-sm btn-outline-secondary signature-pad-clear mt-1">{{ 'signature_box_type.signature.clear'|trans({}, 'nowo_pdf_signable') }}</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary signature-pad-clear mt-1">{{ 'signature_box_type.signature.clear'|trans({}, 'NowoPdfSignableBundle') }}</button>
     </div>
     {% endif %}
     {% if form.vars.enable_signature_upload %}
@@ -91,13 +91,13 @@
 {% endif %}
 {% if form.signatureData is defined and (form.vars.enable_signature_capture or form.vars.enable_signature_upload) %}
 <div class="signature-capture-row w-100 mb-2">
-  <label class="form-label small">{{ 'signature_box_type.signature.label'|trans({}, 'nowo_pdf_signable') }}</label>
+  <label class="form-label small">{{ 'signature_box_type.signature.label'|trans({}, 'NowoPdfSignableBundle') }}</label>
   {{ form_widget(form.signatureData) }}
   {% if form.signedAt is defined %}{{ form_widget(form.signedAt) }}{% endif %}
   {% if form.vars.enable_signature_capture %}
   <div class="signature-pad-wrapper w-100">
     <canvas class="signature-pad-canvas" width="280" height="120"></canvas>
-    <button type="button" class="btn btn-sm btn-outline-secondary signature-pad-clear mt-1">{{ 'signature_box_type.signature.clear'|trans({}, 'nowo_pdf_signable') }}</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary signature-pad-clear mt-1">{{ 'signature_box_type.signature.clear'|trans({}, 'NowoPdfSignableBundle') }}</button>
   </div>
   {% endif %}
   {% if form.vars.enable_signature_upload %}

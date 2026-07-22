@@ -39,7 +39,7 @@
   </div>
   {% endif %}
   <div class="container-fluid">
-    {% form_theme form '@NowoPdfSignable/form/theme.html.twig' %}
+    {% form_theme form '@NowoPdfSignableBundle/form/theme.html.twig' %}
     {{ form_start(form, { attr: { id: 'signatureForm' } }) }}
     {{ form_widget(form.signatureCoordinates) }}
     {{ form_end(form) }}

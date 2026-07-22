@@ -457,7 +457,7 @@ final class SignatureCoordinatesType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class'         => SignatureCoordinatesModel::class,
-            'translation_domain' => 'nowo_pdf_signable',
+            'translation_domain' => 'NowoPdfSignableBundle',
 
             // Named profile from nowo_pdf_signable.signature.profiles (options merged; passed options override; default = default_profile)
             'config' => null,

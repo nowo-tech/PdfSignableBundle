@@ -29,7 +29,7 @@ The bundle is used by defining config in YAML and then injecting that config int
   - Config parameters: `nowo_pdf_signable.acroform.*` (label_mode, font_sizes, etc.) and `acroform.configs` by alias.
 - **App (demo):** For the “AcroForm page”, **SignaturePageType** is reused with options that hide the boxes (`show_signature_boxes` false, `max_entries` 0). So only the viewer is used. Then the template:
   - Renders the form (viewer).
-  - Manually includes `@NowoPdfSignable/acroform/editor_root.html.twig` passing ~15 variables (`acroform_overrides_load_url`, `acroform_document_key`, `acroform_label_mode`, `acroform_font_sizes`, etc.).
+  - Manually includes `@NowoPdfSignableBundle/acroform/editor_root.html.twig` passing ~15 variables (`acroform_overrides_load_url`, `acroform_document_key`, `acroform_label_mode`, `acroform_font_sizes`, etc.).
 - **Issues:** AcroForm depends on the signature type (reuses the same form), config is injected manually in the controller and template, and there is no “named config” per page for AcroForm.
 
 ---

@@ -130,10 +130,7 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
         $bundleDir = dirname(__DIR__, 2);
         if ($container->hasExtension('twig')) {
             $container->prependExtensionConfig('twig', [
-                'paths' => [
-                    $bundleDir . '/src/Resources/views' => 'NowoPdfSignable',
-                ],
-                'form_themes' => ['@NowoPdfSignable/form/theme.html.twig'],
+                'form_themes' => ['@NowoPdfSignableBundle/form/theme.html.twig'],
             ]);
         }
         if ($container->hasExtension('framework')) {

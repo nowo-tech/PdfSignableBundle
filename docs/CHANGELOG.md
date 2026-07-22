@@ -21,6 +21,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.6] - 2026-07-22
+
+### Changed
+
+- **Breaking (Twig):** Logical Twig namespace renamed from `@NowoPdfSignable` to **`@NowoPdfSignableBundle`**. Form theme default is `@NowoPdfSignableBundle/form/theme.html.twig`. Application template overrides move to `templates/bundles/NowoPdfSignableBundle/...`.
+- **Breaking (i18n, REQ-I18N-003):** Translation domain and files renamed from `nowo_pdf_signable` to **`NowoPdfSignableBundle`** (`src/Resources/translations/NowoPdfSignableBundle.{locale}.yaml`). Update `|trans(..., 'nowo_pdf_signable')` and app override files accordingly. DI config alias / parameters `nowo_pdf_signable.*` are unchanged.
+- **Twig paths:** New compiler pass `TwigPathsPass` registers bundle views under namespace `NowoPdfSignableBundle` and prepends `templates/bundles/NowoPdfSignableBundle` so app overrides win.
+- **Docs / demos:** README, USAGE, INSTALLATION, proposals, Symfony 7/8 demos, and baseline spec updated for the new Twig namespace and translation domain.
+- **Tooling:** `.scripts/validate-translations-yaml.php` uses `NowoPdfSignableBundle.en.yaml` as the reference file.
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 3.0.6.
+
+For upgrade steps from 3.0.5, see [UPGRADING](UPGRADING.md).
+
+---
+
 ## [3.0.5] - 2026-07-18
 
 ### Changed
@@ -305,7 +323,7 @@ For upgrade steps from 2.0.0, see [UPGRADING](UPGRADING.md).
 
 - **Signature config under `signature` node:** Global box defaults and named configs by alias (default alias `default`). Use form option `config: 'alias'` to apply. Container parameters: `nowo_pdf_signable.signature.*` and `nowo_pdf_signable.signature.configs`. See [UPGRADING](UPGRADING.md).
 - **AcroForm config under single `acroform` node:** Replaces `acroform_editor` and `acroform_configs`. Platform options, editor defaults, `default_config_alias`, and `configs` by alias. Container parameters: `nowo_pdf_signable.acroform.*` and `nowo_pdf_signable.acroform.configs`. See [UPGRADING](UPGRADING.md).
-- **AcroForm editor translations**: All UI strings in the AcroForm editor panel (demo templates) are now translatable. New translation keys under `acroform_editor.*` (domain `nowo_pdf_signable`): page title, config header, form errors intro, close aria, panel title, draft intro (with HTML), document key label/placeholder, fields label, fields from PDF, refresh button, draft label/placeholder/title, load/save/clear buttons. Translations added for all 12 locales (EN, ES, FR, DE, CA, IT, NL, PT, CS, PL, RU, TR). Demo templates `acroform_editor.html.twig` (Symfony 7 and 8) use `|trans({}, 'nowo_pdf_signable')` for every user-facing string.
+- **AcroForm editor translations**: All UI strings in the AcroForm editor panel (demo templates) are now translatable. New translation keys under `acroform_editor.*` (domain `NowoPdfSignableBundle`): page title, config header, form errors intro, close aria, panel title, draft intro (with HTML), document key label/placeholder, fields label, fields from PDF, refresh button, draft label/placeholder/title, load/save/clear buttons. Translations added for all 12 locales (EN, ES, FR, DE, CA, IT, NL, PT, CS, PL, RU, TR). Demo templates `acroform_editor.html.twig` (Symfony 7 and 8) use `|trans({}, 'NowoPdfSignableBundle')` for every user-facing string.
 - **AcroForm editor config (Type)**: New options under the **`acroform`** node to control the edit-field modal from the bundle config:
   - `label_mode` (`'input'` \| `'choice'`): label as free text or select with predefined options plus "Other".
   - `label_choices` (string[]): list of label options when `label_mode` is `'choice'` (each entry: string or `"value|Label"`).
@@ -600,7 +618,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.5...HEAD
+[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.6...HEAD
+[3.0.6]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.6
 [3.0.5]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.5
 [3.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.4
 [3.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.3

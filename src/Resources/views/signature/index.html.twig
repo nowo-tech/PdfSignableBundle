@@ -5,7 +5,7 @@
 #}
 {% extends base_template|default('base.html.twig') %}
 
-{% block title %}{{ 'page.title'|trans({}, 'nowo_pdf_signable') }}{% endblock %}
+{% block title %}{{ 'page.title'|trans({}, 'NowoPdfSignableBundle') }}{% endblock %}
 
 {% block stylesheets %}
   {{ parent() }}
@@ -31,7 +31,7 @@
 
 {% block body %}
   <div class="container-fluid">
-    {{ include('@NowoPdfSignable/_dependency_debug_alert.html.twig') }}
+    {{ include('@NowoPdfSignableBundle/_dependency_debug_alert.html.twig') }}
     {{ form_start(form, { attr: { id: 'signatureForm' } }) }}
     {{ form_widget(form) }}
     {{ form_end(form) }}

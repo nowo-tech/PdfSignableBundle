@@ -56,7 +56,7 @@
   Override in app: {% block signature_box_widget %} ... {% endblock %}
 #}
 {% block signature_box_widget %}
-  {% include "@NowoPdfSignable/form/_signature_box_type_widget.html.twig" with { form: form } %}
+  {% include "@NowoPdfSignableBundle/form/_signature_box_type_widget.html.twig" with { form: form } %}
 {% endblock %}
 
 {% block signature_box_row %}
@@ -78,7 +78,7 @@
   {% endif %}
   <div class="row g-4 nowo-pdf-signable-widget" data-viewer-lazy-load="{{ opts.viewer_lazy_load|default(false) ? '1' : '0' }}" data-show-acroform="{{ opts.show_acroform|default(true) ? '1' : '0' }}" data-acroform-interactive="{{ opts.acroform_interactive|default(true) ? '1' : '0' }}" data-pdfjs-source="{{ opts.pdfjs_source|default('npm') }}" data-pdfjs-url="{{ opts.pdfjs_source|default('npm') == 'cdn' ? 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js' : '' }}" data-pdfjs-worker-url="{{ opts.pdfjs_source|default('npm') == 'npm' ? asset('bundles/nowopdfsignable/js/pdf.worker.min.js') : 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js' }}" data-pdf-signable-js="{{ asset('bundles/nowopdfsignable/js/pdf-signable.js') }}">
     <div class="col-lg-8">
-      {% include '@NowoPdfSignable/form/_pdf_viewer_partial.html.twig' with {
+      {% include '@NowoPdfSignableBundle/form/_pdf_viewer_partial.html.twig' with {
         pdf_url_form: form.pdfUrl,
         show_url_row: show_url_row,
         show_load_btn: show_load_btn,
@@ -90,7 +90,7 @@
     <div class="col-lg-4">
       {% set _config = { field_name_mode: opts.field_name_mode|default('input'), field_name_choices: opts.field_name_choices|default([]), field_name_other_text: opts.field_name_other_text|default(''), show_field_rect: opts.show_field_rect ?? true, font_sizes: opts.font_sizes|default([]), font_families: opts.font_families|default([]), min_field_width: opts.min_field_width|default(12), min_field_height: opts.min_field_height|default(12) } %}
       {% set show_document_key_row = opts.document_key_field is not defined or (opts.document_key_field is not same as(false) and opts.document_key_field is not same as('false')) %}
-      {{ include('@NowoPdfSignable/acroform/editor_root.html.twig', {
+      {{ include('@NowoPdfSignableBundle/acroform/editor_root.html.twig', {
         load_url: opts.load_url|default(''),
         post_url: opts.post_url|default(''),
         document_key: opts.document_key|default(''),
@@ -112,19 +112,19 @@
       pdfjsSource: {{ (opts.pdfjs_source|default('npm'))|json_encode|raw }},
       pdfjsWorkerUrl: {{ (opts.pdfjs_worker_url|default(asset('bundles/nowopdfsignable/js/pdf.worker.min.js')))|json_encode|raw }},
       strings: {
-        error_load_pdf: {{ 'js.error_load_pdf'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        pdf_not_found: {{ 'js.pdf_not_found'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        alert_url_required: {{ 'js.alert_url_required'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        alert_submit_error: {{ 'js.alert_submit_error'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        loading_state: {{ 'js.loading_state'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        load_pdf_btn: {{ 'js.load_pdf_btn'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        default_box_name: {{ 'js.default_box_name'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        zoom_in: {{ 'js.zoom_in'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        zoom_out: {{ 'js.zoom_out'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        zoom_fit: {{ 'js.zoom_fit'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        fit_width: {{ 'js.fit_width'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        fit_page: {{ 'js.fit_page'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        no_overlap_message: {{ 'signature_coordinates_type.signature_boxes.no_overlap_message'|trans({}, 'nowo_pdf_signable')|json_encode|raw }}
+        error_load_pdf: {{ 'js.error_load_pdf'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        pdf_not_found: {{ 'js.pdf_not_found'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        alert_url_required: {{ 'js.alert_url_required'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        alert_submit_error: {{ 'js.alert_submit_error'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        loading_state: {{ 'js.loading_state'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        load_pdf_btn: {{ 'js.load_pdf_btn'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        default_box_name: {{ 'js.default_box_name'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        zoom_in: {{ 'js.zoom_in'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        zoom_out: {{ 'js.zoom_out'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        zoom_fit: {{ 'js.zoom_fit'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        fit_width: {{ 'js.fit_width'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        fit_page: {{ 'js.fit_page'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        no_overlap_message: {{ 'signature_coordinates_type.signature_boxes.no_overlap_message'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }}
       }
     };
   </script>
@@ -189,7 +189,7 @@
   <div class="row g-4 nowo-pdf-signable-widget" data-unit-default="{{ opts.unit_default|default('mm') }}" data-origin-default="{{ opts.origin_default|default('bottom_left') }}" data-prevent-box-overlap="{{ opts.prevent_box_overlap|default(true) ? '1' : '0' }}" data-box-defaults-by-name="{{ (opts.box_defaults_by_name|default({}))|json_encode|e('html_attr') }}" data-enable-rotation="{{ opts.enable_rotation|default(false) ? '1' : '0' }}" data-lock-box-width="{{ opts.lock_box_width|default(false) ? '1' : '0' }}" data-lock-box-height="{{ opts.lock_box_height|default(false) ? '1' : '0' }}" data-default-box-width="{{ opts.default_box_width is defined and opts.default_box_width is not null ? opts.default_box_width : '' }}" data-default-box-height="{{ opts.default_box_height is defined and opts.default_box_height is not null ? opts.default_box_height : '' }}" data-min-box-width="{{ opts.min_box_width is defined and opts.min_box_width is not null ? opts.min_box_width : '' }}" data-min-box-height="{{ opts.min_box_height is defined and opts.min_box_height is not null ? opts.min_box_height : '' }}" data-snap-grid="{{ opts.snap_to_grid|default(0) }}" data-snap-to-boxes="{{ opts.snap_to_boxes|default(true) ? '1' : '0' }}" data-show-grid="{{ opts.show_grid|default(false) ? '1' : '0' }}" data-grid-step="{{ opts.grid_step|default(10) }}" data-viewer-lazy-load="{{ opts.viewer_lazy_load|default(false) ? '1' : '0' }}" data-show-acroform="{{ opts.show_acroform|default(true) ? '1' : '0' }}" data-acroform-interactive="{{ opts.acroform_interactive|default(true) ? '1' : '0' }}" data-pdfjs-source="{{ opts.pdfjs_source|default('npm') }}" data-pdfjs-url="{{ opts.pdfjs_source|default('npm') == 'cdn' ? 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js' : '' }}" data-pdfjs-worker-url="{{ opts.pdfjs_worker_url|default(opts.pdfjs_source|default('npm') == 'npm' ? asset('bundles/nowopdfsignable/js/pdf.worker.min.js') : 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js') }}" data-pdf-signable-js="{{ asset('bundles/nowopdfsignable/js/pdf-signable.js') }}">
     {# PDF viewer card (full width when signature boxes are hidden) #}
     <div class="{{ show_signature_boxes ? 'col-lg-7' : 'col-12' }}">
-      {% include '@NowoPdfSignable/form/_pdf_viewer_partial.html.twig' with {
+      {% include '@NowoPdfSignableBundle/form/_pdf_viewer_partial.html.twig' with {
         pdf_url_form: form.pdfUrl,
         show_url_row: show_url_row,
         show_load_btn: show_load_btn,
@@ -203,9 +203,9 @@
     <div class="col-lg-5">
       <div class="card">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-          <h6 class="card-title mb-0">{{ 'page.signature_boxes'|trans({}, 'nowo_pdf_signable') }}</h6>
+          <h6 class="card-title mb-0">{{ 'page.signature_boxes'|trans({}, 'NowoPdfSignableBundle') }}</h6>
           {% if not (opts.signing_only|default(false)) %}
-          <button type="button" class="btn btn-outline-primary btn-sm" id="addBoxBtn" data-max-entries="{{ opts.max_entries is defined and opts.max_entries is not null ? opts.max_entries : '' }}">{{ 'page.add'|trans({}, 'nowo_pdf_signable') }}</button>
+          <button type="button" class="btn btn-outline-primary btn-sm" id="addBoxBtn" data-max-entries="{{ opts.max_entries is defined and opts.max_entries is not null ? opts.max_entries : '' }}">{{ 'page.add'|trans({}, 'NowoPdfSignableBundle') }}</button>
           {% endif %}
         </div>
         <div class="card-body">
@@ -220,7 +220,7 @@
           <div class="row align-items-center mb-3 g-2">
             {% if show_unit %}
             <div class="col-auto">
-              <label class="form-label small text-muted mb-0 me-2">{{ 'page.units_label'|trans({}, 'nowo_pdf_signable') }}</label>
+              <label class="form-label small text-muted mb-0 me-2">{{ 'page.units_label'|trans({}, 'NowoPdfSignableBundle') }}</label>
             </div>
             <div class="col-auto">
               {{ form_widget(form.unit, { attr: { class: 'unit-selector form-select form-select-sm w-auto' ~ (form.unit.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
@@ -232,7 +232,7 @@
             {% endif %}
             {% if show_origin %}
             <div class="col-auto ms-md-3">
-              <label class="form-label small text-muted mb-0 me-2">{{ 'page.origin_label'|trans({}, 'nowo_pdf_signable') }}</label>
+              <label class="form-label small text-muted mb-0 me-2">{{ 'page.origin_label'|trans({}, 'NowoPdfSignableBundle') }}</label>
             </div>
             <div class="col-auto">
               {{ form_widget(form.origin, { attr: { class: 'origin-selector form-select form-select-sm w-auto' ~ (form.origin.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
@@ -248,20 +248,20 @@
             {{ form_widget(form.origin) }}
           </div>
           {% endif %}
-          <p class="small text-muted mb-3">{{ 'page.help_text'|trans({}, 'nowo_pdf_signable') }}</p>
+          <p class="small text-muted mb-3">{{ 'page.help_text'|trans({}, 'NowoPdfSignableBundle') }}</p>
           {% endif %}
           {# Prototype for JS: used when adding new boxes via #addBoxBtn #}
           {% set boxPrototype %}
             <div class="signature-box-item" data-index="__name__">
               {{ form_row(form.signatureBoxes.vars.prototype) }}
               <div class="mt-2 pt-2 border-top">
-                <button type="button" class="btn btn-sm btn-outline-danger remove-box">{{ 'page.delete'|trans({}, 'nowo_pdf_signable') }}</button>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-box">{{ 'page.delete'|trans({}, 'NowoPdfSignableBundle') }}</button>
               </div>
             </div>
           {% endset %}
           {% if form.signatureBoxes.vars.errors|length > 0 %}
             <div class="alert alert-danger py-2 mb-3" role="alert">
-              <strong>{{ 'page.errors_collection'|trans({}, 'nowo_pdf_signable') }}</strong>
+              <strong>{{ 'page.errors_collection'|trans({}, 'NowoPdfSignableBundle') }}</strong>
               {{ form_errors(form.signatureBoxes) }}
             </div>
           {% endif %}
@@ -271,21 +271,21 @@
                 {{ form_row(box) }}
                 {% if not (opts.signing_only|default(false)) %}
                 <div class="mt-2 pt-2 border-top">
-                  <button type="button" class="btn btn-sm btn-outline-danger remove-box">{{ 'page.delete'|trans({}, 'nowo_pdf_signable') }}</button>
+                  <button type="button" class="btn btn-sm btn-outline-danger remove-box">{{ 'page.delete'|trans({}, 'NowoPdfSignableBundle') }}</button>
                 </div>
                 {% endif %}
               </div>
             {% endfor %}
           </div>
           <div id="signature-boxes-empty" class="text-center text-muted py-4 {% if form.signatureBoxes|length > 0 %}d-none{% endif %}">
-            <p class="small mb-0">{{ 'page.empty_state'|trans({}, 'nowo_pdf_signable') }}</p>
+            <p class="small mb-0">{{ 'page.empty_state'|trans({}, 'NowoPdfSignableBundle') }}</p>
           </div>
           <hr class="my-4">
           <div class="d-grid gap-2">
             {% if opts.batch_sign_enabled|default(false) %}
-            <button type="submit" name="batch_sign" value="1" class="btn btn-primary btn-lg">{{ 'page.sign_all'|trans({}, 'nowo_pdf_signable') }}</button>
+            <button type="submit" name="batch_sign" value="1" class="btn btn-primary btn-lg">{{ 'page.sign_all'|trans({}, 'NowoPdfSignableBundle') }}</button>
             {% endif %}
-            <button type="submit" class="btn btn-success btn-lg">{{ 'page.save_coordinates'|trans({}, 'nowo_pdf_signable') }}</button>
+            <button type="submit" class="btn btn-success btn-lg">{{ 'page.save_coordinates'|trans({}, 'NowoPdfSignableBundle') }}</button>
           </div>
         </div>
       </div>
@@ -301,7 +301,7 @@
       </div>
     </div>
     <div class="col-12 mt-2">
-      <button type="submit" class="btn btn-success">{{ 'page.save_coordinates'|trans({}, 'nowo_pdf_signable') }}</button>
+      <button type="submit" class="btn btn-success">{{ 'page.save_coordinates'|trans({}, 'NowoPdfSignableBundle') }}</button>
     </div>
     {% endif %}
   </div>
@@ -314,19 +314,19 @@
       pdfjsSource: {{ (opts.pdfjs_source|default('npm'))|json_encode|raw }},
       pdfjsWorkerUrl: {{ (opts.pdfjs_worker_url|default(asset('bundles/nowopdfsignable/js/pdf.worker.min.js')))|json_encode|raw }},
       strings: {
-        error_load_pdf: {{ 'js.error_load_pdf'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        pdf_not_found: {{ 'js.pdf_not_found'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        alert_url_required: {{ 'js.alert_url_required'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        alert_submit_error: {{ 'js.alert_submit_error'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        loading_state: {{ 'js.loading_state'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        load_pdf_btn: {{ 'js.load_pdf_btn'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        default_box_name: {{ 'js.default_box_name'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        zoom_in: {{ 'js.zoom_in'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        zoom_out: {{ 'js.zoom_out'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        zoom_fit: {{ 'js.zoom_fit'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        fit_width: {{ 'js.fit_width'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        fit_page: {{ 'js.fit_page'|trans({}, 'nowo_pdf_signable')|json_encode|raw }},
-        no_overlap_message: {{ 'signature_coordinates_type.signature_boxes.no_overlap_message'|trans({}, 'nowo_pdf_signable')|json_encode|raw }}
+        error_load_pdf: {{ 'js.error_load_pdf'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        pdf_not_found: {{ 'js.pdf_not_found'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        alert_url_required: {{ 'js.alert_url_required'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        alert_submit_error: {{ 'js.alert_submit_error'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        loading_state: {{ 'js.loading_state'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        load_pdf_btn: {{ 'js.load_pdf_btn'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        default_box_name: {{ 'js.default_box_name'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        zoom_in: {{ 'js.zoom_in'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        zoom_out: {{ 'js.zoom_out'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        zoom_fit: {{ 'js.zoom_fit'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        fit_width: {{ 'js.fit_width'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        fit_page: {{ 'js.fit_page'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }},
+        no_overlap_message: {{ 'signature_coordinates_type.signature_boxes.no_overlap_message'|trans({}, 'NowoPdfSignableBundle')|json_encode|raw }}
       }
     };
   </script>

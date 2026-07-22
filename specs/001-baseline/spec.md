@@ -99,7 +99,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 
 ### Bundle & DI
 
-- **FR-BUNDLE-001**: `NowoPdfSignableBundle` MUST register `ProxyUrlAllowlistValidationPass`, expose alias `nowo_pdf_signable`, and resolve bundle path for `@NowoPdfSignableBundle` templates.
+- **FR-BUNDLE-001**: `NowoPdfSignableBundle` MUST register `TwigPathsPass` and `ProxyUrlAllowlistValidationPass`, expose alias `nowo_pdf_signable`, and resolve bundle path for `@NowoPdfSignableBundle` templates.
 - **FR-CFG-001**: `Configuration` MUST define `nowo_pdf_signable` with `proxy_enabled`, `proxy_url_allowlist`, `example_pdf_url`, `debug`, `signature` (defaults + `profiles`), `audit`, `tsa_url`, `signing_service_id`, and `acroform` trees.
 - **FR-CFG-002**: `PdfSignableExtension` MUST load `services.yaml`, set `%nowo_pdf_signable.*%` parameters, and conditionally register acroform services when enabled.
 - **FR-DI-001**: `services.yaml` and `routes.yaml` MUST wire controllers, form types, Twig extension, event listeners, and proxy route prefix documented in `docs/CONFIGURATION.md`.
@@ -173,7 +173,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 
 ### Internationalization
 
-- **FR-I18N-001**: Translation catalogs under `Resources/translations/nowo_pdf_signable.*.yaml` MUST cover form labels, validation messages, and viewer strings referenced from PHP/JS.
+- **FR-I18N-001**: Translation catalogs under `Resources/translations/NowoPdfSignableBundle.*.yaml` MUST cover form labels, validation messages, and viewer strings referenced from PHP/JS.
 
 ---
 

@@ -74,7 +74,7 @@ $form = $this->createForm(SignatureCoordinatesType::class, $model);
 2. **Render the form** with the bundle form theme so the PDF viewer and boxes render correctly:
 
 ```twig
-{% form_theme form '@NowoPdfSignable/form/theme.html.twig' %}
+{% form_theme form '@NowoPdfSignableBundle/form/theme.html.twig' %}
 {{ form_widget(form.signatureCoordinates) }}
 ```
 

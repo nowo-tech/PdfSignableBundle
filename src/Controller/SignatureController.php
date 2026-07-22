@@ -111,12 +111,12 @@ final class SignatureController extends AbstractController
                     'origin'      => $model->getOrigin(),
                 ]);
             }
-            $this->addFlash('success', $this->translator->trans('flash.save.success', [], 'nowo_pdf_signable'));
+            $this->addFlash('success', $this->translator->trans('flash.save.success', [], 'NowoPdfSignableBundle'));
 
             return $this->redirectToRoute('nowo_pdf_signable_index');
         }
 
-        return $this->render('@NowoPdfSignable/signature/index.html.twig', [
+        return $this->render('@NowoPdfSignableBundle/signature/index.html.twig', [
             'form' => $form,
         ]);
     }
@@ -174,19 +174,19 @@ final class SignatureController extends AbstractController
         $url = $request->query->get('url');
         if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
             return new Response(
-                $this->translator->trans('proxy.invalid_url', [], 'nowo_pdf_signable'),
+                $this->translator->trans('proxy.invalid_url', [], 'NowoPdfSignableBundle'),
                 Response::HTTP_BAD_REQUEST,
             );
         }
         if (!$this->proxyUrlValidator->isAllowedByAllowlist($url)) {
             return new Response(
-                $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable'),
+                $this->translator->trans('proxy.url_not_allowed', [], 'NowoPdfSignableBundle'),
                 Response::HTTP_FORBIDDEN,
             );
         }
         if ($this->proxyUrlValidator->isBlockedForSsrf($url)) {
             return new Response(
-                $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable'),
+                $this->translator->trans('proxy.url_not_allowed', [], 'NowoPdfSignableBundle'),
                 Response::HTTP_FORBIDDEN,
             );
         }
@@ -237,7 +237,7 @@ final class SignatureController extends AbstractController
 
             // Do not expose exception message to the client (information disclosure)
             return new Response(
-                $this->translator->trans('proxy.error_load', [], 'nowo_pdf_signable'),
+                $this->translator->trans('proxy.error_load', [], 'NowoPdfSignableBundle'),
                 Response::HTTP_BAD_GATEWAY,
             );
         }

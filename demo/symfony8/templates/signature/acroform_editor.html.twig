@@ -5,10 +5,10 @@
 {% extends 'signature/index.html.twig' %}
 
 {% block body %}
-  <h2 class="mb-3">{{ page_title|default('acroform_editor.page_title_default'|trans({}, 'nowo_pdf_signable')) }}</h2>
+  <h2 class="mb-3">{{ page_title|default('acroform_editor.page_title_default'|trans({}, 'NowoPdfSignableBundle')) }}</h2>
   {% if config_explanation is defined and config_explanation %}
   <div class="card border-primary mb-4">
-    <div class="card-header bg-primary bg-opacity-10 text-primary fw-semibold">{{ 'acroform_editor.config_header'|trans({}, 'nowo_pdf_signable') }}</div>
+    <div class="card-header bg-primary bg-opacity-10 text-primary fw-semibold">{{ 'acroform_editor.config_header'|trans({}, 'NowoPdfSignableBundle') }}</div>
     <div class="card-body">
       <div class="card-text mb-0">{{ config_explanation|raw }}</div>
     </div>
@@ -16,12 +16,12 @@
   {% endif %}
 
   <div class="container-fluid">
-    {% form_theme form '@NowoPdfSignable/form/theme.html.twig' %}
+    {% form_theme form '@NowoPdfSignableBundle/form/theme.html.twig' %}
     {{ form_start(form, { attr: { id: 'acroformPageForm' } }) }}
     {% if form.vars.submitted and not form.vars.valid %}
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>{{ 'acroform_editor.form_errors_intro'|trans({}, 'nowo_pdf_signable') }}</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ 'acroform_editor.close_aria'|trans({}, 'nowo_pdf_signable') }}"></button>
+        <strong>{{ 'acroform_editor.form_errors_intro'|trans({}, 'NowoPdfSignableBundle') }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ 'acroform_editor.close_aria'|trans({}, 'NowoPdfSignableBundle') }}"></button>
         {% if form.vars.errors|length > 0 %}<div class="mt-2">{{ form_errors(form) }}</div>{% endif %}
         {% if form.acroFormEditor is defined and form.acroFormEditor.vars.errors|length > 0 %}
           <div class="mt-2">{{ form_errors(form.acroFormEditor) }}</div>

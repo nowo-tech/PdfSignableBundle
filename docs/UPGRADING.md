@@ -2,6 +2,8 @@
 
 This guide explains how to upgrade the PdfSignable Bundle between versions. For a list of changes in each version, see [CHANGELOG.md](CHANGELOG.md).
 
+**Note:** Version **3.0.6** renames the Twig namespace to `@NowoPdfSignableBundle` and the translation domain to `NowoPdfSignableBundle` (REQ-I18N-003). See [Upgrading to 3.0.6](#upgrading-to-306-2026-07-22).
+
 **Note:** Version **3.0.0** raises minimum **PHP to 8.2** and **Symfony to 7.0** (Symfony 6.x and PHP 8.1 are no longer supported). If you are on 2.0.x with PHP 8.1 or Symfony 6.x, read [Upgrading to 3.0.0](#upgrading-to-300-2026-07-01) before updating.
 
 Version **2.0.0** is a **breaking** release for configuration: the YAML structure changes (signature under `signature`, AcroForm under a single `acroform` node). If you are on 1.5.x or earlier, read the [Upgrading to 2.0.0](#upgrading-to-200-2026-02-16) section before updating.
@@ -40,6 +42,43 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ---
 
 ## Upgrading by version
+
+### Upgrading to 3.0.6 (2026-07-22)
+
+**Release date:** 2026-07-22
+
+**Breaking for Twig template references and translation overrides** (DI config alias `nowo_pdf_signable` and route names are unchanged).
+
+#### Twig namespace
+
+| Before | After |
+|--------|--------|
+| `@NowoPdfSignable/...` | `@NowoPdfSignableBundle/...` |
+| `form_themes: ['@NowoPdfSignable/form/theme.html.twig']` | `form_themes: ['@NowoPdfSignableBundle/form/theme.html.twig']` |
+| `templates/bundles/NowoPdfSignable/...` | `templates/bundles/NowoPdfSignableBundle/...` |
+
+#### Translation domain (REQ-I18N-003)
+
+| Before | After |
+|--------|--------|
+| Domain `nowo_pdf_signable` | Domain `NowoPdfSignableBundle` |
+| Files `translations/nowo_pdf_signable.{locale}.yaml` | `translations/NowoPdfSignableBundle.{locale}.yaml` |
+| `\|trans(..., 'nowo_pdf_signable')` | `\|trans(..., 'NowoPdfSignableBundle')` |
+| `translation_domain => 'nowo_pdf_signable'` | `translation_domain => 'NowoPdfSignableBundle'` |
+
+DI config alias / parameters `nowo_pdf_signable.*` are unchanged. The Twig namespace string matches the translation domain (intentional).
+
+#### Upgrade steps (from 3.0.x)
+
+1. Run `composer update nowo-tech/pdf-signable-bundle`.
+2. Update Twig form themes and any `@NowoPdfSignable` references to `@NowoPdfSignableBundle`.
+3. Rename app translation overrides and update `|trans` / `translation_domain` to `NowoPdfSignableBundle`.
+4. Move template overrides to `templates/bundles/NowoPdfSignableBundle/` if you use them.
+5. Clear cache: `php bin/console cache:clear`.
+
+See [CHANGELOG.md](CHANGELOG.md) for the full list of changes.
+
+---
 
 ### Upgrading to 3.0.5 (2026-07-18)
 
@@ -710,7 +749,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 - Clear cache: `php bin/console cache:clear`.
 - Rebuild frontend assets if you use the bundle’s Vite/TypeScript entry.
-- Ensure your Twig form theme still includes the bundle’s theme (e.g. `form_themes: ['@NowoPdfSignable/form/theme.html.twig']` or equivalent).
+- Ensure your Twig form theme still includes the bundle’s theme (e.g. `form_themes: ['@NowoPdfSignableBundle/form/theme.html.twig']` or equivalent).
 
 ### Proxy or PDF loading issues
 
@@ -723,7 +762,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 3.0.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.0.0 breaking:** Minimum PHP 8.2 and Symfony 7.0. **3.0.1:** `Choice` constraints for Validator 7.4+/8.x. **3.0.2:** Symfony 8.1 PHP 8.4.1+ documented. **3.0.3:** Flex recipe `proxy_url_allowlist` placeholder + security note; Spec Kit baseline; `fr`/`nl` translations. **3.0.4:** Code of Conduct; REQ-GIT-001 (no Cursor co-author in git history / CI). **3.0.5:** `default_profile` / `profiles` (legacy `default_config_alias` / `configs` still accepted). |
+| 3.0.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.0.0 breaking:** Minimum PHP 8.2 and Symfony 7.0. **3.0.1:** `Choice` constraints for Validator 7.4+/8.x. **3.0.2:** Symfony 8.1 PHP 8.4.1+ documented. **3.0.3:** Flex recipe `proxy_url_allowlist` placeholder + security note; Spec Kit baseline; `fr`/`nl` translations. **3.0.4:** Code of Conduct; REQ-GIT-001. **3.0.5:** `default_profile` / `profiles` (legacy keys still accepted). **3.0.6:** Twig `@NowoPdfSignableBundle` + translation domain `NowoPdfSignableBundle` (REQ-I18N-003). |
 | 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **2.0.0 breaking:** Signature under `signature` node; AcroForm under single `acroform` node. **2.0.1:** PDF.js worker default `.js` (MIME fix), worker URL absolute/fallback, translations (AcroForm modal keys + tr YAML), tests. **2.0.2:** Routes YAML copy-paste example, allowlist regex validation in dev (compiler pass), extended tests, `@group integration` for env-dependent tests. **2.0.4:** PHP-CS-Fixer (PSR-12/Symfony), Docker PHP 8.2 Alpine, demo Makefiles/HTTP/READMEs, CI simplified. |
 | 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging. 1.5.4: show_acroform option (default true), AcroForm outline overlay; recipe and demos set show_acroform: true in signature.configs / acroform.configs. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |

@@ -13,6 +13,7 @@ This file proves that **every production source artifact** under `src/` is refer
 | `NowoPdfSignableBundle.php` | Bundle entry | FR-BUNDLE-001 |
 | `DependencyInjection/Configuration.php` | Config tree | FR-CFG-001 |
 | `DependencyInjection/PdfSignableExtension.php` | DI extension | FR-CFG-002 |
+| `DependencyInjection/Compiler/TwigPathsPass.php` | Twig namespace paths | FR-BUNDLE-001 |
 | `DependencyInjection/ProxyUrlAllowlistValidationPass.php` | Allowlist compile-time validation | FR-SEC-001 |
 | `Checker/DependencyChecker.php` | Optional dependency probe | FR-CLI-001 |
 | `Checker/DependencyCheckerInterface.php` | Dependency probe contract | FR-CLI-001 |

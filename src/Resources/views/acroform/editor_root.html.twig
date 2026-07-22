@@ -1,6 +1,6 @@
 {#
   AcroForm editor panel: load/save overrides, fields list, edit modal, strings and config.
-  Include with: {{ include('@NowoPdfSignable/acroform/editor_root.html.twig', { load_url, post_url, document_key, apply_url?, process_url?, debug?, config?: {...}, acroform_edit_form? }) }}
+  Include with: {{ include('@NowoPdfSignableBundle/acroform/editor_root.html.twig', { load_url, post_url, document_key, apply_url?, process_url?, debug?, config?: {...}, acroform_edit_form? }) }}
 
   Variables:
   - load_url (required): URL for loading overrides
@@ -25,7 +25,7 @@
 {% set _debug = debug|default(false) %}
 <div class="card h-100">
   <div class="card-header py-3">
-    <h6 class="card-title mb-0">{{ 'acroform_editor.panel_title'|trans({}, 'nowo_pdf_signable') }}</h6>
+    <h6 class="card-title mb-0">{{ 'acroform_editor.panel_title'|trans({}, 'NowoPdfSignableBundle') }}</h6>
   </div>
   <div class="card-body">
 <div id="acroform-editor-root"
@@ -43,34 +43,34 @@
      {% if _config.font_families is defined and _config.font_families|length > 0 %}data-font-families="{{ _config.font_families|json_encode|e('html_attr') }}"{% endif %}
      data-min-field-width="{{ _config.min_field_width|default(12) }}"
      data-min-field-height="{{ _config.min_field_height|default(12) }}">
-  <p class="small text-muted mb-2">{{ 'acroform_editor.draft_intro'|trans({}, 'nowo_pdf_signable')|raw }}</p>
+  <p class="small text-muted mb-2">{{ 'acroform_editor.draft_intro'|trans({}, 'NowoPdfSignableBundle')|raw }}</p>
   {% if show_document_key_row|default(true) %}
   <div class="mb-2">
-    <label for="acroform-document-key" class="form-label small">{{ 'acroform_editor.document_key_label'|trans({}, 'nowo_pdf_signable') }}</label>
-    <input type="text" id="acroform-document-key" class="form-control form-control-sm" value="{{ _document_key|e('html_attr') }}" placeholder="{{ 'acroform_editor.document_key_placeholder'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}">
+    <label for="acroform-document-key" class="form-label small">{{ 'acroform_editor.document_key_label'|trans({}, 'NowoPdfSignableBundle') }}</label>
+    <input type="text" id="acroform-document-key" class="form-control form-control-sm" value="{{ _document_key|e('html_attr') }}" placeholder="{{ 'acroform_editor.document_key_placeholder'|trans({}, 'NowoPdfSignableBundle')|e('html_attr') }}">
   </div>
   {% endif %}
   <div class="mb-2" id="acroform-fields-section" style="display: none;">
-    <label class="form-label small">{{ 'acroform_editor.fields_label'|trans({}, 'nowo_pdf_signable') }}</label>
+    <label class="form-label small">{{ 'acroform_editor.fields_label'|trans({}, 'NowoPdfSignableBundle') }}</label>
     <div class="d-flex justify-content-between align-items-center mb-1">
-      <span class="small text-muted">{{ 'acroform_editor.fields_from_pdf'|trans({}, 'nowo_pdf_signable') }}</span>
-      <button type="button" id="acroform-refresh-inputs-btn" class="btn btn-sm btn-outline-secondary py-0">{{ 'acroform_editor.refresh_btn'|trans({}, 'nowo_pdf_signable') }}</button>
+      <span class="small text-muted">{{ 'acroform_editor.fields_from_pdf'|trans({}, 'NowoPdfSignableBundle') }}</span>
+      <button type="button" id="acroform-refresh-inputs-btn" class="btn btn-sm btn-outline-secondary py-0">{{ 'acroform_editor.refresh_btn'|trans({}, 'NowoPdfSignableBundle') }}</button>
     </div>
     <div id="acroform-fields-list" class="small overflow-auto border rounded p-2 bg-light" style="max-height: 12rem;"></div>
   </div>
   <div id="acroform-json-section" class="mb-2">
-    <label for="acroform-overrides-json" class="form-label small">{{ 'acroform_editor.draft_label'|trans({}, 'nowo_pdf_signable') }}</label>
-    <textarea id="acroform-overrides-json" class="form-control font-monospace small" rows="6" placeholder="{{ 'acroform_editor.draft_placeholder'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}" title="{{ 'acroform_editor.draft_title'|trans({}, 'nowo_pdf_signable')|e('html_attr') }}"></textarea>
+    <label for="acroform-overrides-json" class="form-label small">{{ 'acroform_editor.draft_label'|trans({}, 'NowoPdfSignableBundle') }}</label>
+    <textarea id="acroform-overrides-json" class="form-control font-monospace small" rows="6" placeholder="{{ 'acroform_editor.draft_placeholder'|trans({}, 'NowoPdfSignableBundle')|e('html_attr') }}" title="{{ 'acroform_editor.draft_title'|trans({}, 'NowoPdfSignableBundle')|e('html_attr') }}"></textarea>
   </div>
   <div id="acroform-overrides-message" class="small mb-2" role="alert"></div>
   <div class="d-flex flex-wrap gap-1">
-    <button type="button" id="acroform-load-btn" class="btn btn-sm btn-outline-primary">{{ 'acroform_editor.load_btn'|trans({}, 'nowo_pdf_signable') }}</button>
-    <button type="button" id="acroform-save-btn" class="btn btn-sm btn-primary">{{ 'acroform_editor.save_btn'|trans({}, 'nowo_pdf_signable') }}</button>
-    <button type="button" id="acroform-clear-btn" class="btn btn-sm btn-outline-secondary">{{ 'acroform_editor.clear_btn'|trans({}, 'nowo_pdf_signable') }}</button>
-    <button type="button" id="acroform-add-field-mode-btn" class="btn btn-sm btn-outline-success" title="{{ 'acroform_editor.add_field_mode_title'|trans({}, 'nowo_pdf_signable') }}">{{ 'acroform_editor.add_field_mode_btn'|trans({}, 'nowo_pdf_signable') }}</button>
+    <button type="button" id="acroform-load-btn" class="btn btn-sm btn-outline-primary">{{ 'acroform_editor.load_btn'|trans({}, 'NowoPdfSignableBundle') }}</button>
+    <button type="button" id="acroform-save-btn" class="btn btn-sm btn-primary">{{ 'acroform_editor.save_btn'|trans({}, 'NowoPdfSignableBundle') }}</button>
+    <button type="button" id="acroform-clear-btn" class="btn btn-sm btn-outline-secondary">{{ 'acroform_editor.clear_btn'|trans({}, 'NowoPdfSignableBundle') }}</button>
+    <button type="button" id="acroform-add-field-mode-btn" class="btn btn-sm btn-outline-success" title="{{ 'acroform_editor.add_field_mode_title'|trans({}, 'NowoPdfSignableBundle') }}">{{ 'acroform_editor.add_field_mode_btn'|trans({}, 'NowoPdfSignableBundle') }}</button>
   </div>
-  {# Edit-field modal: Twig-rendered, overrideable via templates/bundles/NowoPdfSignable/acroform/ #}
-  {% include '@NowoPdfSignable/acroform/_edit_modal.html.twig' with { acroform_config: _config, acroform_edit_form: acroform_edit_form|default(null) } %}
+  {# Edit-field modal: Twig-rendered, overrideable via templates/bundles/NowoPdfSignableBundle/acroform/ #}
+  {% include '@NowoPdfSignableBundle/acroform/_edit_modal.html.twig' with { acroform_config: _config, acroform_edit_form: acroform_edit_form|default(null) } %}
   {# Strings for JS: read from JSON, fallback to window override #}
   <script type="application/json" id="acroform-editor-strings">{{ nowo_pdf_signable_acroform_strings()|json_encode|raw }}</script>
 </div>

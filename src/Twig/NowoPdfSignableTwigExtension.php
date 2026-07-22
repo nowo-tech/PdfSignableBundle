@@ -109,7 +109,7 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
      */
     public function getAcroformStrings(): array
     {
-        $domain  = 'nowo_pdf_signable';
+        $domain  = 'NowoPdfSignableBundle';
         $strings = [];
         foreach (self::ACROFORM_STRING_KEYS as $key) {
             $strings[$key] = $this->translator->trans('acroform_editor.' . $key, [], $domain);

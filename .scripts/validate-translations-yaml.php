@@ -60,7 +60,7 @@ function flattenKeys(array $arr, string $prefix = ''): array
     return $out;
 }
 
-$refFile = $dir . '/nowo_pdf_signable.en.yaml';
+$refFile = $dir . '/NowoPdfSignableBundle.en.yaml';
 if (!isset($parsed[$refFile])) {
     echo "WARN: Reference file (en) not found, skipping key comparison.\n";
 } else {

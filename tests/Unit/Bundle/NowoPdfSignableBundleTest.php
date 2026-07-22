@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Tests\Bundle;
 
+use Nowo\PdfSignableBundle\DependencyInjection\Compiler\TwigPathsPass;
 use Nowo\PdfSignableBundle\DependencyInjection\PdfSignableExtension;
 use Nowo\PdfSignableBundle\DependencyInjection\ProxyUrlAllowlistValidationPass;
 use Nowo\PdfSignableBundle\NowoPdfSignableBundle;
@@ -13,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use function is_array;
 
 /**
- * Tests for NowoPdfSignableBundle (container extension and compiler pass).
+ * Tests for NowoPdfSignableBundle (container extension and compiler passes).
  */
 final class NowoPdfSignableBundleTest extends TestCase
 {
@@ -46,21 +47,26 @@ final class NowoPdfSignableBundleTest extends TestCase
         self::assertFileExists($path . '/Resources/config/services.yaml');
     }
 
-    public function testBuildRegistersProxyUrlAllowlistValidationPass(): void
+    public function testBuildRegistersRequiredCompilerPasses(): void
     {
         $container = new ContainerBuilder();
         $bundle    = new NowoPdfSignableBundle();
         $bundle->build($container);
 
-        $passes = $container->getCompiler()->getPassConfig()->getBeforeOptimizationPasses();
-        $found  = false;
+        $passes     = $container->getCompiler()->getPassConfig()->getBeforeOptimizationPasses();
+        $foundProxy = false;
+        $foundTwig  = false;
         foreach ($passes as $p) {
             $pass = is_array($p) ? $p[0] : $p;
             if ($pass instanceof ProxyUrlAllowlistValidationPass) {
-                $found = true;
-                break;
+                $foundProxy = true;
+            }
+            if ($pass instanceof TwigPathsPass) {
+                $foundTwig = true;
             }
         }
-        self::assertTrue($found, 'build() must register ProxyUrlAllowlistValidationPass');
+
+        self::assertTrue($foundProxy, 'build() must register ProxyUrlAllowlistValidationPass');
+        self::assertTrue($foundTwig, 'build() must register TwigPathsPass');
     }
 }

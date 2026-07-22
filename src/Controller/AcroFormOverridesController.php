@@ -410,13 +410,13 @@ final class AcroFormOverridesController extends AbstractController
         if (isset($data['pdf_url']) && is_string($data['pdf_url'])) {
             $url = trim($data['pdf_url']);
             if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
-                return new JsonResponse(['error' => $this->translator->trans('proxy.invalid_url', [], 'nowo_pdf_signable')], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['error' => $this->translator->trans('proxy.invalid_url', [], 'NowoPdfSignableBundle')], Response::HTTP_BAD_REQUEST);
             }
             if (!$this->proxyUrlValidator->isAllowedByAllowlist($url)) {
-                return new JsonResponse(['error' => $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable')], Response::HTTP_FORBIDDEN);
+                return new JsonResponse(['error' => $this->translator->trans('proxy.url_not_allowed', [], 'NowoPdfSignableBundle')], Response::HTTP_FORBIDDEN);
             }
             if ($this->proxyUrlValidator->isBlockedForSsrf($url)) {
-                return new JsonResponse(['error' => $this->translator->trans('proxy.url_not_allowed', [], 'nowo_pdf_signable')], Response::HTTP_FORBIDDEN);
+                return new JsonResponse(['error' => $this->translator->trans('proxy.url_not_allowed', [], 'NowoPdfSignableBundle')], Response::HTTP_FORBIDDEN);
             }
             try {
                 $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
@@ -430,7 +430,7 @@ final class AcroFormOverridesController extends AbstractController
                 $pdfContents = $response->getContent();
             } catch (Throwable) {
                 return new Response(
-                    $this->translator->trans('proxy.error_load', [], 'nowo_pdf_signable'),
+                    $this->translator->trans('proxy.error_load', [], 'NowoPdfSignableBundle'),
                     Response::HTTP_BAD_GATEWAY,
                 );
             }

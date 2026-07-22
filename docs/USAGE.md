@@ -49,7 +49,7 @@ $form = $this->createForm(SignatureCoordinatesType::class, $model);
 Render the form in your template. **Important**: add the form theme so the widget renders correctly:
 
 ```twig
-{% form_theme form '@NowoPdfSignable/form/theme.html.twig' %}
+{% form_theme form '@NowoPdfSignableBundle/form/theme.html.twig' %}
 {{ form_start(form) }}
 {{ form_widget(form.signatureCoordinates) }}
 {{ form_end(form) }}
@@ -525,19 +525,17 @@ $form = $this->createForm(SignatureCoordinatesType::class, $model, [
 
 You can override any Twig template provided by the bundle by placing a file with the **same path** inside your project’s `templates/bundles/` directory. Symfony will use your template instead of the bundle’s.
 
-**Important:** The directory name under `templates/bundles/` must be the **bundle name** returned by `Bundle::getName()`. Symfony’s default implementation removes the `Bundle` suffix from the bundle class short name. For this bundle the class is `NowoPdfSignableBundle`, so the name is **`NowoPdfSignable`** (not `NowoPdfSignableBundle`). Use `templates/bundles/NowoPdfSignable/` — if you use `NowoPdfSignableBundle` the override will not be found.
-
-**Why do some bundles use “Bundle” in the path?** Because the path is whatever `getName()` returns. The default removes the suffix, so many bundles use a name without “Bundle” (e.g. `NowoPdfSignable`). Other bundles **override** `getName()` and return a name that includes “Bundle” (e.g. `AcmeUserBundle`) for convention or backwards compatibility; for those, the override directory is `templates/bundles/AcmeUserBundle/`. To know which name to use for a given bundle, check that bundle’s `getName()` in its source or the bundle’s documentation.
+**Important:** This bundle registers the Twig namespace **`NowoPdfSignableBundle`** via `TwigPathsPass`. Put overrides under `templates/bundles/NowoPdfSignableBundle/` so your application templates take precedence over the bundle defaults.
 
 ### Bundle template paths
 
-The bundle’s views live under `Resources/views/`. To override them, create the same path under `templates/bundles/NowoPdfSignable/`:
+The bundle’s views live under `Resources/views/`. To override them, create the same path under `templates/bundles/NowoPdfSignableBundle/`:
 
 | Bundle path (relative to `Resources/views/`) | Override in your project |
 |---------------------------------------------|---------------------------|
-| `form/theme.html.twig` | `templates/bundles/NowoPdfSignable/form/theme.html.twig` |
-| `form/_signature_box_type_widget.html.twig` | `templates/bundles/NowoPdfSignable/form/_signature_box_type_widget.html.twig` |
-| `signature/index.html.twig` | `templates/bundles/NowoPdfSignable/signature/index.html.twig` |
+| `form/theme.html.twig` | `templates/bundles/NowoPdfSignableBundle/form/theme.html.twig` |
+| `form/_signature_box_type_widget.html.twig` | `templates/bundles/NowoPdfSignableBundle/form/_signature_box_type_widget.html.twig` |
+| `signature/index.html.twig` | `templates/bundles/NowoPdfSignableBundle/signature/index.html.twig` |
 
 ### Data attributes (required when overriding)
 
@@ -564,24 +562,24 @@ The form types already add these attributes to the inputs. If you render fields 
 
 ### Overriding the form theme
 
-The bundle prepends `@NowoPdfSignable/form/theme.html.twig` to the form themes. When you place your copy in `templates/bundles/NowoPdfSignable/form/theme.html.twig`, Symfony will normally resolve that path to your file. **If the form fields still render with the bundle’s theme** (only the page layout is overridden), add the theme explicitly in `config/packages/twig.yaml` so that Twig uses your overridden template for the form:
+The bundle prepends `@NowoPdfSignableBundle/form/theme.html.twig` to the form themes. When you place your copy in `templates/bundles/NowoPdfSignableBundle/form/theme.html.twig`, Symfony will normally resolve that path to your file. **If the form fields still render with the bundle’s theme** (only the page layout is overridden), add the theme explicitly in `config/packages/twig.yaml` so that Twig uses your overridden template for the form:
 
 ```yaml
 # config/packages/twig.yaml
 twig:
   form_themes:
-    - '@NowoPdfSignable/form/theme.html.twig'
+    - '@NowoPdfSignableBundle/form/theme.html.twig'
     # ... other themes
 ```
 
-With that in place, the namespace `@NowoPdfSignable` resolves to your `templates/bundles/NowoPdfSignable/` copy and the form fields will use your overridden theme.
+With that in place, the namespace `@NowoPdfSignableBundle` resolves to your `templates/bundles/NowoPdfSignableBundle/` copy and the form fields will use your overridden theme.
 
-- **Full override:** Copy `form/theme.html.twig` from the bundle (or from the bundle repo) to `templates/bundles/NowoPdfSignable/form/theme.html.twig` and edit it. The theme defines the blocks `signature_coordinates_widget`, `signature_box_widget`, `signature_box_row`, `form_row`, and `form_errors`. If you change `signature_coordinates_widget`, keep the **data-pdf-signable** attributes on the root (`widget`), the list (`boxes-list`), and each box row (`box-item`) so the bundled JavaScript can find them; you can change CSS classes. Keep element IDs such as `#pdf-viewer-container`, `#loadPdfBtn`, `#signature-boxes-list` if the script or assets depend on them. Include the viewer CSS and JS once per request using the Twig function `nowo_pdf_signable_include_assets()` — see [CONTRIBUTING](CONTRIBUTING.md#form-theme-and-assets).
-- **Block override only:** To change only the layout of each signature box (or a single block), use a custom form theme that extends or redefines the bundle blocks, and apply it with `{% form_theme form 'form/signature_theme.html.twig' %}` (and keep `@NowoPdfSignable/form/theme.html.twig` in the theme list). See [Reusable SignatureBoxType layout](#reusable-signatureboxtype-layout) below.
+- **Full override:** Copy `form/theme.html.twig` from the bundle (or from the bundle repo) to `templates/bundles/NowoPdfSignableBundle/form/theme.html.twig` and edit it. The theme defines the blocks `signature_coordinates_widget`, `signature_box_widget`, `signature_box_row`, `form_row`, and `form_errors`. If you change `signature_coordinates_widget`, keep the **data-pdf-signable** attributes on the root (`widget`), the list (`boxes-list`), and each box row (`box-item`) so the bundled JavaScript can find them; you can change CSS classes. Keep element IDs such as `#pdf-viewer-container`, `#loadPdfBtn`, `#signature-boxes-list` if the script or assets depend on them. Include the viewer CSS and JS once per request using the Twig function `nowo_pdf_signable_include_assets()` — see [CONTRIBUTING](CONTRIBUTING.md#form-theme-and-assets).
+- **Block override only:** To change only the layout of each signature box (or a single block), use a custom form theme that extends or redefines the bundle blocks, and apply it with `{% form_theme form 'form/signature_theme.html.twig' %}` (and keep `@NowoPdfSignableBundle/form/theme.html.twig` in the theme list). See [Reusable SignatureBoxType layout](#reusable-signatureboxtype-layout) below.
 
 ### Overriding the signature index view
 
-If you use the bundle’s built-in page (route `/pdf-signable` or as configured), the controller renders `@NowoPdfSignable/signature/index.html.twig`. To customize that page, copy the template from the bundle to `templates/bundles/NowoPdfSignable/signature/index.html.twig` and adjust it. It expects the variables `form`, and optionally `page_title` and `config_explanation`.
+If you use the bundle’s built-in page (route `/pdf-signable` or as configured), the controller renders `@NowoPdfSignableBundle/signature/index.html.twig`. To customize that page, copy the template from the bundle to `templates/bundles/NowoPdfSignableBundle/signature/index.html.twig` and adjust it. It expects the variables `form`, and optionally `page_title` and `config_explanation`.
 
 ### Translations
 
@@ -595,8 +593,8 @@ The bundle provides a default Twig layout for **SignatureBoxType** (each box: na
 
 ### Default usage
 
-- The layout is in the bundle form theme (`@NowoPdfSignable/form/theme.html.twig`), which is registered automatically.
-- The concrete fragment is at `@NowoPdfSignable/form/_signature_box_type_widget.html.twig`: two rows (name + page; width, height, x, y, angle). The viewer JS finds inputs by **data-pdf-signable** (e.g. `data-pdf-signable="page"`, `"x"`, `"y"`); the form types add these automatically. You can change CSS classes for styling. The overlay is drawn with CSS `transform: rotate(angle deg)`.
+- The layout is in the bundle form theme (`@NowoPdfSignableBundle/form/theme.html.twig`), which is registered automatically.
+- The concrete fragment is at `@NowoPdfSignableBundle/form/_signature_box_type_widget.html.twig`: two rows (name + page; width, height, x, y, angle). The viewer JS finds inputs by **data-pdf-signable** (e.g. `data-pdf-signable="page"`, `"x"`, `"y"`); the form types add these automatically. You can change CSS classes for styling. The overlay is drawn with CSS `transform: rotate(angle deg)`.
 
 ### Reusing the fragment
 
@@ -605,7 +603,7 @@ If in your own theme you want the same layout and add something around it:
 ```twig
 {% block signature_box_widget %}
   <div class="my-wrapper">
-    {% include "@NowoPdfSignable/form/_signature_box_type_widget.html.twig" with { form: form } %}
+    {% include "@NowoPdfSignableBundle/form/_signature_box_type_widget.html.twig" with { form: form } %}
   </div>
 {% endblock %}
 ```
@@ -648,7 +646,7 @@ Or set it globally in `config/packages/twig.yaml`:
 twig:
   form_themes:
     - 'form/signature_theme.html.twig'
-    - '@NowoPdfSignable/form/theme.html.twig'
+    - '@NowoPdfSignableBundle/form/theme.html.twig'
 ```
 
 **Important:** keep the **data-pdf-signable** attributes on the inputs (page, name, x, y, width, height, angle, etc.) so the viewer JS can sync coordinates when you add boxes, drag or resize. The form types add them by default; if you pass custom `attr` in `form_row`/`form_widget`, merge in `'data-pdf-signable': 'page'` (or the right value) so the attribute is not lost. See [Data attributes (required when overriding)](#data-attributes-required-when-overriding) above.

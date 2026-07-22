@@ -57,17 +57,23 @@ Tag `v2.0.5` published from commit `d847e85` (prepare release). Follow-up checkl
 
 ---
 
-## Ready for v3.0.5 (2026-07-18)
+## Ready for v3.0.6 (2026-07-22)
 
-- [x] CHANGELOG: [3.0.5] with date; [Unreleased] at top; links updated.
-- [x] UPGRADING: “Upgrading to 3.0.5” (profile naming REQ-SF-003); compatibility table updated.
-- [x] RELEASE: this checklist for v3.0.5.
+- [x] CHANGELOG: [3.0.6] with date; [Unreleased] at top; links updated.
+- [x] UPGRADING: “Upgrading to 3.0.6” (Twig namespace + REQ-I18N-003); compatibility table updated.
+- [x] RELEASE: this checklist for v3.0.6.
 - [ ] Run locally: `make check-no-cursor-coauthor`, `make test`, `make cs-check`.
 - [ ] Run locally: `make validate-translations`.
 - [ ] Run locally: `composer validate --strict` (root `composer.json`).
-- [ ] Commit and push: `git add -A && git commit -m "Prepare v3.0.5 release" && git push origin HEAD`
-- [ ] Create and push tag: `git tag -a v3.0.5 -m "Release v3.0.5"` then `git push origin v3.0.5`
+- [ ] Commit and push: `git add -A && git commit -m "Prepare v3.0.6 release" && git push origin HEAD`
+- [ ] Create and push tag: `git tag -a v3.0.6 -m "Release v3.0.6"` then `git push origin v3.0.6`
 - [ ] After tag commit: `make check-no-cursor-coauthor` before push (REQ-GIT-001).
+
+---
+
+## Released v3.0.5 (2026-07-18)
+
+Tag `v3.0.5` published from commit `16b0faa` (prepare release).
 
 ---
 
@@ -113,7 +119,7 @@ Tag `v2.0.6` published from commit `2191d01` (prepare release).
 
 ---
 
-## Next release (e.g. v3.0.6)
+## Next release (e.g. v3.0.7)
 
 - [ ] CHANGELOG: Move [Unreleased] entries into `[X.Y.Z]` with date; add new empty [Unreleased] at top; update version links at bottom.
 - [ ] UPGRADING: Add section "Upgrading to X.Y.Z" with release date, what's new, breaking changes (if any), and upgrade steps; update version compatibility table.

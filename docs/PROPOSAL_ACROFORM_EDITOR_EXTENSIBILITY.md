@@ -7,7 +7,7 @@ The AcroForm edit-field form, translatable strings and templates are currently:
 1. **Modal form** — Built entirely in TypeScript (`acroform-editor.ts`) with hardcoded HTML via `innerHTML`. Users cannot:
    - Add/remove fields via config
    - Use Symfony Form Type for validation
-   - Override the template via `templates/bundles/NowoPdfSignable/`
+   - Override the template via `templates/bundles/NowoPdfSignableBundle/`
 
 2. **Strings** — Defined in `src/Resources/assets/acroform-editor/strings.ts` and overridden via `window.NowoPdfSignableAcroFormEditorStrings`. Users must:
    - Inject every string manually in their template (as in the demo)
@@ -15,7 +15,7 @@ The AcroForm edit-field form, translatable strings and templates are currently:
    - No single place to extend/override strings
 
 3. **Templates** — The modal structure is in TS, not Twig. Users cannot:
-   - Override the modal via `templates/bundles/NowoPdfSignable/acroform/...`
+   - Override the modal via `templates/bundles/NowoPdfSignableBundle/acroform/...`
    - Customise layout or add blocks
    - Follow the same pattern as `form/theme.html.twig` and `SignatureCoordinatesType`
 
@@ -24,7 +24,7 @@ The AcroForm edit-field form, translatable strings and templates are currently:
 Make the AcroForm editor extensible in the same way as the main widget:
 
 - **Form Type** for the edit-field form, configurable options, Twig-rendered
-- **Twig templates** that users can override in `templates/bundles/NowoPdfSignable/`
+- **Twig templates** that users can override in `templates/bundles/NowoPdfSignableBundle/`
 - **Translations** from Symfony (`nowo_pdf_signable` domain) injected by the bundle, overridable via app translations
 
 ---
@@ -77,7 +77,7 @@ src/Resources/views/acroform/
 1. App includes the AcroForm editor panel via a Twig include or block:
 
    ```twig
-   {{ include('@NowoPdfSignable/acroform/editor_root.html.twig', {
+   {{ include('@NowoPdfSignableBundle/acroform/editor_root.html.twig', {
        load_url: acroform_overrides_load_url,
        post_url: acroform_overrides_save_url,
        document_key: acroform_document_key,
@@ -94,7 +94,7 @@ src/Resources/views/acroform/
 3. `editor_modal.html.twig` uses `AcroFormFieldEditType` (or a simple Twig partial if we skip the Form Type for now) and renders the modal structure. Users override via:
 
    ```twig
-   {# templates/bundles/NowoPdfSignable/acroform/_edit_modal_body.html.twig #}
+   {# templates/bundles/NowoPdfSignableBundle/acroform/_edit_modal_body.html.twig #}
    {% block acroform_edit_modal_body %}
      {# Custom layout, extra fields, etc. #}
    {% endblock %}
@@ -108,11 +108,11 @@ src/Resources/views/acroform/
 
 ```twig
 {# In editor_root.html.twig #}
-<script type="application/json" id="acroform-editor-strings" data-translation-domain="nowo_pdf_signable">
+<script type="application/json" id="acroform-editor-strings" data-translation-domain="NowoPdfSignableBundle">
   {{ {
-    msg_draft_updated: 'acroform_editor.msg_draft_updated'|trans({}, 'nowo_pdf_signable'),
-    msg_enter_document_key: 'acroform_editor.msg_enter_document_key'|trans({}, 'nowo_pdf_signable'),
-    modal_edit_title: 'acroform_editor.modal_edit_title'|trans({}, 'nowo_pdf_signable'),
+    msg_draft_updated: 'acroform_editor.msg_draft_updated'|trans({}, 'NowoPdfSignableBundle'),
+    msg_enter_document_key: 'acroform_editor.msg_enter_document_key'|trans({}, 'NowoPdfSignableBundle'),
+    modal_edit_title: 'acroform_editor.modal_edit_title'|trans({}, 'NowoPdfSignableBundle'),
     # ... all keys
   }|json_encode|raw }}
 </script>
@@ -125,7 +125,7 @@ Or a Twig function to avoid repetition:
 {# Outputs: <script type="application/json" id="acroform-editor-strings">{"msg_draft_updated":"...", ...}</script> #}
 ```
 
-**TwigExtension:** Add `nowo_pdf_signable_acroform_strings()` that returns a JSON object of all `acroform_editor.*` translations for the current locale. Keys are the suffix (e.g. `msg_draft_updated`). Users override translations in `translations/nowo_pdf_signable.es.yaml` as usual.
+**TwigExtension:** Add `nowo_pdf_signable_acroform_strings()` that returns a JSON object of all `acroform_editor.*` translations for the current locale. Keys are the suffix (e.g. `msg_draft_updated`). Users override translations in `translations/NowoPdfSignableBundle.es.yaml` as usual.
 
 ### 4. Config from Bundle
 
@@ -161,7 +161,7 @@ const strings: Record<string, string> = stringsEl
 
 ### 6. Bundle Template for AcroForm Editor
 
-**New:** `@NowoPdfSignable/acroform/editor_root.html.twig`
+**New:** `@NowoPdfSignableBundle/acroform/editor_root.html.twig`
 
 A reusable partial that apps include when they want the AcroForm editor panel. Variables:
 
@@ -201,7 +201,7 @@ The template:
 1. **Twig templates** — Create `editor_root.html.twig`, `_edit_modal.html.twig`, `_edit_modal_body.html.twig` with blocks.
 2. **TwigExtension** — Add `nowo_pdf_signable_acroform_strings()` and `nowo_pdf_signable_acroform_editor_config()`.
 3. **JS** — Prefer DOM modal if present; read strings from `#acroform-editor-strings`; read config from `#acroform-editor-config`.
-4. **Demo** — Refactor demo to use `include('@NowoPdfSignable/acroform/editor_root.html.twig')` instead of inline HTML + manual string injection.
+4. **Demo** — Refactor demo to use `include('@NowoPdfSignableBundle/acroform/editor_root.html.twig')` instead of inline HTML + manual string injection.
 5. **(Later)** Form Type `AcroFormFieldEditType` if validation is required.
 
 ---
@@ -222,4 +222,4 @@ The template:
 | Strings in `strings.ts` + manual `window` injection | Strings from Symfony translations, injected by bundle template |
 | Config passed manually from controller | Config from `nowo_pdf_signable_acroform_editor_config()` |
 | No form type | (Optional later) `AcroFormFieldEditType` |
-| Demo builds panel inline | Demo uses `include('@NowoPdfSignable/acroform/editor_root.html.twig')` |
+| Demo builds panel inline | Demo uses `include('@NowoPdfSignableBundle/acroform/editor_root.html.twig')` |

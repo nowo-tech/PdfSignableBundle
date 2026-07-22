@@ -756,7 +756,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     example_pdf_url?: scalar|Param|null, // Default PDF URL for demo/preload // Default: "https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf"
  *     debug?: bool|Param, // Enable console logging in the browser (PDF viewer and signature boxes) // Default: false
  *     signature?: array{ // Signature: global defaults (box dimensions, lock) and profiles by name. Default profile is "default".
- *         default_profile?: scalar|Param|null, // Default profile when form option config is not set (e.g. "default"). Resolved from signature.profiles[alias]. // Default: "default"
+ *         default_profile?: scalar|Param|null, // Default profile when form option config is not set (e.g. "default"). Resolved from signature.profiles[name]. Legacy key: default_config_alias. // Default: "default"
  *         default_box_width?: float|Param, // Default width for new signature boxes (in form unit). Global default; overridable per profile. // Default: null
  *         default_box_height?: float|Param, // Default height for new signature boxes (in form unit). Global default; overridable per profile. // Default: null
  *         lock_box_width?: bool|Param, // When true, width is fixed (use default_box_width) and the field is hidden. Global default; overridable per profile. // Default: false
@@ -783,7 +783,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         apply_script_command?: scalar|Param|null, // Executable used to run the apply_script (e.g. python3, python, or /usr/bin/python3). Used only when apply_script is set. // Default: "python3"
  *         process_script?: scalar|Param|null, // Optional path to Python script that processes the modified PDF (e.g. fill, sign). Receives --input <path> [--document-key <key>]; writes result to --output <path>. When set, POST /acroform/process is available; after the script runs, an event is dispatched so the app can save the result. // Default: null
  *         process_script_command?: scalar|Param|null, // Executable used to run the process_script (e.g. python3, python, or /usr/bin/python3). Used only when process_script is set. // Default: "python3"
- *         default_profile?: scalar|Param|null, // Default profile when form option config is not set (e.g. "default"). Resolved from acroform.profiles[alias]. // Default: "default"
+ *         default_profile?: scalar|Param|null, // Default profile when form option config is not set (e.g. "default"). Resolved from acroform.profiles[name]. Legacy key: default_config_alias. // Default: "default"
  *         min_field_width?: float|Param, // Minimum width for AcroForm fields when moving/resizing (in PDF points). Global default; overridable per profile. // Default: 12.0
  *         min_field_height?: float|Param, // Minimum height for AcroForm fields when moving/resizing (in PDF points). Global default; overridable per profile. // Default: 12.0
  *         label_mode?: scalar|Param|null, // When editing a field, label can be: "input" (free text) or "choice" (select from label_choices plus optional "Other" free text). Global default; overridable per profile. // Default: "input"

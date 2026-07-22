@@ -105,7 +105,7 @@ function initAcroFormEditor(root: HTMLElement): void {
     });
   }
 
-  // Modal markup is rendered by Twig (@NowoPdfSignable/acroform/_edit_modal.html.twig + _edit_modal_body.html.twig).
+  // Modal markup is rendered by Twig (@NowoPdfSignableBundle/acroform/_edit_modal.html.twig + _edit_modal_body.html.twig).
   // Include editor_root.html.twig so #acroform-edit-modal and .acroform-edit-modal-backdrop exist in the DOM.
   const modal = root.querySelector<HTMLElement>('#acroform-edit-modal');
   const backdrop = root.querySelector<HTMLElement>('.acroform-edit-modal-backdrop');
