@@ -583,7 +583,7 @@ If you use the bundle’s built-in page (route `/pdf-signable` or as configured)
 
 ### Translations
 
-All user-facing strings in the bundle’s Twig views and form theme use the translation domain **`nowo_pdf_signable`**. Keys are grouped (e.g. `page.*`, `signature_coordinates_type.*`, `signature_box_type.*`, `js.*`). To override or add a locale, place YAML files in your app’s `translations/` directory with the same domain (`nowo_pdf_signable.en.yaml`, etc.) or use the bundle’s files under `Resources/translations/` as reference. The **AcroForm editor** panel (demo and any custom view that reuses it) uses keys under **`acroform_editor.*`** (e.g. `acroform_editor.panel_title`, `acroform_editor.load_btn`); ensure your locale files include these keys if you use that panel.
+All user-facing strings in the bundle’s Twig views and form theme use the translation domain **`NowoPdfSignableBundle`**. Keys are grouped (e.g. `page.*`, `signature_coordinates_type.*`, `signature_box_type.*`, `js.*`). To override or add a locale, place YAML files in your app’s `translations/` directory with the same domain (`NowoPdfSignableBundle.en.yaml`, etc.) or use the bundle’s files under `Resources/translations/` as reference. The **AcroForm editor** panel (demo and any custom view that reuses it) uses keys under **`acroform_editor.*`** (e.g. `acroform_editor.panel_title`, `acroform_editor.load_btn`); ensure your locale files include these keys if you use that panel.
 
 ---
 

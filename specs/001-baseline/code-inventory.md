@@ -104,14 +104,14 @@ This file proves that **every production source artifact** under `src/` is refer
 
 | Source file | Spec section | Requirement IDs |
 | --- | --- | --- |
-| `nowo_pdf_signable.en.yaml` | English catalog | FR-I18N-001 |
-| `nowo_pdf_signable.es.yaml` | Spanish catalog | FR-I18N-001 |
-| `nowo_pdf_signable.ca.yaml` | Catalan catalog | FR-I18N-001 |
-| `nowo_pdf_signable.cs.yaml` | Czech catalog | FR-I18N-001 |
-| `nowo_pdf_signable.de.yaml` | German catalog | FR-I18N-001 |
-| `nowo_pdf_signable.fr.yaml` | French catalog | FR-I18N-001 |
-| `nowo_pdf_signable.it.yaml` | Italian catalog | FR-I18N-001 |
-| `nowo_pdf_signable.nl.yaml` | Dutch catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.en.yaml` | English catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.es.yaml` | Spanish catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.ca.yaml` | Catalan catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.cs.yaml` | Czech catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.de.yaml` | German catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.fr.yaml` | French catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.it.yaml` | Italian catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.nl.yaml` | Dutch catalog | FR-I18N-001 |
 | `nowo_pdf_signable.pl.yaml` | Polish catalog | FR-I18N-001 |
 | `nowo_pdf_signable.pt.yaml` | Portuguese catalog | FR-I18N-001 |
 | `nowo_pdf_signable.ru.yaml` | Russian catalog | FR-I18N-001 |
