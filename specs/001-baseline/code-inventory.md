@@ -112,10 +112,10 @@ This file proves that **every production source artifact** under `src/` is refer
 | `NowoPdfSignableBundle.fr.yaml` | French catalog | FR-I18N-001 |
 | `NowoPdfSignableBundle.it.yaml` | Italian catalog | FR-I18N-001 |
 | `NowoPdfSignableBundle.nl.yaml` | Dutch catalog | FR-I18N-001 |
-| `nowo_pdf_signable.pl.yaml` | Polish catalog | FR-I18N-001 |
-| `nowo_pdf_signable.pt.yaml` | Portuguese catalog | FR-I18N-001 |
-| `nowo_pdf_signable.ru.yaml` | Russian catalog | FR-I18N-001 |
-| `nowo_pdf_signable.tr.yaml` | Turkish catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.pl.yaml` | Polish catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.pt.yaml` | Portuguese catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.ru.yaml` | Russian catalog | FR-I18N-001 |
+| `NowoPdfSignableBundle.tr.yaml` | Turkish catalog | FR-I18N-001 |
 
 ## Twig views (`src/Resources/views/`)
 
