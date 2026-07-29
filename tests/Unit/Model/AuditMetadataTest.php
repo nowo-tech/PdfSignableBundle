@@ -62,7 +62,6 @@ final class AuditMetadataTest extends TestCase
         $ref         = new ReflectionClass(AuditMetadata::class);
         $constructor = $ref->getConstructor();
         self::assertNotNull($constructor);
-        $constructor->setAccessible(true);
         $instance = $ref->newInstanceWithoutConstructor();
         $constructor->invoke($instance);
         self::assertInstanceOf(AuditMetadata::class, $instance);

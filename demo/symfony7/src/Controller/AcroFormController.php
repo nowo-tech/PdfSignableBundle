@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Form\AcroFormPageType;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldEdit;
 use Nowo\PdfSignableBundle\Form\AcroFormFieldEditType;
 use Nowo\PdfSignableBundle\Model\AcroFormPageModel;
@@ -155,7 +156,7 @@ class AcroFormController extends AbstractController
             'acroform_edit_form' => $acroformEditForm,
         ], $resolved);
 
-        $form = $this->createForm(\App\Form\AcroFormPageType::class, $model, [
+        $form = $this->createForm(AcroFormPageType::class, $model, [
             'acroform_options' => $acroformOptions,
         ]);
         $form->handleRequest($request);

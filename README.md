@@ -4,6 +4,23 @@
 
 > ⭐ **Found this useful?** [Install from Packagist](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) · Give it a star on [GitHub](https://github.com/nowo-tech/PdfSignableBundle) to help others find it.
 
+![FrankenPHP Friendly Worker Mode](docs/images/frankenphp-friendly.png)
+
+This bundle is **FrankenPHP worker mode friendly**.
+
+**FrankenPHP worker mode:** Supported — PDF proxy and AcroForm Process calls use configured HTTP/process timeouts; demos ship FrankenPHP with `FRANKENPHP_MODE` (see [Demo with FrankenPHP](docs/DEMO-FRANKENPHP.md)).
+
+## Table of contents
+
+- [What is this?](#what-is-this)
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Documentation](#documentation)
+- [Tests and coverage](#tests-and-coverage)
+- [License](#license)
+
 **Symfony bundle to define signature box coordinates on PDFs.** Form type with an in-browser PDF.js viewer: users place and resize signature areas by clicking and dragging. Supports units (mm, cm, pt), validation, proxy for external PDFs, and hooks for PKI/timestamp/batch signing. Symfony 7.x, 8.x · PHP 8.2+.
 
 ## What is this?

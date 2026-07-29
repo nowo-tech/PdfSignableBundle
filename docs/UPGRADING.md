@@ -1,6 +1,47 @@
 # Upgrade Guide
 
+## Table of contents
+
+- [General upgrade process](#general-upgrade-process)
+- [Upgrading by version](#upgrading-by-version)
+  - [Upgrading to 3.0.7](#upgrading-to-307)
+  - [Upgrading to 3.0.6 (2026-07-22)](#upgrading-to-306-2026-07-22)
+  - [Upgrading to 3.0.5 (2026-07-18)](#upgrading-to-305-2026-07-18)
+  - [Upgrading to 3.0.4 (2026-07-16)](#upgrading-to-304-2026-07-16)
+  - [Upgrading to 3.0.3 (2026-07-09)](#upgrading-to-303-2026-07-09)
+  - [Upgrading to 3.0.2 (2026-07-01)](#upgrading-to-302-2026-07-01)
+  - [Upgrading to 3.0.1 (2026-07-01)](#upgrading-to-301-2026-07-01)
+  - [Upgrading to 3.0.0 (2026-07-01)](#upgrading-to-300-2026-07-01)
+  - [Upgrading to 2.0.7 (2026-07-01)](#upgrading-to-207-2026-07-01)
+  - [Upgrading to 2.0.6 (2026-05-14)](#upgrading-to-206-2026-05-14)
+  - [Upgrading to 2.0.5 (2026-04-15)](#upgrading-to-205-2026-04-15)
+  - [Upgrading to 2.0.4 (2026-03-02)](#upgrading-to-204-2026-03-02)
+  - [Upgrading to 2.0.0 (2026-02-16)](#upgrading-to-200-2026-02-16)
+  - [Upgrading to 2.0.3 (2026-02-16)](#upgrading-to-203-2026-02-16)
+  - [Upgrading to 2.0.2 (2026-02-16)](#upgrading-to-202-2026-02-16)
+  - [Upgrading to 2.0.1 (2026-02-16)](#upgrading-to-201-2026-02-16)
+  - [Upgrading to 1.5.4](#upgrading-to-154)
+  - [Upgrading to 1.5.3](#upgrading-to-153)
+  - [Upgrading to 1.5.2](#upgrading-to-152)
+  - [Upgrading to 1.5.1](#upgrading-to-151)
+  - [Upgrading to 1.5.0](#upgrading-to-150)
+  - [Upgrading to 1.4.0](#upgrading-to-140)
+  - [Upgrading to 1.4.1](#upgrading-to-141)
+  - [Upgrading to 1.3.0](#upgrading-to-130)
+  - [Upgrading to 1.2.0](#upgrading-to-120)
+  - [Upgrading to 1.1.0](#upgrading-to-110)
+  - [Upgrading to 1.0.0](#upgrading-to-100)
+  - [Upgrading to a future version (e.g. 2.0.0)](#upgrading-to-a-future-version-eg-200)
+- [Troubleshooting](#troubleshooting)
+  - [Configuration errors after upgrade](#configuration-errors-after-upgrade)
+  - [Form or viewer not working after upgrade](#form-or-viewer-not-working-after-upgrade)
+  - [Proxy or PDF loading issues](#proxy-or-pdf-loading-issues)
+- [Version compatibility](#version-compatibility)
+- [See also](#see-also)
+
 This guide explains how to upgrade the PdfSignable Bundle between versions. For a list of changes in each version, see [CHANGELOG.md](CHANGELOG.md).
+
+**Note:** Version **3.0.7** adds `proxy_url_allowlist_required`, named asset package `nowo_pdf_signable`, and HTTP/process timeouts. See [Upgrading to 3.0.7](#upgrading-to-307).
 
 **Note:** Version **3.0.6** renames the Twig namespace to `@NowoPdfSignableBundle` and the translation domain to `NowoPdfSignableBundle` (REQ-I18N-003). See [Upgrading to 3.0.6](#upgrading-to-306-2026-07-22).
 
@@ -42,6 +83,18 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ---
 
 ## Upgrading by version
+
+### Upgrading to 3.0.7
+
+**Release date:** 2026-07-29
+
+No intentional breaking changes to route names or Twig namespace (still `@NowoPdfSignableBundle` / domain `NowoPdfSignableBundle` from 3.0.6).
+
+- **Security:** New option `proxy_url_allowlist_required` (default `false`). Set `true` in production with a non-empty `proxy_url_allowlist`. Invalid `#regex` allowlist entries now fail container compilation.
+- **Assets:** Twig themes use the `nowo_pdf_signable` asset package (`asset('js/…', 'nowo_pdf_signable')`). Re-run `assets:install` after upgrade and clear cache.
+- **Runtime:** Config keys `http_timeout`, `process_timeout`, `process_script_timeout`, `dependency_check_timeout` (FrankenPHP-safe defaults).
+- **AcroForm:** Protect `/pdf-signable/acroform/*` with host firewalls; see [SECURITY.md](SECURITY.md).
+- **Contributors:** PHPStan loads FrankenPHP classic + worker rulesets; `make coverage-check` / `check-open-prs` / `demo-smoke` available.
 
 ### Upgrading to 3.0.6 (2026-07-22)
 
@@ -762,7 +815,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
-| 3.0.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.0.0 breaking:** Minimum PHP 8.2 and Symfony 7.0. **3.0.1:** `Choice` constraints for Validator 7.4+/8.x. **3.0.2:** Symfony 8.1 PHP 8.4.1+ documented. **3.0.3:** Flex recipe `proxy_url_allowlist` placeholder + security note; Spec Kit baseline; `fr`/`nl` translations. **3.0.4:** Code of Conduct; REQ-GIT-001. **3.0.5:** `default_profile` / `profiles` (legacy keys still accepted). **3.0.6:** Twig `@NowoPdfSignableBundle` + translation domain `NowoPdfSignableBundle` (REQ-I18N-003). |
+| 3.0.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.0.0 breaking:** Minimum PHP 8.2 and Symfony 7.0. **3.0.1:** `Choice` constraints for Validator 7.4+/8.x. **3.0.2:** Symfony 8.1 PHP 8.4.1+ documented. **3.0.3:** Flex recipe `proxy_url_allowlist` placeholder + security note; Spec Kit baseline; `fr`/`nl` translations. **3.0.4:** Code of Conduct; REQ-GIT-001. **3.0.5:** `default_profile` / `profiles` (legacy keys still accepted). **3.0.6:** Twig `@NowoPdfSignableBundle` + translation domain `NowoPdfSignableBundle` (REQ-I18N-003). **3.0.7:** `proxy_url_allowlist_required`; named asset package `nowo_pdf_signable`; HTTP/process timeouts; PHPStan FrankenPHP rulesets. |
 | 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **2.0.0 breaking:** Signature under `signature` node; AcroForm under single `acroform` node. **2.0.1:** PDF.js worker default `.js` (MIME fix), worker URL absolute/fallback, translations (AcroForm modal keys + tr YAML), tests. **2.0.2:** Routes YAML copy-paste example, allowlist regex validation in dev (compiler pass), extended tests, `@group integration` for env-dependent tests. **2.0.4:** PHP-CS-Fixer (PSR-12/Symfony), Docker PHP 8.2 Alpine, demo Makefiles/HTTP/READMEs, CI simplified. |
 | 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging. 1.5.4: show_acroform option (default true), AcroForm outline overlay; recipe and demos set show_acroform: true in signature.configs / acroform.configs. |
 | 1.4.x          | 6.1+, 7.x, 8.x | 8.1+ | Signing in boxes (draw/upload), consent, signedAt, auditMetadata, signing_only, signature pad, demo sidebar. 1.4.1: consent translations in all locales, test fix. |

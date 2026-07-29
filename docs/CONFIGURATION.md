@@ -1,5 +1,14 @@
 # Configuration
 
+## Table of contents
+
+- [Options](#options)
+  - [Signature](#signature)
+  - [AcroForm](#acroform)
+  - [Proxy URL allowlist](#proxy-url-allowlist)
+- [Complete configuration reference](#complete-configuration-reference)
+- [Bundle config files (maintainers)](#bundle-config-files-maintainers)
+
 Create or edit `config/packages/nowo_pdf_signable.yaml`. For a **full example with every option explained**, see [Complete configuration reference](#complete-configuration-reference) below.
 
 ```yaml
@@ -48,9 +57,14 @@ nowo_pdf_signable:
 | Option                  | Type   | Default | Description |
 |-------------------------|--------|---------|-------------|
 | `proxy_enabled`         | bool   | `true`  | Enables the `/pdf-signable/proxy` route to fetch PDFs by URL and avoid CORS. |
-| `proxy_url_allowlist`   | string[] | `[]` | When non-empty, the proxy only fetches URLs that match at least one entry. Each entry: a **substring** of the URL (e.g. `transportes.gob.es`), or a **regex** if prefixed with `#` (e.g. `#^https://example\.com/.*#`). Empty list = no restriction. |
+| `proxy_url_allowlist`   | string[] | `[]` | When non-empty, the proxy only fetches URLs that match at least one entry. Each entry: a **substring** of the URL (e.g. `transportes.gob.es`), or a **regex** if prefixed with `#` (e.g. `#^https://example\.com/.*#`). Empty list = no restriction unless `proxy_url_allowlist_required` is true. |
+| `proxy_url_allowlist_required` | bool | `false` | When `true` and `proxy_enabled` is true, an empty allowlist fails container compilation. **Recommended `true` in production.** |
 | `example_pdf_url`       | string | (sample URL in code) | Default PDF URL for form preload when no pdf_url is set in form/config. Set `''` to disable. |
 | `debug`                 | bool   | `false` | When `true`, the frontend uses the bundle logger with debug enabled: all `debug`/`info`/`warn` messages are shown in the browser console (e.g. DOM resolution, load PDF, add/remove box, overlay updates, AcroForm apply). When `false`, only the “script loaded” line is shown. The AcroForm editor panel also supports `data-debug="1"` or `data-debug="true"` on its root element to enable the same logger output for that script. |
+| `http_timeout`          | float  | `30`    | HTTP timeout (seconds) for proxy / external PDF fetches. Keep below PHP `max_execution_time` and FrankenPHP/Caddy write timeout (REQ-RUNTIME-001). |
+| `process_timeout`       | float  | `60`    | Symfony Process timeout + idle timeout (seconds) for AcroForm extract/apply scripts. |
+| `process_script_timeout`| float  | `120`   | Symfony Process timeout + idle timeout (seconds) for `acroform.process_script`. |
+| `dependency_check_timeout` | float | `5`  | Process timeout (seconds) for the optional `pypdf` probe in dependency checks. |
 | `signature.*`           | —      | see below | Signature: global defaults (box dimensions, lock) and profiles by name (default profile `default`). See [Signature](#signature). |
 | `audit.fill_from_request` | bool | `true` | When `true`, the bundle controller merges `submitted_at`, `ip`, and `user_agent` into the model’s `audit_metadata` before dispatching `SIGNATURE_COORDINATES_SUBMITTED`. Your listeners can add more (e.g. `user_id`, `tsa_token`). See [SIGNING_ADVANCED](SIGNING_ADVANCED.md). |
 | `tsa_url`               | string \| null | `null` | **Placeholder.** The bundle does not call it. Set your RFC 3161 TSA URL and use it in a listener to obtain a timestamp token; store it in `audit_metadata` (e.g. key `AuditMetadata::TSA_TOKEN`). |
@@ -146,6 +160,15 @@ nowo_pdf_signable:
     # debug (bool, default: false)
     # When true, the viewer script logs to the browser console (load, add/remove box, errors).
     # debug: false
+
+    # http_timeout (float seconds, default: 30) — proxy / external PDF HttpClient timeout
+    # process_timeout (float seconds, default: 60) — AcroForm extract/apply Process timeout + idle
+    # process_script_timeout (float seconds, default: 120) — process_script Process timeout + idle
+    # dependency_check_timeout (float seconds, default: 5) — pypdf probe Process timeout
+    # http_timeout: 30
+    # process_timeout: 60
+    # process_script_timeout: 120
+    # dependency_check_timeout: 5
 
     # signature (object): global defaults (box dimensions, lock) and profiles by name (default profile: default).
     signature:

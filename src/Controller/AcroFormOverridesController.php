@@ -77,6 +77,9 @@ final class AcroFormOverridesController extends AbstractController
      * @param string $processScriptCommand Executable to run process_script (e.g. python3)
      * @param bool $debug When true, allow validate_only in apply (dry-run)
      * @param LoggerInterface|null $logger Optional logger for apply debug (when debug=true)
+     * @param float $httpTimeout HTTP timeout for external PDF fetches
+     * @param float $processTimeout Process timeout for fields extract / apply scripts
+     * @param float $processScriptTimeout Process timeout for process_script
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.acroform.enabled')]
@@ -100,6 +103,12 @@ final class AcroFormOverridesController extends AbstractController
         private readonly string $processScriptCommand = 'python3',
         #[Autowire(param: 'nowo_pdf_signable.debug')]
         private readonly bool $debug = false,
+        #[Autowire(param: 'nowo_pdf_signable.http_timeout')]
+        private readonly float $httpTimeout = 30.0,
+        #[Autowire(param: 'nowo_pdf_signable.process_timeout')]
+        private readonly float $processTimeout = 60.0,
+        #[Autowire(param: 'nowo_pdf_signable.process_script_timeout')]
+        private readonly float $processScriptTimeout = 120.0,
         private readonly ?LoggerInterface $logger = null,
         private readonly ?HttpClientInterface $httpClient = null,
         private readonly ?Closure $createTempFile = null,
@@ -185,7 +194,9 @@ final class AcroFormOverridesController extends AbstractController
                         $tmpFile = $this->createTempFile('pdfsignable_');
                         if ($tmpFile !== false && $this->writeTempFile($tmpFile, $pdfContents) !== false) {
                             $process = new Process(['python3', $scriptPath, $tmpFile], null, PythonProcessEnv::build());
-                            $process->setTimeout(60);
+                            $timeout = max(0.1, $this->processTimeout);
+                            $process->setTimeout($timeout);
+                            $process->setIdleTimeout($timeout);
                             $process->run();
                             if ($process->isSuccessful()) {
                                 $decoded = json_decode($process->getOutput(), true);
@@ -316,7 +327,9 @@ final class AcroFormOverridesController extends AbstractController
             }
 
             $process = new Process(['python3', $scriptPath, $tmpFile], null, PythonProcessEnv::build());
-            $process->setTimeout(60);
+            $timeout = max(0.1, $this->processTimeout);
+            $process->setTimeout($timeout);
+            $process->setIdleTimeout($timeout);
             $process->run();
             $stdout = $process->getOutput();
             $stderr = $process->getErrorOutput();
@@ -420,7 +433,8 @@ final class AcroFormOverridesController extends AbstractController
             }
             try {
                 $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
-                    'timeout'       => 30,
+                    'timeout'       => max(0.1, $this->httpTimeout),
+                    'max_duration'  => max(0.1, $this->httpTimeout),
                     'max_redirects' => 5,
                     'headers'       => ['Accept' => 'application/pdf,*/*'],
                 ]);
@@ -575,8 +589,10 @@ final class AcroFormOverridesController extends AbstractController
                 $procArgs[] = '--document-key';
                 $procArgs[] = $documentKey;
             }
-            $proc = new Process($procArgs, null, PythonProcessEnv::build());
-            $proc->setTimeout(120);
+            $proc    = new Process($procArgs, null, PythonProcessEnv::build());
+            $timeout = max(0.1, $this->processScriptTimeout);
+            $proc->setTimeout($timeout);
+            $proc->setIdleTimeout($timeout);
             $proc->run();
 
             if (!$proc->isSuccessful()) {
@@ -653,7 +669,8 @@ final class AcroFormOverridesController extends AbstractController
             }
             try {
                 $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
-                    'timeout'       => 30,
+                    'timeout'       => max(0.1, $this->httpTimeout),
+                    'max_duration'  => max(0.1, $this->httpTimeout),
                     'max_redirects' => 5,
                     'headers'       => ['Accept' => 'application/pdf,*/*'],
                 ]);

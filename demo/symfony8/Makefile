@@ -1,5 +1,6 @@
 # PdfSignable Bundle Demo - Symfony 8 (Docker, FrankenPHP + Caddy, HTTPS)
-COMPOSE := docker-compose
+# Prefer Compose V2 plugin (GitHub Actions / modern Docker Desktop); fall back to docker-compose V1 (REQ-MAKE-010).
+COMPOSE := $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
 SERVICE_PHP := php
 
 .PHONY: help up down shell install setup run ensure-up update-bundle clean logs update-deps
@@ -26,74 +27,74 @@ help:
 
 up:
 	@if [ ! -f .env ]; then cp .env.example .env 2>/dev/null || true; fi
-	docker-compose up -d
+	$(COMPOSE) up -d
 	@echo "Waiting for container to be ready..."
 	@sleep 5
 	@echo "Installing dependencies..."
-	@docker-compose exec -T -e COMPOSER_MEMORY_LIMIT=-1 php composer install --no-interaction
+	@$(COMPOSE) exec -T -e COMPOSER_MEMORY_LIMIT=-1 php composer install --no-interaction
 	@$(MAKE) install
 	@PORT=$$(grep "^PORT=" .env 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
 	[ -z "$$PORT" ] && PORT=$$(grep "^PORT=" .env.example 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
 	echo "Demo started at: http://localhost:$$PORT"
 down:
-	docker-compose down
+	$(COMPOSE) down
 	@echo "✅ Containers stopped"
 
 restart: ensure-up
-	docker-compose restart
+	$(COMPOSE) restart
 	@echo "✅ Containers restarted"
 
 build:
-	docker-compose build --no-cache
+	$(COMPOSE) build --no-cache
 	@echo "✅ Image rebuilt"
 
 ensure-up:
-	@if ! docker-compose exec -T php true 2>/dev/null; then \
+	@if ! $(COMPOSE) exec -T php true 2>/dev/null; then \
 		echo "Starting containers..."; \
 		[ ! -f .env ] && cp .env.example .env || true; \
-		docker-compose up -d; \
+		$(COMPOSE) up -d; \
 		sleep 5; \
-		docker-compose exec -T php sh -c "composer install --no-interaction || true"; \
+		$(COMPOSE) exec -T php sh -c "composer install --no-interaction || true"; \
 	fi
 
 shell: ensure-up
-	docker-compose exec php sh
+	$(COMPOSE) exec php sh
 
 install:
 	@echo "📦 Building bundle assets (pnpm)..."
-	docker-compose exec -T php sh -c "cd /var/pdf-signable-bundle && CI=true pnpm install && pnpm run build"
+	$(COMPOSE) exec -T php sh -c "cd /var/pdf-signable-bundle && CI=true pnpm install && pnpm run build"
 	@echo "📦 Installing PHP dependencies..."
-	docker-compose exec -T php sh -c 'sed -i '\''s|"url":"../.."|"url":"/var/pdf-signable-bundle"|g'\'' composer.json && ( test -f composer.lock && sed -i '\''s|"url":"../.."|"url":"/var/pdf-signable-bundle"|g'\'' composer.lock; true ) && rm -rf vendor/nowo-tech/pdf-signable-bundle && composer install --no-interaction && rm -rf vendor/nowo-tech/pdf-signable-bundle && ln -sfn /var/pdf-signable-bundle vendor/nowo-tech/pdf-signable-bundle && sed -i '\''s|"url":"/var/pdf-signable-bundle"|"url":"../.."|g'\'' composer.json && ( test -f composer.lock && sed -i '\''s|"url":"/var/pdf-signable-bundle"|"url":"../.."|g'\'' composer.lock; true )'
+	$(COMPOSE) exec -T php sh -c 'sed -i '\''s|"url":"../.."|"url":"/var/pdf-signable-bundle"|g'\'' composer.json && ( test -f composer.lock && sed -i '\''s|"url":"../.."|"url":"/var/pdf-signable-bundle"|g'\'' composer.lock; true ) && rm -rf vendor/nowo-tech/pdf-signable-bundle && composer install --no-interaction && rm -rf vendor/nowo-tech/pdf-signable-bundle && ln -sfn /var/pdf-signable-bundle vendor/nowo-tech/pdf-signable-bundle && sed -i '\''s|"url":"/var/pdf-signable-bundle"|"url":"../.."|g'\'' composer.json && ( test -f composer.lock && sed -i '\''s|"url":"/var/pdf-signable-bundle"|"url":"../.."|g'\'' composer.lock; true )'
 	@echo "📦 Installing bundle assets..."
-	docker-compose exec -T php php bin/console assets:install
+	$(COMPOSE) exec -T php php bin/console assets:install
 	@echo "✅ Dependencies installed"
 
 setup: install
-	docker-compose exec -T php php bin/console cache:clear
+	$(COMPOSE) exec -T php php bin/console cache:clear
 	@echo "✅ Demo ready at http://localhost:8002"
 
 run: up
 	@echo "📦 Building bundle assets (pnpm)..."
-	@docker-compose exec -T php sh -c "cd /var/pdf-signable-bundle && CI=true pnpm install && pnpm run build"
+	@$(COMPOSE) exec -T php sh -c "cd /var/pdf-signable-bundle && CI=true pnpm install && pnpm run build"
 	@echo "📦 Installing PHP dependencies..."
-	@docker-compose exec -T -e COMPOSER_MEMORY_LIMIT=-1 php sh -c 'sed -i '\''s|"url":"../.."|"url":"/var/pdf-signable-bundle"|g'\'' composer.json composer.lock && rm -rf vendor/nowo-tech/pdf-signable-bundle && composer install --no-interaction && rm -rf vendor/nowo-tech/pdf-signable-bundle && ln -sfn /var/pdf-signable-bundle vendor/nowo-tech/pdf-signable-bundle && sed -i '\''s|"url":"/var/pdf-signable-bundle"|"url":"../.."|g'\'' composer.json composer.lock'
+	@$(COMPOSE) exec -T -e COMPOSER_MEMORY_LIMIT=-1 php sh -c 'sed -i '\''s|"url":"../.."|"url":"/var/pdf-signable-bundle"|g'\'' composer.json composer.lock && rm -rf vendor/nowo-tech/pdf-signable-bundle && composer install --no-interaction && rm -rf vendor/nowo-tech/pdf-signable-bundle && ln -sfn /var/pdf-signable-bundle vendor/nowo-tech/pdf-signable-bundle && sed -i '\''s|"url":"/var/pdf-signable-bundle"|"url":"../.."|g'\'' composer.json composer.lock'
 	@echo "📦 Installing bundle assets..."
-	@docker-compose exec -T php php bin/console assets:install
-	@docker-compose exec -T php php bin/console cache:clear
+	@$(COMPOSE) exec -T php php bin/console assets:install
+	@$(COMPOSE) exec -T php php bin/console cache:clear
 	@echo "✅ Demo ready: http://localhost:8002"
 
 test: ensure-up
-	docker-compose exec -T php composer test 2>/dev/null || docker-compose exec -T php php bin/console list
+	$(COMPOSE) exec -T php composer test 2>/dev/null || $(COMPOSE) exec -T php php bin/console list
 
 test-coverage: ensure-up
-	docker-compose exec -T php composer test-coverage 2>/dev/null || docker-compose exec -T php composer test
+	$(COMPOSE) exec -T php composer test-coverage 2>/dev/null || $(COMPOSE) exec -T php composer test
 
 update-bundle: ensure-up
 	@echo "📦 Rebuilding bundle assets..."
-	docker-compose exec -T php sh -c "cd /var/pdf-signable-bundle && CI=true pnpm install && pnpm run build"
+	$(COMPOSE) exec -T php sh -c "cd /var/pdf-signable-bundle && CI=true pnpm install && pnpm run build"
 	@echo "📦 Refreshing bundle assets in public..."
-	docker-compose exec -T php php bin/console assets:install
-	docker-compose exec -T php php bin/console cache:clear
+	$(COMPOSE) exec -T php php bin/console assets:install
+	$(COMPOSE) exec -T php php bin/console cache:clear
 	@echo "✅ Bundle code updated in demo. http://localhost:8002"
 
 clean: down
@@ -101,9 +102,10 @@ clean: down
 	@echo "✅ Cleanup done"
 
 logs:
-	docker-compose logs -f
+	$(COMPOSE) logs -f
 
 
 # REQ-MAKE-008: update-deps (REQ-MAKE-008)
 BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
-include $(BUNDLE_ROOT)/../.scripts/Makefile.demo-update-deps.mk
+# Optional: monorepo helper absent on standalone GitHub Actions checkout (REQ-MAKE-009).
+-include $(BUNDLE_ROOT)/../.scripts/Makefile.demo-update-deps.mk

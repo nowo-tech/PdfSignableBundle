@@ -1,9 +1,11 @@
 # Makefile for PdfSignable Bundle (tests and QA at bundle root)
 COMPOSE_FILE := docker-compose.yml
-COMPOSE     := docker-compose -f $(COMPOSE_FILE)
+# Prefer Compose V2 plugin (GitHub Actions / modern Docker Desktop); fall back to docker-compose V1 (REQ-MAKE-010).
+COMPOSE_BIN := $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
+COMPOSE     := $(COMPOSE_BIN) -f $(COMPOSE_FILE)
 SERVICE_PHP := php
 
-.PHONY: help up down build shell install assets test test-coverage coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc update-deps update-deps-demos check-no-cursor-coauthor strip-cursor-coauthor-from-history
+.PHONY: help up down build shell install assets test test-coverage coverage-check coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc update-deps update-deps-demos check-no-cursor-coauthor check-open-prs strip-cursor-coauthor-from-history demo-smoke
 
 help:
 	@echo "PdfSignable Bundle - Development Commands"
@@ -49,41 +51,41 @@ help:
 
 # Rebuild Docker image (no cache)
 build:
-	docker-compose -f docker-compose.yml build --no-cache
+	$(COMPOSE) -f docker-compose.yml build --no-cache
 
-# Build and start container (root docker-compose)
+# Build and start container (root $(COMPOSE))
 up:
-	docker-compose -f docker-compose.yml build
-	docker-compose -f docker-compose.yml up -d
+	$(COMPOSE) -f docker-compose.yml build
+	$(COMPOSE) -f docker-compose.yml up -d
 	@sleep 2
-	docker-compose exec -T php composer install --no-interaction
+	$(COMPOSE) exec -T php composer install --no-interaction
 	@echo "Container listo."
 
-# Stop container (root docker-compose)
+# Stop container (root $(COMPOSE))
 down:
-	docker-compose -f docker-compose.yml down
+	$(COMPOSE) -f docker-compose.yml down
 
 # Ensure root container is running (start if not). Used by cs-fix, cs-check, qa, install, test, test-coverage.
 ensure-up:
-	@if ! docker-compose -f docker-compose.yml exec -T php true 2>/dev/null; then \
-		echo "Starting container (root docker-compose)..."; \
-		docker-compose -f docker-compose.yml up -d; \
+	@if ! $(COMPOSE) -f docker-compose.yml exec -T php true 2>/dev/null; then \
+		echo "Starting container (root $(COMPOSE))..."; \
+		$(COMPOSE) -f docker-compose.yml up -d; \
 		sleep 3; \
-		docker-compose -f docker-compose.yml exec -T php composer install --no-interaction; \
+		$(COMPOSE) -f docker-compose.yml exec -T php composer install --no-interaction; \
 	fi
-# Open shell in container (root docker-compose)
+# Open shell in container (root $(COMPOSE))
 shell:
-	docker-compose -f docker-compose.yml exec php sh
+	$(COMPOSE) -f docker-compose.yml exec php sh
 
-# Install dependencies (runs inside root docker-compose php container)
+# Install dependencies (runs inside root $(COMPOSE) php container)
 install: ensure-up
-	docker-compose exec -T php composer install --no-interaction
-	docker-compose exec -T -e CI=true php pnpm install
+	$(COMPOSE) exec -T php composer install --no-interaction
+	$(COMPOSE) exec -T -e CI=true php pnpm install
 	@echo "Dependencias instaladas (composer + pnpm)."
 
 assets: ensure-up
-	docker-compose exec -T -e CI=true php pnpm install
-	docker-compose exec -T php pnpm run build
+	$(COMPOSE) exec -T -e CI=true php pnpm install
+	$(COMPOSE) exec -T php pnpm run build
 
 # Alias: same as assets (unified name for bundles with TS)
 assets-build: assets
@@ -91,8 +93,8 @@ assets-build: assets
 # Run Vitest tests for TypeScript — runs inside container
 test-ts: ensure-up
 	@echo "Running TypeScript tests with coverage (Vitest)..."
-	docker-compose exec -T -e CI=true php pnpm install
-	docker-compose exec -T php pnpm run test:coverage | tee coverage-ts.txt
+	$(COMPOSE) exec -T -e CI=true php pnpm install
+	$(COMPOSE) exec -T php pnpm run test:coverage | tee coverage-ts.txt
 	./.scripts/ts-coverage-percent.sh coverage-ts.txt
 	@echo "✅ TypeScript tests with coverage done!"
 
@@ -102,82 +104,93 @@ assets-test: test-ts
 # Build assets in development mode — runs inside container
 assets-dev: ensure-up
 	@echo "Building assets in development mode..."
-	docker-compose exec -T -e CI=true php pnpm install
-	docker-compose exec -T php pnpm run build:dev
+	$(COMPOSE) exec -T -e CI=true php pnpm install
+	$(COMPOSE) exec -T php pnpm run build:dev
 	@echo "✅ Assets built!"
 
 # Watch assets for changes — runs inside container (interactive)
 assets-watch: ensure-up
 	@echo "Watching assets for changes..."
-	docker-compose exec -e CI=true php sh -c "pnpm install && pnpm run watch"
+	$(COMPOSE) exec -e CI=true php sh -c "pnpm install && pnpm run watch"
 
 # Clean built assets — runs inside container
 assets-clean: ensure-up
 	@echo "Cleaning built assets..."
-	docker-compose exec -T php pnpm run clean
+	$(COMPOSE) exec -T php pnpm run clean
 	@echo "✅ Assets cleaned!"
 
-# Run tests (runs inside root docker-compose php container)
+# Run tests (runs inside root $(COMPOSE) php container)
 # Run tests (no -T so TTY is allocated and PHPUnit can show colors in console)
 test: ensure-up
-	docker-compose exec php composer test
+	$(COMPOSE) exec php composer test
 
 test-python: ensure-up
-	docker-compose exec -T php python3 -m pip install --break-system-packages -q pypdf pytest pytest-cov
-	docker-compose exec -T php python3 -m pytest .scripts/test -v \
+	$(COMPOSE) exec -T php python3 -m pip install --break-system-packages -q pypdf pytest pytest-cov
+	$(COMPOSE) exec -T php python3 -m pytest .scripts/test -v \
 		--cov=extract_acroform_fields \
 		--cov=apply_acroform_patches \
 		--cov=process_modified_pdf \
 		--cov-report=term-missing
 
 test-poc: ensure-up
-	docker-compose exec -T php sh -c 'apt-get update -qq && apt-get install -y -qq python3-pip >/dev/null 2>&1; python3 -m pip install --break-system-packages -q pypdf 2>/dev/null; python3 .scripts/PoC/run_poc.py'
+	$(COMPOSE) exec -T php sh -c 'apt-get update -qq && apt-get install -y -qq python3-pip >/dev/null 2>&1; python3 -m pip install --break-system-packages -q pypdf 2>/dev/null; python3 .scripts/PoC/run_poc.py'
 
 # Run tests with coverage (no -T so coverage is shown in console with colors)
 test-coverage: ensure-up
-	docker-compose exec php composer test-coverage | tee coverage-php.txt
+	$(COMPOSE) exec php composer test-coverage | tee coverage-php.txt
 	./.scripts/php-coverage-percent.sh coverage-php.txt
 
-# Check code style (runs inside root docker-compose php container)
+# Check code style (runs inside root $(COMPOSE) php container)
 cs-check: ensure-up
-	docker-compose -f docker-compose.yml exec -T php composer cs-check
+	$(COMPOSE) -f docker-compose.yml exec -T php composer cs-check
 
-# Fix code style (runs inside root docker-compose php container)
+# Fix code style (runs inside root $(COMPOSE) php container)
 cs-fix: ensure-up
-	docker-compose -f docker-compose.yml exec -T php composer cs-fix
+	$(COMPOSE) -f docker-compose.yml exec -T php composer cs-fix
 
-# Run all QA (runs inside root docker-compose php container)
+# Run all QA (runs inside root $(COMPOSE) php container)
 qa: ensure-up
-	docker-compose -f docker-compose.yml exec -T php composer qa
+	$(COMPOSE) -f docker-compose.yml exec -T php composer qa
 
 rector: ensure-up
-	docker-compose -f docker-compose.yml exec -T php composer rector
+	$(COMPOSE) -f docker-compose.yml exec -T php composer rector
 
 rector-dry: ensure-up
-	docker-compose -f docker-compose.yml exec -T php composer rector-dry
+	$(COMPOSE) -f docker-compose.yml exec -T php composer rector-dry
 
 phpstan: ensure-up
-	docker-compose -f docker-compose.yml exec -T php composer phpstan
+	$(COMPOSE) -f docker-compose.yml exec -T php composer phpstan
 
 composer-sync: ensure-up
-	docker-compose -f docker-compose.yml exec -T php composer validate --strict
-	docker-compose -f docker-compose.yml exec -T php composer update --no-install
+	$(COMPOSE) -f docker-compose.yml exec -T php composer validate --strict
+	$(COMPOSE) -f docker-compose.yml exec -T php composer update --no-install
 
 # Update composer.lock
 update: ensure-up
-	docker-compose -f docker-compose.yml exec -T php composer update --no-interaction
+	$(COMPOSE) -f docker-compose.yml exec -T php composer update --no-interaction
 
 # Validate composer.json
 validate: ensure-up
-	docker-compose -f docker-compose.yml exec -T php composer validate --strict
+	$(COMPOSE) -f docker-compose.yml exec -T php composer validate --strict
 
-release-check: check-no-cursor-coauthor ensure-up composer-sync cs-fix cs-check rector-dry phpstan test-coverage test-ts test-python release-check-demos
+release-check: check-no-cursor-coauthor check-open-prs ensure-up composer-sync cs-fix cs-check rector-dry phpstan coverage-check test-ts test-python release-check-demos
+
+coverage-check: test-coverage
+	@chmod +x .scripts/coverage-fail-under.sh
+	@./.scripts/coverage-fail-under.sh coverage-php.txt 99
+
+check-open-prs:
+	@chmod +x .scripts/check-open-prs.sh
+	@GH_REPO=nowo-tech/PdfSignableBundle ./.scripts/check-open-prs.sh
+
+demo-smoke:
+	@if [ -f demo/Makefile ]; then $(MAKE) -C demo release-verify; else echo "No demo/Makefile"; exit 1; fi
 
 release-check-demos:
 	@$(MAKE) -C demo release-check
 
 validate-translations: ensure-up
-	docker-compose exec -T php php .scripts/validate-translations-yaml.php
+	$(COMPOSE) exec -T php php .scripts/validate-translations-yaml.php
 
 # Clean vendor and cache
 clean:
@@ -197,7 +210,8 @@ setup-hooks:
 
 # REQ-MAKE-008: update-deps (REQ-MAKE-008)
 BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-include $(BUNDLE_ROOT)/../.scripts/Makefile.update-deps.mk
+# Optional: monorepo helper absent on standalone GitHub Actions checkout (REQ-MAKE-009).
+-include $(BUNDLE_ROOT)/../.scripts/Makefile.update-deps.mk
 check-no-cursor-coauthor:
 	@chmod +x .scripts/check-no-cursor-coauthor.sh
 	@./.scripts/check-no-cursor-coauthor.sh HEAD

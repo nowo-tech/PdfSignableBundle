@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form;
 
+use App\Model\SignaturePageModel;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -54,7 +55,7 @@ final class SignaturePageType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class'        => \App\Model\SignaturePageModel::class,
+            'data_class'        => SignaturePageModel::class,
             'signature_options' => [],
         ]);
         $resolver->setAllowedTypes('signature_options', 'array');

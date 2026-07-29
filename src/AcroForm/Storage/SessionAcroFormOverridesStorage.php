@@ -7,6 +7,7 @@ namespace Nowo\PdfSignableBundle\AcroForm\Storage;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 use function is_array;
 
@@ -33,7 +34,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
     public function get(string $documentKey): ?AcroFormOverrides
     {
         $session = $this->requestStack->getCurrentRequest()?->getSession();
-        if (!$session instanceof \Symfony\Component\HttpFoundation\Session\SessionInterface) {
+        if (!$session instanceof SessionInterface) {
             return null;
         }
         $key  = self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey);
@@ -48,7 +49,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
     public function set(string $documentKey, AcroFormOverrides $overrides): void
     {
         $session = $this->requestStack->getCurrentRequest()?->getSession();
-        if (!$session instanceof \Symfony\Component\HttpFoundation\Session\SessionInterface) {
+        if (!$session instanceof SessionInterface) {
             return;
         }
         $key = self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey);
@@ -58,7 +59,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
     public function remove(string $documentKey): void
     {
         $session = $this->requestStack->getCurrentRequest()?->getSession();
-        if (!$session instanceof \Symfony\Component\HttpFoundation\Session\SessionInterface) {
+        if (!$session instanceof SessionInterface) {
             return;
         }
         $session->remove(self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey));

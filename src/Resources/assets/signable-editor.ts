@@ -6,7 +6,7 @@
 export type { NowoPdfSignableConfig } from './shared/types';
 import type { PDFViewport, PDFDocumentProxy } from './shared/types';
 import { createBundleLogger } from './logger';
-import { getLogger, setBundleLogger } from './pdfSignableLogger';
+import { getLogger, setBundleLogger } from './pdf-signable-logger';
 
 declare const __PDF_SIGNABLE_BUILD_TIME__: string;
 

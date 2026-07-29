@@ -12,6 +12,7 @@ use Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface;
 use Nowo\PdfSignableBundle\Controller\AcroFormOverridesController;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
 use Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -19,6 +20,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function count;
@@ -58,13 +60,16 @@ final class AcroFormOverridesControllerTest extends TestCase
         ?string $processScript = null,
         string $processScriptCommand = 'python3',
         bool $debug = false,
+        float $httpTimeout = 30.0,
+        float $processTimeout = 60.0,
+        float $processScriptTimeout = 120.0,
         ?LoggerInterface $logger = null,
         ?HttpClientInterface $httpClient = null,
         ?Closure $createTempFile = null,
         ?Closure $writeFile = null,
     ): AcroFormOverridesController {
         $storage ??= $this->createMock(AcroFormOverridesStorageInterface::class);
-        /** @var EventDispatcherInterface&\PHPUnit\Framework\MockObject\MockObject $dispatcher */
+        /** @var EventDispatcherInterface&MockObject $dispatcher */
         $dispatcher = $eventDispatcher ?? $this->createMock(EventDispatcherInterface::class);
         $dispatcher->method('dispatch')->willReturnCallback(static fn (object $event): object => $event);
         $translator = $this->createMock(TranslatorInterface::class);
@@ -85,6 +90,9 @@ final class AcroFormOverridesControllerTest extends TestCase
             $processScript,
             $processScriptCommand,
             $debug,
+            $httpTimeout,
+            $processTimeout,
+            $processScriptTimeout,
             $logger,
             $httpClient,
             $createTempFile,
@@ -384,7 +392,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testApplyNoEditorNoEventResponseReturns501(): void
     {
-        $controller = $this->createController(allowPdfModify: true, editor: null);
+        $controller = $this->createController(allowPdfModify: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
@@ -407,7 +415,7 @@ final class AcroFormOverridesControllerTest extends TestCase
                 self::stringContains('AcroForm apply response: 501'),
                 self::anything(),
             );
-        $controller = $this->createController(allowPdfModify: true, editor: null, debug: true, logger: $logger);
+        $controller = $this->createController(allowPdfModify: true, debug: true, logger: $logger);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
@@ -1396,7 +1404,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testLoadOverridesWithPdfUrlHttpNon2xxSkipsExtraction(): void
     {
-        $httpResponse = $this->createMock(\Symfony\Contracts\HttpClient\ResponseInterface::class);
+        $httpResponse = $this->createMock(ResponseInterface::class);
         $httpResponse->method('getStatusCode')->willReturn(500);
         $httpClient = $this->createMock(HttpClientInterface::class);
         $httpClient->expects(self::once())->method('request')->willReturn($httpResponse);
@@ -1560,7 +1568,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         try {
             $controller = $this->createController(
                 fieldsExtractorScript: $script,
-                createTempFile: static fn (string $prefix) => false,
+                createTempFile: static fn (string $prefix): false => false,
             );
             $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
@@ -1584,7 +1592,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         try {
             $controller = $this->createController(
                 fieldsExtractorScript: $script,
-                writeFile: static fn (string $path, string $contents) => false,
+                writeFile: static fn (string $path, string $contents): false => false,
             );
             $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
@@ -1608,7 +1616,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         try {
             $controller = $this->createController(
                 processScript: $script,
-                createTempFile: static fn (string $prefix) => false,
+                createTempFile: static fn (string $prefix): false => false,
             );
             $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
@@ -1632,7 +1640,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         try {
             $controller = $this->createController(
                 processScript: $script,
-                writeFile: static fn (string $path, string $contents) => false,
+                writeFile: static fn (string $path, string $contents): false => false,
             );
             $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
@@ -1649,7 +1657,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testApplyWithPdfUrlUsesInjectedHttpClientAndReturnsPdf(): void
     {
-        $response = $this->createMock(\Symfony\Contracts\HttpClient\ResponseInterface::class);
+        $response = $this->createMock(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(200);
         $response->method('getContent')->willReturn('%PDF-1.4 from-url');
 
@@ -1692,7 +1700,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         file_put_contents($script, "import json\nprint(json.dumps([{\"id\":\"f1\"}]))\n");
 
         try {
-            $httpResponse = $this->createMock(\Symfony\Contracts\HttpClient\ResponseInterface::class);
+            $httpResponse = $this->createMock(ResponseInterface::class);
             $httpResponse->method('getStatusCode')->willReturn(200);
             $httpResponse->method('getContent')->willReturn('%PDF-1.4 via-url');
 

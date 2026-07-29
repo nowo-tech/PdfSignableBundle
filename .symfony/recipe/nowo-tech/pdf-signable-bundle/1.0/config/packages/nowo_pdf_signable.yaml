@@ -1,5 +1,5 @@
 # PdfSignable Bundle - Configuration
-# https://github.com/nowo-tech/pdfSignableBundle
+# https://github.com/nowo-tech/PdfSignableBundle
 #
 # This file documents all available options with defaults and short descriptions.
 # Full reference: docs/CONFIGURATION.md and docs/USAGE.md in the bundle.
@@ -8,6 +8,11 @@ nowo_pdf_signable:
     # ─── Proxy (external PDFs) ─────────────────────────────────────────────
     # Enables the /pdf-signable/proxy route so the browser can load external PDFs without CORS.
     proxy_enabled: true
+
+    # Production: set true so an empty allowlist fails container compilation (REQ-SEC-004).
+    # proxy_url_allowlist_required: true
+    proxy_url_allowlist_required: false
+
 
     # Optional allowlist: when non-empty, the proxy only fetches URLs matching at least one entry.
     # Each entry: substring of URL, or regex if prefixed with # (e.g. #^https://example\.com/#).

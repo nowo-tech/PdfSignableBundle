@@ -59,8 +59,6 @@ class SignatureBoxModel
      * Sets the PDF page number (1-based).
      *
      * @param int $page Page number (1 or greater)
-     *
-     * @return $this
      */
     public function setPage(int $page): self
     {
@@ -83,8 +81,6 @@ class SignatureBoxModel
      * Sets the box label/identifier.
      *
      * @param string $name Box name (e.g. signer_1, witness)
-     *
-     * @return $this
      */
     public function setName(string $name): self
     {
@@ -107,8 +103,6 @@ class SignatureBoxModel
      * Sets the horizontal position (x).
      *
      * @param float $x X coordinate in the configured unit
-     *
-     * @return $this
      */
     public function setX(float $x): self
     {
@@ -131,8 +125,6 @@ class SignatureBoxModel
      * Sets the vertical position (y).
      *
      * @param float $y Y coordinate in the configured unit
-     *
-     * @return $this
      */
     public function setY(float $y): self
     {
@@ -155,8 +147,6 @@ class SignatureBoxModel
      * Sets the box width.
      *
      * @param float $width Width in the configured unit
-     *
-     * @return $this
      */
     public function setWidth(float $width): self
     {
@@ -179,8 +169,6 @@ class SignatureBoxModel
      * Sets the box height.
      *
      * @param float $height Height in the configured unit
-     *
-     * @return $this
      */
     public function setHeight(float $height): self
     {
@@ -203,8 +191,6 @@ class SignatureBoxModel
      * Sets the rotation angle in degrees.
      *
      * @param float $angle Angle in degrees (e.g. -180 to 180)
-     *
-     * @return $this
      */
     public function setAngle(float $angle): self
     {
@@ -225,8 +211,6 @@ class SignatureBoxModel
      * Sets the signature image (base64 data URL from draw pad or upload).
      *
      * @param string|null $signatureData Data URL (e.g. data:image/png;base64,...) or null to clear
-     *
-     * @return $this
      */
     public function setSignatureData(?string $signatureData): self
     {
@@ -247,8 +231,6 @@ class SignatureBoxModel
      * Sets the timestamp when the signature was captured (ISO 8601; e.g. from client or server).
      *
      * @param string|null $signedAt ISO 8601 datetime or null to clear
-     *
-     * @return $this
      */
     public function setSignedAt(?string $signedAt): self
     {

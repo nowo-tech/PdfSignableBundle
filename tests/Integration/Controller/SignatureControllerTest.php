@@ -20,17 +20,21 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryBuilder;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\PreloadedExtension;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\Validation;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
@@ -106,7 +110,7 @@ final class SignatureControllerTest extends TestCase
         $sessionToUse = $session ?? ($request?->hasSession() ? $request->getSession() : null);
         $requestStack = $this->createMock(RequestStack::class);
         $requestStack->method('getCurrentRequest')->willReturn($request);
-        if ($sessionToUse instanceof \Symfony\Component\HttpFoundation\Session\SessionInterface) {
+        if ($sessionToUse instanceof SessionInterface) {
             $requestStack->method('getSession')->willReturn($sessionToUse);
         }
 
@@ -117,7 +121,7 @@ final class SignatureControllerTest extends TestCase
             ['router', true],
             ['request_stack', true],
         ]);
-        $container->method('get')->willReturnCallback(static fn (string $id) => match ($id) {
+        $container->method('get')->willReturnCallback(static fn (string $id): FormFactoryInterface|\Twig\Environment|\PHPUnit\Framework\MockObject\MockObject => match ($id) {
             'form.factory'  => $formFactory,
             'twig'          => $twig,
             'router'        => $router,
@@ -281,7 +285,7 @@ final class SignatureControllerTest extends TestCase
 
         $response = $controller->index($request);
 
-        self::assertInstanceOf(\Symfony\Component\HttpFoundation\JsonResponse::class, $response);
+        self::assertInstanceOf(JsonResponse::class, $response);
         self::assertSame(200, $response->getStatusCode());
         $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertTrue($data['success']);
@@ -310,7 +314,7 @@ final class SignatureControllerTest extends TestCase
 
         $response = $controller->index($request);
 
-        self::assertInstanceOf(\Symfony\Component\HttpFoundation\JsonResponse::class, $response);
+        self::assertInstanceOf(JsonResponse::class, $response);
         self::assertSame(200, $response->getStatusCode());
         $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertTrue($data['success']);
@@ -579,7 +583,7 @@ final class SignatureControllerTest extends TestCase
 
     public function testProxyReturnsPdfFromInjectedHttpClient(): void
     {
-        $httpResponse = $this->createMock(\Symfony\Contracts\HttpClient\ResponseInterface::class);
+        $httpResponse = $this->createMock(ResponseInterface::class);
         $httpResponse->method('getStatusCode')->willReturn(200);
         $httpResponse->method('getContent')->willReturn('%PDF-1.4 proxied');
         $httpResponse->method('getHeaders')->willReturn(['content-type' => ['application/pdf']]);
@@ -601,7 +605,7 @@ final class SignatureControllerTest extends TestCase
 
     public function testProxyWithNonPdfContentTypeForcesApplicationPdf(): void
     {
-        $httpResponse = $this->createMock(\Symfony\Contracts\HttpClient\ResponseInterface::class);
+        $httpResponse = $this->createMock(ResponseInterface::class);
         $httpResponse->method('getStatusCode')->willReturn(200);
         $httpResponse->method('getContent')->willReturn('%PDF-1.4 proxied');
         $httpResponse->method('getHeaders')->willReturn(['content-type' => ['text/plain']]);
@@ -619,7 +623,7 @@ final class SignatureControllerTest extends TestCase
 
     public function testProxyWithUpstreamHttpErrorReturns502(): void
     {
-        $httpResponse = $this->createMock(\Symfony\Contracts\HttpClient\ResponseInterface::class);
+        $httpResponse = $this->createMock(ResponseInterface::class);
         $httpResponse->method('getStatusCode')->willReturn(500);
 
         $httpClient = $this->createMock(HttpClientInterface::class);

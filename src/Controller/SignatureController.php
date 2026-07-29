@@ -50,6 +50,7 @@ final class SignatureController extends AbstractController
      * @param string $examplePdfUrl Default PDF URL for form preload when not POST
      * @param bool $auditFillFromRequest When true, merge IP, user_agent, submitted_at into model audit before dispatch
      * @param LoggerInterface $logger Logger; proxy fetch failures are logged for debugging (502 cause)
+     * @param float $httpTimeout HTTP timeout for proxy PDF fetches (from nowo_pdf_signable.http_timeout)
      */
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
@@ -63,6 +64,8 @@ final class SignatureController extends AbstractController
         private readonly bool $auditFillFromRequest,
         private readonly LoggerInterface $logger,
         private readonly ?HttpClientInterface $httpClient = null,
+        #[Autowire(param: 'nowo_pdf_signable.http_timeout')]
+        private readonly float $httpTimeout = 30.0,
     ) {
     }
 
@@ -202,8 +205,10 @@ final class SignatureController extends AbstractController
         }
 
         try {
+            $timeout  = max(0.1, $this->httpTimeout);
             $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
-                'timeout'       => 30,
+                'timeout'       => $timeout,
+                'max_duration'  => $timeout,
                 'max_redirects' => 5,
                 'headers'       => [
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',

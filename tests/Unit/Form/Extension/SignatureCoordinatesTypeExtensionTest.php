@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nowo\PdfSignableBundle\Tests\Form\Extension;
 
 use Nowo\PdfSignableBundle\Form\Extension\SignatureCoordinatesTypeExtension;
+use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -18,7 +19,7 @@ final class SignatureCoordinatesTypeExtensionTest extends TestCase
         $arr   = is_array($types) ? $types : iterator_to_array($types);
 
         self::assertCount(1, $arr);
-        self::assertSame(\Nowo\PdfSignableBundle\Form\SignatureCoordinatesType::class, $arr[0]);
+        self::assertSame(SignatureCoordinatesType::class, $arr[0]);
     }
 
     public function testConfigureOptionsSetsDefaultsFromConstructor(): void

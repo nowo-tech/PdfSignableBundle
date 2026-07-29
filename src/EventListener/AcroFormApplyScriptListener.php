@@ -43,6 +43,7 @@ final class AcroFormApplyScriptListener
      * @param string|null $applyScript Absolute path to the Python script (from acroform.apply_script)
      * @param string $applyScriptCommand Executable to run the script (e.g. python3 or /usr/bin/python3)
      * @param LoggerInterface|null $logger Optional logger for apply flow (script run, success, stderr)
+     * @param float $processTimeout Process timeout/idle timeout in seconds (from nowo_pdf_signable.process_timeout)
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.acroform.apply_script')]
@@ -52,6 +53,8 @@ final class AcroFormApplyScriptListener
         private readonly ?LoggerInterface $logger = null,
         private readonly ?Closure $createTempFile = null,
         private readonly ?Closure $writeFile = null,
+        #[Autowire(param: 'nowo_pdf_signable.process_timeout')]
+        private readonly float $processTimeout = 60.0,
     ) {
     }
 
@@ -114,8 +117,10 @@ final class AcroFormApplyScriptListener
             if ($event->isValidateOnly()) {
                 $procArgs[] = '--dry-run';
             }
-            $proc = new Process($procArgs, null, PythonProcessEnv::build());
-            $proc->setTimeout(60);
+            $proc    = new Process($procArgs, null, PythonProcessEnv::build());
+            $timeout = max(0.1, $this->processTimeout);
+            $proc->setTimeout($timeout);
+            $proc->setIdleTimeout($timeout);
             $proc->run();
 
             if (!$proc->isSuccessful()) {

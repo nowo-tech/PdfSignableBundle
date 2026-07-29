@@ -23,7 +23,7 @@ final class DependencyCheckListenerTest extends TestCase
         $request->attributes->set('_route', 'nowo_pdf_signable_index');
         $event = new ControllerEvent(
             $this->createMock(HttpKernelInterface::class),
-            static fn () => null,
+            static fn (): null => null,
             $request,
             HttpKernelInterface::MAIN_REQUEST,
         );
@@ -44,7 +44,7 @@ final class DependencyCheckListenerTest extends TestCase
         $request->attributes->set('_route', 'nowo_pdf_signable_index');
         $event = new ControllerEvent(
             $this->createMock(HttpKernelInterface::class),
-            static fn () => null,
+            static fn (): null => null,
             $request,
             HttpKernelInterface::MAIN_REQUEST,
         );
@@ -64,7 +64,7 @@ final class DependencyCheckListenerTest extends TestCase
         $request->attributes->set('_route', 'app_home');
         $event = new ControllerEvent(
             $this->createMock(HttpKernelInterface::class),
-            static fn () => null,
+            static fn (): null => null,
             $request,
             HttpKernelInterface::MAIN_REQUEST,
         );
@@ -83,7 +83,7 @@ final class DependencyCheckListenerTest extends TestCase
         $request  = Request::create('/', 'GET');
         $event    = new ControllerEvent(
             $this->createMock(HttpKernelInterface::class),
-            static fn () => null,
+            static fn (): null => null,
             $request,
             HttpKernelInterface::MAIN_REQUEST,
         );
@@ -106,7 +106,7 @@ final class DependencyCheckListenerTest extends TestCase
         $request->attributes->set('_route', 'nowo_pdf_signable_index');
         $event = new ControllerEvent(
             $this->createMock(HttpKernelInterface::class),
-            static fn () => null,
+            static fn (): null => null,
             $request,
             HttpKernelInterface::MAIN_REQUEST,
         );
@@ -129,7 +129,7 @@ final class DependencyCheckListenerTest extends TestCase
         $request->attributes->set('_route', 'nowo_pdf_signable_acroform_overrides');
         $event = new ControllerEvent(
             $this->createMock(HttpKernelInterface::class),
-            static fn () => null,
+            static fn (): null => null,
             $request,
             HttpKernelInterface::MAIN_REQUEST,
         );
@@ -154,7 +154,7 @@ final class DependencyCheckListenerTest extends TestCase
         ]);
         $event = new ControllerEvent(
             $this->createMock(HttpKernelInterface::class),
-            static fn () => null,
+            static fn (): null => null,
             $request,
             HttpKernelInterface::MAIN_REQUEST,
         );

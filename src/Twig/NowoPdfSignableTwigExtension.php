@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nowo\PdfSignableBundle\Twig;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\AbstractExtension;
@@ -162,7 +163,7 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
     public function shouldIncludeAssets(): bool
     {
         $request = $this->requestStack->getCurrentRequest();
-        if (!$request instanceof \Symfony\Component\HttpFoundation\Request) {
+        if (!$request instanceof Request) {
             return true;
         }
         if ($request->attributes->get(self::REQUEST_ATTR)) {

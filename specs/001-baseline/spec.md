@@ -167,7 +167,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 - **FR-UI-SHR-003**: `url-and-scale.ts` MUST resolve proxy URLs and viewport scale factors.
 - **FR-UI-SHR-004**: `zoom-toolbar.ts` MUST provide zoom in/out/fit controls with i18n hooks.
 - **FR-UI-SHR-005**: `shared/touch.ts` MUST implement pinch zoom and two-finger pan.
-- **FR-UI-SHR-006**: `logger.ts` / `pdfSignableLogger.ts` MUST gate console logging on `debug` config.
+- **FR-UI-SHR-006**: `logger.ts` / `pdf-signable-logger.ts` MUST gate console logging on `debug` config.
 - **FR-UI-SHR-007**: `pdf-signable.scss` MUST style viewer, boxes, grid guides, and toolbars.
 - **FR-BUILD-001**: Maintainers MUST rebuild `Resources/public/js/pdf-signable.js`, `pdf-signable.css`, and `acroform-editor.js` when TypeScript/SCSS sources change (Vitest covers co-located `*.test.ts`).
 

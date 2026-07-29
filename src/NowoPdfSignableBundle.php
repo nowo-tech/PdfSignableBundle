@@ -38,11 +38,13 @@ final class NowoPdfSignableBundle extends Bundle
 
     /**
      * Returns the container extension (PdfSignableExtension).
-     *
-     * @return ExtensionInterface The bundle extension instance
      */
     public function getContainerExtension(): ExtensionInterface
     {
-        return $this->extension ??= new PdfSignableExtension();
+        if (!$this->extension instanceof ExtensionInterface) {
+            $this->extension = new PdfSignableExtension();
+        }
+
+        return $this->extension;
     }
 }

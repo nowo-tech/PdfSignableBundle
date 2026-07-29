@@ -18,26 +18,27 @@ final class PythonProcessEnvTest extends TestCase
 
     public function testBuildUnsetsPythonEnvVars(): void
     {
-        putenv('PYTHONPATH=/tmp/custom');
-        putenv('VIRTUAL_ENV=/venv');
+        $env = PythonProcessEnv::build([
+            'PYTHONPATH'       => '/tmp/custom',
+            'VIRTUAL_ENV'      => '/venv',
+            'PYTHONHOME'       => '/home',
+            'PYTHONUSERBASE'   => '/user',
+            'PYTHONNOUSERSITE' => '1',
+            'PATH'             => '/custom/bin',
+            'KEEP'             => 'yes',
+        ]);
 
-        try {
-            $env = PythonProcessEnv::build();
-
-            self::assertArrayNotHasKey('PYTHONPATH', $env);
-            self::assertArrayNotHasKey('VIRTUAL_ENV', $env);
-            self::assertArrayNotHasKey('PYTHONHOME', $env);
-            self::assertArrayNotHasKey('PYTHONUSERBASE', $env);
-            self::assertArrayNotHasKey('PYTHONNOUSERSITE', $env);
-        } finally {
-            putenv('PYTHONPATH');
-            putenv('VIRTUAL_ENV');
-        }
+        self::assertArrayNotHasKey('PYTHONPATH', $env);
+        self::assertArrayNotHasKey('VIRTUAL_ENV', $env);
+        self::assertArrayNotHasKey('PYTHONHOME', $env);
+        self::assertArrayNotHasKey('PYTHONUSERBASE', $env);
+        self::assertArrayNotHasKey('PYTHONNOUSERSITE', $env);
+        self::assertSame('yes', $env['KEEP']);
     }
 
     public function testBuildIncludesPath(): void
     {
-        $env = PythonProcessEnv::build();
+        $env = PythonProcessEnv::build(['FOO' => 'bar']);
 
         self::assertArrayHasKey('PATH', $env);
         self::assertStringStartsWith('/usr/local/bin:/usr/bin:/bin', $env['PATH']);
@@ -45,42 +46,27 @@ final class PythonProcessEnvTest extends TestCase
 
     public function testBuildAppendsExistingPath(): void
     {
-        putenv('PATH=/usr/local/sbin:/custom/bin');
+        $env = PythonProcessEnv::build(['PATH' => '/usr/local/sbin:/custom/bin']);
 
-        try {
-            $env = PythonProcessEnv::build();
-
-            self::assertStringContainsString('/usr/local/bin:/usr/bin:/bin', $env['PATH']);
-            self::assertStringContainsString('/usr/local/sbin:/custom/bin', $env['PATH']);
-        } finally {
-            putenv('PATH');
-        }
+        self::assertStringContainsString('/usr/local/bin:/usr/bin:/bin', $env['PATH']);
+        self::assertStringContainsString('/usr/local/sbin:/custom/bin', $env['PATH']);
     }
 
     public function testBuildFiltersFalseValues(): void
     {
-        $env = PythonProcessEnv::build();
+        $env = PythonProcessEnv::build(['OK' => '1', 'BAD' => false]);
 
         foreach ($env as $value) {
             self::assertNotFalse($value);
         }
+        self::assertArrayNotHasKey('BAD', $env);
     }
 
     public function testBuildWhenPathIsUnsetStillPrependsSystemPath(): void
     {
-        $originalPath = getenv('PATH');
-        if ($originalPath !== false) {
-            putenv('PATH');
-        }
-        try {
-            $env = PythonProcessEnv::build();
-            self::assertArrayHasKey('PATH', $env);
-            self::assertStringStartsWith('/usr/local/bin:/usr/bin:/bin', $env['PATH']);
-        } finally {
-            if ($originalPath !== false) {
-                putenv('PATH=' . $originalPath);
-            }
-        }
+        $env = PythonProcessEnv::build(['KEEP' => '1']);
+        self::assertArrayHasKey('PATH', $env);
+        self::assertStringStartsWith('/usr/local/bin:/usr/bin:/bin', $env['PATH']);
     }
 
     public function testBuildReturnsEmptyArrayWhenSourceEnvIsNotArray(): void

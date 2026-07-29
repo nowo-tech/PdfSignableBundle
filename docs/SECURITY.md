@@ -3,9 +3,15 @@
 ## Security considerations for integrators
 
 - **PDF proxy**
-  - When `proxy_enabled` is true, the bundle fetches external PDFs. Use **proxy_url_allowlist** to restrict which URLs can be requested (substring or regex). Empty allowlist = no restriction (suitable only for trusted environments).
+  - When `proxy_enabled` is true, the bundle fetches external PDFs. Use **proxy_url_allowlist** to restrict which URLs can be requested (substring or regex).
+  - Set **`proxy_url_allowlist_required: true`** in production so an empty allowlist fails container compilation. Default remains `false` for BC / local demos only.
   - The proxy **blocks private/local URLs** (SSRF mitigation): 127.0.0.0/8, ::1, 10.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16 and hostname `localhost`. Requests to these hosts return 403.
   - Proxy error responses do not expose exception messages to the client (no internal paths or server details).
+
+- **AcroForm JSON routes**
+  - When `acroform.enabled` is true, `/pdf-signable/acroform/*` endpoints mutate session (or custom storage) and may run Process scripts. The bundle does **not** attach `IsGranted` by default (form/API surface for the host app).
+  - **Host must** protect these routes with firewall `access_control` / authentication appropriate for your threat model. Prefer CSRF tokens or same-site session cookies for mutating POSTs/DELETEs.
+  - Keep `allow_pdf_modify: false` unless you need PDF rewrite; set script timeouts via `process_timeout` / `process_script_timeout`.
 
 - **Form and viewer**
   - Signature box names and coordinates are user input. The bundle form theme and JavaScript use **escaped output** (e.g. `escapeHtml` for overlay labels) when rendering user-controlled data into the DOM. Do not disable escaping in templates that display user data.
@@ -54,3 +60,12 @@ Before tagging a release, confirm:
 
 Record confirmation in the release PR or tag notes.
 
+## AI security audit
+
+| Field | Value |
+| ----- | ----- |
+| Date | 2026-07-29 |
+| Grade | Pass (conditional) |
+| Overall risk | Medium |
+| Residual | Empty allowlist allowed when `proxy_url_allowlist_required: false`; AcroForm routes require host firewall/CSRF |
+| Monorepo | See `BUNDLES_SECURITY_ANALYSIS.md` (PdfSignableBundle) |

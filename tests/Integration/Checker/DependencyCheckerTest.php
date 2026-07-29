@@ -9,12 +9,14 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
+use function in_array;
+
 final class DependencyCheckerTest extends TestCase
 {
     public function testCheckReturnsFailuresAndWarningsKeys(): void
     {
         $params = $this->createMock(ParameterBagInterface::class);
-        $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(false);
+        $params->method('has')->willReturnCallback(static fn (string $key): bool => $key === 'nowo_pdf_signable.dependency_check_timeout');
         $kernel = $this->createMock(KernelInterface::class);
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
 
@@ -30,7 +32,7 @@ final class DependencyCheckerTest extends TestCase
     public function testCheckWhenAcroFormDisabledDoesNotAddAcroFormFailures(): void
     {
         $params = $this->createMock(ParameterBagInterface::class);
-        $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(false);
+        $params->method('has')->willReturnCallback(static fn (string $key): bool => $key === 'nowo_pdf_signable.dependency_check_timeout');
         $kernel = $this->createMock(KernelInterface::class);
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
 
@@ -46,7 +48,10 @@ final class DependencyCheckerTest extends TestCase
     public function testCheckWhenAcroFormEnabledAndScriptMissingAddsFailure(): void
     {
         $params = $this->createMock(ParameterBagInterface::class);
-        $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(true);
+        $params->method('has')->willReturnCallback(static fn (string $key): bool => in_array($key, [
+            'nowo_pdf_signable.acroform.enabled',
+            'nowo_pdf_signable.dependency_check_timeout',
+        ], true));
         $params->method('get')->willReturnMap([
             ['nowo_pdf_signable.acroform.enabled', true],
             ['nowo_pdf_signable.acroform.apply_script', '/nonexistent/apply_script.py'],
@@ -54,6 +59,7 @@ final class DependencyCheckerTest extends TestCase
             ['nowo_pdf_signable.acroform.fields_extractor_script', ''],
             ['nowo_pdf_signable.acroform.apply_script_command', 'python3'],
             ['nowo_pdf_signable.acroform.process_script_command', 'python3'],
+            ['nowo_pdf_signable.dependency_check_timeout', 5.0],
         ]);
         $kernel = $this->createMock(KernelInterface::class);
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
@@ -78,7 +84,7 @@ final class DependencyCheckerTest extends TestCase
     public function testCheckWhenBundlePublicDirMissingAddsWarning(): void
     {
         $params = $this->createMock(ParameterBagInterface::class);
-        $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(false);
+        $params->method('has')->willReturnCallback(static fn (string $key): bool => $key === 'nowo_pdf_signable.dependency_check_timeout');
         $kernel     = $this->createMock(KernelInterface::class);
         $projectDir = sys_get_temp_dir() . '/pdfsignable-test-' . bin2hex(random_bytes(4));
         self::assertTrue(mkdir($projectDir, 0o755, true));
@@ -106,7 +112,7 @@ final class DependencyCheckerTest extends TestCase
     public function testCheckRequiredExtensionsInFailureMessageWhenMissing(): void
     {
         $params = $this->createMock(ParameterBagInterface::class);
-        $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(false);
+        $params->method('has')->willReturnCallback(static fn (string $key): bool => $key === 'nowo_pdf_signable.dependency_check_timeout');
         $kernel = $this->createMock(KernelInterface::class);
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
 
@@ -130,7 +136,7 @@ final class DependencyCheckerTest extends TestCase
     public function testCheckWhenAcroFormEnabledButAllScriptPathsEmptySkipsScriptChecks(): void
     {
         $params = $this->createMock(ParameterBagInterface::class);
-        $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(true);
+        $params->method('has')->willReturnCallback(static fn (string $key): bool => in_array($key, ['nowo_pdf_signable.acroform.enabled', 'nowo_pdf_signable.dependency_check_timeout'], true));
         $params->method('get')->willReturnMap([
             ['nowo_pdf_signable.acroform.enabled', true],
             ['nowo_pdf_signable.acroform.apply_script', ''],
@@ -157,7 +163,7 @@ final class DependencyCheckerTest extends TestCase
         self::assertNotFalse($tmpFile);
         try {
             $params = $this->createMock(ParameterBagInterface::class);
-            $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(true);
+            $params->method('has')->willReturnCallback(static fn (string $key): bool => in_array($key, ['nowo_pdf_signable.acroform.enabled', 'nowo_pdf_signable.dependency_check_timeout'], true));
             $params->method('get')->willReturnMap([
                 ['nowo_pdf_signable.acroform.enabled', true],
                 ['nowo_pdf_signable.acroform.apply_script', $tmpFile],
@@ -197,7 +203,7 @@ final class DependencyCheckerTest extends TestCase
 
         try {
             $params = $this->createMock(ParameterBagInterface::class);
-            $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(false);
+            $params->method('has')->willReturnCallback(static fn (string $key): bool => $key === 'nowo_pdf_signable.dependency_check_timeout');
             $kernel = $this->createMock(KernelInterface::class);
             $kernel->method('getProjectDir')->willReturn($projectDir);
 
@@ -235,7 +241,7 @@ final class DependencyCheckerTest extends TestCase
 
         try {
             $params = $this->createMock(ParameterBagInterface::class);
-            $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(false);
+            $params->method('has')->willReturnCallback(static fn (string $key): bool => $key === 'nowo_pdf_signable.dependency_check_timeout');
             $kernel = $this->createMock(KernelInterface::class);
             $kernel->method('getProjectDir')->willReturn($projectDir);
 
@@ -274,7 +280,7 @@ final class DependencyCheckerTest extends TestCase
     public function testCheckAddsFailureWhenPhpVersionBelowMinimum(): void
     {
         $params = $this->createMock(ParameterBagInterface::class);
-        $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(false);
+        $params->method('has')->willReturnCallback(static fn (string $key): bool => $key === 'nowo_pdf_signable.dependency_check_timeout');
         $kernel = $this->createMock(KernelInterface::class);
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
 
@@ -288,7 +294,7 @@ final class DependencyCheckerTest extends TestCase
     public function testCheckAddsFailureWhenRequiredExtensionMissingViaInjectedChecker(): void
     {
         $params = $this->createMock(ParameterBagInterface::class);
-        $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(false);
+        $params->method('has')->willReturnCallback(static fn (string $key): bool => $key === 'nowo_pdf_signable.dependency_check_timeout');
         $kernel = $this->createMock(KernelInterface::class);
         $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
 
@@ -308,7 +314,7 @@ final class DependencyCheckerTest extends TestCase
         self::assertNotFalse($tmpFile);
         try {
             $params = $this->createMock(ParameterBagInterface::class);
-            $params->method('has')->with('nowo_pdf_signable.acroform.enabled')->willReturn(true);
+            $params->method('has')->willReturnCallback(static fn (string $key): bool => in_array($key, ['nowo_pdf_signable.acroform.enabled', 'nowo_pdf_signable.dependency_check_timeout'], true));
             $params->method('get')->willReturnMap([
                 ['nowo_pdf_signable.acroform.enabled', true],
                 ['nowo_pdf_signable.acroform.apply_script', $tmpFile],

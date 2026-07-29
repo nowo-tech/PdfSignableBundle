@@ -38,8 +38,13 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
 
         $container->setParameter(Configuration::ALIAS . '.proxy_enabled', $config['proxy_enabled'] ?? true);
         $container->setParameter(Configuration::ALIAS . '.proxy_url_allowlist', $config['proxy_url_allowlist'] ?? []);
+        $container->setParameter(Configuration::ALIAS . '.proxy_url_allowlist_required', $config['proxy_url_allowlist_required'] ?? false);
         $container->setParameter(Configuration::ALIAS . '.example_pdf_url', $config['example_pdf_url'] ?? '');
         $container->setParameter(Configuration::ALIAS . '.debug', $config['debug'] ?? false);
+        $container->setParameter(Configuration::ALIAS . '.http_timeout', $config['http_timeout'] ?? 30.0);
+        $container->setParameter(Configuration::ALIAS . '.process_timeout', $config['process_timeout'] ?? 60.0);
+        $container->setParameter(Configuration::ALIAS . '.process_script_timeout', $config['process_script_timeout'] ?? 120.0);
+        $container->setParameter(Configuration::ALIAS . '.dependency_check_timeout', $config['dependency_check_timeout'] ?? 5.0);
 
         $signature         = $config['signature'] ?? [];
         $signatureDefault  = $signature['default_profile'] ?? 'default';
@@ -138,6 +143,13 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
                 'translator' => [
                     'paths' => [
                         $bundleDir . '/src/Resources/translations',
+                    ],
+                ],
+                'assets' => [
+                    'packages' => [
+                        Configuration::ALIAS => [
+                            'base_path' => '/bundles/nowopdfsignable',
+                        ],
                     ],
                 ],
             ]);

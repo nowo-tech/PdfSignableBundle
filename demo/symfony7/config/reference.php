@@ -745,6 +745,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     proxy_url_allowlist?: list<scalar|Param|null>,
  *     example_pdf_url?: scalar|Param|null, // Default PDF URL for demo/preload // Default: "https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf"
  *     debug?: bool|Param, // Enable console logging in the browser (PDF viewer and signature boxes) // Default: false
+ *     http_timeout?: float|Param, // HTTP timeout in seconds for proxy / external PDF fetches (HttpClient). Keep below PHP max_execution_time / FrankenPHP write timeout. // Default: 30.0
+ *     process_timeout?: float|Param, // Symfony Process timeout (and idle timeout) in seconds for AcroForm extract/apply scripts. Keep below PHP max_execution_time / FrankenPHP write timeout. // Default: 60.0
+ *     process_script_timeout?: float|Param, // Symfony Process timeout (and idle timeout) in seconds for acroform.process_script. Keep below PHP max_execution_time / FrankenPHP write timeout. // Default: 120.0
+ *     dependency_check_timeout?: float|Param, // Symfony Process timeout in seconds for optional pypdf probe during dependency checks. // Default: 5.0
  *     signature?: array{ // Signature: global defaults (box dimensions, lock) and profiles by name. Default profile is "default".
  *         default_profile?: scalar|Param|null, // Default profile when form option config is not set (e.g. "default"). Resolved from signature.profiles[name]. Legacy key: default_config_alias. // Default: "default"
  *         default_box_width?: float|Param, // Default width for new signature boxes (in form unit). Global default; overridable per profile. // Default: null

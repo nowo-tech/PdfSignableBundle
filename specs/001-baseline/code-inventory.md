@@ -80,7 +80,7 @@ This file proves that **every production source artifact** under `src/` is refer
 | `shared/zoom-toolbar.ts` | Zoom toolbar | FR-UI-SHR-004 |
 | `shared/touch.ts` | Shared touch helpers | FR-UI-SHR-005 |
 | `logger.ts` | Browser logger | FR-UI-SHR-006 |
-| `pdfSignableLogger.ts` | Namespaced logger | FR-UI-SHR-006 |
+| `pdf-signable-logger.ts` | Namespaced logger | FR-UI-SHR-006 |
 | `pdfjs-dist.d.ts` | PDF.js type shim | FR-UI-SHR-002 |
 | `pdf-signable.scss` | Viewer + overlay styles | FR-UI-SHR-007 |
 

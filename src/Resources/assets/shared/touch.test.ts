@@ -14,7 +14,7 @@ function touchEvent(type: string, a: { x: number; y: number }, b: { x: number; y
 }
 
 describe('shared/touch', () => {
-  it('no envuelve si container es null', () => {
+  it('does not wrap when container is null', () => {
     const controller = createTouchController(null);
     const canvasWrapper = document.createElement('div');
 
@@ -24,7 +24,7 @@ describe('shared/touch', () => {
     expect(controller.getScale()).toBe(1);
   });
 
-  it('envuelve, procesa pinch y permite reset', () => {
+  it('wraps, handles pinch, and allows reset', () => {
     const container = document.createElement('div');
     const canvasWrapper = document.createElement('div');
     container.appendChild(canvasWrapper);

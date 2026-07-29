@@ -69,8 +69,6 @@ class SignatureCoordinatesModel
      * Sets the PDF document URL.
      *
      * @param string|null $pdfUrl PDF URL or null to clear
-     *
-     * @return $this
      */
     public function setPdfUrl(?string $pdfUrl): self
     {
@@ -93,8 +91,6 @@ class SignatureCoordinatesModel
      * Sets the measurement unit.
      *
      * @param string $unit One of UNIT_* constants (pt, mm, cm, px, in)
-     *
-     * @return $this
      */
     public function setUnit(string $unit): self
     {
@@ -117,8 +113,6 @@ class SignatureCoordinatesModel
      * Sets the coordinate origin.
      *
      * @param string $origin One of ORIGIN_* constants (top_left, bottom_left, top_right, bottom_right)
-     *
-     * @return $this
      */
     public function setOrigin(string $origin): self
     {
@@ -141,8 +135,6 @@ class SignatureCoordinatesModel
      * Sets the list of signature boxes.
      *
      * @param SignatureBoxModel[] $signatureBoxes Array of box models
-     *
-     * @return $this
      */
     public function setSignatureBoxes(array $signatureBoxes): self
     {
@@ -155,8 +147,6 @@ class SignatureCoordinatesModel
      * Appends a signature box to the collection.
      *
      * @param SignatureBoxModel $box Box to add
-     *
-     * @return $this
      */
     public function addSignatureBox(SignatureBoxModel $box): self
     {
@@ -175,8 +165,6 @@ class SignatureCoordinatesModel
 
     /**
      * Sets the user's explicit consent to the legal effect of the signature.
-     *
-     * @return $this
      */
     public function setSigningConsent(bool $signingConsent): self
     {
@@ -199,8 +187,6 @@ class SignatureCoordinatesModel
      * Sets audit metadata (e.g. from Request on submit: signed_at, ip, user_agent).
      *
      * @param array<string, mixed> $auditMetadata
-     *
-     * @return $this
      */
     public function setAuditMetadata(array $auditMetadata): self
     {

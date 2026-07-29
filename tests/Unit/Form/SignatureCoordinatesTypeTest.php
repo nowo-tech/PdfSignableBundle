@@ -12,11 +12,15 @@ use ReflectionMethod;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
+use Symfony\Component\Form\FormExtensionInterface;
+use Symfony\Component\Form\FormFactoryBuilder;
 use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Validation;
 
 /**
@@ -27,7 +31,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     /**
      * Registers SignatureBoxType, SignatureCoordinatesType (with a named config) and the validator extension.
      *
-     * @return array<int, \Symfony\Component\Form\FormExtensionInterface>
+     * @return array<int, FormExtensionInterface>
      */
     protected function getExtensions(): array
     {
@@ -90,8 +94,8 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     {
         $exampleUrl      = 'https://example.com/fallback.pdf';
         $typeWithExample = new SignatureCoordinatesType($exampleUrl, []);
-        $factory         = (new \Symfony\Component\Form\FormFactoryBuilder())
-            ->addExtension(new \Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension())
+        $factory         = (new FormFactoryBuilder())
+            ->addExtension(new HttpFoundationExtension())
             ->addExtension(new PreloadedExtension([new SignatureBoxType(), $typeWithExample], []))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
@@ -775,7 +779,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $model = new SignatureCoordinatesModel();
         $model->setPdfUrl('https://example.com/doc.pdf');
         $form = $this->factory->create(SignatureCoordinatesType::class, $model, [
-            'box_constraints' => [new \Symfony\Component\Validator\Constraints\NotNull()],
+            'box_constraints' => [new NotNull()],
         ]);
         $form->submit([
             'pdfUrl'         => 'https://example.com/doc.pdf',
@@ -902,7 +906,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
     {
         $exampleUrl      = 'https://example.com/fallback.pdf';
         $typeWithExample = new SignatureCoordinatesType($exampleUrl, []);
-        $factory         = (new \Symfony\Component\Form\FormFactoryBuilder())
+        $factory         = (new FormFactoryBuilder())
             ->addExtension(new PreloadedExtension([new SignatureBoxType(), $typeWithExample], []))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();

@@ -6,6 +6,7 @@ namespace Nowo\PdfSignableBundle\Tests\DependencyInjection;
 
 use Nowo\PdfSignableBundle\DependencyInjection\Configuration;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 
 /**
@@ -21,6 +22,7 @@ final class ConfigurationTest extends TestCase
 
         self::assertTrue($config['proxy_enabled']);
         self::assertSame([], $config['proxy_url_allowlist']);
+        self::assertFalse($config['proxy_url_allowlist_required']);
         self::assertIsString($config['example_pdf_url']);
         self::assertNotEmpty($config['example_pdf_url']);
     }
@@ -324,7 +326,7 @@ final class ConfigurationTest extends TestCase
 
     public function testInvalidDefaultProfileThrowsWhenProfilesNonEmpty(): void
     {
-        $this->expectException(\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException::class);
+        $this->expectException(InvalidConfigurationException::class);
 
         $configuration = new Configuration();
         $processor     = new Processor();

@@ -6,6 +6,8 @@
 nowo_pdf_signable:
     # Enable the proxy endpoint so the browser can load external PDFs without CORS.
     proxy_enabled: true
+    # Production: set proxy_url_allowlist_required: true and a non-empty proxy_url_allowlist.
+    proxy_url_allowlist_required: false
 
     # When non-empty, the proxy only fetches URLs matching one entry. Each entry: substring of URL, or regex if prefixed with # (e.g. #^https://example\.com/#).
     # proxy_url_allowlist: []

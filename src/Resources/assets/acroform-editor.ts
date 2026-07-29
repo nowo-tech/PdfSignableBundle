@@ -7,7 +7,7 @@ export type { LabelChoice } from './acroform-editor/index';
 import type { AcroFormFieldDescriptor, LabelChoice } from './acroform-editor/index';
 import { getConfig, FIELD_NAME_VALUE_OTHER, DEFAULT_STRINGS, escapeAttr } from './acroform-editor/index';
 import { createBundleLogger } from './logger';
-import { getLogger, setBundleLogger } from './pdfSignableLogger';
+import { getLogger, setBundleLogger } from './pdf-signable-logger';
 
 declare const __PDF_SIGNABLE_BUILD_TIME__: string;
 

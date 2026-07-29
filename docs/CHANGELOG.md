@@ -1,5 +1,120 @@
 # Changelog
 
+## Table of contents
+
+- [[Unreleased]](#unreleased)
+- [[3.0.7] - 2026-07-29](#307---2026-07-29)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Developer](#developer)
+- [[3.0.6] - 2026-07-22](#306---2026-07-22)
+  - [Changed](#changed)
+  - [Developer](#developer)
+- [[3.0.5] - 2026-07-18](#305---2026-07-18)
+  - [Changed](#changed)
+  - [Developer](#developer)
+- [[3.0.4] - 2026-07-16](#304---2026-07-16)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Developer](#developer)
+- [[3.0.3] - 2026-07-09](#303---2026-07-09)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Developer](#developer)
+- [[3.0.2] - 2026-07-01](#302---2026-07-01)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Developer](#developer)
+- [[3.0.1] - 2026-07-01](#301---2026-07-01)
+  - [Fixed](#fixed)
+  - [Changed](#changed)
+  - [Developer](#developer)
+- [[3.0.0] - 2026-07-01](#300---2026-07-01)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Developer](#developer)
+- [[2.0.7] - 2026-07-01](#207---2026-07-01)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Developer](#developer)
+- [[2.0.6] - 2026-05-14](#206---2026-05-14)
+  - [Changed](#changed)
+  - [Developer](#developer)
+- [[2.0.5] - 2026-04-15](#205---2026-04-15)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Demo (Symfony 7)](#demo-symfony-7)
+  - [Documentation](#documentation)
+  - [Developer](#developer)
+- [[2.0.4] - 2026-03-02](#204---2026-03-02)
+  - [Changed](#changed)
+  - [Developer](#developer)
+- [[2.0.3] - 2026-02-16](#203---2026-02-16)
+  - [Changed](#changed)
+- [[2.0.2] - 2026-02-16](#202---2026-02-16)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Documentation](#documentation)
+- [[2.0.1] - 2026-02-16](#201---2026-02-16)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Documentation](#documentation)
+- [[2.0.0] - 2026-02-16](#200---2026-02-16)
+  - [Breaking](#breaking)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Documentation](#documentation)
+- [[1.5.4] - 2026-02-11](#154---2026-02-11)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Developer](#developer)
+- [[1.5.3] - 2026-02-10](#153---2026-02-10)
+  - [Added](#added)
+  - [Fixed](#fixed)
+  - [Developer](#developer)
+- [[1.5.2] - 2026-02-10](#152---2026-02-10)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Developer](#developer)
+- [[1.5.1] - 2026-02-11](#151---2026-02-11)
+  - [Fixed](#fixed)
+  - [Changed](#changed)
+  - [Developer](#developer)
+- [[1.5.0] - 2026-02-10](#150---2026-02-10)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Developer](#developer)
+- [[1.4.1] - 2026-02-09](#141---2026-02-09)
+  - [Fixed](#fixed)
+- [[1.4.0] - 2026-02-09](#140---2026-02-09)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Developer](#developer)
+- [[1.3.0] - 2026-02-09](#130---2026-02-09)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Fixed](#fixed)
+  - [Developer](#developer)
+- [[1.2.0] - 2026-02-10](#120---2026-02-10)
+  - [Added](#added)
+  - [Fixed](#fixed)
+- [[1.1.0] - 2026-02-10](#110---2026-02-10)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Compatibility](#compatibility)
+- [[1.0.0] - 2026-02-09](#100---2026-02-09)
+  - [Added](#added)
+  - [Changed](#changed)
+  - [Compatibility](#compatibility)
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -7,17 +122,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [3.0.7] - 2026-07-29
+
 ### Added
 
-- (None yet.)
+- `proxy_url_allowlist_required` compile-time guard (production hardening for SSRF allowlist).
+- Named Symfony asset package `nowo_pdf_signable` (`base_path` `/bundles/nowopdfsignable`).
+- Config timeouts: `http_timeout`, `process_timeout`, `process_script_timeout`, `dependency_check_timeout` (FrankenPHP-safe).
+- Makefile targets: `check-open-prs`, `coverage-check`, `demo-smoke`; Dependabot `npm` ecosystem.
+- FrankenPHP Friendly Worker Mode banner in README; TOCs on long docs; Symfony 8 demo on PHP 8.5.
+- Demo entrypoints select classic vs worker via `FRANKENPHP_MODE` (default `worker`).
+- **REQ-CS-005:** `phpstan.neon.dist` includes `nowo-tech/phpstan-frankenphp` classic + worker rulesets.
 
 ### Changed
 
-- (None yet.)
+- Invalid `#regex` entries in `proxy_url_allowlist` fail container compilation (previously debug-only warnings).
+- Form theme assets use `asset('js/…', 'nowo_pdf_signable')` instead of hard-coded `bundles/nowopdfsignable/…` paths.
+- PHPStan: empty `ignoreErrors` / no baseline (REQ-CS-006); `SYMFONY_DEPRECATIONS_HELPER=max[direct]=0`.
 
 ### Fixed
 
-- (None yet.)
+- AcroFormOverridesController test factory arity after timeout constructor arguments.
+- TypeScript source rename `pdfSignableLogger.ts` → `pdf-signable-logger.ts`; English test descriptions.
+
+### Developer
+
+- CHANGELOG, UPGRADING, and RELEASE checklist updated for 3.0.7.
+
+For upgrade steps from 3.0.6, see [UPGRADING](UPGRADING.md).
 
 ---
 
@@ -618,30 +752,31 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/pdfSignableBundle/compare/v3.0.6...HEAD
-[3.0.6]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.6
-[3.0.5]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.5
-[3.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.4
-[3.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.3
-[3.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.2
-[3.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.1
-[3.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v3.0.0
-[2.0.7]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.7
-[2.0.6]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.6
-[2.0.5]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.5
-[2.0.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.4
-[2.0.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.3
-[2.0.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.2
-[2.0.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.1
-[2.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v2.0.0
-[1.5.4]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.4
-[1.5.3]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.3
-[1.5.2]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.2
-[1.5.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.1
-[1.5.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.5.0
-[1.4.1]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.1
-[1.4.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.4.0
-[1.3.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.3.0
-[1.2.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.2.0
-[1.1.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.1.0
-[1.0.0]: https://github.com/nowo-tech/pdfSignableBundle/releases/tag/v1.0.0
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.0.7...HEAD
+[3.0.7]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.0.6...v3.0.7
+[3.0.6]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.6
+[3.0.5]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.5
+[3.0.4]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.4
+[3.0.3]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.3
+[3.0.2]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.2
+[3.0.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.1
+[3.0.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.0
+[2.0.7]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v2.0.7
+[2.0.6]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v2.0.6
+[2.0.5]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v2.0.5
+[2.0.4]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v2.0.4
+[2.0.3]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v2.0.3
+[2.0.2]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v2.0.2
+[2.0.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v2.0.1
+[2.0.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v2.0.0
+[1.5.4]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.5.4
+[1.5.3]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.5.3
+[1.5.2]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.5.2
+[1.5.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.5.1
+[1.5.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.5.0
+[1.4.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.4.1
+[1.4.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.4.0
+[1.3.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.3.0
+[1.2.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.2.0
+[1.1.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.1.0
+[1.0.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v1.0.0

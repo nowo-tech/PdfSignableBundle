@@ -229,7 +229,7 @@ describe('signable-editor/signature-pad', () => {
     const toDataSpy = vi.spyOn(canvas, 'toDataURL').mockReturnValue('data:image/png;base64,abc');
     initSignaturePads(root, { onOverlayUpdate: vi.fn() });
 
-    // forzar no tamaño para cubrir rama canvas.width/height == 0 al finalizar
+    // force zero size to cover canvas.width/height == 0 branch on finish
     vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
       width: 0,
       height: 0,

@@ -21,7 +21,7 @@ This works as long as the package is [registered on Packagist](https://packagist
 **Development / unreleased:** To use the latest `main` (or default) branch before the next tag:
 
 ```bash
-composer config repositories.pdf-signable-bundle vcs https://github.com/nowo-tech/pdfSignableBundle
+composer config repositories.pdf-signable-bundle vcs https://github.com/nowo-tech/PdfSignableBundle
 composer require nowo-tech/pdf-signable-bundle:dev-main
 ```
 
@@ -60,6 +60,12 @@ php bin/console assets:install
 
 This copies `Resources/public/js/pdf-signable.js` (and `acroform-editor.js` when using the AcroForm editor) to `public/bundles/nowopdfsignable/js/`.
 
+The bundle registers a named Symfony asset package (`nowo_pdf_signable`) with `base_path` `/bundles/nowopdfsignable`. Prefer that package instead of hard-coding the public path:
+
+```twig
+<link rel="stylesheet" href="{{ asset('js/pdf-signable.css', 'nowo_pdf_signable') }}">
+<script src="{{ asset('js/pdf-signable.js', 'nowo_pdf_signable') }}"></script>
+```
 ## Verify dependencies
 
 To check that PHP, extensions, optional tools (Python/pypdf) and bundle assets are correctly installed:

@@ -20,6 +20,7 @@ services:
       - APP_ENV=dev
       - APP_DEBUG=1
       - APP_SECRET=${APP_SECRET:-demo-secret}
+      - FRANKENPHP_MODE=${FRANKENPHP_MODE:-worker}
       - XDEBUG_MODE=debug
       - XDEBUG_CONFIG=client_host=host.docker.internal client_port=9003
     # Mitigate Docker/WSL DNS failures resolving repo.packagist.org (composer curl error 6).

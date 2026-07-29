@@ -6,111 +6,73 @@ namespace Nowo\PdfSignableBundle\Tests\DependencyInjection;
 
 use Nowo\PdfSignableBundle\DependencyInjection\ProxyUrlAllowlistValidationPass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-
-use const E_USER_WARNING;
 
 final class ProxyUrlAllowlistValidationPassTest extends TestCase
 {
     public function testProcessWhenParameterNotSetDoesNothing(): void
     {
+        $this->expectNotToPerformAssertions();
         $container = new ContainerBuilder();
-        $container->setParameter('kernel.debug', true);
-        // do not set nowo_pdf_signable.proxy_url_allowlist
-
-        $warnings = [];
-        set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
-            $warnings[] = $errstr;
-
-            return true;
-        }, E_USER_WARNING);
-        try {
-            (new ProxyUrlAllowlistValidationPass())->process($container);
-        } finally {
-            restore_error_handler();
-        }
-        self::assertSame([], $warnings);
+        (new ProxyUrlAllowlistValidationPass())->process($container);
     }
 
-    public function testProcessWhenNotDebugDoesNothing(): void
+    public function testProcessWhenAllowlistRequiredAndEmptyThrows(): void
     {
         $container = new ContainerBuilder();
-        $container->setParameter('kernel.debug', false);
+        $container->setParameter('nowo_pdf_signable.proxy_enabled', true);
+        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist', []);
+        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist_required', true);
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('proxy_url_allowlist_required is true');
+        (new ProxyUrlAllowlistValidationPass())->process($container);
+    }
+
+    public function testProcessWhenAllowlistRequiredButProxyDisabledDoesNotThrow(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $container = new ContainerBuilder();
+        $container->setParameter('nowo_pdf_signable.proxy_enabled', false);
+        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist', []);
+        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist_required', true);
+
+        (new ProxyUrlAllowlistValidationPass())->process($container);
+    }
+
+    public function testProcessWhenInvalidRegexThrows(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('nowo_pdf_signable.proxy_enabled', true);
         $container->setParameter('nowo_pdf_signable.proxy_url_allowlist', ['#invalid(regex']);
+        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist_required', false);
 
-        $warnings = [];
-        set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
-            $warnings[] = $errstr;
-
-            return true;
-        }, E_USER_WARNING);
-        try {
-            (new ProxyUrlAllowlistValidationPass())->process($container);
-        } finally {
-            restore_error_handler();
-        }
-        self::assertSame([], $warnings);
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('invalid regex');
+        (new ProxyUrlAllowlistValidationPass())->process($container);
     }
 
-    public function testProcessWhenDebugAndInvalidRegexTriggersWarning(): void
+    public function testProcessWhenEmptyOrSubstringPatternsSkipped(): void
     {
+        $this->expectNotToPerformAssertions();
         $container = new ContainerBuilder();
-        $container->setParameter('kernel.debug', true);
-        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist', ['#invalid(regex']);
-
-        $warnings = [];
-        set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
-            $warnings[] = $errstr;
-
-            return true;
-        }, E_USER_WARNING);
-        try {
-            (new ProxyUrlAllowlistValidationPass())->process($container);
-        } finally {
-            restore_error_handler();
-        }
-        self::assertCount(1, $warnings);
-        self::assertStringContainsString('Invalid regex', $warnings[0]);
-        self::assertStringContainsString('#invalid(regex', $warnings[0]);
-    }
-
-    public function testProcessWhenDebugAndEmptyOrSubstringPatternsSkipped(): void
-    {
-        $container = new ContainerBuilder();
-        $container->setParameter('kernel.debug', true);
+        $container->setParameter('nowo_pdf_signable.proxy_enabled', true);
         $container->setParameter('nowo_pdf_signable.proxy_url_allowlist', ['', 'substring', '#^https://#']);
+        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist_required', false);
 
-        $warnings = [];
-        set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
-            $warnings[] = $errstr;
-
-            return true;
-        }, E_USER_WARNING);
-        try {
-            (new ProxyUrlAllowlistValidationPass())->process($container);
-        } finally {
-            restore_error_handler();
-        }
-        self::assertSame([], $warnings);
+        (new ProxyUrlAllowlistValidationPass())->process($container);
     }
 
-    public function testProcessWhenDebugAndValidRegexDoesNotTriggerWarning(): void
+    public function testProcessWhenProxyEnabledParameterMissingDefaultsToTrueAndRequiredThrows(): void
     {
         $container = new ContainerBuilder();
-        $container->setParameter('kernel.debug', true);
-        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist', ['#^https://example\.com/#', 'substring']);
+        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist', []);
+        $container->setParameter('nowo_pdf_signable.proxy_url_allowlist_required', true);
+        // proxy_enabled intentionally omitted → defaults to true in the pass
 
-        $warnings = [];
-        set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
-            $warnings[] = $errstr;
-
-            return true;
-        }, E_USER_WARNING);
-        try {
-            (new ProxyUrlAllowlistValidationPass())->process($container);
-        } finally {
-            restore_error_handler();
-        }
-        self::assertSame([], $warnings);
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('proxy_url_allowlist_required is true');
+        (new ProxyUrlAllowlistValidationPass())->process($container);
     }
 }

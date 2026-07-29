@@ -9,6 +9,7 @@ use Nowo\PdfSignableBundle\AcroForm\Storage\SessionAcroFormOverridesStorage;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 
 final class SessionAcroFormOverridesStorageTest extends TestCase
@@ -23,7 +24,7 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
 
     public function testGetReturnsNullWhenKeyNotInSession(): void
     {
-        $session = new \Symfony\Component\HttpFoundation\Session\Session(new MockArraySessionStorage());
+        $session = new Session(new MockArraySessionStorage());
         $request = new Request();
         $request->setSession($session);
 
@@ -37,7 +38,7 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
 
     public function testGetReturnsNullWhenSessionHasNonArrayData(): void
     {
-        $session = new \Symfony\Component\HttpFoundation\Session\Session(new MockArraySessionStorage());
+        $session = new Session(new MockArraySessionStorage());
         $session->set('nowo_pdf_signable.acroform_overrides.doc1', 'not-an-array');
         $request = new Request();
         $request->setSession($session);
@@ -73,7 +74,7 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
 
     public function testSetAndGetRoundtrip(): void
     {
-        $session = new \Symfony\Component\HttpFoundation\Session\Session(new MockArraySessionStorage());
+        $session = new Session(new MockArraySessionStorage());
         $request = new Request();
         $request->setSession($session);
 
@@ -93,7 +94,7 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
 
     public function testRemove(): void
     {
-        $session = new \Symfony\Component\HttpFoundation\Session\Session(new MockArraySessionStorage());
+        $session = new Session(new MockArraySessionStorage());
         $request = new Request();
         $request->setSession($session);
 
@@ -112,7 +113,7 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
 
     public function testSanitizesDocumentKeyForSessionKey(): void
     {
-        $session = new \Symfony\Component\HttpFoundation\Session\Session(new MockArraySessionStorage());
+        $session = new Session(new MockArraySessionStorage());
         $request = new Request();
         $request->setSession($session);
 

@@ -68,6 +68,30 @@ final class TwigPathsPassTest extends TestCase
         self::assertSame('addPath', $loader->getMethodCalls()[0][0]);
     }
 
+    public function testProcessFallsBackToFilesystemLoader(): void
+    {
+        $container = new ContainerBuilder();
+        $loader    = new Definition();
+        $container->setDefinition('twig.loader.filesystem', $loader);
+
+        (new TwigPathsPass())->process($container);
+
+        self::assertSame('addPath', $loader->getMethodCalls()[0][0]);
+    }
+
+    public function testProcessResolvesChainedAliases(): void
+    {
+        $container = new ContainerBuilder();
+        $loader    = new Definition();
+        $container->setDefinition('app.twig.loader', $loader);
+        $container->setAlias('twig.loader.native_filesystem', new Alias('app.twig.loader'));
+        $container->setAlias('twig.loader.native', new Alias('twig.loader.native_filesystem'));
+
+        (new TwigPathsPass())->process($container);
+
+        self::assertSame('addPath', $loader->getMethodCalls()[0][0]);
+    }
+
     public function testProcessSkipsWhenTwigLoaderMissing(): void
     {
         $container = new ContainerBuilder();

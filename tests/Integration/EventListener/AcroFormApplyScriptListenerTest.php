@@ -258,7 +258,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
                 $script,
                 'python3',
                 null,
-                static fn (string $prefix) => false,
+                static fn (string $prefix): false => false,
             );
             $event = new AcroFormApplyRequestEvent('%PDF-1.4', []);
 
@@ -281,7 +281,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
                 'python3',
                 null,
                 null,
-                static fn (string $path, string $contents) => false,
+                static fn (string $path, string $contents): false => false,
             );
             $event = new AcroFormApplyRequestEvent('%PDF-1.4', []);
 
@@ -304,7 +304,7 @@ final class AcroFormApplyScriptListenerTest extends TestCase
                 'python3',
                 null,
                 null,
-                static function (string $path, string $contents) use (&$calls) {
+                static function (string $path, string $contents) use (&$calls): int|false {
                     ++$calls;
                     if ($calls === 1) {
                         return 1;

@@ -147,8 +147,14 @@ final class DependencyChecker implements DependencyCheckerInterface
         if ($resolved === null) {
             return;
         }
-        $proc = new Process([$resolved, '-c', 'import pypdf; print("ok")']);
-        $proc->setTimeout(5);
+        $proc    = new Process([$resolved, '-c', 'import pypdf; print("ok")']);
+        $timeout = 5.0;
+        if ($this->params->has('nowo_pdf_signable.dependency_check_timeout')) {
+            $timeout = (float) $this->params->get('nowo_pdf_signable.dependency_check_timeout');
+        }
+        $timeout = max(0.1, $timeout);
+        $proc->setTimeout($timeout);
+        $proc->setIdleTimeout($timeout);
         $proc->run();
         if (!$proc->isSuccessful()) {
             $warnings[] = 'Python pypdf module not installed. Install with: ' . $pythonCommand . ' -m pip install pypdf (required for AcroForm apply/extract scripts)';
