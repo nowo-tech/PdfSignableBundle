@@ -13,11 +13,14 @@ use Nowo\PdfSignableBundle\Controller\AcroFormOverridesController;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
 use Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -32,6 +35,44 @@ use const JSON_THROW_ON_ERROR;
  */
 final class AcroFormOverridesControllerTest extends TestCase
 {
+
+    private const VALID_CSRF_TOKEN = 'valid-acroform-csrf-token';
+
+    /**
+     * Minimal container with CSRF token manager for AbstractController::isCsrfTokenValid.
+     */
+    private function createContainerWithCsrf(): ContainerInterface
+    {
+        $csrfManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $csrfManager->method('isTokenValid')->willReturnCallback(
+            static fn (CsrfToken $token): bool => $token->getId() === AcroFormOverridesController::CSRF_TOKEN_ID
+                && $token->getValue() === self::VALID_CSRF_TOKEN,
+        );
+
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('has')->willReturnCallback(
+            static fn (string $id): bool => $id === 'security.csrf.token_manager',
+        );
+        $container->method('get')->willReturnCallback(
+            static function (string $id) use ($csrfManager): CsrfTokenManagerInterface {
+                if ($id === 'security.csrf.token_manager') {
+                    return $csrfManager;
+                }
+                throw new \InvalidArgumentException("Unknown service: {$id}");
+            },
+        );
+
+        return $container;
+    }
+
+    /** Attaches a valid X-CSRF-Token header for mutating AcroForm requests. */
+    private function withCsrf(Request $request): Request
+    {
+        $request->headers->set('X-CSRF-Token', self::VALID_CSRF_TOKEN);
+
+        return $request;
+    }
+
     /**
      * Creates a ProxyUrlValidator instance (real class; it is final so we cannot mock it).
      */
@@ -76,7 +117,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $translator->method('trans')->willReturnArgument(0);
         $proxyUrlValidator = $this->createProxyUrlValidator(array_values($proxyUrlAllowlist));
 
-        return new AcroFormOverridesController(
+        $controller = new AcroFormOverridesController(
             $enabled,
             $storage,
             $allowPdfModify,
@@ -98,6 +139,9 @@ final class AcroFormOverridesControllerTest extends TestCase
             $createTempFile,
             $writeFile,
         );
+        $controller->setContainer($this->createContainerWithCsrf());
+
+        return $controller;
     }
 
     public function testGetOverridesWhenDisabledReturns404(): void
@@ -158,6 +202,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(enabled: false);
         $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 'doc1', 'overrides' => []], JSON_THROW_ON_ERROR));
 
         $response = $controller->saveOverrides($request);
@@ -170,6 +215,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController();
         $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 'invalid key with spaces', 'overrides' => []], JSON_THROW_ON_ERROR));
 
         $response = $controller->saveOverrides($request);
@@ -186,6 +232,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'document_key' => 'doc1',
             'overrides'    => ['f1' => ['label' => 'Field 1']],
@@ -202,7 +249,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testRemoveOverridesWhenDisabledReturns404(): void
     {
         $controller = $this->createController(enabled: false);
-        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE', ['document_key' => 'doc1']);
+        $request     = $this->withCsrf(Request::create('/pdf-signable/acroform/overrides', 'DELETE', ['document_key' => 'doc1']));
 
         $response = $controller->removeOverrides($request);
 
@@ -212,7 +259,7 @@ final class AcroFormOverridesControllerTest extends TestCase
     public function testRemoveOverridesMissingDocumentKeyReturns400(): void
     {
         $controller = $this->createController();
-        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE');
+        $request     = $this->withCsrf(Request::create('/pdf-signable/acroform/overrides', 'DELETE'));
 
         $response = $controller->removeOverrides($request);
 
@@ -224,7 +271,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->expects(self::once())->method('remove')->with('doc1');
         $controller = $this->createController(storage: $storage);
-        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE', ['document_key' => 'doc1']);
+        $request     = $this->withCsrf(Request::create('/pdf-signable/acroform/overrides', 'DELETE', ['document_key' => 'doc1']));
 
         $response = $controller->removeOverrides($request);
 
@@ -238,7 +285,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
         $storage->expects(self::once())->method('remove')->with('key-from-request');
         $controller = $this->createController(storage: $storage);
-        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE');
+        $request     = $this->withCsrf(Request::create('/pdf-signable/acroform/overrides', 'DELETE'));
         $request->request->replace(['document_key' => 'key-from-request']);
 
         $response = $controller->removeOverrides($request);
@@ -251,6 +298,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(enabled: true, allowPdfModify: false);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4'), 'patches' => []], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -263,6 +311,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['patches' => []], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -277,6 +326,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, maxPatches: 2);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [
@@ -298,6 +348,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4'), 'patches' => 'not-array'], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -312,6 +363,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => '!!!invalid-base64!!!', 'patches' => []], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -326,6 +378,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['defaultValue' => 'x']],
@@ -352,6 +405,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1', 'defaultValue' => 'test']],
@@ -378,6 +432,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1']],
@@ -395,6 +450,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1']],
@@ -418,6 +474,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, debug: true, logger: $logger);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1']],
@@ -441,6 +498,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1']],
@@ -463,6 +521,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, editor: $editor);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1', 'defaultValue' => 'v']],
@@ -482,6 +541,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, editor: $editor, debug: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content'   => base64_encode('%PDF-1.4'),
             'patches'       => [['fieldId' => 'f1']],
@@ -503,6 +563,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, editor: $editor, debug: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content'   => base64_encode('%PDF-1.4'),
             'patches'       => [['fieldId' => 'f1']],
@@ -526,6 +587,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'document_key' => 'doc1',
             'overrides'    => ['f1' => ['label' => 'x']],
@@ -546,6 +608,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 'doc1', 'overrides' => 'invalid'], JSON_THROW_ON_ERROR));
 
         $response = $controller->saveOverrides($request);
@@ -560,6 +623,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides?document_key=from-query', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['overrides' => []], JSON_THROW_ON_ERROR));
 
         $response = $controller->saveOverrides($request);
@@ -575,6 +639,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 'doc1', 'overrides' => [], 'fields' => 'invalid'], JSON_THROW_ON_ERROR));
 
         $response = $controller->saveOverrides($request);
@@ -589,6 +654,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, editor: $editor);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1']],
@@ -606,6 +672,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(enabled: false);
         $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 'doc1'], JSON_THROW_ON_ERROR));
 
         $response = $controller->loadOverrides($request);
@@ -618,6 +685,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController();
         $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([], JSON_THROW_ON_ERROR));
 
         $response = $controller->loadOverrides($request);
@@ -635,6 +703,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 'doc1'], JSON_THROW_ON_ERROR));
 
         $response = $controller->loadOverrides($request);
@@ -652,6 +721,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage);
         $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 'doc1'], JSON_THROW_ON_ERROR));
 
         $response = $controller->loadOverrides($request);
@@ -667,6 +737,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController();
         $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 'x' . str_repeat('a', 300)], JSON_THROW_ON_ERROR));
 
         $response = $controller->loadOverrides($request);
@@ -681,6 +752,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController();
         $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 123], JSON_THROW_ON_ERROR));
 
         $response = $controller->loadOverrides($request);
@@ -702,6 +774,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         ];
         $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['document_key' => 'doc1', 'fields' => $fields], JSON_THROW_ON_ERROR));
 
         $response = $controller->loadOverrides($request);
@@ -721,6 +794,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(enabled: false);
         $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
         $response = $controller->extractFields($request);
@@ -735,6 +809,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(fieldsExtractorScript: $existingFile);
         $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([], JSON_THROW_ON_ERROR));
 
         $response = $controller->extractFields($request);
@@ -749,6 +824,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(enabled: false);
         $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
         $response = $controller->process($request);
@@ -761,6 +837,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController();
         $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
         $response = $controller->process($request);
@@ -773,6 +850,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(processScript: '   ');
         $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
         $response = $controller->process($request);
@@ -785,6 +863,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(processScript: '/nonexistent/process.py');
         $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
         $response = $controller->process($request);
@@ -801,6 +880,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(processScript: $existingFile);
         $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => 123], JSON_THROW_ON_ERROR));
 
         $response = $controller->process($request);
@@ -817,6 +897,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(processScript: $existingFile);
         $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => '!!!invalid!!!'], JSON_THROW_ON_ERROR));
 
         $response = $controller->process($request);
@@ -835,6 +916,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(processScript: $script);
             $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
             $response = $controller->process($request);
@@ -856,6 +938,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(processScript: $script, processScriptCommand: 'python999nonexistent');
             $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
             $response = $controller->process($request);
@@ -878,6 +961,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(processScript: $script);
             $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
             $response = $controller->process($request);
@@ -913,6 +997,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $pdfB64     = base64_encode('%PDF-1.4 minimal');
             $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
                 'HTTP_ACCEPT'  => 'application/pdf',
             ], json_encode(['pdf_content' => $pdfB64], JSON_THROW_ON_ERROR));
 
@@ -948,6 +1033,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(processScript: $script);
             $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
                 'HTTP_ACCEPT'  => 'application/json',
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
@@ -969,6 +1055,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_url' => '', 'patches' => []], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -983,6 +1070,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_url' => 'not-a-url', 'patches' => []], JSON_THROW_ON_ERROR));
 
         $response = $controller->apply($request);
@@ -1000,6 +1088,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         );
         $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_url' => 'https://other-site.com/doc.pdf',
             'patches' => [],
@@ -1021,6 +1110,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         );
         $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_url' => 'https://example.com/doc.pdf',
             'patches' => [],
@@ -1036,6 +1126,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_url' => 'http://localhost/doc.pdf',
             'patches' => [],
@@ -1062,6 +1153,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1']],
@@ -1081,6 +1173,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $largeContent = str_repeat('x', 101);
         $request      = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode($largeContent),
             'patches'     => [],
@@ -1098,6 +1191,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(fieldsExtractorScript: '/nonexistent/extract.py');
         $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
         $response = $controller->extractFields($request);
@@ -1115,6 +1209,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $largeContent = str_repeat('x', 101);
         $request      = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['pdf_content' => base64_encode($largeContent)], JSON_THROW_ON_ERROR));
 
         $response = $controller->extractFields($request);
@@ -1133,6 +1228,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(fieldsExtractorScript: $script);
             $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
             $response = $controller->extractFields($request);
@@ -1154,6 +1250,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(fieldsExtractorScript: $script);
             $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
 
             $response = $controller->extractFields($request);
@@ -1203,6 +1300,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController();
         $request    = Request::create('/acroform/overrides', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode(['overrides' => []], JSON_THROW_ON_ERROR));
 
         $response = $controller->saveOverrides($request);
@@ -1218,6 +1316,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage, fieldsExtractorScript: '/nonexistent/extractor.py');
         $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'document_key' => 'doc1',
             'pdf_content'  => base64_encode('%PDF-1.4'),
@@ -1242,6 +1341,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(storage: $storage, fieldsExtractorScript: $script);
             $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode([
                 'document_key' => 'doc1',
                 'pdf_content'  => base64_encode('%PDF-1.4'),
@@ -1268,6 +1368,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, editor: $editor);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => ['invalid-item', ['fieldId' => 'f1']],
@@ -1287,6 +1388,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(processScript: $script);
             $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
                 'HTTP_ACCEPT'  => 'application/json',
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4'), 'document_key' => '  '], JSON_THROW_ON_ERROR));
 
@@ -1308,6 +1410,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(processScript: $script);
             $request    = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
                 'HTTP_ACCEPT'  => 'application/json',
             ], json_encode(['pdf_content' => base64_encode('%PDF-1.4'), 'document_key' => 'doc-123'], JSON_THROW_ON_ERROR));
 
@@ -1330,6 +1433,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             $controller = $this->createController(storage: $storage, fieldsExtractorScript: $script);
             $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode([
                 'document_key' => 'doc1',
                 'pdf_content'  => base64_encode('%PDF-1.4'),
@@ -1350,6 +1454,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage, fieldsExtractorScript: '/nonexistent/extractor.py');
         $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'document_key' => 'doc1',
             'pdf_url'      => 'not-a-url',
@@ -1372,6 +1477,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         );
         $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'document_key' => 'doc1',
             'pdf_url'      => 'https://blocked.example.com/doc.pdf',
@@ -1390,6 +1496,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(storage: $storage, fieldsExtractorScript: '/nonexistent/extractor.py');
         $request    = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'document_key' => 'doc1',
             'pdf_url'      => 'http://localhost/doc.pdf',
@@ -1418,6 +1525,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         );
         $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'document_key' => 'doc1',
             'pdf_url'      => 'https://allowed.example.com/doc.pdf',
@@ -1443,6 +1551,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         );
         $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'document_key' => 'doc1',
             'pdf_url'      => 'https://allowed.example.com/doc.pdf',
@@ -1473,6 +1582,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher, debug: true, logger: $logger);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1']],
@@ -1502,6 +1612,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher, debug: true, logger: $logger);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1']],
@@ -1527,6 +1638,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher, debug: true, logger: $logger);
         $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_content' => base64_encode('%PDF-1.4'),
             'patches'     => [['fieldId' => 'f1']],
@@ -1547,6 +1659,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             );
             $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode([
                 'document_key' => 'doc1',
                 'pdf_content'  => base64_encode('%PDF-1.4'),
@@ -1572,6 +1685,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             );
             $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode([
                 'pdf_content' => base64_encode('%PDF-1.4'),
             ], JSON_THROW_ON_ERROR));
@@ -1596,6 +1710,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             );
             $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode([
                 'pdf_content' => base64_encode('%PDF-1.4'),
             ], JSON_THROW_ON_ERROR));
@@ -1620,6 +1735,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             );
             $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode([
                 'pdf_content' => base64_encode('%PDF-1.4'),
             ], JSON_THROW_ON_ERROR));
@@ -1644,6 +1760,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             );
             $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode([
                 'pdf_content' => base64_encode('%PDF-1.4'),
             ], JSON_THROW_ON_ERROR));
@@ -1684,6 +1801,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
         $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
             'pdf_url' => 'https://allowed.example.com/doc.pdf',
             'patches' => [['fieldId' => 'f1']],
@@ -1716,6 +1834,7 @@ final class AcroFormOverridesControllerTest extends TestCase
             );
             $request = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
                 'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
             ], json_encode([
                 'pdf_url' => 'https://allowed.example.com/doc.pdf',
             ], JSON_THROW_ON_ERROR));
@@ -1728,4 +1847,60 @@ final class AcroFormOverridesControllerTest extends TestCase
             @unlink($script);
         }
     }
+
+    public function testSaveOverridesMissingCsrfReturns403(): void
+    {
+        $controller = $this->createController();
+        $request = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['document_key' => 'doc1', 'overrides' => []], JSON_THROW_ON_ERROR));
+
+        $response = $controller->saveOverrides($request);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('Invalid CSRF token', $data['error']);
+    }
+
+    public function testSaveOverridesInvalidCsrfReturns403(): void
+    {
+        $controller = $this->createController();
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => 'wrong-token',
+        ], json_encode(['document_key' => 'doc1', 'overrides' => []], JSON_THROW_ON_ERROR));
+
+        $response = $controller->saveOverrides($request);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testSaveOverridesAcceptsCsrfTokenInJsonBody(): void
+    {
+        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage->expects(self::once())->method('set');
+        $controller = $this->createController(storage: $storage);
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'document_key' => 'doc1',
+            'overrides'    => [],
+            '_token'       => self::VALID_CSRF_TOKEN,
+        ], JSON_THROW_ON_ERROR));
+
+        $response = $controller->saveOverrides($request);
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+    }
+
+    public function testRemoveOverridesMissingCsrfReturns403(): void
+    {
+        $controller = $this->createController();
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE', ['document_key' => 'doc1']);
+
+        $response = $controller->removeOverrides($request);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
 }

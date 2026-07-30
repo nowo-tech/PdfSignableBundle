@@ -55,6 +55,17 @@ function initAcroFormEditor(root: HTMLElement): void {
   };
   const config = getConfig(root);
   getLogger().setDebug(config.debug);
+  /** Headers for mutating AcroForm fetch calls (JSON + CSRF). */
+  const csrfHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    if (config.csrfToken) {
+      headers['X-CSRF-Token'] = config.csrfToken;
+    }
+    return headers;
+  };
   const docKeyEl = root.querySelector<HTMLInputElement>('#acroform-document-key');
   const jsonEl = root.querySelector<HTMLTextAreaElement>('#acroform-overrides-json');
   const msgEl = root.querySelector<HTMLElement>('#acroform-overrides-message');
@@ -876,7 +887,7 @@ function initAcroFormEditor(root: HTMLElement): void {
     _loadBtn.disabled = true;
     fetch(config.loadUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: csrfHeaders(),
       body: JSON.stringify(payload),
     })
       .then((r) => {
@@ -926,7 +937,7 @@ function initAcroFormEditor(root: HTMLElement): void {
     saveBtn.disabled = true;
     fetch(config.postUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: csrfHeaders(),
       body: JSON.stringify(payload),
     })
       .then((r) => {
@@ -1008,7 +1019,7 @@ function initAcroFormEditor(root: HTMLElement): void {
             if (validateOnly) body.validate_only = true;
             return fetch(config.applyUrl, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: csrfHeaders(),
               body: JSON.stringify(body),
             });
           })
@@ -1087,7 +1098,7 @@ function initAcroFormEditor(root: HTMLElement): void {
       processBtn.setAttribute('disabled', '');
       fetch(config.processUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: csrfHeaders(),
         body: JSON.stringify({ pdf_content: b64, document_key: key || undefined }),
       })
         .then((r) => {

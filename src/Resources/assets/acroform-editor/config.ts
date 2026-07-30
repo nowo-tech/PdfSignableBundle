@@ -32,6 +32,8 @@ export interface AcroFormEditorConfig {
   documentKey: string;
   applyUrl: string;
   processUrl: string;
+  /** CSRF token for mutating AcroForm endpoints (sent as X-CSRF-Token). */
+  csrfToken: string;
   debug: boolean;
   /** Field name widget: "input" (free text) or "choice" (select from fieldNameChoices + optional "Other"). */
   fieldNameMode: 'input' | 'choice';
@@ -89,6 +91,7 @@ export function getConfig(root: HTMLElement): AcroFormEditorConfig {
   const documentKey = root.dataset.documentKey ?? '';
   const applyUrl = root.dataset.applyUrl ?? '';
   const processUrl = root.dataset.processUrl ?? '';
+  const csrfToken = root.dataset.csrfToken ?? '';
   const debug = root.dataset.debug === '1' || root.dataset.debug === 'true';
   const fieldNameMode = (root.dataset.fieldNameMode === 'choice' ? 'choice' : 'input') as 'input' | 'choice';
   const fieldNameChoices = parseLabelChoices(root.dataset.fieldNameChoices);
@@ -96,7 +99,7 @@ export function getConfig(root: HTMLElement): AcroFormEditorConfig {
   const showFieldRect = root.dataset.showFieldRect !== '0' && root.dataset.showFieldRect !== 'false';
   const fontSizes = parseFontSizes(root.dataset.fontSizes);
   const fontFamilies = parseFontFamilies(root.dataset.fontFamilies);
-  return { loadUrl, postUrl, documentKey, applyUrl, processUrl, debug, fieldNameMode, fieldNameChoices, fieldNameOtherText, showFieldRect, fontSizes, fontFamilies };
+  return { loadUrl, postUrl, documentKey, applyUrl, processUrl, csrfToken, debug, fieldNameMode, fieldNameChoices, fieldNameOtherText, showFieldRect, fontSizes, fontFamilies };
 }
 
 /**

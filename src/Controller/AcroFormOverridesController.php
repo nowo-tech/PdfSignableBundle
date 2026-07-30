@@ -63,6 +63,13 @@ final class AcroFormOverridesController extends AbstractController
     private const DOCUMENT_KEY_MAX_LENGTH = 256;
 
     /**
+     * Stable CSRF token id for all mutating AcroForm routes (POST/DELETE).
+     * Twig: csrf_token(constant('Nowo\\PdfSignableBundle\\Controller\\AcroFormOverridesController::CSRF_TOKEN_ID'))
+     * or csrf_token('nowo_pdf_signable_acroform'). Clients may send it as X-CSRF-Token or body _token.
+     */
+    public const CSRF_TOKEN_ID = 'nowo_pdf_signable_acroform';
+
+    /**
      * @param bool $enabled Whether the AcroForm editor endpoints are enabled
      * @param AcroFormOverridesStorageInterface $storage Storage for overrides (session or custom service)
      * @param bool $allowPdfModify Whether POST /acroform/apply is allowed
@@ -161,6 +168,9 @@ final class AcroFormOverridesController extends AbstractController
     {
         if (!$this->enabled) {
             return new Response('', Response::HTTP_NOT_FOUND);
+        }
+        if (($csrfDeny = $this->denyUnlessValidCsrf($request)) instanceof JsonResponse) {
+            return $csrfDeny;
         }
         $data        = $request->toArray();
         $documentKey = $data['document_key'] ?? '';
@@ -267,6 +277,9 @@ final class AcroFormOverridesController extends AbstractController
         if (!$this->enabled) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
+        if (($csrfDeny = $this->denyUnlessValidCsrf($request)) instanceof JsonResponse) {
+            return $csrfDeny;
+        }
         $data        = $request->toArray();
         $documentKey = $data['document_key'] ?? $request->query->get('document_key') ?? '';
         $documentKey = is_string($documentKey) ? trim($documentKey) : '';
@@ -302,6 +315,9 @@ final class AcroFormOverridesController extends AbstractController
     {
         if (!$this->enabled || $this->fieldsExtractorScript === null || trim($this->fieldsExtractorScript) === '') {
             return new Response('', Response::HTTP_NOT_FOUND);
+        }
+        if (($csrfDeny = $this->denyUnlessValidCsrf($request)) instanceof JsonResponse) {
+            return $csrfDeny;
         }
         $scriptPath = trim($this->fieldsExtractorScript);
         if (!is_file($scriptPath)) {
@@ -369,6 +385,9 @@ final class AcroFormOverridesController extends AbstractController
         if (!$this->enabled) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
+        if (($csrfDeny = $this->denyUnlessValidCsrf($request)) instanceof JsonResponse) {
+            return $csrfDeny;
+        }
         $documentKey = $this->resolveDocumentKey($request);
         if ($documentKey === null) {
             return new JsonResponse(['error' => 'document_key required'], Response::HTTP_BAD_REQUEST);
@@ -398,6 +417,9 @@ final class AcroFormOverridesController extends AbstractController
     {
         if (!$this->enabled || !$this->allowPdfModify) {
             return new Response('', Response::HTTP_NOT_FOUND);
+        }
+        if (($csrfDeny = $this->denyUnlessValidCsrf($request)) instanceof JsonResponse) {
+            return $csrfDeny;
         }
         $data        = $request->toArray();
         $patchesData = $data['patches'] ?? [];
@@ -553,6 +575,9 @@ final class AcroFormOverridesController extends AbstractController
         if (!$this->enabled || $this->processScript === null || trim($this->processScript) === '') {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
+        if (($csrfDeny = $this->denyUnlessValidCsrf($request)) instanceof JsonResponse) {
+            return $csrfDeny;
+        }
         $script = trim($this->processScript);
         if (!is_file($script) || !is_readable($script)) {
             return new JsonResponse(['error' => 'Process script not configured or not readable'], Response::HTTP_SERVICE_UNAVAILABLE);
@@ -641,6 +666,54 @@ final class AcroFormOverridesController extends AbstractController
                 @unlink($tmpOutput);
             }
         }
+    }
+
+    /**
+     * Rejects mutating requests without a valid CSRF token (fail-closed).
+     *
+     * Accepts token from X-CSRF-Token header, request bag _token, or JSON body _token.
+     * Token id: {@see CSRF_TOKEN_ID}.
+     *
+     * @return JsonResponse|null 403 response when invalid/missing; null when valid
+     */
+    private function denyUnlessValidCsrf(Request $request): ?JsonResponse
+    {
+        $token = $this->resolveCsrfToken($request);
+        if ($token === null || !$this->isCsrfTokenValid(self::CSRF_TOKEN_ID, $token)) {
+            return new JsonResponse(['error' => 'Invalid CSRF token'], Response::HTTP_FORBIDDEN);
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolves CSRF token from header, form field, or JSON body.
+     */
+    private function resolveCsrfToken(Request $request): ?string
+    {
+        $header = $request->headers->get('X-CSRF-Token');
+        if (is_string($header) && $header !== '') {
+            return $header;
+        }
+
+        $fromBag = $request->request->get('_token');
+        if (is_string($fromBag) && $fromBag !== '') {
+            return $fromBag;
+        }
+
+        $contentType = (string) $request->headers->get('Content-Type', '');
+        if ($request->getContent() !== '' && str_contains($contentType, 'json')) {
+            try {
+                $data  = $request->toArray();
+                $token = $data['_token'] ?? null;
+
+                return is_string($token) && $token !== '' ? $token : null;
+            } catch (Throwable) {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -3,6 +3,10 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.0.8] - 2026-07-30](#308---2026-07-30)
+  - [Security](#security)
+  - [Fixed](#fixed)
+  - [Changed](#changed)
 - [[3.0.7] - 2026-07-29](#307---2026-07-29)
   - [Added](#added)
   - [Changed](#changed)
@@ -121,6 +125,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.8] - 2026-07-30
+
+### Security
+
+- **REQ-SEC-005:** AcroForm mutating endpoints (`POST` load/save/extract/apply/process, `DELETE` overrides) now require a valid CSRF token (`nowo_pdf_signable_acroform`). The editor panel sends `X-CSRF-Token` from Twig `csrf_token('nowo_pdf_signable_acroform')`. Custom AJAX clients must send the same token (header or JSON `_token`). See [SECURITY.md](SECURITY.md) and [UPGRADING.md](UPGRADING.md).
+
+### Fixed
+
+- CSRF gap on AcroFormOverridesController session mutations (previously host-only guidance).
+
+### Changed
+
+- Composer require: `symfony/security-csrf` (AcroForm CSRF validation and Twig `csrf_token()`).
 
 ---
 

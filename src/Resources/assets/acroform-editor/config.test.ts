@@ -136,6 +136,20 @@ describe('getConfig', () => {
     expect(config.postUrl).toBe('/post');
   });
 
+  it('reads csrfToken from data attributes', () => {
+    const root = createMockRoot({
+      loadUrl: '',
+      postUrl: '',
+      csrfToken: 'tok-abc',
+    });
+    expect(getConfig(root).csrfToken).toBe('tok-abc');
+  });
+
+  it('defaults csrfToken to empty when missing', () => {
+    const root = createMockRoot({ loadUrl: '', postUrl: '' });
+    expect(getConfig(root).csrfToken).toBe('');
+  });
+
   it('defaults fieldNameMode to input when not choice', () => {
     const root = createMockRoot({ loadUrl: '', postUrl: '', applyUrl: '', processUrl: '' });
     const config = getConfig(root);

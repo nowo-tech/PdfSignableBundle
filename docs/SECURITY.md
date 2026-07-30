@@ -10,12 +10,13 @@
 
 - **AcroForm JSON routes**
   - When `acroform.enabled` is true, `/pdf-signable/acroform/*` endpoints mutate session (or custom storage) and may run Process scripts. The bundle does **not** attach `IsGranted` by default (form/API surface for the host app).
-  - **Host must** protect these routes with firewall `access_control` / authentication appropriate for your threat model. Prefer CSRF tokens or same-site session cookies for mutating POSTs/DELETEs.
+  - **CSRF (REQ-SEC-005):** All mutating AcroForm actions (`POST` load/save/extract/apply/process, `DELETE` overrides) validate a CSRF token with id `nowo_pdf_signable_acroform` (`AcroFormOverridesController::CSRF_TOKEN_ID`). Clients must send the token as the `X-CSRF-Token` header or as `_token` in the JSON/form body. The bundled editor panel sets `data-csrf-token="{{ csrf_token('nowo_pdf_signable_acroform') }}"` and sends `X-CSRF-Token` on every mutating `fetch`.
+  - **Host must** still protect these routes with firewall `access_control` / authentication appropriate for your threat model.
   - Keep `allow_pdf_modify: false` unless you need PDF rewrite; set script timeouts via `process_timeout` / `process_script_timeout`.
 
 - **Form and viewer**
   - Signature box names and coordinates are user input. The bundle form theme and JavaScript use **escaped output** (e.g. `escapeHtml` for overlay labels) when rendering user-controlled data into the DOM. Do not disable escaping in templates that display user data.
-  - CSRF is handled by Symfony's form component when the signature form is submitted with the default configuration.
+  - CSRF is handled by Symfony's form component when the signature form is submitted with the default configuration. AcroForm AJAX mutations use the explicit token above.
 
 - **Flash messages**
   - If you store HTML in flash messages, render it with `|raw` only when that HTML is produced by your code with **all** user-derived parts escaped (e.g. `htmlspecialchars`). Prefer plain-text flash messages and `{{ message }}` (no `|raw`) to avoid XSS.
@@ -67,5 +68,5 @@ Record confirmation in the release PR or tag notes.
 | Date | 2026-07-29 |
 | Grade | Pass (conditional) |
 | Overall risk | Medium |
-| Residual | Empty allowlist allowed when `proxy_url_allowlist_required: false`; AcroForm routes require host firewall/CSRF |
+| Residual | Empty allowlist allowed when `proxy_url_allowlist_required: false`; AcroForm routes still need host firewall/auth (CSRF is enforced by the bundle) |
 | Monorepo | See `BUNDLES_SECURITY_ANALYSIS.md` (PdfSignableBundle) |

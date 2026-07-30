@@ -4,6 +4,7 @@
 
 - [General upgrade process](#general-upgrade-process)
 - [Upgrading by version](#upgrading-by-version)
+  - [Upgrading to 3.0.8 (AcroForm CSRF)](#upgrading-to-308-acroform-csrf)
   - [Upgrading to 3.0.7](#upgrading-to-307)
   - [Upgrading to 3.0.6 (2026-07-22)](#upgrading-to-306-2026-07-22)
   - [Upgrading to 3.0.5 (2026-07-18)](#upgrading-to-305-2026-07-18)
@@ -40,6 +41,8 @@
 - [See also](#see-also)
 
 This guide explains how to upgrade the PdfSignable Bundle between versions. For a list of changes in each version, see [CHANGELOG.md](CHANGELOG.md).
+
+**Note:** Version **3.0.8** adds CSRF enforcement on AcroForm mutating AJAX endpoints. Custom clients must send a CSRF token. See [Upgrading to 3.0.8 (AcroForm CSRF)](#upgrading-to-308-acroform-csrf).
 
 **Note:** Version **3.0.7** adds `proxy_url_allowlist_required`, named asset package `nowo_pdf_signable`, and HTTP/process timeouts. See [Upgrading to 3.0.7](#upgrading-to-307).
 
@@ -84,6 +87,51 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Upgrading by version
 
+### Upgrading to 3.0.8 (AcroForm CSRF)
+
+**Release date:** 2026-07-30
+
+**Breaking for custom AcroForm AJAX clients** (the bundled `acroform-editor.js` / `editor_root.html.twig` are updated).
+
+Mutating AcroForm routes now require a CSRF token (token id `nowo_pdf_signable_acroform`):
+
+| Method | Route (under your prefix) |
+|--------|---------------------------|
+| POST | `/acroform/overrides/load` |
+| POST | `/acroform/overrides` (save) |
+| DELETE | `/acroform/overrides` |
+| POST | `/acroform/fields/extract` |
+| POST | `/acroform/apply` |
+| POST | `/acroform/process` |
+
+Send the token as:
+
+- Header: `X-CSRF-Token: …`, or
+- JSON/form body field: `_token`
+
+In Twig:
+
+```twig
+{{ csrf_token('nowo_pdf_signable_acroform') }}
+```
+
+Example `fetch`:
+
+```js
+fetch(url, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-CSRF-Token': csrfToken, // from csrf_token('nowo_pdf_signable_acroform')
+  },
+  body: JSON.stringify(payload),
+});
+```
+
+Rebuild/reinstall bundle assets after upgrade (`assets:install` / `pnpm run build` if you build from source). Missing or invalid tokens return **403** `{ "error": "Invalid CSRF token" }`.
+
+See [SECURITY.md](SECURITY.md).
+
 ### Upgrading to 3.0.7
 
 **Release date:** 2026-07-29
@@ -93,7 +141,7 @@ No intentional breaking changes to route names or Twig namespace (still `@NowoPd
 - **Security:** New option `proxy_url_allowlist_required` (default `false`). Set `true` in production with a non-empty `proxy_url_allowlist`. Invalid `#regex` allowlist entries now fail container compilation.
 - **Assets:** Twig themes use the `nowo_pdf_signable` asset package (`asset('js/…', 'nowo_pdf_signable')`). Re-run `assets:install` after upgrade and clear cache.
 - **Runtime:** Config keys `http_timeout`, `process_timeout`, `process_script_timeout`, `dependency_check_timeout` (FrankenPHP-safe defaults).
-- **AcroForm:** Protect `/pdf-signable/acroform/*` with host firewalls; see [SECURITY.md](SECURITY.md).
+- **AcroForm:** Protect `/pdf-signable/acroform/*` with host firewalls. CSRF on those mutations is enforced from **3.0.8**. See [SECURITY.md](SECURITY.md).
 - **Contributors:** PHPStan loads FrankenPHP classic + worker rulesets; `make coverage-check` / `check-open-prs` / `demo-smoke` available.
 
 ### Upgrading to 3.0.6 (2026-07-22)
