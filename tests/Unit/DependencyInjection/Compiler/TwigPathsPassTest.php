@@ -68,6 +68,17 @@ final class TwigPathsPassTest extends TestCase
         self::assertSame('addPath', $loader->getMethodCalls()[0][0]);
     }
 
+    public function testProcessUsesNativeFilesystemDefinitionWithoutAlias(): void
+    {
+        $container = new ContainerBuilder();
+        $loader    = new Definition();
+        $container->setDefinition('twig.loader.native_filesystem', $loader);
+
+        (new TwigPathsPass())->process($container);
+
+        self::assertSame('addPath', $loader->getMethodCalls()[0][0]);
+    }
+
     public function testProcessFallsBackToFilesystemLoader(): void
     {
         $container = new ContainerBuilder();

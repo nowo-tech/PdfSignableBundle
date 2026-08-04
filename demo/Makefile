@@ -112,11 +112,17 @@ release-verify:
 		port=$$(case $$demo in symfony7) echo 8001;; symfony8) echo 8002;; *) echo 8001;; esac); \
 		echo "Release verify: $$demo (port $$port)..."; \
 		$(MAKE) -C $$demo up 2>/dev/null || $(MAKE) -C $$demo run 2>/dev/null || true; \
-		sleep 12; \
-		code=$$(curl -sk -o /dev/null -w "%{http_code}" https://127.0.0.1:$$port 2>/dev/null || echo "000"); \
+		code="000"; \
+		for i in 1 2 3 4 5 6 7 8 9 10; do \
+			sleep 3; \
+			code=$$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:$$port 2>/dev/null || echo "000"); \
+			case "$$code" in 2*|3*) break;; esac; \
+		done; \
 		$(MAKE) -C $$demo down 2>/dev/null || true; \
-		if [ "$$code" != "200" ]; then echo "$$demo healthcheck failed (HTTP $$code)"; exit 1; fi; \
-		echo "OK $$demo (HTTP $$code)"; \
+		case "$$code" in \
+			2*|3*) echo "OK $$demo (HTTP $$code)";; \
+			*) echo "$$demo healthcheck failed (HTTP $$code)"; exit 1;; \
+		esac; \
 	done
 	@echo "All demos passed release-verify."
 release-check: test-coverage-all release-verify

@@ -75,6 +75,7 @@ services:
         exclude: '../../AcroForm/Storage/AcroFormOverridesStorageInterface.php'
 
     # Form types
+    # Form Kit injects FormOptionsMerger into tagged form types (FormOptionsMergerInjectorCompilerPass).
     Nowo\PdfSignableBundle\Form\:
         resource: '../../Form/*'
         exclude: '../../Form/Extension/*'

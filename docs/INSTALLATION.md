@@ -84,3 +84,13 @@ The bundle views extend `base.html.twig` by default. Ensure your application has
 
 - [Configuration](CONFIGURATION.md) — Proxy, example URL, named configs, audit and signing placeholders.
 - [Usage](USAGE.md) — Form options and examples; [overriding bundle templates](USAGE.md#overriding-bundle-templates) (form theme, signature index). Use directory `templates/bundles/NowoPdfSignableBundle/` (name without the `Bundle` suffix).
+
+## Twig Extra Bundle (REQ-TWIG-004)
+
+This package ships Twig templates. Host applications **must** install and enable Twig Extra:
+
+```bash
+composer require twig/extra-bundle twig/string-extra
+```
+
+Register `Twig\Extra\TwigExtraBundle\TwigExtraBundle` in `config/bundles.php` (Flex usually does this). Demos already include the same stack. The package `release-check` runs `make check-twig-extra` to guard this contract.

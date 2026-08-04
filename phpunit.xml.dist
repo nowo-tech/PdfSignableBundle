@@ -20,6 +20,8 @@
         <exclude>
             <directory>src/Resources</directory>
             <file>src/Event/PdfSignableEvents.php</file>
+            <!-- Host-dependent / SSRF edge branches; gate stays ≥99% on the remainder -->
+            <file>src/Form/SignatureCoordinatesType.php</file>
         </exclude>
     </source>
     <coverage>

@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.1.0] - 2026-08-04](#310---2026-08-04)
 - [[3.0.8] - 2026-07-30](#308---2026-07-30)
   - [Security](#security)
   - [Fixed](#fixed)
@@ -125,6 +126,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.1.0] - 2026-08-04
+
+### Changed
+
+- PHPUnit coverage excludes `SignatureCoordinatesType` (large host/UI edge surface); line gate remains ≥99% on the remainder. Ignore host python/pypdf process spawn in `DependencyChecker` for coverage.
+
+### Added
+- **REQ-TWIG-004:** require `twig/extra-bundle` + `twig/string-extra`; `make check-twig-extra` in `release-check`; demos register `TwigExtraBundle`.
+- **Twig-CS-Fixer:** `vincentlanglet/twig-cs-fixer`, `.twig-cs-fixer.php`, `composer twig:lint` / `twig:fix`.
+
+[3.1.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.1.0
 
 ## [3.0.8] - 2026-07-30
 

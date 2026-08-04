@@ -7,6 +7,7 @@ use Symfony\Bundle\DebugBundle\DebugBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Bundle\WebProfilerBundle\WebProfilerBundle;
+use Twig\Extra\TwigExtraBundle\TwigExtraBundle;
 
 return [
     FrameworkBundle::class         => ['all' => true],
@@ -15,4 +16,5 @@ return [
     WebProfilerBundle::class       => ['dev' => true, 'test' => true],
     NowoPdfSignableBundle::class   => ['all' => true],
     NowoTwigInspectorBundle::class => ['dev' => true, 'test' => true],
+    TwigExtraBundle::class         => ['all' => true],
 ];

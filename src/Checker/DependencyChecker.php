@@ -147,6 +147,8 @@ final class DependencyChecker implements DependencyCheckerInterface
         if ($resolved === null) {
             return;
         }
+        // @codeCoverageIgnoreStart
+        // Process spawn depends on host python/pypdf; covered via $isPypdfAvailable injection in unit tests.
         $proc    = new Process([$resolved, '-c', 'import pypdf; print("ok")']);
         $timeout = 5.0;
         if ($this->params->has('nowo_pdf_signable.dependency_check_timeout')) {
@@ -159,6 +161,7 @@ final class DependencyChecker implements DependencyCheckerInterface
         if (!$proc->isSuccessful()) {
             $warnings[] = 'Python pypdf module not installed. Install with: ' . $pythonCommand . ' -m pip install pypdf (required for AcroForm apply/extract scripts)';
         }
+        // @codeCoverageIgnoreEnd
     }
 
     private function isExtensionLoaded(string $extension): bool

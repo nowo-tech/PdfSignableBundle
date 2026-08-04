@@ -2,6 +2,8 @@
 
 ## Table of contents
 
+- [Unreleased](#unreleased)
+- [To 3.1.0](#to-310)
 - [General upgrade process](#general-upgrade-process)
 - [Upgrading by version](#upgrading-by-version)
   - [Upgrading to 3.0.8 (AcroForm CSRF)](#upgrading-to-308-acroform-csrf)
@@ -51,6 +53,33 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 **Note:** Version **3.0.0** raises minimum **PHP to 8.2** and **Symfony to 7.0** (Symfony 6.x and PHP 8.1 are no longer supported). If you are on 2.0.x with PHP 8.1 or Symfony 6.x, read [Upgrading to 3.0.0](#upgrading-to-300-2026-07-01) before updating.
 
 Version **2.0.0** is a **breaking** release for configuration: the YAML structure changes (signature under `signature`, AcroForm under a single `acroform` node). If you are on 1.5.x or earlier, read the [Upgrading to 2.0.0](#upgrading-to-200-2026-02-16) section before updating.
+
+
+## Unreleased
+
+## To 3.1.0
+
+From **3.0.8** — Adds required Twig Extra (REQ-TWIG-004) and Twig-CS-Fixer. Register TwigExtraBundle if Flex did not.
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+php bin/console cache:clear
+```
+
+### Twig Extra Bundle (REQ-TWIG-004)
+
+Hosts that render this bundle's Twig templates must install:
+
+```bash
+composer require twig/extra-bundle twig/string-extra
+```
+
+and enable `Twig\Extra\TwigExtraBundle\TwigExtraBundle`. Flex recipes usually register it automatically.
+
+### Twig-CS-Fixer (maintainers)
+
+Package maintainers: `composer twig:lint` / `composer twig:fix` use `.twig-cs-fixer.php` over `src/` (and `templates/` when present).
+
 
 ## General upgrade process
 
