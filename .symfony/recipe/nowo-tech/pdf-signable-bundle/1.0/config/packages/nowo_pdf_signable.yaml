@@ -9,8 +9,7 @@ nowo_pdf_signable:
     # Enables the /pdf-signable/proxy route so the browser can load external PDFs without CORS.
     proxy_enabled: true
 
-    # Production: set true so an empty allowlist fails container compilation (REQ-SEC-004).
-    # proxy_url_allowlist_required: true
+    # Base default false for BC / local demos. Production: Flex when@prod forces true (REQ-SEC-004).
     proxy_url_allowlist_required: false
 
 
@@ -235,3 +234,7 @@ nowo_pdf_signable:
         #         label_mode: choice
         #         label_choices: ['Name', 'Date', 'Signature']
         #         label_other_text: 'Other'
+
+when@prod:
+    nowo_pdf_signable:
+        proxy_url_allowlist_required: true
