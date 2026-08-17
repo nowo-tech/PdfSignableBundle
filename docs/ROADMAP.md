@@ -2,6 +2,8 @@
 
 This document lists **possible improvements** and ideas for future versions of the bundle. They are not commitments or a fixed plan; they serve as a reference for contributions and prioritisation.
 
+**Status (v3.1.0, 2026-08):** Signature viewer, AcroForm editor, draw/upload, batch sign UI, audit metadata, and PKI/TSA **events** are shipped. Bullets marked *(implemented)* below are a historical catalogue, not a backlog. Unmarked bullets (print preview, REST API, proxy cache/rate-limit, optional persistence, AcroForm E2E) are the remaining ideas.
+
 ---
 
 ## PDF signing and legal validity

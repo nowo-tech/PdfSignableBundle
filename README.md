@@ -49,6 +49,8 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Viewer** — **Thumbnails**: page strip to jump to a page; **Zoom**: toolbar (zoom in, zoom out, fit width, translated); **Touch**: pinch to zoom, two-finger pan on tablets
 - ✅ **Validation** — Required box name (NotBlank); `unique_box_names` global (`true`/`false`) or per-name (array) to enforce unique box names
 - ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent`, `BatchSignRequestedEvent`, `PdfSignRequestEvent` for integration (see [EVENTS](docs/EVENTS.md) and [SIGNING_ADVANCED](docs/SIGNING_ADVANCED.md))
+- ✅ **AcroForm editor** — field list/overrides, edit modal, move/resize, add fields, apply Layer 2 (see [ACROFORM](docs/ACROFORM.md))
+- ✅ **CLI** — `nowo:pdf-signable:check-dependencies`
 - ✅ **Compatibility** — Symfony 7.x, 8.x and PHP 8.2+
 
 ## Screenshots
