@@ -1,7 +1,17 @@
+{
+	order mercure after encode
+}
+
 # FrankenPHP + Caddy — Symfony 8 demo (HTTPS on localhost)
 # SERVER_NAME=localhost in compose: Caddy serves HTTPS with self-signed cert
 {$SERVER_NAME:localhost} {
 	root * /app/public
 	encode zstd gzip
-	php_server
+	mercure {
+		anonymous
+	}
+
+	php_server {
+		hot_reload
+	}
 }

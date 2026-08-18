@@ -26,7 +26,7 @@ The demos use:
 - **Two Caddyfiles**: `Caddyfile` (production) and `Caddyfile.dev` (development, no worker, no-cache headers).
 - An **entrypoint** that selects classic vs worker Caddyfile from **`FRANKENPHP_MODE`** (`classic` \| `worker`, default **`worker`** in `.env.example`)
 
-There are demos for **Symfony 7** and **Symfony 8** (e.g. **demo/symfony7**, **demo/symfony8**). Each has its own Dockerfile, docker-compose.yml and Makefile. From the bundle root you run e.g. `make -C demo/symfony8 up`. Access via **https://127.0.0.1:PORT** (default port 8002 for symfony8; accept the self-signed cert in the browser).
+There are demos for **Symfony 8** (e.g. **demo/symfony8**, **demo/symfony8**). Each has its own Dockerfile, docker-compose.yml and Makefile. From the bundle root you run e.g. `make -C demo/symfony8 up`. Access via **https://127.0.0.1:PORT** (default port 8002 for symfony8; accept the self-signed cert in the browser).
 
 The main difference between development and production is:
 
@@ -47,6 +47,7 @@ The main difference between development and production is:
 The demo applications are configured for **local development and debugging**:
 
 - **Symfony Web Profiler** and **Debug bundle** — enabled in `dev` and `test` environments.
+- **Nowo Twig Inspector** (`nowo-tech/twig-inspector-bundle`) and **Nowo Hot Reload** (`nowo-tech/hot-reload-bundle`) — required together on FrankenPHP demos (dev/test only; Caddyfile Mercure + `hot_reload`, plus `worker { watch }` in worker mode). Do not enable Hot Reload in production.
 - **Pdf Signable Bundle** (`Nowo\PdfSignableBundle\NowoPdfSignableBundle`) and **Twig Inspector** — the bundles under test; enabled in the demos.
 
 Example `config/bundles.php` (Symfony 8 demo):
@@ -92,7 +93,7 @@ Each demo's **docker-compose.yml** sets `APP_ENV=dev` and `APP_DEBUG=1`, and mou
 
 ### 5. Start the demo (development)
 
-From the bundle root: `make -C demo/symfony8 up` (or `make -C demo/symfony7 up`). Or from the demo directory: `make up`. Open **https://127.0.0.1:PORT** and accept the self-signed certificate.
+From the bundle root: `make -C demo/symfony8 up` (or `make -C demo/symfony8 up`). Or from the demo directory: `make up`. Open **https://127.0.0.1:PORT** and accept the self-signed certificate.
 
 ---
 
