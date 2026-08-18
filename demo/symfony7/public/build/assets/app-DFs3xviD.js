@@ -1,1 +1,0 @@
-typeof console<"u"&&console.debug("[PdfSignable] loaded: demo/symfony7/assets/app.ts");const e=()=>{console.log("PdfSignable Demo (Symfony 7) ready")};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",e):e();

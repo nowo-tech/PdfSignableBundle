@@ -57,7 +57,7 @@ The sections below state **behavior**; this subsection states **intent** in back
 
 | ID | Where | What it marks |
 | --- | --- | --- |
-| REQ-MAKE-008 | Root `Makefile`, `demo/Makefile`, `demo/symfony7/Makefile`, `demo/symfony8/Makefile` | Standard **`update-deps`** (and demo **`update-deps-all`**) targets: refresh Composer dependencies in the bundle and each Symfony demo via shared `bundles/.scripts/` Makefiles. Requires `COMPOSE` and `SERVICE_PHP` before include. |
+| REQ-MAKE-008 | Root `Makefile`, `demo/Makefile`, `demo/symfony8/Makefile`, `demo/symfony8/Makefile` | Standard **`update-deps`** (and demo **`update-deps-all`**) targets: refresh Composer dependencies in the bundle and each Symfony demo via shared `bundles/.scripts/` Makefiles. Requires `COMPOSE` and `SERVICE_PHP` before include. |
 
 When you change scripted behavior, **update the existing `REQ-*` comment** if the ID still matches the rule, or **add a new `REQ-*`** and document it here and in the PR description.
 

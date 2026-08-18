@@ -73,7 +73,7 @@ After a full run (PHPUnit and Vitest; test counts may vary):
 
 ## Demo
 
-The bundle includes Symfony 7 and 8 demo applications under `demo/symfony7` and `demo/symfony8`. They are not exercised by PHPUnit; run them manually (e.g. `composer install` in the demo dir and the Symfony web server) to try the signature form, proxy, and AcroForm demo. With `acroform.enabled: true` in the demo config, the overrides and apply endpoints are available for integration testing from the frontend or tools like curl.
+The bundle includes Symfony 7 and 8 demo applications under `demo/symfony8` and `demo/symfony8`. They are not exercised by PHPUnit; run them manually (e.g. `composer install` in the demo dir and the Symfony web server) to try the signature form, proxy, and AcroForm demo. With `acroform.enabled: true` in the demo config, the overrides and apply endpoints are available for integration testing from the frontend or tools like curl.
 
 ## Adding tests
 

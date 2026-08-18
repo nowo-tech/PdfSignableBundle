@@ -124,11 +124,10 @@ See [CONFIGURATION.md](docs/CONFIGURATION.md) for the full tree (`proxy_url_allo
 
 ## Demos
 
-Dockerized demos (Symfony 7 and 8, Bootstrap, Vite, TypeScript) with multiple usage examples. They run with **FrankenPHP** (Caddy + PHP): the **Dockerfile** ships a production Caddyfile with **`php_server` worker**, but with **`APP_ENV=dev`** the container **entrypoint swaps in `Caddyfile.dev`** (no worker, cache-busting headers) so local dev matches [docs/DEMO-FRANKENPHP.md](docs/DEMO-FRANKENPHP.md). Served over **HTTPS** on localhost (self-signed certificate; accept it in the browser). The [screenshots above](#screenshots) show the demo home (configuration cards), the signature coordinates form (PDF viewer + boxes), and an alternate view with thumbnails, zoom and rotation.
+Dockerized demo (Symfony 8, Bootstrap, Vite, TypeScript) with multiple usage examples. They run with **FrankenPHP** (Caddy + PHP): the **Dockerfile** ships a production Caddyfile with **`php_server` worker**, but with **`APP_ENV=dev`** the container **entrypoint swaps in `Caddyfile.dev`** (no worker, cache-busting headers) so local dev matches [docs/DEMO-FRANKENPHP.md](docs/DEMO-FRANKENPHP.md). Served over **HTTPS** on localhost (self-signed certificate; accept it in the browser). The [screenshots above](#screenshots) show the demo home (configuration cards), the signature coordinates form (PDF viewer + boxes), and an alternate view with thumbnails, zoom and rotation.
 
 ```bash
 cd demo
-make run-symfony7  # → https://localhost:8001
 make run-symfony8  # → https://localhost:8002
 ```
 

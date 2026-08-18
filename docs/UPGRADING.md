@@ -398,7 +398,7 @@ No YAML or runtime config changes are required for applications using the bundle
 
 #### Contributors and demos (Docker)
 
-- **`make update-deps`** now works on the bundle root and each demo (`demo/symfony7`, `demo/symfony8`). Requires `COMPOSE` / `SERVICE_PHP` variables (already set in this repository’s Makefiles).
+- **`make update-deps`** now works on the bundle root and each demo (`demo/symfony8`). Requires `COMPOSE` / `SERVICE_PHP` variables (already set in this repository’s Makefiles).
 - If you run the Symfony **8** demo from this repository, `demo/symfony8/composer.json` uses Symfony Flex **`extra.symfony.require: "8.1.*"`**; run `composer update -W` inside the demo container (or `make update-deps`) after pulling.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full list of changes.
@@ -440,7 +440,6 @@ No YAML or runtime config changes are required for applications using the bundle
 #### Contributors and custom automation
 
 - **Script paths:** Maintenance scripts now live under **`.scripts/`** (was `scripts/`). Update any local commands, CI, or forks that referenced `scripts/validate-translations-yaml.php`, `scripts/PoC/`, or `scripts/test/` to use **`.scripts/`** instead. The Composer script `validate-translations` already points to `.scripts/`.
-- **Demos:** If you use the Symfony **7** demo with Docker, `demo/symfony7/composer.json` uses Symfony Flex **`extra.symfony.require: "7.4.*"`** so `composer update` works with Composer’s security audit; run `composer update -W` inside the demo container after pulling.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full list of changes.
 
