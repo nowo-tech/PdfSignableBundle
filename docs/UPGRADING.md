@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.1.1](#to-311)
 - [To 3.1.0](#to-310)
 - [General upgrade process](#general-upgrade-process)
 - [Upgrading by version](#upgrading-by-version)
@@ -56,6 +57,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 
 ## Unreleased
+
+## To 3.1.1
+
+From **3.1.0** — No application upgrade steps. **Demos only:** Hot Reload Bundle `^1.4` (FrankenPHP Mercure/`hot_reload`, `dev`/`test`). Shipped demos are Symfony 8 only (Symfony 6/7 demo apps removed).
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 ## To 3.1.0
 

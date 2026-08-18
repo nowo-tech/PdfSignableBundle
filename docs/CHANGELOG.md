@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.1.1] - 2026-08-18](#311---2026-08-18)
 - [[3.1.0] - 2026-08-04](#310---2026-08-04)
 - [[3.0.8] - 2026-07-30](#308---2026-07-30)
   - [Security](#security)
@@ -126,6 +127,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.1.1] - 2026-08-18
+
+### Changed
+
+- **Demos:** pin `nowo-tech/hot-reload-bundle` to `^1.4` with FrankenPHP Mercure/`hot_reload` (`dev`/`test` only).
+- **Demos:** Symfony 8 only; Symfony 6/7 demo apps removed.
+
+[3.1.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.1.1
 
 ## [3.1.0] - 2026-08-04
 
@@ -783,7 +793,7 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.0.7...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.1.1...HEAD
 [3.0.7]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.0.6...v3.0.7
 [3.0.6]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.6
 [3.0.5]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.5
