@@ -59,6 +59,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Unreleased
 
+## To 3.1.3
+
+From **3.1.2** — Review Flex recipe `security_nowo_pdf_signable.yaml` access rules after install/update.
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
+
 ## To 3.1.2
 
 From **3.1.1** — No application upgrade steps.
