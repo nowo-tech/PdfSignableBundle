@@ -128,6 +128,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.4] - 2026-08-19
+
+### Security
+
+- **Flex recipe:** ship `security_nowo_pdf_signable.yaml` access rules (REQ-SEC-004). Prefer **`^3.1.4`** over `v3.1.3`.
+
 ## [3.1.3] - 2026-08-19
 
 ### Security
