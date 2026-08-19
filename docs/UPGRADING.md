@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.1.2](#to-312)
 - [To 3.1.1](#to-311)
 - [To 3.1.0](#to-310)
 - [General upgrade process](#general-upgrade-process)
@@ -57,6 +58,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 
 ## Unreleased
+
+## To 3.1.2
+
+From **3.1.1** — No application upgrade steps.
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 ## To 3.1.1
 
