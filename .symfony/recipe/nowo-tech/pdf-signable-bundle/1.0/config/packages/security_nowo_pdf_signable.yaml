@@ -1,0 +1,5 @@
+# Merged into security.access_control by Symfony (REQ-SEC-004).
+# AcroForm routes require host firewall + bundle CSRF (see docs/SECURITY.md).
+security:
+    access_control:
+        - { path: ^/pdf-signable, roles: ROLE_USER }
