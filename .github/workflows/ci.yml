@@ -95,6 +95,9 @@ jobs:
             symfony/yaml:^${{ matrix.symfony }} \
             --no-interaction --no-update
           composer update symfony/* --with-all-dependencies --no-interaction --prefer-dist --no-progress
+      - name: Composer audit (Critical/High)
+        run: composer audit --locked
+
 
       - name: Validate translation YAML files
         run: php .scripts/validate-translations-yaml.php src/Resources/translations
