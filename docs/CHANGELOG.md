@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.1.5] - 2026-08-20](#315---2026-08-20)
 - [[3.1.1] - 2026-08-18](#311---2026-08-18)
 - [[3.1.0] - 2026-08-04](#310---2026-08-04)
 - [[3.0.8] - 2026-07-30](#308---2026-07-30)
@@ -127,6 +128,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.1.5] - 2026-08-20
+
+### Security
+
+- **Dev/demo frontend:** `vitest` **^3.2.6**; demo `vite` **^6.4.3**; pnpm overrides for `vite`/`postcss`/`nanoid`/`brace-expansion@>=4` (Dependabot High).
 
 ## [3.1.4] - 2026-08-19
 
