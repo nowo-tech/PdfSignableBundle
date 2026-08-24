@@ -202,7 +202,7 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 
 - Tests: PHPUnit (PHP), pytest (Python scripts)
 - PHP: 99.18%
-- TS/JS: 81.28%
+- TS/JS: 95.05%
 - Python: 21%
 
 ## License
