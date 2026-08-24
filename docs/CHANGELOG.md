@@ -129,6 +129,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [3.1.6] - 2026-08-24
+
+### Changed
+
+- **QA:** add `phpstan-frankenphp` extension (REQ-CS-005).
+- **Assets:** English JSDoc on TypeScript sources (REQ-ASSETS-002).
+- **Docs:** PHP-FIG PSR evaluation (REQ-CS-007).
+
+### Notes
+
+- **No API or configuration changes** for integrators unless noted above.
+
+[3.1.6]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.1.6
+
 ## [3.1.5] - 2026-08-20
 
 ### Security

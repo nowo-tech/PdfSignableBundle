@@ -2,6 +2,8 @@
 
 ## Table of contents
 
+
+- [From 3.1.5 to 3.1.6](#from-315-to-316)
 - [Unreleased](#unreleased)
 - [To 3.1.2](#to-312)
 - [To 3.1.1](#to-311)
