@@ -256,4 +256,117 @@ describe('signable-editor/signature-pad', () => {
     expect(ctx.lineWidth).toBeGreaterThanOrEqual(1);
     expect(toDataSpy).toHaveBeenCalledTimes(0);
   });
+
+  it('observes wrapper resize and skips already initialized pads', () => {
+    const observe = vi.fn();
+    class FakeResizeObserver {
+      callback: ResizeObserverCallback;
+      constructor(cb: ResizeObserverCallback) {
+        this.callback = cb;
+      }
+      observe = observe;
+      disconnect(): void {}
+      unobserve(): void {}
+    }
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver);
+
+    document.body.innerHTML = `
+      <div id="root">
+        <div class="signature-box-item" data-pdf-signable="box-item">
+          <input data-pdf-signable="signature-data" value="" />
+          <div class="signature-pad-wrapper">
+            <canvas class="signature-pad-canvas" data-pad-inited="1"></canvas>
+          </div>
+        </div>
+        <div class="signature-box-item" data-pdf-signable="box-item">
+          <input data-pdf-signable="signature-data" value="" />
+          <div class="signature-pad-wrapper">
+            <canvas class="signature-pad-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+    `;
+    const root = document.getElementById('root') as HTMLElement;
+    const canvases = root.querySelectorAll('canvas');
+    const fresh = canvases[1] as HTMLCanvasElement;
+    vi.spyOn(fresh, 'getContext').mockReturnValue({
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      quadraticCurveTo: vi.fn(),
+      stroke: vi.fn(),
+      clearRect: vi.fn(),
+    } as unknown as CanvasRenderingContext2D);
+    vi.spyOn(fresh, 'getBoundingClientRect').mockReturnValue({
+      width: 80,
+      height: 30,
+      left: 0,
+      top: 0,
+      right: 80,
+      bottom: 30,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+    vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+
+    initSignaturePads(root, { onOverlayUpdate: vi.fn(), debugLog: vi.fn() });
+    expect(observe).toHaveBeenCalled();
+    expect(canvases[0].dataset.padInited).toBe('1');
+    expect(fresh.dataset.padInited).toBe('1');
+    vi.unstubAllGlobals();
+  });
+
+  it('uses mouse pressure and ignores move/end before drawing starts', () => {
+    document.body.innerHTML = `
+      <div id="root">
+        <div class="signature-box-item" data-pdf-signable="box-item">
+          <input data-pdf-signable="signature-data" value="" />
+          <div class="signature-pad-wrapper">
+            <canvas class="signature-pad-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+    `;
+    const root = document.getElementById('root') as HTMLElement;
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = {
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      quadraticCurveTo: vi.fn(),
+      stroke: vi.fn(),
+      clearRect: vi.fn(),
+      lineWidth: 1,
+      strokeStyle: '#000',
+      lineCap: 'round' as CanvasLineCap,
+      lineJoin: 'round' as CanvasLineJoin,
+    };
+    vi.spyOn(canvas, 'getContext').mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
+    vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
+      width: 100,
+      height: 40,
+      left: 0,
+      top: 0,
+      right: 100,
+      bottom: 40,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+    vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    initSignaturePads(root, { onOverlayUpdate: vi.fn() });
+
+    canvas.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 5, clientY: 5 }));
+    canvas.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 5, clientY: 5 }));
+    const start = new MouseEvent('mousedown', { bubbles: true, clientX: 8, clientY: 8 });
+    Object.defineProperty(start, 'pressure', { value: 0.9 });
+    canvas.dispatchEvent(start);
+    expect(ctx.lineWidth).toBeGreaterThan(1);
+  });
 });
+

@@ -45,4 +45,42 @@ describe('assets/logger', () => {
     expect(warn).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledTimes(1);
   });
+
+  it('scriptLoaded treats empty buildTime as missing', () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    createBundleLogger('bundle-empty', { buildTime: '' }).scriptLoaded();
+    expect(logSpy).toHaveBeenCalledTimes(1);
+    expect(String(logSpy.mock.calls[0][0])).toContain('script loaded');
+    expect(String(logSpy.mock.calls[0][0])).not.toContain('build time');
+  });
+
+  it('logs empty-arg debug/info/warn/error when debug is enabled', () => {
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const logger = createBundleLogger('bundle-empty-args');
+    logger.setDebug(true);
+    logger.debug();
+    logger.info();
+    logger.warn();
+    logger.error();
+
+    expect(debug).toHaveBeenCalledTimes(1);
+    expect(info).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledTimes(1);
+  });
+
+  it('stringifies plain objects and leaves Error instances intact', () => {
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const logger = createBundleLogger('bundle-format');
+    logger.setDebug(true);
+    const err = new Error('boom');
+    logger.debug({ foo: 'bar' }, err);
+    expect(debug.mock.calls[0]).toContain(JSON.stringify({ foo: 'bar' }));
+    expect(debug.mock.calls[0]).toContain(err);
+  });
 });
+

@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getWorkerUrl, getPdfJsLib } from './pdfjs-loader';
 
+vi.mock('pdfjs-dist', () => ({
+  GlobalWorkerOptions: { workerSrc: '' },
+  getDocument: () => ({ promise: Promise.resolve({}) }),
+}));
+
+
 const CDN_DEFAULT =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -109,4 +115,21 @@ describe('getPdfJsLib', () => {
     const result = await getPdfJsLib({ pdfjsSource: 'cdn' });
     expect(result).toBe(fakePdfJs);
   });
+
+  it('returns window.pdfjsLib without GlobalWorkerOptions', async () => {
+    const fakePdfJs = { getDocument: () => ({}) };
+    vi.stubGlobal('window', { pdfjsLib: fakePdfJs });
+    const result = await getPdfJsLib({ pdfjsSource: 'cdn' });
+    expect(result).toBe(fakePdfJs);
+  });
+
+  it('imports pdfjs-dist when pdfjsSource is npm', async () => {
+    const result = await getPdfJsLib({
+      pdfjsSource: 'npm',
+      pdfjsWorkerUrl: '/bundles/nowopdfsignable/js/pdf.worker.min.js',
+    });
+    expect(result.GlobalWorkerOptions?.workerSrc).toContain('pdf.worker.min.js');
+    expect(result.getDocument).toBeTypeOf('function');
+  });
 });
+

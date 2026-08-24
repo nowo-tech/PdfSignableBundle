@@ -95,7 +95,16 @@ describe('hslToHex', () => {
   it('handles blue (h=240)', () => {
     expect(hslToHex(240, 100, 50)).toBe('#0000ff');
   });
+
+  it('covers remaining hue sectors including yellow-green', () => {
+    expect(hslToHex(90, 100, 50)).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(hslToHex(150, 100, 50)).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(hslToHex(210, 100, 50)).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(hslToHex(270, 100, 50)).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(hslToHex(330, 100, 50)).toMatch(/^#[0-9a-f]{6}$/i);
+  });
 });
+
 
 describe('getColorForBoxIndex', () => {
   it('returns border, background, color, handle', () => {

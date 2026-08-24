@@ -146,4 +146,19 @@ describe('signable-editor/box-overlays', () => {
     expect(overlay.classList.contains('selected')).toBe(false);
     expect(overlay.querySelector('img')).toBeNull();
   });
+
+  it('uses defaults when page field and coordinate inputs are missing', () => {
+    const ctx = buildContext();
+    ctx.getPageField = () => null;
+    ctx.enableRotation = true;
+    ctx.boxesList.innerHTML = `<div class="signature-box-item" data-pdf-signable="box-item"></div>`;
+
+    updateOverlays(ctx);
+
+    expect((ctx.debugWarn as unknown as { mock: { calls: unknown[][] } }).mock.calls.length).toBeGreaterThan(0);
+    const overlay = ctx.canvasWrapper.querySelector('[data-pdf-signable="overlay"]') as HTMLElement;
+    expect(overlay).not.toBeNull();
+    expect(overlay.style.transform).toContain('rotate(0deg)');
+  });
 });
+

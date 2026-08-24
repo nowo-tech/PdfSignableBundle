@@ -78,6 +78,14 @@ describe('applyFontAutoSize', () => {
     expect(size).toBeGreaterThanOrEqual(8);
   });
 
+  it('falls back to 16px when computed fontSize is not a number', () => {
+    (window.getComputedStyle as ReturnType<typeof vi.fn>).mockReturnValue({
+      fontSize: 'inherit',
+    } as CSSStyleDeclaration);
+    applyFontAutoSize(input);
+    expect(input.style.fontSize).toBe('16px');
+  });
+
   it('does not go below 8px', () => {
     Object.defineProperties(input, {
       clientWidth: { value: 1, configurable: true },

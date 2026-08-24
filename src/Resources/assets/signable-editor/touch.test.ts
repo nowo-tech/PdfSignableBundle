@@ -14,6 +14,16 @@ function touchEvent(type: string, a: { x: number; y: number }, b: { x: number; y
 }
 
 describe('signable-editor/touch', () => {
+  it('does not wrap when container is null', () => {
+    const controller = createTouchController(null);
+    const canvasWrapper = document.createElement('div');
+    controller.ensureWrapper(canvasWrapper);
+    expect(controller.getWrapper()).toBeNull();
+    controller.reset();
+    expect(controller.getScale()).toBe(1);
+    expect(controller.getTranslate()).toEqual({ x: 0, y: 0 });
+  });
+
   it('ensureWrapper es idempotente', () => {
     const container = document.createElement('div');
     const canvasWrapper = document.createElement('div');
@@ -41,5 +51,18 @@ describe('signable-editor/touch', () => {
 
     expect(controller.getScale()).toBeGreaterThan(1);
     expect(wrapper.style.transform).toContain('scale(');
+
+    const single = (type: string): Event => {
+      const ev = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(ev, 'touches', { value: [{ clientX: 1, clientY: 1 }] });
+      return ev;
+    };
+    wrapper.dispatchEvent(single('touchstart'));
+    wrapper.dispatchEvent(single('touchmove'));
+
+    controller.reset();
+    expect(controller.getScale()).toBe(1);
+    expect(controller.getTranslate()).toEqual({ x: 0, y: 0 });
   });
 });
+

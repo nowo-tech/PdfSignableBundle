@@ -62,6 +62,7 @@ describe('signable-editor/thumbnails', () => {
     canvasWrapper.innerHTML = `
       <div class="pdf-page-wrapper" data-page="1"></div>
       <div class="pdf-page-wrapper" data-page="2"></div>
+      <div class="pdf-page-wrapper"></div>
     `;
     container.appendChild(touchWrapper);
     ensureThumbnailsLayout({ pdfViewerContainer: container, canvasWrapper, touchWrapper });
@@ -87,6 +88,17 @@ describe('signable-editor/thumbnails', () => {
       bottom: 600,
       x: 0,
       y: 400,
+      toJSON: () => ({}),
+    });
+    vi.spyOn(wrappers[2], 'getBoundingClientRect').mockReturnValue({
+      top: 800,
+      height: 200,
+      width: 100,
+      left: 0,
+      right: 100,
+      bottom: 1000,
+      x: 0,
+      y: 800,
       toJSON: () => ({}),
     });
 

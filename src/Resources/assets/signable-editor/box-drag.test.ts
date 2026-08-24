@@ -262,4 +262,126 @@ describe('setupBoxDragResizeRotate', () => {
     const w = parseFloat((item.querySelector('[data-pdf-signable="width"]') as HTMLInputElement).value);
     expect(w).toBeGreaterThan(0);
   });
+
+  it('uses form defaults, ignores other-page boxes, and clears selection', () => {
+    const { ctx, canvasWrapper, boxesList } = buildCtx({
+      snapToBoxes: true,
+      getPageField: () => null,
+      pageViewports: { 1: { width: 600, height: 800, scale: 0 } as any },
+    });
+    boxesList.innerHTML = `
+      <div class="signature-box-item" data-pdf-signable="box-item"></div>
+      <div class="signature-box-item" data-pdf-signable="box-item">
+        <input data-pdf-signable="page" value="2" />
+        <input data-pdf-signable="x" value="10" />
+        <input data-pdf-signable="y" value="10" />
+        <input data-pdf-signable="width" value="20" />
+        <input data-pdf-signable="height" value="20" />
+      </div>
+    `;
+    const overlay = canvasWrapper.querySelector('[data-pdf-signable="overlay"]') as HTMLElement;
+    overlay.removeAttribute('style');
+    const api = setupBoxDragResizeRotate(ctx);
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 20, clientY: 20 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 40, clientY: 40 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    expect((ctx.onOverlaysUpdate as any).mock.calls.length).toBe(1);
+
+    overlay.classList.add('selected');
+    api.setSelectedBoxIndex(null);
+    expect(api.getSelectedBoxIndex()).toBeNull();
+    expect(overlay.classList.contains('selected')).toBe(false);
+    api.setSelectedBoxIndex(99);
+    expect(api.getSelectedBoxIndex()).toBe(99);
+  });
+
+  it('covers rotation wrap, missing rotate item, and extra rotate events', () => {
+    const { ctx, canvasWrapper, boxesList } = buildCtx({ enableRotation: true });
+    const overlay = canvasWrapper.querySelector('[data-pdf-signable="overlay"]') as HTMLElement;
+    overlay.innerHTML += '<span class="rotate-handle"></span>';
+    setupBoxDragResizeRotate(ctx);
+    const rotateHandle = overlay.querySelector('.rotate-handle') as HTMLElement;
+
+    rotateHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100, clientY: 10 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 10, clientY: 200 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 200, clientY: 10 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    expect(Number.isFinite(parseFloat((boxesList.querySelector('[data-pdf-signable="angle"]') as HTMLInputElement).value))).toBe(true);
+
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1, clientY: 1 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+    boxesList.querySelectorAll('.signature-box-item').forEach((el) => el.remove());
+    rotateHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 50, clientY: 50 }));
+    expect((ctx.setIsDragging as any).mock.calls.length).toBe(0);
+  });
+
+  it('exits rotation when the angle input is missing', () => {
+    const { ctx, canvasWrapper, boxesList } = buildCtx({ enableRotation: true });
+    const overlay = canvasWrapper.querySelector('[data-pdf-signable="overlay"]') as HTMLElement;
+    overlay.innerHTML += '<span class="rotate-handle"></span>';
+    boxesList.querySelector('[data-pdf-signable="angle"]')?.remove();
+    setupBoxDragResizeRotate(ctx);
+    overlay.querySelector('.rotate-handle')?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 10, clientY: 10 }));
+    expect((ctx.setIsDragging as any).mock.calls.length).toBe(0);
+  });
+
+  it('moves a rotated box and skips unknown resize handle', () => {
+    const { ctx, canvasWrapper } = buildCtx({ enableRotation: true });
+    const overlay = canvasWrapper.querySelector('[data-pdf-signable="overlay"]') as HTMLElement;
+    overlay.innerHTML = '<span class="resize-handle xx" data-handle="xx"></span>';
+    setupBoxDragResizeRotate(ctx);
+
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 20, clientY: 20 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 80, clientY: 90 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+    const handle = overlay.querySelector('.resize-handle') as HTMLElement;
+    handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 130, clientY: 50 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 140, clientY: 60 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    expect((ctx.onOverlaysUpdate as any).mock.calls.length).toBe(2);
+  });
+
+  it('does not revert when preventBoxOverlap finds no collision', () => {
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    const { ctx, canvasWrapper } = buildCtx({ preventBoxOverlap: true });
+    setupBoxDragResizeRotate(ctx);
+    const overlay = canvasWrapper.querySelector('[data-pdf-signable="overlay"]') as HTMLElement;
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 20, clientY: 20 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 30, clientY: 30 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    expect(alertSpy).not.toHaveBeenCalled();
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1, clientY: 1 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+  });
+
+  it('skips overlap revert when the dragged box index is missing', () => {
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    const { ctx, canvasWrapper } = buildCtx({ preventBoxOverlap: true });
+    const overlay = canvasWrapper.querySelector('[data-pdf-signable="overlay"]') as HTMLElement;
+    overlay.dataset.boxIndex = '9';
+    setupBoxDragResizeRotate(ctx);
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 20, clientY: 20 }));
+    expect((ctx.setIsDragging as any).mock.calls.length).toBe(0);
+    expect(alertSpy).not.toHaveBeenCalled();
+  });
+
+  it('starts drag when overlay is outside a page wrapper', () => {
+    const { ctx, canvasWrapper } = buildCtx();
+    const overlay = document.createElement('div');
+    overlay.dataset.pdfSignable = 'overlay';
+    overlay.dataset.boxIndex = '0';
+    overlay.style.left = '10px';
+    overlay.style.top = '10px';
+    overlay.style.width = '120px';
+    overlay.style.height = '40px';
+    canvasWrapper.appendChild(overlay);
+    setupBoxDragResizeRotate(ctx);
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 20, clientY: 20 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 25, clientY: 25 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    expect((ctx.onOverlaysUpdate as any).mock.calls.length).toBe(1);
+  });
 });
+

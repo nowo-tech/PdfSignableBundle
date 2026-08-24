@@ -52,7 +52,16 @@ describe('parseLabelChoices', () => {
     const input = JSON.stringify(['', 'ok', '  ']);
     expect(parseLabelChoices(input)).toEqual([{ value: 'ok', label: 'ok' }]);
   });
+
+  it('maps non-string items without value to empty and filters them', () => {
+    expect(parseLabelChoices(JSON.stringify([1, true, null, { label: 'only' }]))).toEqual([]);
+  });
+
+  it('uses empty string when object value is not a string', () => {
+    expect(parseLabelChoices(JSON.stringify([{ value: 12, label: 9 }]))).toEqual([]);
+  });
 });
+
 
 describe('FIELD_NAME_VALUE_OTHER', () => {
   it('is __other__', () => {
@@ -116,7 +125,18 @@ describe('parseFontFamilies', () => {
     const input = JSON.stringify([{ value: '' }, { value: 'Arial', label: 'Arial' }]);
     expect(parseFontFamilies(input)).toEqual([{ value: 'Arial', label: 'Arial' }]);
   });
+
+  it('returns empty array for invalid JSON and non-array payloads', () => {
+    expect(parseFontFamilies('not json')).toEqual([]);
+    expect(parseFontFamilies('{"a":1}')).toEqual([]);
+    expect(parseFontFamilies('')).toEqual([]);
+  });
+
+  it('maps non-string items without value to empty and filters them', () => {
+    expect(parseFontFamilies(JSON.stringify([0, { label: 'x' }, { value: 3 }]))).toEqual([]);
+  });
 });
+
 
 describe('getConfig', () => {
   function createMockRoot(attrs: Record<string, string> = {}): HTMLElement {

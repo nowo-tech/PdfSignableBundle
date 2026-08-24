@@ -15,5 +15,7 @@ describe('signable-editor/index', () => {
     expect(SignableIndex.unitToPt).toBeTypeOf('function');
     expect(SignableIndex.escapeHtml).toBeTypeOf('function');
     expect(SignableIndex.getColorForBoxIndex).toBeTypeOf('function');
+    expect(SignableIndex.PT_TO_UNIT).toBeTypeOf('object');
   });
 });
+

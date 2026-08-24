@@ -27,7 +27,25 @@ describe('getLoadUrl', () => {
     const r = getLoadUrl('', 'https://other.com/file.pdf');
     expect(r).toBe('?url=' + encodeURIComponent('https://other.com/file.pdf'));
   });
+
+  it('falls back to proxy when URL constructor throws', () => {
+    const OriginalURL = globalThis.URL;
+    vi.stubGlobal(
+      'URL',
+      class {
+        constructor() {
+          throw new Error('invalid url');
+        }
+      },
+    );
+    try {
+      expect(getLoadUrl(proxy, 'http://')).toBe(proxy + '?url=' + encodeURIComponent('http://'));
+    } finally {
+      vi.stubGlobal('URL', OriginalURL);
+    }
+  });
 });
+
 
 describe('getScaleForFitWidth', () => {
   it('null doc returns 1.5', async () => {
@@ -91,4 +109,21 @@ describe('getScaleForFitPage', () => {
     expect(scale).toBe(Math.max(0.5, Math.min(scaleW, scaleH)));
     expect(scale).toBeGreaterThanOrEqual(0.5);
   });
+
+  it('uses .pdf-viewer-scroll child when present and returns 1.5 for empty height', async () => {
+    const doc = {
+      getPage: vi.fn().mockResolvedValue({
+        getViewport: () => ({ width: 100, height: 200 }),
+      }),
+    };
+    const container = document.createElement('div');
+    const scroll = document.createElement('div');
+    scroll.className = 'pdf-viewer-scroll';
+    Object.defineProperty(scroll, 'clientWidth', { value: 276, configurable: true });
+    Object.defineProperty(scroll, 'clientHeight', { value: 10, configurable: true });
+    container.appendChild(scroll);
+    expect(await getScaleForFitPage(doc as never, container)).toBe(1.5);
+    expect(await getScaleForFitWidth(doc as never, container)).toBe((276 - 24) / 100);
+  });
 });
+

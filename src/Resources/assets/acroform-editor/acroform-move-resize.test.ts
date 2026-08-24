@@ -167,4 +167,62 @@ describe('createAcroformMoveResize', () => {
 
     expect(onRectChanged).toHaveBeenCalledTimes(3);
   });
+
+  it('returns when outline is not inside a page wrapper', () => {
+    const canvasWrapper = document.createElement('div');
+    const outline = document.createElement('div');
+    outline.className = 'acroform-field-outline';
+    outline.dataset.fieldId = 'orphan';
+    canvasWrapper.appendChild(outline);
+    const controller = createAcroformMoveResize({
+      canvasWrapper,
+      getPageViewport: () => ({ scale: 1, width: 200, height: 200 } as any),
+      getTouchScale: () => 1,
+      onRectChanged: vi.fn(),
+      onRendered: vi.fn(),
+    });
+    controller.showOverlay('orphan', '1');
+    expect(canvasWrapper.querySelector('.acroform-move-resize-layer')).toBeNull();
+  });
+
+  it('uses default outline metrics, missing scale, and unknown handle', () => {
+    const canvasWrapper = document.createElement('div');
+    canvasWrapper.innerHTML = `
+      <div class="pdf-page-wrapper">
+        <div class="acroform-field-outline" data-field-id="f5"></div>
+      </div>
+    `;
+    const onRectChanged = vi.fn();
+    const controller = createAcroformMoveResize({
+      canvasWrapper,
+      getPageViewport: () => ({ width: 400, height: 400 } as any),
+      getTouchScale: () => 1,
+      onRectChanged,
+      onRendered: vi.fn(),
+    });
+
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1, clientY: 1 }));
+    controller.showOverlay('f5', '1');
+    const overlay = canvasWrapper.querySelector('.acroform-move-resize-overlay') as HTMLElement;
+    expect(overlay.style.width).toBe('60px');
+
+    const handle = overlay.querySelector('.resize-handle.se') as HTMLElement;
+    delete handle.dataset.handle;
+    handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 70, clientY: 70 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 90, clientY: 90 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    expect(onRectChanged).toHaveBeenCalledTimes(1);
+
+    controller.showOverlay('f5', '1');
+    const overlay2 = canvasWrapper.querySelector('.acroform-move-resize-overlay') as HTMLElement;
+    overlay2.style.left = '';
+    overlay2.style.top = '';
+    overlay2.style.width = '';
+    overlay2.style.height = '';
+    overlay2.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 20, clientY: 20 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 40, clientY: 50 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    expect(onRectChanged).toHaveBeenCalledTimes(2);
+  });
 });
+

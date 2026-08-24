@@ -61,6 +61,28 @@ describe('viewportToForm', () => {
     expect(back.yPt).toBeCloseTo(yPt, 5);
   });
 
+  it('round-trips with formToViewport for top_left', () => {
+    const vp = createMockViewport(1.5);
+    const xPt = 40;
+    const yPt = 80;
+    const wPt = 20;
+    const hPt = 10;
+    const { vpX, vpY } = formToViewport(vp, xPt, yPt, wPt, hPt, 'top_left');
+    const back = viewportToForm(vp, vpX, vpY, wPt, hPt, 'top_left');
+    expect(back.xPt).toBeCloseTo(xPt, 5);
+    expect(back.yPt).toBeCloseTo(yPt, 5);
+  });
+
+  it('uses default scale 1.5 when viewport scale is missing', () => {
+    const vp = createMockViewport(1.5);
+    const noScale = { ...vp, scale: 0 };
+    const withScale = formToViewport(vp, 10, 20, 30, 40, 'bottom_left');
+    const fallback = formToViewport(noScale, 10, 20, 30, 40, 'bottom_left');
+    expect(fallback.vpX).toBeCloseTo(withScale.vpX, 5);
+    const back = viewportToForm(noScale, fallback.vpX, fallback.vpY, 30, 40, 'unknown');
+    expect(back.xPt).toBeCloseTo(10, 5);
+  });
+
   it('convierte correctamente para top_right y bottom_right', () => {
     const vp = createMockViewport(1);
     const wPt = 30;

@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { NowoPdfSignableConfig, IPdfDocForScale } from './types';
+import * as SharedTypes from './types';
+
 
 describe('shared types', () => {
   it('NowoPdfSignableConfig type allows valid config shape', () => {
@@ -48,5 +50,7 @@ describe('shared types', () => {
     const vp = page.getViewport({ scale: 1 });
     expect(vp.width).toBe(100);
     expect(vp.height).toBe(200);
+    expect(SharedTypes).toBeTypeOf('object');
   });
 });
+
