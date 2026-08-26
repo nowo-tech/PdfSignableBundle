@@ -1,9 +1,9 @@
 {
-    "nowo-tech/pdf-signable-bundle": {
-        "version": "dev-main"
-    },
     "nowo-tech/hot-reload-bundle": {
         "version": "v1.3.2"
+    },
+    "nowo-tech/pdf-signable-bundle": {
+        "version": "dev-main"
     },
     "nowo-tech/twig-inspector-bundle": {
         "version": "v1.0.9"
@@ -152,5 +152,8 @@
             "config/packages/web_profiler.yaml",
             "config/routes/web_profiler.yaml"
         ]
+    },
+    "twig/extra-bundle": {
+        "version": "v3.24.0"
     }
 }
