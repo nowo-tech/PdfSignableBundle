@@ -2,6 +2,8 @@
 
 This document describes how the bundle's demo applications run under **FrankenPHP** in Docker, and how to reproduce **development** (no cache, changes visible on refresh) and **production** (worker mode, cache enabled) configurations. The demos serve over **HTTPS on port 443** (self-signed cert via Caddy `tls internal`). The same approach can be used in other Symfony bundles or applications that ship a FrankenPHP-based demo.
 
+For host-app worker safety (kernel not reset between requests), see [FRANKENPHP-WORKER-AUDIT.md](FRANKENPHP-WORKER-AUDIT.md).
+
 ## Contents
 
 - [Overview](#overview)

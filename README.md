@@ -8,7 +8,7 @@
 
 This bundle is **FrankenPHP worker mode friendly**.
 
-**FrankenPHP worker mode:** Supported — PDF proxy and AcroForm Process calls use configured HTTP/process timeouts; demos ship FrankenPHP with `FRANKENPHP_MODE` (see [Demo with FrankenPHP](docs/DEMO-FRANKENPHP.md)).
+**FrankenPHP worker mode:** Supported with **kernel not reset** between requests — services keep no per-request state; AcroForm temp files are cleaned in `finally` (W-01 fixed in 3.1.7). See [FrankenPHP worker audit](docs/FRANKENPHP-WORKER-AUDIT.md) and [Demo with FrankenPHP](docs/DEMO-FRANKENPHP.md).
 
 ## Table of contents
 
@@ -190,6 +190,7 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 ### Additional documentation
 
 - [Demo with FrankenPHP (development and production)](docs/DEMO-FRANKENPHP.md)
+- [FrankenPHP worker audit (kernel reset false)](docs/FRANKENPHP-WORKER-AUDIT.md)
 - [Workflow](docs/WORKFLOW.md)
 - [AcroForm backend](docs/ACROFORM_BACKEND_EXTENSION.md)
 - [Events](docs/EVENTS.md)

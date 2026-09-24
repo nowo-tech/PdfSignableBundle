@@ -3,6 +3,8 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.1.7] - 2026-09-24](#317---2026-09-24)
+- [[3.1.6] - 2026-08-24](#316---2026-08-24)
 - [[3.1.5] - 2026-08-20](#315---2026-08-20)
 - [[3.1.1] - 2026-08-18](#311---2026-08-18)
 - [[3.1.0] - 2026-08-04](#310---2026-08-04)
@@ -129,6 +131,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [3.1.7] - 2026-09-24
+
+### Fixed
+
+- **FrankenPHP worker (W-01):** create paired temp files inside `try`/`finally` in `AcroFormApplyScriptListener` and `AcroFormOverridesController::process()` so a failed second `tempnam()` still unlinks the first file when the kernel is not reset between requests.
+
+### Changed
+
+- **Docs:** FrankenPHP worker audit (`docs/FRANKENPHP-WORKER-AUDIT.md`) — verdict **Compatible** under kernel reset false (scenario B); residual Low notes for peak PDF buffer (W-02) and DNS timeout (W-03).
+- **Specs:** baseline `FR-RUNTIME-001` for worker-safe temp cleanup and no per-request service state.
+
+### Notes
+
+- **No API or configuration changes** for integrators.
+
+[3.1.7]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.1.7
 
 ## [3.1.6] - 2026-08-24
 
@@ -833,7 +852,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.1.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.1.7...HEAD
+[3.1.7]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.1.7
 [3.0.7]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.0.6...v3.0.7
 [3.0.6]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.6
 [3.0.5]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.5

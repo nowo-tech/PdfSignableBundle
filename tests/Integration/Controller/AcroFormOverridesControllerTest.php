@@ -1749,6 +1749,50 @@ final class AcroFormOverridesControllerTest extends TestCase
         }
     }
 
+    /** W-01: when the second tempnam fails, the first file must still be unlinked (FrankenPHP worker). */
+    public function testProcessUnlinksFirstTempFileWhenSecondCreateFails(): void
+    {
+        $script  = sys_get_temp_dir() . '/pdfsignable_process_ok_' . getmypid() . '.py';
+        $created = [];
+        $calls   = 0;
+        file_put_contents($script, "import sys\nsys.exit(0)\n");
+        try {
+            $controller = $this->createController(
+                processScript: $script,
+                createTempFile: static function (string $prefix) use (&$calls, &$created): string|false {
+                    ++$calls;
+                    if ($calls === 1) {
+                        $path = tempnam(sys_get_temp_dir(), $prefix);
+                        self::assertNotFalse($path);
+                        $created[] = $path;
+
+                        return $path;
+                    }
+
+                    return false;
+                },
+            );
+            $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+                'CONTENT_TYPE'      => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+            ], json_encode([
+                'pdf_content' => base64_encode('%PDF-1.4'),
+            ], JSON_THROW_ON_ERROR));
+
+            $response = $controller->process($request);
+            self::assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
+            $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertSame('Failed to create temp files', $data['error']);
+            self::assertCount(1, $created);
+            self::assertFileDoesNotExist($created[0]);
+        } finally {
+            @unlink($script);
+            foreach ($created as $path) {
+                @unlink($path);
+            }
+        }
+    }
+
     public function testProcessWhenWriteInputTempPdfFailsReturns500(): void
     {
         $script = sys_get_temp_dir() . '/pdfsignable_process_ok_' . getmypid() . '.py';

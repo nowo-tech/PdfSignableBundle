@@ -19,7 +19,7 @@ This file proves that **every production source artifact** under `src/` is refer
 | `Checker/DependencyCheckerInterface.php` | Dependency probe contract | FR-CLI-001 |
 | `Command/CheckDependenciesCommand.php` | CLI `nowo:pdf-signable:check-dependencies` | FR-CLI-001 |
 | `Controller/SignatureController.php` | Demo form + PDF proxy | FR-CTRL-001, FR-PROXY-001 |
-| `Controller/AcroFormOverridesController.php` | AcroForm overrides API | FR-ACRO-004 |
+| `Controller/AcroFormOverridesController.php` | AcroForm overrides API | FR-ACRO-004, FR-RUNTIME-001 |
 | `Proxy/ProxyUrlValidator.php` | SSRF / allowlist validation | FR-SEC-001, FR-PROXY-001 |
 | `Form/SignatureCoordinatesType.php` | Main signature form type | FR-FORM-001 |
 | `Form/SignatureBoxType.php` | Signature box collection entry | FR-FORM-001 |
@@ -39,7 +39,7 @@ This file proves that **every production source artifact** under `src/` is refer
 | `Event/AcroFormApplyRequestEvent.php` | AcroForm apply hook | FR-EVT-002 |
 | `Event/AcroFormModifiedPdfProcessedEvent.php` | AcroForm PDF processed hook | FR-EVT-002 |
 | `EventListener/DependencyCheckListener.php` | Dev dependency banner | FR-CLI-001 |
-| `EventListener/AcroFormApplyScriptListener.php` | Python AcroForm apply | FR-ACRO-003 |
+| `EventListener/AcroFormApplyScriptListener.php` | Python AcroForm apply | FR-ACRO-003, FR-RUNTIME-001 |
 | `AcroForm/AcroFormOverrides.php` | Overrides value object | FR-ACRO-001 |
 | `AcroForm/AcroFormFieldEdit.php` | Field edit DTO | FR-ACRO-002 |
 | `AcroForm/AcroFormFieldPatch.php` | Field patch DTO | FR-ACRO-002 |

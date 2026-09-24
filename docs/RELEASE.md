@@ -57,16 +57,15 @@ Tag `v2.0.5` published from commit `d847e85` (prepare release). Follow-up checkl
 
 ---
 
-## Ready for v3.0.7 (2026-07-29)
+## Ready for v3.1.7 (2026-09-24)
 
-- [x] CHANGELOG: [3.0.7] with date; [Unreleased] at top; links updated (PascalCase `PdfSignableBundle`).
-- [x] UPGRADING: “Upgrading to 3.0.7”; compatibility table updated.
-- [x] RELEASE: this checklist for v3.0.7.
+- [x] CHANGELOG: [3.1.7] with date; [Unreleased] at top; compare links updated.
+- [x] UPGRADING: “From 3.1.6 to 3.1.7”; compatibility table 3.1.x row; fixed missing “From 3.1.5 to 3.1.6”.
+- [x] Docs: `FRANKENPHP-WORKER-AUDIT.md` Compatible (kernel reset false); README + specs FR-RUNTIME-001 / SC-006.
+- [x] Code: W-01 temp-file cleanup in AcroForm apply/process + tests.
 - [ ] Run locally: `make check-no-cursor-coauthor`, `make test`, `make cs-check`.
-- [ ] Run locally: `make validate-translations`.
-- [ ] Run locally: `composer validate --strict` (root `composer.json`).
-- [ ] Commit and push: `git add -A && git commit -m "Prepare v3.0.7 release" && git push origin HEAD`
-- [ ] Create and push tag: `git tag -a v3.0.7 -m "Release v3.0.7"` then `git push origin v3.0.7`
+- [ ] Commit and push: prepare release commit.
+- [ ] Create and push tag: `git tag -a v3.1.7 -m "Release v3.1.7"` then `git push origin v3.1.7`
 - [ ] After tag commit: `make check-no-cursor-coauthor` before push (REQ-GIT-001).
 
 ---
@@ -125,12 +124,12 @@ Tag `v2.0.6` published from commit `2191d01` (prepare release).
 
 ---
 
-## Next release (e.g. v3.0.8)
+## Next release (e.g. v3.1.8)
 
 - [ ] CHANGELOG: Move [Unreleased] entries into `[X.Y.Z]` with date; add new empty [Unreleased] at top; update version links at bottom.
-- [ ] UPGRADING: Add section "Upgrading to X.Y.Z" with release date, what's new, breaking changes (if any), and upgrade steps; update version compatibility table.
-- [ ] RELEASE: Replace "Next release" checklist with "Ready for vX.Y.Z" and complete the steps above.
-- [ ] Run `make test`, `make cs-check`, `make assets`, `make validate-translations`.
+- [ ] UPGRADING: Add section for the new version; update version compatibility table.
+- [ ] RELEASE: Replace checklist with “Ready for vX.Y.Z” and complete the steps above.
+- [ ] Run `make test`, `make cs-check`, `make assets`, `make validate-translations` as needed.
 - [ ] Tag and push; create GitHub Release if workflow is configured.
 
-After creating the release commit and tag, run `make check-no-cursor-coauthor` again **before** `git push` (REQ-GIT-001). The release commit itself is not covered by an earlier `release-check` run.
+After creating the release commit and tag, run `make check-no-cursor-coauthor` again **before** `git push` (REQ-GIT-001).

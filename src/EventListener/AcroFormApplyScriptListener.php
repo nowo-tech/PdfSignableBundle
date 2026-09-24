@@ -17,6 +17,8 @@ use Symfony\Component\Process\Process;
 
 use function count;
 use function is_array;
+use function is_file;
+use function is_string;
 use function strlen;
 
 use const JSON_THROW_ON_ERROR;
@@ -90,15 +92,18 @@ final class AcroFormApplyScriptListener
             'validate_only' => $event->isValidateOnly(),
         ]);
 
-        $tmpPdf     = $this->createTempFile('pdf_apply_');
-        $tmpPatches = $this->createTempFile('patches_');
-        if ($tmpPdf === false || $tmpPatches === false) {
-            $event->setError(new RuntimeException('Failed to create temp files'));
-
-            return;
-        }
-
+        // Init before try so finally can unlink whichever file was created (W-01 / FrankenPHP worker).
+        $tmpPdf     = false;
+        $tmpPatches = false;
         try {
+            $tmpPdf     = $this->createTempFile('pdf_apply_');
+            $tmpPatches = $this->createTempFile('patches_');
+            if ($tmpPdf === false || $tmpPatches === false) {
+                $event->setError(new RuntimeException('Failed to create temp files'));
+
+                return;
+            }
+
             if ($this->writeTempFile($tmpPdf, $pdfContents) === false) {
                 throw new RuntimeException('Failed to write temp PDF');
             }
@@ -192,8 +197,12 @@ final class AcroFormApplyScriptListener
 
             $event->setModifiedPdf($output);
         } finally {
-            @unlink($tmpPdf);
-            @unlink($tmpPatches);
+            if (is_string($tmpPdf) && is_file($tmpPdf)) {
+                @unlink($tmpPdf);
+            }
+            if (is_string($tmpPatches) && is_file($tmpPatches)) {
+                @unlink($tmpPatches);
+            }
         }
     }
 

@@ -131,6 +131,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 - **FR-ACRO-002**: `AcroFormFieldEdit` and `AcroFormFieldPatch` MUST model editable field geometry and properties.
 - **FR-ACRO-003**: `PdfAcroFormEditorInterface`, `PythonProcessEnv`, and `AcroFormApplyScriptListener` MUST invoke external Python tooling and surface `AcroFormEditorException` on failure.
 - **FR-ACRO-004**: `AcroFormOverridesController`, `AcroFormEditorType`, and `AcroFormFieldEditType` MUST expose HTTP/form APIs for override management.
+- **FR-RUNTIME-001**: Shared services MUST remain safe under FrankenPHP worker mode with kernel not reset between requests: no mutable per-request properties; temp files created for AcroForm apply/process MUST be unlinked in `finally` even when a later `tempnam()` fails (see `docs/FRANKENPHP-WORKER-AUDIT.md`).
 
 ### CLI & dependencies
 
@@ -193,6 +194,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 - **SC-003**: PHPUnit, PHPStan, and Vitest pass in CI (`composer qa`).
 - **SC-004**: Proxy rejects disallowed URLs; allowlist regex entries validated at compile time.
 - **SC-005**: Submit flow dispatches `SignatureCoordinatesSubmittedEvent` with model data matching form POST.
+- **SC-006**: FrankenPHP worker audit documents Compatible verdict for kernel reset false; W-01 temp cleanup covered by tests (`docs/FRANKENPHP-WORKER-AUDIT.md`).
 
 ---
 

@@ -271,6 +271,47 @@ final class AcroFormApplyScriptListenerTest extends TestCase
         }
     }
 
+    /** W-01: when the second tempnam fails, the first file must still be unlinked (FrankenPHP worker). */
+    public function testUnlinksFirstTempFileWhenSecondCreateFails(): void
+    {
+        $script = sys_get_temp_dir() . '/pdf_apply_dummy_' . getmypid() . '.py';
+        file_put_contents($script, "import sys\nsys.exit(0)\n");
+        $created = [];
+        $calls   = 0;
+        try {
+            $listener = new AcroFormApplyScriptListener(
+                $script,
+                'python3',
+                null,
+                static function (string $prefix) use (&$calls, &$created): string|false {
+                    ++$calls;
+                    if ($calls === 1) {
+                        $path = tempnam(sys_get_temp_dir(), $prefix);
+                        self::assertNotFalse($path);
+                        $created[] = $path;
+
+                        return $path;
+                    }
+
+                    return false;
+                },
+            );
+            $event = new AcroFormApplyRequestEvent('%PDF-1.4', []);
+
+            $listener($event);
+
+            self::assertNotNull($event->getError());
+            self::assertStringContainsString('Failed to create temp files', $event->getError()->getMessage());
+            self::assertCount(1, $created);
+            self::assertFileDoesNotExist($created[0]);
+        } finally {
+            @unlink($script);
+            foreach ($created as $path) {
+                @unlink($path);
+            }
+        }
+    }
+
     public function testSetsErrorWhenWritingTempPdfFails(): void
     {
         $script = sys_get_temp_dir() . '/pdf_apply_dummy_' . getmypid() . '.py';

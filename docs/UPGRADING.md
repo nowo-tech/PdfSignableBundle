@@ -3,6 +3,7 @@
 ## Table of contents
 
 
+- [From 3.1.6 to 3.1.7](#from-316-to-317)
 - [From 3.1.5 to 3.1.6](#from-315-to-316)
 - [Unreleased](#unreleased)
 - [To 3.1.2](#to-312)
@@ -60,6 +61,22 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 
 ## Unreleased
+
+## From 3.1.6 to 3.1.7
+
+From **3.1.6** — No application upgrade steps. Patch fixes AcroForm temp-file cleanup for FrankenPHP worker mode with kernel not reset between requests (W-01). See [FRANKENPHP-WORKER-AUDIT.md](FRANKENPHP-WORKER-AUDIT.md).
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
+
+## From 3.1.5 to 3.1.6
+
+From **3.1.5** — No application upgrade steps (QA/docs/assets maintainers only: phpstan-frankenphp, English JSDoc, PSR evaluation).
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 ## To 3.1.5
 
@@ -935,6 +952,7 @@ Always read [CHANGELOG.md](CHANGELOG.md) for the target version before upgrading
 
 | Bundle version | Symfony      | PHP   | Notes |
 |----------------|-------------|-------|-------|
+| 3.1.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.1.7:** FrankenPHP worker Compatible with kernel reset false (W-01 temp cleanup); audit doc. **3.1.6:** phpstan-frankenphp / docs. **3.1.4+:** Flex security access control. |
 | 3.0.x          | 7.x, 8.x    | 8.2+ (Symfony **8.0** needs PHP **8.4+**; **8.1+** needs **8.4.1+**) | **3.0.0 breaking:** Minimum PHP 8.2 and Symfony 7.0. **3.0.1:** `Choice` constraints for Validator 7.4+/8.x. **3.0.2:** Symfony 8.1 PHP 8.4.1+ documented. **3.0.3:** Flex recipe `proxy_url_allowlist` placeholder + security note; Spec Kit baseline; `fr`/`nl` translations. **3.0.4:** Code of Conduct; REQ-GIT-001. **3.0.5:** `default_profile` / `profiles` (legacy keys still accepted). **3.0.6:** Twig `@NowoPdfSignableBundle` + translation domain `NowoPdfSignableBundle` (REQ-I18N-003). **3.0.7:** `proxy_url_allowlist_required`; named asset package `nowo_pdf_signable`; HTTP/process timeouts; PHPStan FrankenPHP rulesets. |
 | 2.0.x          | 6.1+, 7.x, 8.x | 8.1+ | **2.0.0 breaking:** Signature under `signature` node; AcroForm under single `acroform` node. **2.0.1:** PDF.js worker default `.js` (MIME fix), worker URL absolute/fallback, translations (AcroForm modal keys + tr YAML), tests. **2.0.2:** Routes YAML copy-paste example, allowlist regex validation in dev (compiler pass), extended tests, `@group integration` for env-dependent tests. **2.0.4:** PHP-CS-Fixer (PSR-12/Symfony), Docker PHP 8.2 Alpine, demo Makefiles/HTTP/READMEs, CI simplified. |
 | 1.5.x          | 6.1+, 7.x, 8.x | 8.1+ | 1.5.0: guides and grid, viewer lazy load, advanced signing, single asset inclusion, larger handles, rotated box drag fix, 19 demos. 1.5.1: named config merge fix, demo symlink. 1.5.2: element lookup by data-pdf-signable (with class/name fallbacks), WORKFLOW.md, override form theme note, recipe complete example. 1.5.3: box-item class fallback (.signature-box-item), extended debug logging. 1.5.4: show_acroform option (default true), AcroForm outline overlay; recipe and demos set show_acroform: true in signature.configs / acroform.configs. |

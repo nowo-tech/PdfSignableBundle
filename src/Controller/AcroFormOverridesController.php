@@ -34,6 +34,7 @@ use Throwable;
 
 use function count;
 use function is_array;
+use function is_file;
 use function is_string;
 use function strlen;
 
@@ -598,13 +599,16 @@ final class AcroFormOverridesController extends AbstractController
             $documentKey = null;
         }
 
-        $tmpInput  = $this->createTempFile('pdf_process_in_');
-        $tmpOutput = $this->createTempFile('pdf_process_out_');
-        if ($tmpInput === false || $tmpOutput === false) {
-            return new JsonResponse(['error' => 'Failed to create temp files'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
+        // Init before try so finally can unlink whichever file was created (W-01 / FrankenPHP worker).
+        $tmpInput  = false;
+        $tmpOutput = false;
         try {
+            $tmpInput  = $this->createTempFile('pdf_process_in_');
+            $tmpOutput = $this->createTempFile('pdf_process_out_');
+            if ($tmpInput === false || $tmpOutput === false) {
+                return new JsonResponse(['error' => 'Failed to create temp files'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
             if ($this->writeTempFile($tmpInput, $decoded) === false) {
                 throw new RuntimeException('Failed to write temp PDF');
             }
