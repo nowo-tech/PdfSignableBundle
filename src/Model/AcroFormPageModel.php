@@ -24,6 +24,7 @@ class AcroFormPageModel
 
     public function setPdfUrl(?string $pdfUrl): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->pdfUrl = $pdfUrl;
 
         return $this;
@@ -36,6 +37,7 @@ class AcroFormPageModel
 
     public function setDocumentKey(?string $documentKey): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->documentKey = $documentKey;
 
         return $this;

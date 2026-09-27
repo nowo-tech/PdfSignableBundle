@@ -42,6 +42,7 @@ final class NowoPdfSignableBundle extends Bundle
     public function getContainerExtension(): ExtensionInterface
     {
         if (!$this->extension instanceof ExtensionInterface) {
+            // @igor-ignore - Boot-time Symfony Bundle extension cache (not request state).
             $this->extension = new PdfSignableExtension();
         }
 

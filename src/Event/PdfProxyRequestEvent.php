@@ -44,6 +44,7 @@ final class PdfProxyRequestEvent extends Event
      */
     public function setUrl(string $url): void
     {
+        // @igor-ignore - Request-scoped Event DTO; not a shared worker service.
         $this->url = $url;
     }
 
@@ -64,6 +65,7 @@ final class PdfProxyRequestEvent extends Event
      */
     public function setResponse(?Response $response): void
     {
+        // @igor-ignore - Request-scoped Event DTO; not a shared worker service.
         $this->response = $response;
     }
 

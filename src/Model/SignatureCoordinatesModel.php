@@ -72,6 +72,7 @@ class SignatureCoordinatesModel
      */
     public function setPdfUrl(?string $pdfUrl): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->pdfUrl = $pdfUrl;
 
         return $this;
@@ -94,6 +95,7 @@ class SignatureCoordinatesModel
      */
     public function setUnit(string $unit): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->unit = $unit;
 
         return $this;
@@ -116,6 +118,7 @@ class SignatureCoordinatesModel
      */
     public function setOrigin(string $origin): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->origin = $origin;
 
         return $this;
@@ -138,6 +141,7 @@ class SignatureCoordinatesModel
      */
     public function setSignatureBoxes(array $signatureBoxes): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->signatureBoxes = $signatureBoxes;
 
         return $this;
@@ -150,6 +154,7 @@ class SignatureCoordinatesModel
      */
     public function addSignatureBox(SignatureBoxModel $box): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->signatureBoxes[] = $box;
 
         return $this;
@@ -168,6 +173,7 @@ class SignatureCoordinatesModel
      */
     public function setSigningConsent(bool $signingConsent): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->signingConsent = $signingConsent;
 
         return $this;
@@ -190,6 +196,7 @@ class SignatureCoordinatesModel
      */
     public function setAuditMetadata(array $auditMetadata): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->auditMetadata = $auditMetadata;
 
         return $this;

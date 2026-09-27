@@ -53,6 +53,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
             return;
         }
         $key = self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey);
+        // @igor-ignore - Not shared worker service state.
         $session->set($key, $overrides->toArray());
     }
 
@@ -62,6 +63,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
         if (!$session instanceof SessionInterface) {
             return;
         }
+        // @igor-ignore - Not shared worker service state.
         $session->remove(self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey));
     }
 

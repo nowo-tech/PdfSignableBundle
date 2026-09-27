@@ -169,6 +169,7 @@ final class NowoPdfSignableTwigExtension extends AbstractExtension
         if ($request->attributes->get(self::REQUEST_ATTR)) {
             return false;
         }
+        // @igor-ignore - Not shared worker service state.
         $request->attributes->set(self::REQUEST_ATTR, true);
 
         return true;

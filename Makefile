@@ -5,7 +5,7 @@ COMPOSE_BIN := $(shell docker compose version >/dev/null 2>&1 && echo "docker co
 COMPOSE     := $(COMPOSE_BIN) -f $(COMPOSE_FILE)
 SERVICE_PHP := php
 
-.PHONY: help up down build shell install assets test test-coverage coverage-check coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc update-deps update-deps-demos check-no-cursor-coauthor check-open-prs strip-cursor-coauthor-from-history demo-smoke check-twig-extra
+.PHONY: help up down build shell install assets test test-coverage coverage-check coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan igor release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc update-deps update-deps-demos check-no-cursor-coauthor check-open-prs strip-cursor-coauthor-from-history demo-smoke check-twig-extra
 
 help:
 	@echo "PdfSignable Bundle - Development Commands"
@@ -26,6 +26,7 @@ help:
 	@echo "  rector              Apply Rector refactoring"
 	@echo "  rector-dry          Run Rector in dry-run mode"
 	@echo "  phpstan             Run PHPStan static analysis"
+	@echo "  igor          Run Igor worker-state audit (REQ-CS-008)"
 	@echo "  qa                  Run all QA (cs-check + test)"
 	@echo "  release-check       Pre-release: cs-fix, cs-check, rector-dry, phpstan, test-coverage, test-ts, demo healthchecks"
 	@echo "  composer-sync       Validate composer.json and align composer.lock"
@@ -177,7 +178,11 @@ validate: ensure-up
 check-twig-extra:
 	@chmod +x .scripts/check-twig-extra.sh
 	@./.scripts/check-twig-extra.sh
-release-check: check-no-cursor-coauthor check-open-prs check-twig-extra ensure-up composer-sync cs-fix cs-check rector-dry phpstan coverage-check test-ts test-python release-check-demos
+
+# Run Igor worker-state audit (REQ-CS-008)
+igor: ensure-up
+	$(COMPOSE) exec -T php composer igor
+release-check: check-no-cursor-coauthor check-open-prs check-twig-extra ensure-up composer-sync cs-fix cs-check rector-dry phpstan igor coverage-check test-ts test-python release-check-demos
 
 coverage-check: test-coverage
 	@chmod +x .scripts/coverage-fail-under.sh

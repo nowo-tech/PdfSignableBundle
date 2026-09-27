@@ -63,6 +63,7 @@ final class AcroFormApplyRequestEvent extends Event
      */
     public function setModifiedPdf(string $pdf): void
     {
+        // @igor-ignore - Request-scoped Event DTO; not a shared worker service.
         $this->modifiedPdf = $pdf;
     }
 
@@ -79,6 +80,7 @@ final class AcroFormApplyRequestEvent extends Event
      */
     public function setError(Throwable $e): void
     {
+        // @igor-ignore - Request-scoped Event DTO; not a shared worker service.
         $this->error = $e;
     }
 
@@ -95,6 +97,7 @@ final class AcroFormApplyRequestEvent extends Event
      */
     public function setErrorDetail(string $detail): void
     {
+        // @igor-ignore - Request-scoped Event DTO; not a shared worker service.
         $this->errorDetail = $detail;
     }
 
@@ -121,6 +124,7 @@ final class AcroFormApplyRequestEvent extends Event
      */
     public function setValidationResult(array $result): void
     {
+        // @igor-ignore - Request-scoped Event DTO; not a shared worker service.
         $this->validationResult = $result;
     }
 

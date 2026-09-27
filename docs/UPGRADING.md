@@ -6,6 +6,7 @@
 - [From 3.1.6 to 3.1.7](#from-316-to-317)
 - [From 3.1.5 to 3.1.6](#from-315-to-316)
 - [Unreleased](#unreleased)
+- [To 3.1.8](#to-318)
 - [To 3.1.2](#to-312)
 - [To 3.1.1](#to-311)
 - [To 3.1.0](#to-310)
@@ -61,6 +62,18 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 
 ## Unreleased
+
+## To 3.1.8
+
+From **3.1.7** — REQ-CS-008 Igor FrankenPHP worker audit (igor-php require-dev, igor.json, make igor).
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+php bin/console cache:clear
+```
+
+- No application upgrade steps for require-dev Igor tooling (REQ-CS-008). Consumers do not pull `igor-php/igor-php` transitively.
+
 
 ## From 3.1.6 to 3.1.7
 

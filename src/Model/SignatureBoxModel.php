@@ -62,6 +62,7 @@ class SignatureBoxModel
      */
     public function setPage(int $page): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->page = $page;
 
         return $this;
@@ -84,6 +85,7 @@ class SignatureBoxModel
      */
     public function setName(string $name): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->name = $name;
 
         return $this;
@@ -106,6 +108,7 @@ class SignatureBoxModel
      */
     public function setX(float $x): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->x = $x;
 
         return $this;
@@ -128,6 +131,7 @@ class SignatureBoxModel
      */
     public function setY(float $y): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->y = $y;
 
         return $this;
@@ -150,6 +154,7 @@ class SignatureBoxModel
      */
     public function setWidth(float $width): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->width = $width;
 
         return $this;
@@ -172,6 +177,7 @@ class SignatureBoxModel
      */
     public function setHeight(float $height): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->height = $height;
 
         return $this;
@@ -194,6 +200,7 @@ class SignatureBoxModel
      */
     public function setAngle(float $angle): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->angle = $angle;
 
         return $this;
@@ -214,6 +221,7 @@ class SignatureBoxModel
      */
     public function setSignatureData(?string $signatureData): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->signatureData = $signatureData;
 
         return $this;
@@ -234,6 +242,7 @@ class SignatureBoxModel
      */
     public function setSignedAt(?string $signedAt): self
     {
+        // @igor-ignore - Domain model value object; instance-scoped, not a shared service.
         $this->signedAt = $signedAt;
 
         return $this;

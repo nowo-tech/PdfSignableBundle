@@ -59,6 +59,7 @@ final class PdfSignRequestEvent extends Event
      */
     public function setResponse(?Response $response): void
     {
+        // @igor-ignore - Request-scoped Event DTO; not a shared worker service.
         $this->response = $response;
     }
 

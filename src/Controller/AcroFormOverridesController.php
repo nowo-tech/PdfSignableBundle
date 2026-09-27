@@ -296,6 +296,7 @@ final class AcroFormOverridesController extends AbstractController
             $fields = null;
         }
         $overrides = new AcroFormOverrides($overridesData, $documentKey, $fields);
+        // @igor-ignore - HTTP handler delegates to services; no controller worker state.
         $this->storage->set($documentKey, $overrides);
 
         return new JsonResponse($overrides->toArray(), Response::HTTP_OK);
@@ -393,6 +394,7 @@ final class AcroFormOverridesController extends AbstractController
         if ($documentKey === null) {
             return new JsonResponse(['error' => 'document_key required'], Response::HTTP_BAD_REQUEST);
         }
+        // @igor-ignore - HTTP handler delegates to services; no controller worker state.
         $this->storage->remove($documentKey);
 
         return new Response('', Response::HTTP_NO_CONTENT);
