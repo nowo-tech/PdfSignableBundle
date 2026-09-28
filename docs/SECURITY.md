@@ -4,8 +4,8 @@
 
 - **PDF proxy**
   - When `proxy_enabled` is true, the bundle fetches external PDFs. Use **proxy_url_allowlist** to restrict which URLs can be requested (substring or regex).
-  - Set **`proxy_url_allowlist_required: true`** in production so an empty allowlist fails container compilation. Default remains `false` for BC / local demos only.
-  - The Flex recipe (`when@prod`) forces `proxy_url_allowlist_required: true` in production; keep a non-empty `proxy_url_allowlist`.
+  - Set **`proxy_url_allowlist_required: true`** (the PHP default) so an empty allowlist fails container compilation. Set `false` only for local demos.
+  - The Flex recipe copies `false` for local installs and `when@prod` forces `true`; keep a non-empty `proxy_url_allowlist` in production.
   - The proxy **blocks private/local URLs** (SSRF mitigation): 127.0.0.0/8, ::1, 10.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16 and hostname `localhost`. Requests to these hosts return 403.
   - Proxy error responses do not expose exception messages to the client (no internal paths or server details).
 

@@ -38,7 +38,7 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
 
         $container->setParameter(Configuration::ALIAS . '.proxy_enabled', $config['proxy_enabled'] ?? true);
         $container->setParameter(Configuration::ALIAS . '.proxy_url_allowlist', $config['proxy_url_allowlist'] ?? []);
-        $container->setParameter(Configuration::ALIAS . '.proxy_url_allowlist_required', $config['proxy_url_allowlist_required'] ?? false);
+        $container->setParameter(Configuration::ALIAS . '.proxy_url_allowlist_required', $config['proxy_url_allowlist_required'] ?? true);
         $container->setParameter(Configuration::ALIAS . '.example_pdf_url', $config['example_pdf_url'] ?? '');
         $container->setParameter(Configuration::ALIAS . '.debug', $config['debug'] ?? false);
         $container->setParameter(Configuration::ALIAS . '.http_timeout', $config['http_timeout'] ?? 30.0);

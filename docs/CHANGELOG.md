@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.2.0] - 2026-09-28](#320---2026-09-28)
 - [[3.1.8] - 2026-09-27](#318---2026-09-27)
 - [[3.1.7] - 2026-09-24](#317---2026-09-24)
 - [[3.1.6] - 2026-08-24](#316---2026-08-24)
@@ -132,6 +133,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-09-28
+
+### Security
+
+- Default `proxy_url_allowlist_required` is **`true`**. Local demos must set `false` or provide a non-empty `proxy_url_allowlist`. Flex `when@prod` still forces `true`.
+
 ## [3.1.8] - 2026-09-27
 
 ### Added
@@ -142,6 +149,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Worker safety (Igor):** justified `// @igor-ignore` annotations and/or `ResetInterface` / request-scoped fixes so `make igor` passes on package `src/`.
 
+[3.2.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.2.0
 [3.1.8]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.1.8
 
 ## [3.1.7] - 2026-09-24

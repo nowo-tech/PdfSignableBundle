@@ -58,7 +58,7 @@ nowo_pdf_signable:
 |-------------------------|--------|---------|-------------|
 | `proxy_enabled`         | bool   | `true`  | Enables the `/pdf-signable/proxy` route to fetch PDFs by URL and avoid CORS. |
 | `proxy_url_allowlist`   | string[] | `[]` | When non-empty, the proxy only fetches URLs that match at least one entry. Each entry: a **substring** of the URL (e.g. `transportes.gob.es`), or a **regex** if prefixed with `#` (e.g. `#^https://example\.com/.*#`). Empty list = no restriction unless `proxy_url_allowlist_required` is true. |
-| `proxy_url_allowlist_required` | bool | `false` | When `true` and `proxy_enabled` is true, an empty allowlist fails container compilation. **Recommended `true` in production.** |
+| `proxy_url_allowlist_required` | bool | `true` | When `true` and `proxy_enabled` is true, an empty allowlist fails container compilation. Set `false` for local demos only. |
 | `example_pdf_url`       | string | (sample URL in code) | Default PDF URL for form preload when no pdf_url is set in form/config. Set `''` to disable. |
 | `debug`                 | bool   | `false` | When `true`, the frontend uses the bundle logger with debug enabled: all `debug`/`info`/`warn` messages are shown in the browser console (e.g. DOM resolution, load PDF, add/remove box, overlay updates, AcroForm apply). When `false`, only the “script loaded” line is shown. The AcroForm editor panel also supports `data-debug="1"` or `data-debug="true"` on its root element to enable the same logger output for that script. |
 | `http_timeout`          | float  | `30`    | HTTP timeout (seconds) for proxy / external PDF fetches. Keep below PHP `max_execution_time` and FrankenPHP/Caddy write timeout (REQ-RUNTIME-001). |

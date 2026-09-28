@@ -22,7 +22,7 @@ final class ConfigurationTest extends TestCase
 
         self::assertTrue($config['proxy_enabled']);
         self::assertSame([], $config['proxy_url_allowlist']);
-        self::assertFalse($config['proxy_url_allowlist_required']);
+        self::assertTrue($config['proxy_url_allowlist_required']);
         self::assertIsString($config['example_pdf_url']);
         self::assertNotEmpty($config['example_pdf_url']);
     }
