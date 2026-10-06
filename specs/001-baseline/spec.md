@@ -100,13 +100,14 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 ### Bundle & DI
 
 - **FR-BUNDLE-001**: `NowoPdfSignableBundle` MUST register `TwigPathsPass` and `ProxyUrlAllowlistValidationPass`, expose alias `nowo_pdf_signable`, and resolve bundle path for `@NowoPdfSignableBundle` templates.
-- **FR-CFG-001**: `Configuration` MUST define `nowo_pdf_signable` with `proxy_enabled`, `proxy_url_allowlist`, `example_pdf_url`, `debug`, `signature` (defaults + `profiles`), `audit`, `tsa_url`, `signing_service_id`, and `acroform` trees.
+- **FR-CFG-001**: `Configuration` MUST define `nowo_pdf_signable` with `proxy_enabled`, `proxy_url_allowlist`, `proxy_url_allowlist_required`, `example_pdf_url`, `debug`, `signature` (defaults + `profiles`), `audit`, `tsa_url`, `signing_service_id`, and `acroform` trees.
 - **FR-CFG-002**: `PdfSignableExtension` MUST load `services.yaml`, set `%nowo_pdf_signable.*%` parameters, and conditionally register acroform services when enabled.
 - **FR-DI-001**: `services.yaml` and `routes.yaml` MUST wire controllers, form types, Twig extension, event listeners, and proxy route prefix documented in `docs/CONFIGURATION.md`.
 
 ### Security & proxy
 
 - **FR-SEC-001**: `ProxyUrlValidator` and `ProxyUrlAllowlistValidationPass` MUST block private IPs, invalid schemes, and URLs outside the configured allowlist when non-empty.
+- **FR-SEC-004**: `proxy_url_allowlist_required` MUST default to `true` so an empty allowlist fails container compilation when the proxy is enabled. The Flex recipe MAY copy `false` for local installs and MUST force `true` under `when@prod` (`docs/SECURITY.md`).
 - **FR-PROXY-001**: `SignatureController::proxy` MUST honor `proxy_enabled`, validate URL, dispatch proxy events, and stream PDF bytes with appropriate cache/content headers.
 
 ### Form types & models

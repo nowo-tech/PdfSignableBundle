@@ -57,15 +57,14 @@ Tag `v2.0.5` published from commit `d847e85` (prepare release). Follow-up checkl
 
 ---
 
-## Ready for v3.1.7 (2026-09-24)
+## Ready for v3.2.1 (2026-10-06)
 
-- [x] CHANGELOG: [3.1.7] with date; [Unreleased] at top; compare links updated.
-- [x] UPGRADING: “From 3.1.6 to 3.1.7”; compatibility table 3.1.x row; fixed missing “From 3.1.5 to 3.1.6”.
-- [x] Docs: `FRANKENPHP-WORKER-AUDIT.md` Compatible (kernel reset false); README + specs FR-RUNTIME-001 / SC-006.
-- [x] Code: W-01 temp-file cleanup in AcroForm apply/process + tests.
+- [x] CHANGELOG: [3.2.1] with date; [Unreleased] at top; compare links from v3.2.1.
+- [x] UPGRADING: “To 3.2.1”; compatibility table 3.2.x row.
+- [x] Specs: FR-SEC-004 / FR-CFG-001 allowlist required; SECURITY.md 3.x support; issue #46 closed as already shipped.
 - [ ] Run locally: `make check-no-cursor-coauthor`, `make test`, `make cs-check`.
 - [ ] Commit and push: prepare release commit.
-- [ ] Create and push tag: `git tag -a v3.1.7 -m "Release v3.1.7"` then `git push origin v3.1.7`
+- [ ] Create and push tag: `git tag -a v3.2.1 -m "Release v3.2.1"` then `git push origin v3.2.1`
 - [ ] After tag commit: `make check-no-cursor-coauthor` before push (REQ-GIT-001).
 
 ---
@@ -124,7 +123,7 @@ Tag `v2.0.6` published from commit `2191d01` (prepare release).
 
 ---
 
-## Next release (e.g. v3.1.8)
+## Next release (e.g. v3.2.2)
 
 - [ ] CHANGELOG: Move [Unreleased] entries into `[X.Y.Z]` with date; add new empty [Unreleased] at top; update version links at bottom.
 - [ ] UPGRADING: Add section for the new version; update version compatibility table.

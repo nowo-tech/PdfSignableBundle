@@ -11,10 +11,10 @@ This file proves that **every production source artifact** under `src/` is refer
 | Source file | Spec section | Requirement IDs |
 | --- | --- | --- |
 | `NowoPdfSignableBundle.php` | Bundle entry | FR-BUNDLE-001 |
-| `DependencyInjection/Configuration.php` | Config tree | FR-CFG-001 |
+| `DependencyInjection/Configuration.php` | Config tree | FR-CFG-001, FR-SEC-004 |
 | `DependencyInjection/PdfSignableExtension.php` | DI extension | FR-CFG-002 |
 | `DependencyInjection/Compiler/TwigPathsPass.php` | Twig namespace paths | FR-BUNDLE-001 |
-| `DependencyInjection/ProxyUrlAllowlistValidationPass.php` | Allowlist compile-time validation | FR-SEC-001 |
+| `DependencyInjection/ProxyUrlAllowlistValidationPass.php` | Allowlist compile-time validation | FR-SEC-001, FR-SEC-004 |
 | `Checker/DependencyChecker.php` | Optional dependency probe | FR-CLI-001 |
 | `Checker/DependencyCheckerInterface.php` | Dependency probe contract | FR-CLI-001 |
 | `Command/CheckDependenciesCommand.php` | CLI `nowo:pdf-signable:check-dependencies` | FR-CLI-001 |

@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.2.1] - 2026-10-06](#321---2026-10-06)
 - [[3.2.0] - 2026-09-28](#320---2026-09-28)
 - [[3.1.8] - 2026-09-27](#318---2026-09-27)
 - [[3.1.7] - 2026-09-24](#317---2026-09-24)
@@ -132,6 +133,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [3.2.1] - 2026-10-06
+
+### Changed
+
+- **Deps (maintainers):** `igor-php/igor-php` `^0.10.0`; PHPStan group updates; `friendsofphp/php-cs-fixer` 3.95.27; frontend `vite` `^8.3.2`, `sass` `^1.105.1`, `jsdom` 30.1.1.
+
+### Documentation
+
+- Specs: **FR-SEC-004** — `proxy_url_allowlist_required` defaults to `true`; Flex recipe `when@prod` forces `true` ([#46](https://github.com/nowo-tech/PdfSignableBundle/issues/46) already shipped in 3.2.0 / PR #48).
+- SECURITY.md supported versions include **3.x**. Changelog compare links catch up from 3.1.7.
+
+### Notes
+
+- **No API or configuration changes** for integrators.
+
+[3.2.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.2.1
 
 ## [3.2.0] - 2026-09-28
 
@@ -872,7 +891,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.1.7...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.2.1...HEAD
+[3.2.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.2.1
 [3.1.7]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.1.7
 [3.0.7]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.0.6...v3.0.7
 [3.0.6]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.0.6
