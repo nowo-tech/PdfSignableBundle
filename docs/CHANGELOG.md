@@ -3,6 +3,8 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.2.2] - 2026-10-09](#322---2026-10-09)
+  - [Dependencies](#dependencies)
 - [[3.2.1] - 2026-10-06](#321---2026-10-06)
 - [[3.2.0] - 2026-09-28](#320---2026-09-28)
 - [[3.1.8] - 2026-09-27](#318---2026-09-27)
@@ -134,6 +136,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.2] - 2026-10-09
+
+### Dependencies
+
+- Composer refresh: Symfony 7.4.20 components, `twig/twig` 3.30.0 (lockfile); dev tooling `phpstan/phpstan` 2.3.1, `phpstan/phpstan-phpunit` 2.1.1, `phpstan/phpstan-symfony` 2.1.0, `rector/rector` 2.7.0, `igor-php/igor-php` 0.10.1.
+- Demo: Symfony 8.1.8, `twig/twig` 3.30.0; regenerated `config/reference.php`.
 
 ## [3.2.1] - 2026-10-06
 
@@ -891,7 +899,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.2.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.2.2...HEAD
+[3.2.2]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.2.2
 [3.2.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.2.1
 [3.1.7]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.1.7
 [3.0.7]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.0.6...v3.0.7
