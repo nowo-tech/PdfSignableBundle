@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.4.1](#to-341)
 - [To 3.4.0](#to-340)
 - [To 3.3.0](#to-330)
 - [To 3.2.3](#to-323)
@@ -71,6 +72,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.4.1
+
+From **3.4.0** — security - proxy allowlist path prefixes compared on the normalised path (no dot-segment bypass).
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 - `proxy_url_allowlist` path-prefix entries now compare against the normalised path: URLs whose `..` / `%2e%2e` segments leave the allowed prefix are rejected (403). No configuration change needed.
 
