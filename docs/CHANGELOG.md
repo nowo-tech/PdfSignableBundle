@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.2.3] - 2026-10-13](#323---2026-10-13)
 - [[3.2.2] - 2026-10-09](#322---2026-10-09)
   - [Dependencies](#dependencies)
 - [[3.2.1] - 2026-10-06](#321---2026-10-06)
@@ -135,6 +136,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.2.3] - 2026-10-13
+
+### Changed
+
+- Repository: `.twig-cs-fixer.cache` is now git-ignored.
+
+### Dependencies
+
+- `jsdom` 30.1.1 → 30.1.2 (frontend tooling; #86).
+- `pdfjs-dist` 6.3.289 → 6.4.299 (frontend tooling; #87).
+- `vite` 8.3.2 → 8.3.4 (frontend tooling; #88).
+
+### Fixed
+
+- **Shipped assets:** `pdf-signable.js`, `acroform-editor.js` and `pdf.worker.min.js` under `src/Resources/public/js/` are rebuilt with `pdfjs-dist` **6.4.299**. Previous tags shipped the 6.2.108 viewer/worker even though `package.json` already required a newer PDF.js.
 
 ## [3.2.2] - 2026-10-09
 
@@ -899,7 +916,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.2.2...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.2.3...HEAD
+[3.2.3]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.2.3
 [3.2.2]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.2.2
 [3.2.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.2.1
 [3.1.7]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.1.7

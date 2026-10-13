@@ -2,8 +2,8 @@
 
 ## Table of contents
 
-
 - [Unreleased](#unreleased)
+- [To 3.2.3](#to-323)
 - [To 3.2.2](#to-322)
 - [To 3.2.1](#to-321)
 - [To 3.2.0](#to-320)
@@ -63,8 +63,19 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 
 Version **2.0.0** is a **breaking** release for configuration: the YAML structure changes (signature under `signature`, AcroForm under a single `acroform` node). If you are on 1.5.x or earlier, read the [Upgrading to 2.0.0](#upgrading-to-200-2026-02-16) section before updating.
 
-
 ## Unreleased
+
+## To 3.2.3
+
+From **3.2.2** — shipped PDF.js assets rebuilt with pdfjs-dist 6.4.299.
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+php bin/console assets:install
+```
+
+- No bundle API or configuration changes.
+- Run `assets:install` (or your asset pipeline) so the rebuilt viewer and `pdf.worker.min.js` are published; clear any CDN/browser cache that pins the old worker.
 
 ## To 3.2.2
 
@@ -184,7 +195,6 @@ and enable `Twig\Extra\TwigExtraBundle\TwigExtraBundle`. Flex recipes usually re
 ### Twig-CS-Fixer (maintainers)
 
 Package maintainers: `composer twig:lint` / `composer twig:fix` use `.twig-cs-fixer.php` over `src/` (and `templates/` when present).
-
 
 ## General upgrade process
 
