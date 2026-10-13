@@ -705,4 +705,4 @@ The bundle’s JavaScript runs on submit to re-index the collection field names 
 
 The route `GET /pdf-signable/proxy?url=<encoded_url>` returns the PDF content at the given URL. Useful to avoid CORS when the PDF is on another domain. If you disable the proxy (`proxy_enabled: false`), that route returns 403.
 
-When **proxy_url_allowlist** is set in the bundle configuration, the proxy only fetches URLs that match one of the entries (substring or regex). See [Configuration](CONFIGURATION.md).
+When **proxy_url_allowlist** is set in the bundle configuration, the proxy only fetches URLs that match one of the entries (host, URL prefix, or regex). See [Configuration](CONFIGURATION.md).

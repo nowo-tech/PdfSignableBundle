@@ -13,12 +13,12 @@ use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\AuditMetadata;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator;
+use Nowo\PdfSignableBundle\Proxy\RemotePdfFetcher;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,6 +51,7 @@ final class SignatureController extends AbstractController
      * @param bool $auditFillFromRequest When true, merge IP, user_agent, submitted_at into model audit before dispatch
      * @param LoggerInterface $logger Logger; proxy fetch failures are logged for debugging (502 cause)
      * @param float $httpTimeout HTTP timeout for proxy PDF fetches (from nowo_pdf_signable.http_timeout)
+     * @param int $proxyMaxPdfSize Max size in bytes of a proxied PDF (from nowo_pdf_signable.proxy_max_pdf_size)
      */
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
@@ -66,6 +67,8 @@ final class SignatureController extends AbstractController
         private readonly ?HttpClientInterface $httpClient = null,
         #[Autowire(param: 'nowo_pdf_signable.http_timeout')]
         private readonly float $httpTimeout = 30.0,
+        #[Autowire(param: 'nowo_pdf_signable.proxy_max_pdf_size')]
+        private readonly int $proxyMaxPdfSize = 20971520,
     ) {
     }
 
@@ -205,29 +208,20 @@ final class SignatureController extends AbstractController
         }
 
         try {
-            $timeout  = max(0.1, $this->httpTimeout);
-            $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
-                'timeout'       => $timeout,
-                'max_duration'  => $timeout,
-                'max_redirects' => 5,
-                'headers'       => [
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept'     => 'application/pdf,*/*',
-                ],
+            $fetched = (new RemotePdfFetcher($this->proxyUrlValidator, $this->httpClient, $this->httpTimeout))->fetch($url, max(1, $this->proxyMaxPdfSize), [
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept'     => 'application/pdf,*/*',
             ]);
-            $statusCode = $response->getStatusCode();
-            if ($statusCode < 200 || $statusCode >= 300) {
-                throw new RuntimeException("Upstream returned HTTP {$statusCode}");
+            if (!RemotePdfFetcher::looksLikePdf($fetched['content'])) {
+                throw new RuntimeException('Upstream content is not a PDF');
             }
-            $content     = $response->getContent();
-            $headers     = $response->getHeaders();
-            $contentType = $headers['content-type'][0] ?? 'application/pdf';
-            if (!str_contains($contentType, 'pdf')) {
-                $contentType = 'application/pdf';
-            }
-            $responseObj = new Response($content, Response::HTTP_OK, [
-                'Content-Type'        => $contentType,
-                'Content-Disposition' => 'inline; filename="document.pdf"',
+            // Always served as PDF from the app origin: never trust the upstream Content-Type, forbid sniffing
+            // and sandbox the document so it cannot run script with the application's origin.
+            $responseObj = new Response($fetched['content'], Response::HTTP_OK, [
+                'Content-Type'            => 'application/pdf',
+                'Content-Disposition'     => 'inline; filename="document.pdf"',
+                'X-Content-Type-Options'  => 'nosniff',
+                'Content-Security-Policy' => 'sandbox',
             ]);
             $responseEvent = new PdfProxyResponseEvent($url, $request, $responseObj);
             $this->eventDispatcher->dispatch($responseEvent, PdfSignableEvents::PDF_PROXY_RESPONSE);

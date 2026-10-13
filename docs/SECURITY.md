@@ -3,10 +3,13 @@
 ## Security considerations for integrators
 
 - **PDF proxy**
-  - When `proxy_enabled` is true, the bundle fetches external PDFs. Use **proxy_url_allowlist** to restrict which URLs can be requested (substring or regex).
+  - When `proxy_enabled` is true, the bundle fetches external PDFs. Use **proxy_url_allowlist** to restrict which URLs can be requested (host / URL prefix matched on the parsed host, or anchored regex).
   - Set **`proxy_url_allowlist_required: true`** (the PHP default) so an empty allowlist fails container compilation. Set `false` only for local demos.
   - The Flex recipe copies `false` for local installs and `when@prod` forces `true`; keep a non-empty `proxy_url_allowlist` in production.
-  - The proxy **blocks private/local URLs** (SSRF mitigation): 127.0.0.0/8, ::1, 10.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16 and hostname `localhost`. Requests to these hosts return 403.
+  - The proxy and AcroForm `pdf_url` fetches **block private/local/reserved addresses** (SSRF mitigation): loopback, RFC 1918 (incl. 172.16.0.0/12), 0.0.0.0/8, 100.64.0.0/10, 169.254.0.0/16, multicast/reserved, `::`, `::1`, fc00::/7, fe80::/10, IPv4-mapped IPv6 and `localhost`. Every A/AAAA record must be public; unresolvable hosts are rejected (fail closed). Requests to these hosts return 403.
+  - Fetches are pinned to the validated IP and go through `NoPrivateNetworkHttpClient` (DNS rebinding). Redirects are followed manually (max 5) and each hop is re-validated (allowlist + SSRF).
+  - Proxied responses are always `application/pdf` with `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`; non-PDF bodies (no `%PDF-` header) are refused. Download size is capped while streaming (`proxy_max_pdf_size`, `acroform.max_pdf_size`).
+  - `/acroform/process` validates `document_key` (`[A-Za-z0-9_.-]`, max 256) before passing it to the script.
   - Proxy error responses do not expose exception messages to the client (no internal paths or server details).
 
 - **AcroForm JSON routes**

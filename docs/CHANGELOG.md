@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+  - [Security](#security)
 - [[3.2.3] - 2026-10-13](#323---2026-10-13)
 - [[3.2.2] - 2026-10-09](#322---2026-10-09)
   - [Dependencies](#dependencies)
@@ -136,6 +137,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Security
+
+- PDF proxy and AcroForm `pdf_url` fetches: redirects are no longer followed blindly; they are followed manually (max 5) and every hop is re-checked against the allowlist and SSRF rules. Connections are pinned to the validated IP and made through `NoPrivateNetworkHttpClient` (DNS rebinding).
+- SSRF check now blocks 172.16.0.0/12, 0.0.0.0/8, 100.64.0.0/10, fc00::/7, `::`, IPv4-mapped IPv6 (`::ffff:127.0.0.1`), `*.localhost` and other reserved ranges; all A/AAAA records must be public and unresolvable hosts are rejected (fail closed).
+- `proxy_url_allowlist`: non-regex entries are matched against the parsed host (exact or subdomain; entries with a scheme are URL prefixes) instead of as a substring of the whole URL (`https://evil/?x=example.com` no longer matches `example.com`).
+- Proxy responses are always served as `application/pdf` with `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`; bodies without a `%PDF-` header are rejected (502).
+- Remote PDF downloads are streamed and aborted above `proxy_max_pdf_size` (new, default 20 MiB) for the proxy and `acroform.max_pdf_size` for AcroForm `pdf_url` (previously unbounded).
+- `/acroform/process` rejects an invalid `document_key` (400) before it reaches the script arguments.
 
 ## [3.2.3] - 2026-10-13
 

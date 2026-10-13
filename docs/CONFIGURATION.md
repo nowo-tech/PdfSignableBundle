@@ -57,7 +57,8 @@ nowo_pdf_signable:
 | Option                  | Type   | Default | Description |
 |-------------------------|--------|---------|-------------|
 | `proxy_enabled`         | bool   | `true`  | Enables the `/pdf-signable/proxy` route to fetch PDFs by URL and avoid CORS. |
-| `proxy_url_allowlist`   | string[] | `[]` | When non-empty, the proxy only fetches URLs that match at least one entry. Each entry: a **substring** of the URL (e.g. `transportes.gob.es`), or a **regex** if prefixed with `#` (e.g. `#^https://example\.com/.*#`). Empty list = no restriction unless `proxy_url_allowlist_required` is true. |
+| `proxy_url_allowlist`   | string[] | `[]` | When non-empty, the proxy only fetches URLs that match at least one entry. Each entry: a **host** (e.g. `transportes.gob.es` matches that host and its subdomains; `.example.com` subdomains only; optional port/path prefix `example.com:8443/pdfs/`), a **URL prefix** with scheme (e.g. `https://cdn.example.com/pdfs/`: same scheme, exact host and port, path prefix), or a **regex** against the full URL if prefixed with `#` (e.g. `#^https://example\.com/.*#`). Checked again on every redirect hop. Empty list = no restriction unless `proxy_url_allowlist_required` is true. |
+| `proxy_max_pdf_size` | int | `20971520` | Max size in bytes of a PDF fetched by the proxy. The download is streamed and aborted (502) when exceeded. |
 | `proxy_url_allowlist_required` | bool | `true` | When `true` and `proxy_enabled` is true, an empty allowlist fails container compilation. Set `false` for local demos only. |
 | `example_pdf_url`       | string | (sample URL in code) | Default PDF URL for form preload when no pdf_url is set in form/config. Set `''` to disable. |
 | `debug`                 | bool   | `false` | When `true`, the frontend uses the bundle logger with debug enabled: all `debug`/`info`/`warn` messages are shown in the browser console (e.g. DOM resolution, load PDF, add/remove box, overlay updates, AcroForm apply). When `false`, only the “script loaded” line is shown. The AcroForm editor panel also supports `data-debug="1"` or `data-debug="true"` on its root element to enable the same logger output for that script. |
@@ -123,14 +124,18 @@ To restrict which URLs the proxy can fetch (security / abuse prevention), set `p
 ```yaml
 nowo_pdf_signable:
     proxy_url_allowlist:
-        - 'https://cdn.example.com/'   # any URL containing this string
-        - 'transportes.gob.es'          # any URL containing this string
-        - '#^https://internal\.corp/#'  # regex: must match full URL
+        - 'https://cdn.example.com/'   # URL prefix: https + exact host cdn.example.com (any path)
+        - 'transportes.gob.es'          # host: transportes.gob.es and *.transportes.gob.es
+        - '#^https://internal\.corp/#'  # regex: must match full URL (anchor it!)
 ```
 
 If the list is non-empty and the requested URL does not match any entry, the proxy returns 403 with a “URL not allowed” message.
 
-**SSRF mitigation:** The proxy always blocks requests to private or local hosts (127.0.0.0/8, ::1, 10.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16, and hostname `localhost`), even when the allowlist is empty. This reduces the risk of server-side request forgery.
+Non-regex entries are matched against the **parsed host** (never as a substring of the whole URL), so `https://evil/?x=example.com` or `https://example.com.evil.net/` do not match `example.com`.
+
+**SSRF mitigation:** The proxy and the AcroForm `pdf_url` fetches always block private, local and reserved addresses (loopback, RFC 1918 incl. 172.16.0.0/12, 0.0.0.0/8, CGNAT 100.64.0.0/10, link-local/metadata 169.254.0.0/16, multicast/reserved, `::`, `::1`, fc00::/7, fe80::/10, IPv4-mapped IPv6 such as `::ffff:127.0.0.1`, hostname `localhost` / `*.localhost`), even when the allowlist is empty. **All** A/AAAA records of the host must be public, and hosts that do not resolve are rejected (fail closed). The connection is pinned to the validated IP and made through Symfony's `NoPrivateNetworkHttpClient` (DNS rebinding protection). Redirects (max 5) are followed manually and every hop is re-checked against the allowlist and SSRF rules.
+
+**Response hardening:** The proxy always answers `Content-Type: application/pdf` (the upstream type is ignored), with `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`; bodies that do not start with a `%PDF-` header are rejected (502). Bodies larger than `proxy_max_pdf_size` (proxy) or `acroform.max_pdf_size` (AcroForm `pdf_url`) are aborted while streaming.
 
 **502 Bad Gateway:** If the proxy returns 502, the server could not fetch the external PDF (timeout, connection refused, upstream 4xx/5xx, or SSL/DNS from the app server). Check your server logs for the exact reason (the bundle logs a warning with the URL and exception message). Ensure the app (e.g. PHP/Docker) can reach the PDF URL over HTTPS; if the default `example_pdf_url` is unreachable, set `example_pdf_url: ''` and use another PDF URL or a local file served by your app.
 
@@ -150,8 +155,13 @@ nowo_pdf_signable:
 
     # proxy_url_allowlist (string[], default: [])
     # When non-empty, the proxy only fetches URLs matching at least one entry.
-    # Each entry: substring of URL, or regex if prefixed with # (e.g. #^https://example\.com/#).
+    # Each entry: host (example.com = host + subdomains), URL prefix with scheme (https://cdn.example.com/pdfs/),
+    # or regex against the full URL if prefixed with # (e.g. #^https://example\.com/#). Re-checked on redirects.
     # proxy_url_allowlist: []
+
+    # proxy_max_pdf_size (int, default: 20971520)
+    # Max size in bytes of a PDF fetched by the proxy; the download is aborted when exceeded.
+    # proxy_max_pdf_size: 20971520
 
     # example_pdf_url (string; bundle default: sample PDF URL in code; set '' to disable)
     # Default PDF URL used when the form has no pdf_url and no config sets pdf_url.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Tests\Controller;
 
+use Closure;
 use InvalidArgumentException;
 use Nowo\PdfSignableBundle\Controller\SignatureController;
 use Nowo\PdfSignableBundle\Event\BatchSignRequestedEvent;
@@ -22,6 +23,9 @@ use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryBuilder;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\PreloadedExtension;
+use Symfony\Component\HttpClient\Exception\TransportException;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +38,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\Validation;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
@@ -57,7 +60,22 @@ final class SignatureControllerTest extends TestCase
      */
     private function createProxyUrlValidator(array $proxyUrlAllowlist): ProxyUrlValidator
     {
-        return new ProxyUrlValidator($proxyUrlAllowlist);
+        return new ProxyUrlValidator($proxyUrlAllowlist, null, self::fakeDns());
+    }
+
+    /**
+     * Deterministic DNS for tests: *.invalid does not resolve, internal.test resolves to a private IP,
+     * any other host resolves to a public documentation-free address.
+     *
+     * @return Closure(string): list<string>
+     */
+    private static function fakeDns(): Closure
+    {
+        return static fn (string $host): array => match (true) {
+            str_ends_with($host, '.invalid') => [],
+            $host === 'internal.test'        => ['10.0.0.5'],
+            default                          => ['93.184.215.14'],
+        };
     }
 
     /**
@@ -536,26 +554,35 @@ final class SignatureControllerTest extends TestCase
         self::assertContains($response->getStatusCode(), [403, 502], 'IPv6 loopback should be blocked or request fail');
     }
 
-    /** When event does not provide a response and the HTTP fetch fails, proxy returns 502. */
-    public function testProxyReturns502WhenFetchFails(): void
+    /** Fail closed: a host that does not resolve (no A/AAAA record) is blocked before any fetch. */
+    public function testProxyUnresolvableHostIsBlocked(): void
     {
         $controller = $this->createController(true, []);
-        // URL passes validation and SSRF (unresolved host); fetch will fail (connection error)
-        $request = Request::create('/pdf-signable/proxy', 'GET', [
+        $request    = Request::create('/pdf-signable/proxy', 'GET', [
             'url' => 'https://non-existent-domain-xyz-12345.invalid/document.pdf',
         ]);
         $response = $controller->proxyPdf($request);
+        self::assertSame(403, $response->getStatusCode());
+        self::assertStringContainsString('proxy.url_not_allowed', (string) $response->getContent());
+    }
+
+    /** When event does not provide a response and the HTTP fetch fails, proxy returns 502. */
+    public function testProxyReturns502WhenFetchFails(): void
+    {
+        $client     = new MockHttpClient(static fn (): MockResponse => throw new TransportException('network down'));
+        $controller = $this->createController(true, [], '', $client);
+        $response   = $controller->proxyPdf(Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/document.pdf']));
         self::assertSame(502, $response->getStatusCode());
         self::assertStringContainsString('proxy.error_load', (string) $response->getContent());
     }
 
-    /** SSRF: IPv6 link-local (fe80::) is blocked, or request fails with 502 if host is not recognized. */
-    public function testProxyBlocksIpv6LinkLocalFe80Returns403Or502(): void
+    /** SSRF: IPv6 link-local (fe80::) is blocked. */
+    public function testProxyBlocksIpv6LinkLocalFe80Returns403(): void
     {
         $controller = $this->createController(true, []);
         $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'http://[fe80::1]/internal.pdf']);
         $response   = $controller->proxyPdf($request);
-        self::assertContains($response->getStatusCode(), [Response::HTTP_FORBIDDEN, Response::HTTP_BAD_GATEWAY]);
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
     }
 
     /** When fetch fails, logger receives a warning with url and reason. */
@@ -573,27 +600,24 @@ final class SignatureControllerTest extends TestCase
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
         $validator  = $this->createProxyUrlValidator([]);
-        $controller = new SignatureController($dispatcher, $translator, true, $validator, '', true, $logger);
-        $request    = Request::create('/pdf-signable/proxy', 'GET', [
-            'url' => 'https://non-existent-domain-xyz-12345.invalid/document.pdf',
-        ]);
-        $response = $controller->proxyPdf($request);
+        $client     = new MockHttpClient(new MockResponse('down', ['http_code' => 503]));
+        $controller = new SignatureController($dispatcher, $translator, true, $validator, '', true, $logger, $client);
+        $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/document.pdf']);
+        $response   = $controller->proxyPdf($request);
         self::assertSame(502, $response->getStatusCode());
     }
 
     public function testProxyReturnsPdfFromInjectedHttpClient(): void
     {
-        $httpResponse = $this->createMock(ResponseInterface::class);
-        $httpResponse->method('getStatusCode')->willReturn(200);
-        $httpResponse->method('getContent')->willReturn('%PDF-1.4 proxied');
-        $httpResponse->method('getHeaders')->willReturn(['content-type' => ['application/pdf']]);
+        $client = new MockHttpClient(static function (string $method, string $url, array $options): MockResponse {
+            self::assertSame('GET', $method);
+            self::assertSame('https://example.com/doc.pdf', $url);
+            self::assertSame(0, $options['max_redirects']);
 
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->expects(self::once())->method('request')
-            ->with('GET', 'https://example.com/doc.pdf', self::isType('array'))
-            ->willReturn($httpResponse);
+            return new MockResponse('%PDF-1.4 proxied', ['response_headers' => ['content-type' => 'application/pdf']]);
+        });
 
-        $controller = $this->createController(true, [], '', $httpClient);
+        $controller = $this->createController(true, [], '', $client);
         $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
 
         $response = $controller->proxyPdf($request);
@@ -601,19 +625,15 @@ final class SignatureControllerTest extends TestCase
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('%PDF-1.4 proxied', $response->getContent());
         self::assertSame('application/pdf', $response->headers->get('Content-Type'));
+        self::assertSame('nosniff', $response->headers->get('X-Content-Type-Options'));
+        self::assertSame('sandbox', $response->headers->get('Content-Security-Policy'));
+        self::assertSame(1, $client->getRequestsCount());
     }
 
     public function testProxyWithNonPdfContentTypeForcesApplicationPdf(): void
     {
-        $httpResponse = $this->createMock(ResponseInterface::class);
-        $httpResponse->method('getStatusCode')->willReturn(200);
-        $httpResponse->method('getContent')->willReturn('%PDF-1.4 proxied');
-        $httpResponse->method('getHeaders')->willReturn(['content-type' => ['text/plain']]);
-
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->expects(self::once())->method('request')->willReturn($httpResponse);
-
-        $controller = $this->createController(true, [], '', $httpClient);
+        $client     = new MockHttpClient(new MockResponse('%PDF-1.4 proxied', ['response_headers' => ['content-type' => 'text/plain']]));
+        $controller = $this->createController(true, [], '', $client);
         $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
 
         $response = $controller->proxyPdf($request);
@@ -621,18 +641,93 @@ final class SignatureControllerTest extends TestCase
         self::assertSame('application/pdf', $response->headers->get('Content-Type'));
     }
 
+    /** Upstream Content-Type containing "pdf" (e.g. text/html; x=pdf) is never passed through. */
+    public function testProxyNeverPassesUpstreamContentTypeThrough(): void
+    {
+        $client     = new MockHttpClient(new MockResponse('%PDF-1.4 <script>alert(1)</script>', ['response_headers' => ['content-type' => 'text/html; charset=pdf']]));
+        $controller = $this->createController(true, [], '', $client);
+
+        $response = $controller->proxyPdf(Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']));
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/pdf', $response->headers->get('Content-Type'));
+        self::assertSame('nosniff', $response->headers->get('X-Content-Type-Options'));
+        self::assertSame('sandbox', $response->headers->get('Content-Security-Policy'));
+    }
+
+    /** Body without the %PDF- magic (e.g. HTML served as application/pdf) is rejected with 502. */
+    public function testProxyRejectsNonPdfBody(): void
+    {
+        $client     = new MockHttpClient(new MockResponse('<html><script>alert(document.domain)</script></html>', ['response_headers' => ['content-type' => 'application/pdf']]));
+        $controller = $this->createController(true, [], '', $client);
+
+        $response = $controller->proxyPdf(Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']));
+        self::assertSame(502, $response->getStatusCode());
+    }
+
     public function testProxyWithUpstreamHttpErrorReturns502(): void
     {
-        $httpResponse = $this->createMock(ResponseInterface::class);
-        $httpResponse->method('getStatusCode')->willReturn(500);
-
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->expects(self::once())->method('request')->willReturn($httpResponse);
-
-        $controller = $this->createController(true, [], '', $httpClient);
+        $client     = new MockHttpClient(new MockResponse('err', ['http_code' => 500]));
+        $controller = $this->createController(true, [], '', $client);
         $request    = Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']);
 
         $response = $controller->proxyPdf($request);
+        self::assertSame(502, $response->getStatusCode());
+    }
+
+    /** A redirect to an internal address (allowed host -> 169.254.169.254) is re-validated and refused. */
+    public function testProxyRedirectToPrivateAddressIsBlocked(): void
+    {
+        $client = new MockHttpClient([
+            new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => 'http://169.254.169.254/latest/meta-data/']]),
+            new MockResponse('%PDF-1.4 secrets'),
+        ]);
+        $controller = $this->createController(true, [], '', $client);
+
+        $response = $controller->proxyPdf(Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']));
+        self::assertSame(502, $response->getStatusCode());
+        self::assertSame(1, $client->getRequestsCount());
+    }
+
+    /** A redirect to a host resolving to a private IP is refused as well. */
+    public function testProxyRedirectToHostResolvingPrivateIsBlocked(): void
+    {
+        $client = new MockHttpClient([
+            new MockResponse('', ['http_code' => 301, 'response_headers' => ['location' => 'https://internal.test/doc.pdf']]),
+            new MockResponse('%PDF-1.4 secrets'),
+        ]);
+        $controller = $this->createController(true, [], '', $client);
+
+        $response = $controller->proxyPdf(Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']));
+        self::assertSame(502, $response->getStatusCode());
+        self::assertSame(1, $client->getRequestsCount());
+    }
+
+    /** Redirects to a public, allowlisted URL are followed (re-validated on each hop). */
+    public function testProxyFollowsValidatedRedirect(): void
+    {
+        $client = new MockHttpClient([
+            new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => '/files/real.pdf']]),
+            new MockResponse('%PDF-1.7 final'),
+        ]);
+        $controller = $this->createController(true, ['example.com'], '', $client);
+
+        $response = $controller->proxyPdf(Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']));
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('%PDF-1.7 final', $response->getContent());
+        self::assertSame(2, $client->getRequestsCount());
+    }
+
+    /** A body larger than proxy_max_pdf_size is aborted while streaming. */
+    public function testProxyAbortsWhenBodyExceedsMaxSize(): void
+    {
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnArgument(0);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $client     = new MockHttpClient(new MockResponse(['%PDF-1.4 ', str_repeat('A', 64), str_repeat('B', 64)]));
+        $controller = new SignatureController($dispatcher, $translator, true, $this->createProxyUrlValidator([]), '', true, $this->createMock(LoggerInterface::class), $client, 30.0, 32);
+
+        $response = $controller->proxyPdf(Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']));
         self::assertSame(502, $response->getStatusCode());
     }
 }

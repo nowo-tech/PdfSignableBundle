@@ -16,12 +16,13 @@ use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
 use Nowo\PdfSignableBundle\Event\AcroFormModifiedPdfProcessedEvent;
 use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
 use Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator;
+use Nowo\PdfSignableBundle\Proxy\RemotePdfFetcher;
+use Nowo\PdfSignableBundle\Proxy\RemotePdfFetchException;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -457,17 +458,15 @@ final class AcroFormOverridesController extends AbstractController
                 return new JsonResponse(['error' => $this->translator->trans('proxy.url_not_allowed', [], 'NowoPdfSignableBundle')], Response::HTTP_FORBIDDEN);
             }
             try {
-                $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
-                    'timeout'       => max(0.1, $this->httpTimeout),
-                    'max_duration'  => max(0.1, $this->httpTimeout),
-                    'max_redirects' => 5,
-                    'headers'       => ['Accept' => 'application/pdf,*/*'],
-                ]);
-                if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
-                    throw new RuntimeException('Upstream error');
+                $pdfContents = $this->fetchRemotePdf($url);
+            } catch (RemotePdfFetchException $e) {
+                if ($e->reason === RemotePdfFetchException::REASON_TOO_LARGE) {
+                    return new JsonResponse(['error' => 'PDF too large'], Response::HTTP_BAD_REQUEST);
                 }
-                $pdfContents = $response->getContent();
-            } catch (Throwable) {
+                if ($e->reason === RemotePdfFetchException::REASON_NOT_ALLOWED) {
+                    return new JsonResponse(['error' => $this->translator->trans('proxy.url_not_allowed', [], 'NowoPdfSignableBundle')], Response::HTTP_FORBIDDEN);
+                }
+
                 return new Response(
                     $this->translator->trans('proxy.error_load', [], 'NowoPdfSignableBundle'),
                     Response::HTTP_BAD_GATEWAY,
@@ -599,6 +598,9 @@ final class AcroFormOverridesController extends AbstractController
         $documentKey = isset($data['document_key']) && is_string($data['document_key']) ? trim($data['document_key']) : null;
         if ($documentKey === '') {
             $documentKey = null;
+        }
+        if ($documentKey !== null && !$this->isValidDocumentKey($documentKey)) {
+            return new JsonResponse(['error' => 'Invalid document_key'], Response::HTTP_BAD_REQUEST);
         }
 
         // Init before try so finally can unlink whichever file was created (W-01 / FrankenPHP worker).
@@ -747,18 +749,8 @@ final class AcroFormOverridesController extends AbstractController
                 return null;
             }
             try {
-                $response = ($this->httpClient ?? HttpClient::create())->request('GET', $url, [
-                    'timeout'       => max(0.1, $this->httpTimeout),
-                    'max_duration'  => max(0.1, $this->httpTimeout),
-                    'max_redirects' => 5,
-                    'headers'       => ['Accept' => 'application/pdf,*/*'],
-                ]);
-                if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
-                    return null;
-                }
-
-                return $response->getContent();
-            } catch (Throwable) {
+                return $this->fetchRemotePdf($url);
+            } catch (RemotePdfFetchException) {
                 return null;
             }
         }
@@ -769,6 +761,17 @@ final class AcroFormOverridesController extends AbstractController
         }
 
         return null;
+    }
+
+    /**
+     * Fetches a remote PDF (allowlist + SSRF re-checked on every redirect, connection pinned, size capped at max_pdf_size).
+     *
+     * @throws RemotePdfFetchException
+     */
+    private function fetchRemotePdf(string $url): string
+    {
+        return (new RemotePdfFetcher($this->proxyUrlValidator, $this->httpClient, $this->httpTimeout))
+            ->fetch($url, max(1, $this->maxPdfSize), ['Accept' => 'application/pdf,*/*'])['content'];
     }
 
     /**

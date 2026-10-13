@@ -19,12 +19,14 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpClient\Exception\TransportException;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function count;
@@ -81,7 +83,12 @@ final class AcroFormOverridesControllerTest extends TestCase
      */
     private function createProxyUrlValidator(array $proxyUrlAllowlist): ProxyUrlValidator
     {
-        return new ProxyUrlValidator($proxyUrlAllowlist);
+        // Deterministic DNS: *.invalid does not resolve, internal.test is private, anything else is public.
+        return new ProxyUrlValidator($proxyUrlAllowlist, null, static fn (string $host): array => match (true) {
+            str_ends_with($host, '.invalid') => [],
+            $host === 'internal.test'        => ['10.0.0.5'],
+            default                          => ['93.184.215.14'],
+        });
     }
 
     /**
@@ -1107,6 +1114,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         $controller = $this->createController(
             allowPdfModify: true,
             proxyUrlAllowlist: ['example.com'],
+            httpClient: new MockHttpClient(new MockResponse('%PDF-1.4')),
         );
         $request = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE'      => 'application/json',
@@ -1511,10 +1519,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testLoadOverridesWithPdfUrlHttpNon2xxSkipsExtraction(): void
     {
-        $httpResponse = $this->createMock(ResponseInterface::class);
-        $httpResponse->method('getStatusCode')->willReturn(500);
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->expects(self::once())->method('request')->willReturn($httpResponse);
+        $httpClient = new MockHttpClient(new MockResponse('err', ['http_code' => 500]));
 
         $storage    = $this->createMock(AcroFormOverridesStorageInterface::class);
         $controller = $this->createController(
@@ -1539,8 +1544,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testLoadOverridesWithPdfUrlHttpExceptionSkipsExtraction(): void
     {
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->expects(self::once())->method('request')->willThrowException(new RuntimeException('network'));
+        $httpClient = new MockHttpClient(static fn (): MockResponse => throw new TransportException('network'));
 
         $storage    = $this->createMock(AcroFormOverridesStorageInterface::class);
         $controller = $this->createController(
@@ -1818,14 +1822,12 @@ final class AcroFormOverridesControllerTest extends TestCase
 
     public function testApplyWithPdfUrlUsesInjectedHttpClientAndReturnsPdf(): void
     {
-        $response = $this->createMock(ResponseInterface::class);
-        $response->method('getStatusCode')->willReturn(200);
-        $response->method('getContent')->willReturn('%PDF-1.4 from-url');
+        $httpClient = new MockHttpClient(static function (string $method, string $url): MockResponse {
+            self::assertSame('GET', $method);
+            self::assertSame('https://allowed.example.com/doc.pdf', $url);
 
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->expects(self::once())->method('request')
-            ->with('GET', 'https://allowed.example.com/doc.pdf', self::isType('array'))
-            ->willReturn($response);
+            return new MockResponse('%PDF-1.4 from-url');
+        });
 
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
         $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
@@ -1862,14 +1864,11 @@ final class AcroFormOverridesControllerTest extends TestCase
         file_put_contents($script, "import json\nprint(json.dumps([{\"id\":\"f1\"}]))\n");
 
         try {
-            $httpResponse = $this->createMock(ResponseInterface::class);
-            $httpResponse->method('getStatusCode')->willReturn(200);
-            $httpResponse->method('getContent')->willReturn('%PDF-1.4 via-url');
+            $httpClient = new MockHttpClient(static function (string $method, string $url): MockResponse {
+                self::assertSame('https://allowed.example.com/doc.pdf', $url);
 
-            $httpClient = $this->createMock(HttpClientInterface::class);
-            $httpClient->expects(self::once())->method('request')
-                ->with('GET', 'https://allowed.example.com/doc.pdf', self::isType('array'))
-                ->willReturn($httpResponse);
+                return new MockResponse('%PDF-1.4 via-url');
+            });
 
             $controller = $this->createController(
                 proxyUrlAllowlist: ['allowed.example.com'],
@@ -1945,5 +1944,197 @@ final class AcroFormOverridesControllerTest extends TestCase
         $response = $controller->removeOverrides($request);
 
         self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    private function applyPdfUrl(AcroFormOverridesController $controller, string $url): Response
+    {
+        return $controller->apply(Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+            'CONTENT_TYPE'      => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+        ], json_encode(['pdf_url' => $url, 'patches' => [['fieldId' => 'f1']]], JSON_THROW_ON_ERROR)));
+    }
+
+    /** pdf_url download larger than max_pdf_size is aborted while streaming (previously unbounded). */
+    public function testApplyWithPdfUrlLargerThanMaxPdfSizeReturns400(): void
+    {
+        $httpClient = new MockHttpClient(new MockResponse(['%PDF-1.4 ', str_repeat('A', 100), str_repeat('B', 100)]));
+        $controller = $this->createController(allowPdfModify: true, maxPdfSize: 64, httpClient: $httpClient);
+
+        $response = $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf');
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        self::assertSame('PDF too large', json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)['error']);
+    }
+
+    /** Content-Length above max_pdf_size is rejected before reading the body. */
+    public function testApplyWithPdfUrlContentLengthAboveMaxReturns400(): void
+    {
+        $httpClient = new MockHttpClient(new MockResponse(str_repeat('%', 100), ['response_headers' => ['content-length' => '100']]));
+        $controller = $this->createController(allowPdfModify: true, maxPdfSize: 64, httpClient: $httpClient);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf')->getStatusCode());
+    }
+
+    /** Redirect to cloud metadata is re-validated and refused (no second request). */
+    public function testApplyWithPdfUrlRedirectToPrivateAddressReturns403(): void
+    {
+        $httpClient = new MockHttpClient([
+            new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => 'http://169.254.169.254/latest/meta-data/']]),
+            new MockResponse('%PDF-1.4 secrets'),
+        ]);
+        $controller = $this->createController(allowPdfModify: true, httpClient: $httpClient);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf')->getStatusCode());
+        self::assertSame(1, $httpClient->getRequestsCount());
+    }
+
+    /** Redirect to a host outside the allowlist is refused. */
+    public function testApplyWithPdfUrlRedirectOutsideAllowlistReturns403(): void
+    {
+        $httpClient = new MockHttpClient([
+            new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => 'https://evil.example.net/doc.pdf']]),
+            new MockResponse('%PDF-1.4 x'),
+        ]);
+        $controller = $this->createController(allowPdfModify: true, proxyUrlAllowlist: ['allowed.example.com'], httpClient: $httpClient);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf')->getStatusCode());
+    }
+
+    /** Too many redirects end with 502. */
+    public function testApplyWithPdfUrlTooManyRedirectsReturns502(): void
+    {
+        $httpClient = new MockHttpClient(static fn (): MockResponse => new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => 'https://allowed.example.com/loop.pdf']]));
+        $controller = $this->createController(allowPdfModify: true, httpClient: $httpClient);
+
+        self::assertSame(Response::HTTP_BAD_GATEWAY, $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf')->getStatusCode());
+    }
+
+    /** Redirect to a non-http(s) scheme is refused. */
+    public function testApplyWithPdfUrlRedirectToFileSchemeReturns403(): void
+    {
+        $httpClient = new MockHttpClient(new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => 'file:///etc/passwd']]));
+        $controller = $this->createController(allowPdfModify: true, httpClient: $httpClient);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf')->getStatusCode());
+    }
+
+    /** Relative redirect (path without leading slash) is resolved against the current URL. */
+    public function testApplyWithPdfUrlFollowsRelativeRedirect(): void
+    {
+        $seen       = [];
+        $httpClient = new MockHttpClient(static function (string $method, string $url) use (&$seen): MockResponse {
+            $seen[] = $url;
+
+            return count($seen) === 1
+                ? new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => 'other.pdf']])
+                : new MockResponse('%PDF-1.4 ok');
+        });
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
+            if ($event instanceof AcroFormApplyRequestEvent) {
+                $event->setModifiedPdf($event->getPdfContents());
+            }
+
+            return $event;
+        });
+        $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher, httpClient: $httpClient);
+
+        $response = $this->applyPdfUrl($controller, 'https://allowed.example.com:8443/dir/doc.pdf');
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        self::assertSame('%PDF-1.4 ok', $response->getContent());
+        self::assertSame('https://allowed.example.com:8443/dir/other.pdf', $seen[1]);
+    }
+
+    /** Protocol-relative redirect is resolved with the current scheme. */
+    public function testApplyWithPdfUrlFollowsProtocolRelativeRedirect(): void
+    {
+        $httpClient = new MockHttpClient([
+            new MockResponse('', ['http_code' => 301, 'response_headers' => ['location' => '//cdn.example.org/x.pdf']]),
+            new MockResponse('%PDF-1.4 ok'),
+        ]);
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
+            if ($event instanceof AcroFormApplyRequestEvent) {
+                $event->setModifiedPdf('%PDF-1.4 m');
+            }
+
+            return $event;
+        });
+        $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher, httpClient: $httpClient);
+
+        self::assertSame(Response::HTTP_OK, $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf')->getStatusCode());
+        self::assertSame(2, $httpClient->getRequestsCount());
+    }
+
+    /** /acroform/process rejects a document_key that would reach the script argv unvalidated. */
+    public function testProcessRejectsInvalidDocumentKey(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_process_bad_key_' . getmypid() . '.py';
+        file_put_contents($script, "import sys\nsys.exit(0)\n");
+        try {
+            $controller = $this->createController(processScript: $script);
+            foreach (['--output=/etc/cron.d/x', '../../etc/passwd', 'a b', str_repeat('a', 257)] as $badKey) {
+                $request = Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+                    'CONTENT_TYPE'      => 'application/json',
+                    'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+                ], json_encode(['pdf_content' => base64_encode('%PDF-1.4'), 'document_key' => $badKey], JSON_THROW_ON_ERROR));
+
+                $response = $controller->process($request);
+                self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode(), $badKey);
+                self::assertSame('Invalid document_key', json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)['error']);
+            }
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    /** Transport error while streaming the body ends with 502. */
+    public function testApplyWithPdfUrlStreamErrorReturns502(): void
+    {
+        $body = static function (): iterable {
+            yield '%PDF-1.4 ';
+            throw new TransportException('connection reset');
+        };
+        $httpClient = new MockHttpClient(new MockResponse($body()));
+        $controller = $this->createController(allowPdfModify: true, httpClient: $httpClient);
+
+        self::assertSame(Response::HTTP_BAD_GATEWAY, $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf')->getStatusCode());
+    }
+
+    /** Unparseable Location header is refused. */
+    public function testApplyWithPdfUrlInvalidRedirectReturns403(): void
+    {
+        $httpClient = new MockHttpClient(new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => 'http://:80']]));
+        $controller = $this->createController(allowPdfModify: true, httpClient: $httpClient);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf')->getStatusCode());
+    }
+
+    /** Absolute-path redirect keeps its query string; relative redirect from a path-less URL resolves under "/". */
+    public function testApplyWithPdfUrlRedirectResolution(): void
+    {
+        $seen       = [];
+        $httpClient = new MockHttpClient(static function (string $method, string $url) use (&$seen): MockResponse {
+            $seen[] = $url;
+
+            return match (count($seen)) {
+                1       => new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => '/a/b.pdf?sig=1']]),
+                2       => new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => 'https://allowed.example.com?x=1']]),
+                3       => new MockResponse('', ['http_code' => 302, 'response_headers' => ['location' => 'c.pdf']]),
+                default => new MockResponse('%PDF-1.4 ok'),
+            };
+        });
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnCallback(static function (object $event): object {
+            if ($event instanceof AcroFormApplyRequestEvent) {
+                $event->setModifiedPdf('%PDF-1.4 m');
+            }
+
+            return $event;
+        });
+        $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher, httpClient: $httpClient);
+
+        self::assertSame(Response::HTTP_OK, $this->applyPdfUrl($controller, 'https://allowed.example.com/doc.pdf')->getStatusCode());
+        self::assertSame('https://allowed.example.com/a/b.pdf?sig=1', $seen[1]);
+        self::assertSame('https://allowed.example.com/c.pdf', $seen[3]);
     }
 }
