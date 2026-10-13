@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.4.0](#to-340)
 - [To 3.3.0](#to-330)
 - [To 3.2.3](#to-323)
 - [To 3.2.2](#to-322)
@@ -65,6 +66,14 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 Version **2.0.0** is a **breaking** release for configuration: the YAML structure changes (signature under `signature`, AcroForm under a single `acroform` node). If you are on 1.5.x or earlier, read the [Upgrading to 2.0.0](#upgrading-to-200-2026-02-16) section before updating.
 
 ## Unreleased
+
+## To 3.4.0
+
+From **3.3.0** — fixes - forms keep bound model values, AcroForm endpoints hardened, Symfony >=7.4, direct dependencies declared.
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 - **Symfony 7.4+ required** (`^7.4 || ^8.0`; was `^7.0`). Upgrade the application to Symfony 7.4 or 8.x first.
 - **Form edit behaviour:** `SignatureCoordinatesType` and `AcroFormEditorType` keep the `pdfUrl`, `unit` and `origin` of the model you bind. `pdf_url`, `unit_default` and `origin_default` only initialise a new model (or `null` data, or a model without PDF URL and without boxes). If you relied on the options overriding stored values, set them on the model before creating the form.
