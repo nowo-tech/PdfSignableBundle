@@ -1,5 +1,17 @@
 # Upgrade Guide
 
+This guide explains how to upgrade the PdfSignable Bundle between versions. For a list of changes in each version, see [CHANGELOG.md](CHANGELOG.md).
+
+**Note:** Version **3.0.8** adds CSRF enforcement on AcroForm mutating AJAX endpoints. Custom clients must send a CSRF token. See [Upgrading to 3.0.8 (AcroForm CSRF)](#upgrading-to-308-acroform-csrf).
+
+**Note:** Version **3.0.7** adds `proxy_url_allowlist_required`, named asset package `nowo_pdf_signable`, and HTTP/process timeouts. See [Upgrading to 3.0.7](#upgrading-to-307).
+
+**Note:** Version **3.0.6** renames the Twig namespace to `@NowoPdfSignableBundle` and the translation domain to `NowoPdfSignableBundle` (REQ-I18N-003). See [Upgrading to 3.0.6](#upgrading-to-306-2026-07-22).
+
+**Note:** Version **3.0.0** raises minimum **PHP to 8.2** and **Symfony to 7.0** (Symfony 6.x and PHP 8.1 are no longer supported). If you are on 2.0.x with PHP 8.1 or Symfony 6.x, read [Upgrading to 3.0.0](#upgrading-to-300-2026-07-01) before updating.
+
+Version **2.0.0** is a **breaking** release for configuration: the YAML structure changes (signature under `signature`, AcroForm under a single `acroform` node). If you are on 1.5.x or earlier, read the [Upgrading to 2.0.0](#upgrading-to-200-2026-02-16) section before updating.
+
 ## Table of contents
 
 - [Unreleased](#unreleased)
@@ -12,9 +24,14 @@
 - [To 3.1.8](#to-318)
 - [From 3.1.6 to 3.1.7](#from-316-to-317)
 - [From 3.1.5 to 3.1.6](#from-315-to-316)
+- [To 3.1.5](#to-315)
+- [To 3.1.4](#to-314)
+- [To 3.1.3](#to-313)
 - [To 3.1.2](#to-312)
 - [To 3.1.1](#to-311)
 - [To 3.1.0](#to-310)
+  - [Twig Extra Bundle (REQ-TWIG-004)](#twig-extra-bundle-req-twig-004)
+  - [Twig-CS-Fixer (maintainers)](#twig-cs-fixer-maintainers)
 - [General upgrade process](#general-upgrade-process)
 - [Upgrading by version](#upgrading-by-version)
   - [Upgrading to 3.0.8 (AcroForm CSRF)](#upgrading-to-308-acroform-csrf)
@@ -52,18 +69,6 @@
   - [Proxy or PDF loading issues](#proxy-or-pdf-loading-issues)
 - [Version compatibility](#version-compatibility)
 - [See also](#see-also)
-
-This guide explains how to upgrade the PdfSignable Bundle between versions. For a list of changes in each version, see [CHANGELOG.md](CHANGELOG.md).
-
-**Note:** Version **3.0.8** adds CSRF enforcement on AcroForm mutating AJAX endpoints. Custom clients must send a CSRF token. See [Upgrading to 3.0.8 (AcroForm CSRF)](#upgrading-to-308-acroform-csrf).
-
-**Note:** Version **3.0.7** adds `proxy_url_allowlist_required`, named asset package `nowo_pdf_signable`, and HTTP/process timeouts. See [Upgrading to 3.0.7](#upgrading-to-307).
-
-**Note:** Version **3.0.6** renames the Twig namespace to `@NowoPdfSignableBundle` and the translation domain to `NowoPdfSignableBundle` (REQ-I18N-003). See [Upgrading to 3.0.6](#upgrading-to-306-2026-07-22).
-
-**Note:** Version **3.0.0** raises minimum **PHP to 8.2** and **Symfony to 7.0** (Symfony 6.x and PHP 8.1 are no longer supported). If you are on 2.0.x with PHP 8.1 or Symfony 6.x, read [Upgrading to 3.0.0](#upgrading-to-300-2026-07-01) before updating.
-
-Version **2.0.0** is a **breaking** release for configuration: the YAML structure changes (signature under `signature`, AcroForm under a single `acroform` node). If you are on 1.5.x or earlier, read the [Upgrading to 2.0.0](#upgrading-to-200-2026-02-16) section before updating.
 
 ## Unreleased
 
