@@ -3,7 +3,7 @@
 COMPOSE := $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
 SERVICE_PHP := php
 
-.PHONY: help up down shell install setup run ensure-up update-bundle clean logs update-deps
+.PHONY: help up down shell install setup run ensure-up update-bundle clean logs update-deps test-e2e demo-screenshots
 
 help:
 	@echo "PdfSignable Demo (Symfony 8) - Docker (FrankenPHP + Caddy)"
@@ -22,6 +22,8 @@ help:
 	@echo "  test-coverage - Run tests with coverage (console output)"
 	@echo "  clean         - Stop and remove vendor/var"
 	@echo "  logs          - View logs"
+	@echo "  test-e2e      - Playwright e2e (Docker, on the php container network, https://localhost)"
+	@echo "  demo-screenshots - Regenerate ../../docs/images/demo/*.webp (Playwright + sharp)"
 	@echo ""
 	@echo "After make run: http://localhost:8002 (HTTP on port 80)"
 
@@ -104,6 +106,32 @@ clean: down
 logs:
 	$(COMPOSE) logs -f
 
+
+# REQ-DEMO-013: Playwright e2e + screenshots (official image). The demo serves HTTPS only
+# (Caddy `tls internal`), so Playwright joins the php container's network namespace and targets
+# https://localhost (ignoreHTTPSErrors in playwright.config.ts). No port/TLS changes needed.
+PLAYWRIGHT_IMAGE ?= mcr.microsoft.com/playwright:v1.63.0-jammy
+PHP_CONTAINER ?= pdf-signable-symfony8
+
+test-e2e: ensure-up
+	@mkdir -p e2e/node_modules
+	docker run --rm --network container:$(PHP_CONTAINER) \
+		-v "$(CURDIR)/e2e:/e2e" -w /e2e \
+		-e DEMO_BASE_URL=https://localhost \
+		$(PLAYWRIGHT_IMAGE) \
+		bash -lc 'npm install --no-fund --no-audit && npx playwright test --project=chromium'
+
+demo-screenshots: ensure-up
+	@mkdir -p ../../docs/images/demo e2e/node_modules
+	docker run --rm --network container:$(PHP_CONTAINER) \
+		-v "$(CURDIR)/e2e:/e2e" \
+		-v "$(CURDIR)/../../docs/images/demo:/screenshots" \
+		-w /e2e \
+		-e DEMO_BASE_URL=https://localhost \
+		-e SCREENSHOT_DIR=/screenshots \
+		$(PLAYWRIGHT_IMAGE) \
+		bash -lc 'npm install --no-fund --no-audit && npx playwright test --project=screenshots && node scripts/to-webp.mjs /screenshots'
+	@echo "Screenshots written under docs/images/demo/ (WebP)"
 
 # REQ-MAKE-008: update-deps (REQ-MAKE-008)
 BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)

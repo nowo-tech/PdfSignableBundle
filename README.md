@@ -57,15 +57,17 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 
 **Demo index** — Each card shows a different way to configure `SignatureCoordinatesType` (named profiles, URL options, box validation, model prefill):
 
-![Demo home — configuration overview](docs/img/demo-home.png)
+![Demo home — configuration overview](docs/images/demo/demo-home.webp)
 
-**Signature coordinates form** — PDF viewer with draggable signature boxes; unit/origin selector and box list on the right:
+**Signature coordinates form** — Rotation demo (`enable_rotation`): PDF viewer with thumbnails and zoom toolbar, a rotated signature box, the unit/origin selectors and box list on the right, and the saved coordinates:
 
-![Signature coordinates form — PDF viewer and boxes](docs/img/demo-signature-form.png)
+![Signature coordinates form — rotated box and saved coordinates](docs/images/demo/demo-signature-form.webp)
 
-**Signature form (alternate view)** — Same form with thumbnails strip, zoom toolbar and optional rotation; boxes can be placed flush to page edges at any angle:
+**Signing (predefined boxes, sign only)** — Boxes already placed for two signers; each signer draws or uploads a signature, shown live inside its box on the PDF:
 
-![Signature form — thumbnails, zoom and rotation](docs/img/demo-signature-form-2.png)
+![Signing form — predefined boxes with a drawn signature](docs/images/demo/demo-signature-form-2.webp)
+
+Regenerate with `make -C demo/symfony8 demo-screenshots` (Playwright in Docker, saved as WebP under `docs/images/demo/`).
 
 ## Installation
 
