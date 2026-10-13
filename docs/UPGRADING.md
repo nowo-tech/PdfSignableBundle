@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.4.2](#to-342)
 - [To 3.4.1](#to-341)
 - [To 3.4.0](#to-340)
 - [To 3.3.0](#to-330)
@@ -72,6 +73,16 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.4.2
+
+From **3.4.1** — translate the PDF URL label and signing-only box names
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
+
+- No breaking changes. No application upgrade steps.
 
 ## To 3.4.1
 
