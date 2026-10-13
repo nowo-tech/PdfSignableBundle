@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.3.0](#to-330)
 - [To 3.2.3](#to-323)
 - [To 3.2.2](#to-322)
 - [To 3.2.1](#to-321)
@@ -64,6 +65,14 @@ This guide explains how to upgrade the PdfSignable Bundle between versions. For 
 Version **2.0.0** is a **breaking** release for configuration: the YAML structure changes (signature under `signature`, AcroForm under a single `acroform` node). If you are on 1.5.x or earlier, read the [Upgrading to 2.0.0](#upgrading-to-200-2026-02-16) section before updating.
 
 ## Unreleased
+
+## To 3.3.0
+
+From **3.2.3** — security: hardened remote PDF fetching (SSRF, redirects, size limit, forced content type).
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 - **`proxy_url_allowlist`**: plain entries now match the URL **host** (`example.com` = host + subdomains; `.example.com` = subdomains only; optional path prefix `example.com/pdfs/`), and entries with a scheme are URL prefixes (same scheme, exact host and port, path prefix). Entries that relied on matching a substring elsewhere in the URL must be rewritten (or use an anchored `#regex#`).
 - **Remote fetches** (proxy and AcroForm `pdf_url`): hosts that do not resolve, or that have any private/reserved A/AAAA record, are rejected (403). Redirects are still followed (max 5) but each hop must pass the allowlist and SSRF checks. Proxy responses whose body is not a PDF (`%PDF-`) now return 502.
