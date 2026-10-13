@@ -73,7 +73,7 @@
     <button type="button" id="acroform-add-field-mode-btn" class="btn btn-sm btn-outline-success" title="{{ 'acroform_editor.add_field_mode_title'|trans({}, 'NowoPdfSignableBundle') }}">{{ 'acroform_editor.add_field_mode_btn'|trans({}, 'NowoPdfSignableBundle') }}</button>
   </div>
   {# Edit-field modal: Twig-rendered, overrideable via templates/bundles/NowoPdfSignableBundle/acroform/ #}
-  {% include '@NowoPdfSignableBundle/acroform/_edit_modal.html.twig' with { acroform_config: _config, acroform_edit_form: acroform_edit_form|default(null) } %}
+  {{ include('@NowoPdfSignableBundle/acroform/_edit_modal.html.twig', {acroform_config: _config, acroform_edit_form: acroform_edit_form|default(null)}) }}
   {# Strings for JS: read from JSON, fallback to window override #}
   <script type="application/json" id="acroform-editor-strings">{{ nowo_pdf_signable_acroform_strings()|json_encode|raw }}</script>
 </div>

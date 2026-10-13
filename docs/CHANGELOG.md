@@ -56,6 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Twig coding standard**: `make twig-lint` (twig-cs-fixer) now passes with 0 errors (47 coding-standard findings, no template bugs): hash literals lose inner padding, `{% use %}`/include paths use single quotes and the `{% include %}` tag is replaced by the `include()` function in the AcroForm modal, editor root, PDF viewer partial, form theme and signature page. Rendered markup is unchanged apart from insignificant whitespace (one newline after each include). CI runs `composer twig:lint` in a new **Twig lint** job.
+
 ## [3.4.2] - 2026-10-13
 
 ### Fixed

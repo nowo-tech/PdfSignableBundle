@@ -16,9 +16,9 @@
 <div class="modal-body">
 {% if acroform_edit_form is defined and acroform_edit_form is not null %}
   {% form_theme acroform_edit_form '@NowoPdfSignableBundle/form/theme.html.twig' %}
-  {{ form_start(acroform_edit_form, { attr: { id: 'acroform-edit-form', class: 'acroform-edit-form' }, render_rest: false }) }}
+  {{ form_start(acroform_edit_form, {attr: {id: 'acroform-edit-form', class: 'acroform-edit-form'}, render_rest: false}) }}
   {{ form_widget(acroform_edit_form) }}
-  {{ form_end(acroform_edit_form, { render_rest: false }) }}
+  {{ form_end(acroform_edit_form, {render_rest: false}) }}
 {% else %}
   <input type="hidden" id="acroform-edit-field-id">
 

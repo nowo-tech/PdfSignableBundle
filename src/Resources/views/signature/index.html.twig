@@ -32,7 +32,7 @@
 {% block body %}
   <div class="container-fluid">
     {{ include('@NowoPdfSignableBundle/_dependency_debug_alert.html.twig') }}
-    {{ form_start(form, { attr: { id: 'signatureForm' } }) }}
+    {{ form_start(form, {attr: {id: 'signatureForm'}}) }}
     {{ form_widget(form) }}
     {{ form_end(form) }}
   </div>

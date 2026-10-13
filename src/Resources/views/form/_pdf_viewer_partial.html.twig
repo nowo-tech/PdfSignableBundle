@@ -33,13 +33,13 @@
       <label class="form-label small text-uppercase fw-semibold text-muted mb-2"{% if pdf_url_form.vars.id is defined %} for="{{ pdf_url_form.vars.id }}"{% endif %}>{{ _pdf_url_label_text }}</label>
       {% endif %}
       <div class="input-group input-group-lg mb-3">
-        {{ form_widget(pdf_url_form, { attr: { class: (pdf_url_form.vars.attr.class|default('') ~ (pdf_url_form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
+        {{ form_widget(pdf_url_form, {attr: {class: (pdf_url_form.vars.attr.class|default('') ~ (pdf_url_form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim}}) }}
         {% if show_load_btn %}<button type="button" class="btn btn-primary px-4" id="loadPdfBtn">{{ 'page.load'|trans({}, 'NowoPdfSignableBundle') }}</button>{% endif %}
       </div>
       {{ form_errors(pdf_url_form) }}
     {% else %}
       <div class="d-none">
-        {{ form_widget(pdf_url_form, { attr: { class: (pdf_url_form.vars.attr.class|default('') ~ (pdf_url_form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
+        {{ form_widget(pdf_url_form, {attr: {class: (pdf_url_form.vars.attr.class|default('') ~ (pdf_url_form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim}}) }}
       </div>
       {{ form_errors(pdf_url_form) }}
     {% endif %}
