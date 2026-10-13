@@ -65,6 +65,10 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Unreleased
 
+- **`proxy_url_allowlist`**: plain entries now match the URL **host** (`example.com` = host + subdomains; `.example.com` = subdomains only; optional path prefix `example.com/pdfs/`), and entries with a scheme are URL prefixes (same scheme, exact host and port, path prefix). Entries that relied on matching a substring elsewhere in the URL must be rewritten (or use an anchored `#regex#`).
+- **Remote fetches** (proxy and AcroForm `pdf_url`): hosts that do not resolve, or that have any private/reserved A/AAAA record, are rejected (403). Redirects are still followed (max 5) but each hop must pass the allowlist and SSRF checks. Proxy responses whose body is not a PDF (`%PDF-`) now return 502.
+- New `proxy_max_pdf_size` (default 20 MiB) caps proxied downloads; `acroform.max_pdf_size` now also caps `pdf_url` downloads. `/acroform/process` returns 400 for an invalid `document_key` (allowed: `[A-Za-z0-9_.-]`, max 256).
+
 ## To 3.2.3
 
 From **3.2.2** — shipped PDF.js assets rebuilt with pdfjs-dist 6.4.299.
