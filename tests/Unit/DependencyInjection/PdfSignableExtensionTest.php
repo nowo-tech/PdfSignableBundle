@@ -8,10 +8,18 @@ use Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface;
 use Nowo\PdfSignableBundle\Controller\AcroFormOverridesController;
 use Nowo\PdfSignableBundle\DependencyInjection\Configuration;
 use Nowo\PdfSignableBundle\DependencyInjection\PdfSignableExtension;
+use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
+use Nowo\PdfSignableBundle\EventListener\AcroFormApplyScriptListener;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\EventDispatcher\DependencyInjection\RegisterListenersPass;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+
+use function in_array;
 
 /**
  * Tests for PdfSignableExtension (alias, load and prepend).
@@ -237,5 +245,48 @@ final class PdfSignableExtensionTest extends TestCase
         self::assertFalse($container->getParameter('nowo_pdf_signable.audit.fill_from_request'));
         self::assertSame('https://tsa.example.com', $container->getParameter('nowo_pdf_signable.tsa_url'));
         self::assertSame('app.pades_signer', $container->getParameter('nowo_pdf_signable.signing_service_id'));
+    }
+
+    /** Legacy acroform.label_* config reaches the field_name_* parameters. */
+    public function testLoadAppliesLegacyLabelKeysToFieldNameParameters(): void
+    {
+        $container = new ContainerBuilder();
+        (new PdfSignableExtension())->load([
+            ['acroform' => ['label_mode' => 'choice', 'label_choices' => ['A'], 'label_other_text' => 'Other']],
+        ], $container);
+
+        self::assertSame('choice', $container->getParameter('nowo_pdf_signable.acroform.field_name_mode'));
+        self::assertSame(['A'], $container->getParameter('nowo_pdf_signable.acroform.field_name_choices'));
+        self::assertSame('Other', $container->getParameter('nowo_pdf_signable.acroform.field_name_other_text'));
+        self::assertSame('python3', $container->getParameter('nowo_pdf_signable.acroform.fields_extractor_command'));
+    }
+
+    /** The apply script listener is registered exactly once for ACROFORM_APPLY_REQUEST (attribute only, no extra yaml tag). */
+    public function testApplyScriptListenerIsRegisteredOnce(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.debug', false);
+        $container->registerAttributeForAutoconfiguration(
+            AsEventListener::class,
+            static function (ChildDefinition $definition, AsEventListener $attribute): void {
+                $definition->addTag('kernel.event_listener', get_object_vars($attribute));
+            },
+        );
+        $container->register('event_dispatcher', EventDispatcher::class)->setPublic(true);
+        (new PdfSignableExtension())->load([[]], $container);
+        $container->addCompilerPass(new RegisterListenersPass());
+        // Remove services that need framework services we do not register here.
+        foreach (array_keys($container->getDefinitions()) as $id) {
+            if (!in_array($id, ['service_container', 'event_dispatcher', AcroFormApplyScriptListener::class], true)) {
+                $container->removeDefinition($id);
+            }
+        }
+        $container->compile();
+
+        /** @var EventDispatcher $dispatcher */
+        $dispatcher = $container->get('event_dispatcher');
+        $listeners  = $dispatcher->getListeners(PdfSignableEvents::ACROFORM_APPLY_REQUEST);
+        self::assertCount(1, $listeners);
+        self::assertSame(-100, $dispatcher->getListenerPriority(PdfSignableEvents::ACROFORM_APPLY_REQUEST, $listeners[0]));
     }
 }

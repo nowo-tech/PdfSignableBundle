@@ -89,6 +89,8 @@ final class AcroFormOverridesController extends AbstractController
      * @param float $httpTimeout HTTP timeout for external PDF fetches
      * @param float $processTimeout Process timeout for fields extract / apply scripts
      * @param float $processScriptTimeout Process timeout for process_script
+     * @param string $fieldsExtractorCommand Executable to run fields_extractor_script (e.g. python3)
+     * @param bool $kernelDebug When true (kernel.debug), error responses include raw script output and paths
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.acroform.enabled')]
@@ -122,6 +124,10 @@ final class AcroFormOverridesController extends AbstractController
         private readonly ?HttpClientInterface $httpClient = null,
         private readonly ?Closure $createTempFile = null,
         private readonly ?Closure $writeFile = null,
+        #[Autowire(param: 'nowo_pdf_signable.acroform.fields_extractor_command')]
+        private readonly string $fieldsExtractorCommand = 'python3',
+        #[Autowire(param: 'kernel.debug')]
+        private readonly bool $kernelDebug = false,
     ) {
     }
 
@@ -199,13 +205,13 @@ final class AcroFormOverridesController extends AbstractController
             ) {
                 $scriptPath = trim($this->fieldsExtractorScript);
                 if (!is_file($scriptPath)) {
-                    $out['fields_extractor_error'] = 'Fields extractor script not found (path: ' . $scriptPath . '). Fields have been sent from the browser if available.';
+                    $out['fields_extractor_error'] = 'Fields extractor script not found' . ($this->kernelDebug ? ' (path: ' . $scriptPath . ')' : '') . '. Fields have been sent from the browser if available.';
                 } else {
                     $tmpFile = null;
                     try {
                         $tmpFile = $this->createTempFile('pdfsignable_');
                         if ($tmpFile !== false && $this->writeTempFile($tmpFile, $pdfContents) !== false) {
-                            $process = new Process(['python3', $scriptPath, $tmpFile], null, PythonProcessEnv::build());
+                            $process = new Process([$this->fieldsExtractorCommand, $scriptPath, $tmpFile], null, PythonProcessEnv::build());
                             $timeout = max(0.1, $this->processTimeout);
                             $process->setTimeout($timeout);
                             $process->setIdleTimeout($timeout);
@@ -219,11 +225,11 @@ final class AcroFormOverridesController extends AbstractController
                                 $stderr                        = $process->getErrorOutput();
                                 $exitCode                      = $process->getExitCode();
                                 $hint                          = (trim($stderr) !== '') ? trim($stderr) : ('exit code ' . $exitCode);
-                                $out['fields_extractor_error'] = 'Fields extractor (Python) could not run. Ensure python3 and pypdf are installed on the server. Detail: ' . $hint;
+                                $out['fields_extractor_error'] = 'Fields extractor (Python) could not run. Ensure python3 and pypdf are installed on the server.' . ($this->kernelDebug ? ' Detail: ' . $hint : '');
                             }
                         }
                     } catch (Throwable $e) {
-                        $out['fields_extractor_error'] = 'Error running the fields extractor (e.g. python3 is not installed or not in PATH): ' . $e->getMessage();
+                        $out['fields_extractor_error'] = 'Error running the fields extractor (e.g. python3 is not installed or not in PATH)' . ($this->kernelDebug ? ': ' . $e->getMessage() : '.');
                     } finally {
                         if (is_string($tmpFile) && is_file($tmpFile)) {
                             @unlink($tmpFile);
@@ -345,7 +351,7 @@ final class AcroFormOverridesController extends AbstractController
                 return new JsonResponse(['error' => 'Failed to write temp PDF'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
-            $process = new Process(['python3', $scriptPath, $tmpFile], null, PythonProcessEnv::build());
+            $process = new Process([$this->fieldsExtractorCommand, $scriptPath, $tmpFile], null, PythonProcessEnv::build());
             $timeout = max(0.1, $this->processTimeout);
             $process->setTimeout($timeout);
             $process->setIdleTimeout($timeout);
@@ -353,10 +359,10 @@ final class AcroFormOverridesController extends AbstractController
             $stdout = $process->getOutput();
             $stderr = $process->getErrorOutput();
             if (!$process->isSuccessful()) {
-                return new JsonResponse([
-                    'error'  => 'Fields extractor failed',
-                    'detail' => $stderr ?: $process->getExitCodeText(),
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return new JsonResponse($this->withDebugDetail(
+                    ['error' => 'Fields extractor failed'],
+                    $stderr ?: (string) $process->getExitCodeText(),
+                ), Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         } finally {
             if (is_string($tmpFile) && is_file($tmpFile)) {
@@ -366,7 +372,7 @@ final class AcroFormOverridesController extends AbstractController
 
         $decoded = json_decode($stdout, true);
         if (!is_array($decoded)) {
-            return new JsonResponse(['error' => 'Invalid extractor output', 'detail' => $stdout], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse($this->withDebugDetail(['error' => 'Invalid extractor output'], $stdout), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return new JsonResponse(['fields' => $decoded]);
@@ -508,10 +514,7 @@ final class AcroFormOverridesController extends AbstractController
             return new JsonResponse($event->getValidationResult(), Response::HTTP_OK);
         }
         if ($event->getError() instanceof Throwable) {
-            $payload = ['error' => $event->getError()->getMessage()];
-            if ($event->getErrorDetail() !== null) {
-                $payload['detail'] = $event->getErrorDetail();
-            }
+            $payload = $this->withDebugDetail(['error' => $event->getError()->getMessage()], $event->getErrorDetail());
             if ($this->debug && $this->logger instanceof LoggerInterface) {
                 $this->logger->warning('AcroForm apply response: error', ['error' => $payload['error'], 'detail' => $payload['detail'] ?? null]);
             }
@@ -633,12 +636,11 @@ final class AcroFormOverridesController extends AbstractController
                 $isPythonNotFound = $proc->getExitCode() === 127
                     || (str_contains(strtolower($err), 'not found') && str_contains(strtolower($err), 'python'));
 
-                return new JsonResponse([
+                return new JsonResponse($this->withDebugDetail([
                     'error' => $isPythonNotFound
                         ? 'Process script failed: Python 3 is not installed or not in PATH. Install python3 on the server or set process_script_command to the full path of your Python executable.'
                         : 'Process script failed',
-                    'detail' => $err,
-                ], Response::HTTP_BAD_REQUEST);
+                ], $err), Response::HTTP_BAD_REQUEST);
             }
 
             $processedPdf = is_file($tmpOutput) ? file_get_contents($tmpOutput) : false;
@@ -777,7 +779,7 @@ final class AcroFormOverridesController extends AbstractController
     /**
      * Resolves and validates document_key from the request.
      *
-     * Prefer body['document_key'] when body is provided; otherwise query or request parameter.
+     * Reads the query string first, then form parameters, then a JSON body ({"document_key": "..."}).
      *
      * @param Request $request Request to read document_key from
      *
@@ -786,12 +788,36 @@ final class AcroFormOverridesController extends AbstractController
     private function resolveDocumentKey(Request $request): ?string
     {
         $key = $request->query->get('document_key') ?? $request->request->get('document_key');
+        if (($key === null || trim((string) $key) === '') && $request->getContent() !== '') {
+            try {
+                $data = $request->toArray();
+                $key  = isset($data['document_key']) && is_string($data['document_key']) ? $data['document_key'] : null;
+            } catch (Throwable) {
+                $key = null;
+            }
+        }
         if ($key === null || trim((string) $key) === '') {
             return null;
         }
         $key = trim((string) $key);
 
         return $this->isValidDocumentKey($key) ? $key : null;
+    }
+
+    /**
+     * Adds a "detail" entry (raw script output, paths) only when kernel.debug is on.
+     *
+     * @param array<string, mixed> $payload
+     *
+     * @return array<string, mixed>
+     */
+    private function withDebugDetail(array $payload, ?string $detail): array
+    {
+        if ($this->kernelDebug && $detail !== null && $detail !== '') {
+            $payload['detail'] = $detail;
+        }
+
+        return $payload;
     }
 
     /**

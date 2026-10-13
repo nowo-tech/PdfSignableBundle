@@ -162,6 +162,29 @@ final class AcroFormEditorTypeTest extends TypeTestCase
         self::assertSame('https://example.com/preload.pdf', $form->get('pdfUrl')->getData());
     }
 
+    /** Editing an existing model keeps its pdfUrl: pdf_url only pre-fills an empty model. */
+    public function testPdfUrlOptionDoesNotOverrideExistingModel(): void
+    {
+        $model = (new AcroFormPageModel())->setPdfUrl('https://example.com/existing.pdf');
+        $form  = $this->factory->create(AcroFormEditorType::class, $model, [
+            'pdf_url' => 'https://example.com/preload.pdf',
+        ]);
+        self::assertSame('https://example.com/existing.pdf', $form->get('pdfUrl')->getData());
+
+        $form2 = $this->factory->create(AcroFormEditorType::class, $model);
+        self::assertSame('https://example.com/existing.pdf', $form2->get('pdfUrl')->getData());
+    }
+
+    /** Null data creates a model pre-filled with pdf_url. */
+    public function testNullDataCreatesModelWithPdfUrl(): void
+    {
+        $form = $this->factory->create(AcroFormEditorType::class, null, [
+            'pdf_url' => 'https://example.com/preload.pdf',
+        ]);
+        self::assertInstanceOf(AcroFormPageModel::class, $form->getData());
+        self::assertSame('https://example.com/preload.pdf', $form->get('pdfUrl')->getData());
+    }
+
     /** field_name_choices as associative array (label => value) is normalized to list of {value, label}. */
     public function testBuildViewNormalizesFieldNameChoicesAssociativeArray(): void
     {

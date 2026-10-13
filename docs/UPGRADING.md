@@ -66,6 +66,12 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Unreleased
 
+- **Symfony 7.4+ required** (`^7.4 || ^8.0`; was `^7.0`). Upgrade the application to Symfony 7.4 or 8.x first.
+- **Form edit behaviour:** `SignatureCoordinatesType` and `AcroFormEditorType` keep the `pdfUrl`, `unit` and `origin` of the model you bind. `pdf_url`, `unit_default` and `origin_default` only initialise a new model (or `null` data, or a model without PDF URL and without boxes). If you relied on the options overriding stored values, set them on the model before creating the form.
+- **Error responses:** AcroForm script errors no longer include `detail` (raw stderr/stdout) or script paths unless `kernel.debug` is true. Check the logs in production.
+- **`acroform.document_key_mode`** is deprecated and has no effect: remove it from your configuration.
+- New optional **`acroform.fields_extractor_command`** (default `python3`) for the fields extractor executable.
+
 ## To 3.3.0
 
 From **3.2.3** — security: hardened remote PDF fetching (SSRF, redirects, size limit, forced content type).

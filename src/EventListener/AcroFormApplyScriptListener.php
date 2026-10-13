@@ -77,7 +77,9 @@ final class AcroFormApplyScriptListener
 
         $script = trim($this->applyScript);
         if (!is_file($script) || !is_readable($script)) {
-            $event->setError(new RuntimeException('Apply script not found or not readable: ' . $script));
+            // The path goes to the error detail, which the controller only exposes when kernel.debug is on.
+            $event->setErrorDetail('Script path: ' . $script);
+            $event->setError(new RuntimeException('Apply script not found or not readable'));
 
             return;
         }
@@ -146,7 +148,8 @@ final class AcroFormApplyScriptListener
                         'Apply script failed: Python 3 is not installed or not in PATH. Install python3 on the server or configure a PHP-based editor (PdfAcroFormEditorInterface). You can set apply_script_command to the full path of your Python executable if needed.',
                     ));
                 } else {
-                    $event->setError(new RuntimeException('Apply script failed: ' . ($err ?: 'unknown error')));
+                    // stderr/stdout stay in the error detail (exposed to clients only when kernel.debug is on).
+                    $event->setError(new RuntimeException('Apply script failed'));
                 }
 
                 return;

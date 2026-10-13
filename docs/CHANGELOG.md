@@ -139,6 +139,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `SignatureCoordinatesType` / `AcroFormEditorType`: editing an existing model no longer resets `pdfUrl`, `unit` and `origin` to the form options. Defaults (`pdf_url`, `unit_default`, `origin_default`) are applied in `PRE_SET_DATA` to a new/empty model only (hidden unit/origin use `empty_data`).
+- `DELETE /acroform/overrides` accepts `document_key` in a JSON body (as documented) instead of returning 400.
+- Legacy `acroform.label_mode` / `label_choices` / `label_other_text` apply again to `field_name_*` when those keys are not set (the fallback was dead because `field_name_*` have defaults).
+- `AcroFormApplyScriptListener` was registered twice (`#[AsEventListener]` + `services.yaml` tag); it now runs once per apply request.
+- Session overrides storage no longer throws (500) on stateless requests without a session (`Request::hasSession()` check).
+- `DependencyChecker` minimum PHP version aligned with composer (8.2.0).
+
+### Security
+
+- AcroForm endpoints (`fields/extract`, `overrides/load`, `apply`, `process`) only return raw script stderr/stdout and filesystem paths when `kernel.debug` is true.
+
+### Changed
+
+- New `acroform.fields_extractor_command` (default `python3`): the fields extractor no longer hard-codes `python3`.
+- Minimum Symfony raised to **7.4** (`^7.4 || ^8.0`); the CI `7.0` cell (which installed the latest 7.x anyway) is removed. `composer.json` now declares the components and contracts used directly (`symfony/console`, `config`, `dependency-injection`, `event-dispatcher`, `http-foundation`, `http-kernel`, `options-resolver`, `routing`, contracts, `psr/log`, `twig/twig`).
+- Dev: Vitest 4 (`vitest` / `@vitest/coverage-v8` `^4.1.11`).
+
+### Deprecated
+
+- `acroform.document_key_mode`: it never had any effect (`derive_from_url` was not implemented); setting it now triggers a deprecation.
+
 ## [3.3.0] - 2026-10-13
 
 ### Security

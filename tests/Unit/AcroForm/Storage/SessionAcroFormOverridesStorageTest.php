@@ -127,4 +127,17 @@ final class SessionAcroFormOverridesStorageTest extends TestCase
         self::assertNotNull($retrieved);
         self::assertSame('doc/with/slashes', $retrieved->documentKey);
     }
+
+    /** A stateless request (no session attached) must not throw SessionNotFoundException (was a 500). */
+    public function testRequestWithoutSessionIsHandledGracefully(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(new Request());
+        $storage = new SessionAcroFormOverridesStorage($requestStack);
+
+        self::assertNull($storage->get('doc1'));
+        $storage->set('doc1', new AcroFormOverrides(['f1' => []], 'doc1'));
+        $storage->remove('doc1');
+        self::assertNull($storage->get('doc1'));
+    }
 }

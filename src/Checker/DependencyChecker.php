@@ -23,7 +23,7 @@ use const PHP_VERSION;
  */
 final class DependencyChecker implements DependencyCheckerInterface
 {
-    private const MIN_PHP_VERSION = '8.1.0';
+    private const MIN_PHP_VERSION = '8.2.0';
 
     /** @var list<string> */
     private const REQUIRED_EXTENSIONS = ['json', 'mbstring', 'ctype', 'xml', 'fileinfo'];

@@ -131,11 +131,27 @@ final class SignatureCoordinatesType extends AbstractType
             $pdfUrl = $this->examplePdfUrl;
         }
 
-        // Pre-populate model with pdf_url when empty, so the PDF can auto-load in the viewer
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($pdfUrl): void {
+        // Defaults (pdf_url, unit_default, origin_default) are applied to the bound model in PRE_SET_DATA
+        // instead of through the children's "data" option: a "data" option locks the child and would
+        // overwrite the values of an existing model when it is edited.
+        $unitDefault   = (string) $options['unit_default'];
+        $originDefault = (string) $options['origin_default'];
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($pdfUrl, $unitDefault, $originDefault): void {
             $model = $event->getData();
-            if ($model instanceof SignatureCoordinatesModel
-                && ($model->getPdfUrl() === null || $model->getPdfUrl() === '')
+            if ($model === null) {
+                $model = new SignatureCoordinatesModel();
+                $event->setData($model);
+            }
+            if (!$model instanceof SignatureCoordinatesModel) {
+                return;
+            }
+            $isNew = ($model->getPdfUrl() === null || $model->getPdfUrl() === '') && $model->getSignatureBoxes() === [];
+            if ($isNew) {
+                // Only a pristine model (no document, no boxes) receives the configured defaults.
+                $model->setUnit($unitDefault);
+                $model->setOrigin($originDefault);
+            }
+            if (($model->getPdfUrl() === null || $model->getPdfUrl() === '')
                 && $pdfUrl !== null
                 && $pdfUrl !== ''
             ) {
@@ -146,7 +162,6 @@ final class SignatureCoordinatesType extends AbstractType
         // --- PDF URL ---
         if ($options['url_field'] === false && $pdfUrl !== null && $pdfUrl !== '') {
             $builder->add('pdfUrl', HiddenType::class, [
-                'data'       => $pdfUrl,
                 'empty_data' => $pdfUrl,
                 'attr'       => ['class' => 'pdf-url-input', 'data-pdf-signable' => 'pdf-url'],
             ]);
@@ -162,7 +177,6 @@ final class SignatureCoordinatesType extends AbstractType
             $builder->add('pdfUrl', UrlType::class, [
                 'label'    => $options['url_label'],
                 'required' => true,
-                'data'     => $pdfUrl,
                 'attr'     => [
                     'placeholder'       => $options['url_placeholder'],
                     'class'             => 'pdf-url-input form-control',
@@ -174,20 +188,18 @@ final class SignatureCoordinatesType extends AbstractType
         // --- Unit ---
         if (!$options['unit_field']) {
             $builder->add('unit', HiddenType::class, [
-                'data' => $options['unit_default'],
+                'empty_data' => (string) $options['unit_default'],
             ]);
         } elseif ($options['unit_mode'] === self::UNIT_MODE_INPUT) {
             $builder->add('unit', TextType::class, [
                 'label'       => $options['unit_label'],
                 'attr'        => ['class' => 'unit-selector form-control form-control-sm', 'data-pdf-signable' => 'unit'],
-                'data'        => $options['unit_default'],
                 'constraints' => [new Choice(choices: $units)],
             ]);
         } else {
             $builder->add('unit', ChoiceType::class, [
                 'label'   => $options['unit_label'],
                 'choices' => $unitChoices,
-                'data'    => $options['unit_default'],
                 'attr'    => ['class' => 'unit-selector form-select form-select-sm', 'data-pdf-signable' => 'unit'],
             ]);
         }
@@ -195,20 +207,18 @@ final class SignatureCoordinatesType extends AbstractType
         // --- Origin ---
         if (!$options['origin_field']) {
             $builder->add('origin', HiddenType::class, [
-                'data' => $options['origin_default'],
+                'empty_data' => (string) $options['origin_default'],
             ]);
         } elseif ($options['origin_mode'] === self::ORIGIN_MODE_INPUT) {
             $builder->add('origin', TextType::class, [
                 'label'       => $options['origin_label'],
                 'attr'        => ['class' => 'origin-selector form-control form-control-sm', 'data-pdf-signable' => 'origin'],
-                'data'        => $options['origin_default'],
                 'constraints' => [new Choice(choices: $origins)],
             ]);
         } else {
             $builder->add('origin', ChoiceType::class, [
                 'label'   => $options['origin_label'],
                 'choices' => $originChoices,
-                'data'    => $options['origin_default'],
                 'attr'    => ['class' => 'origin-selector form-select form-select-sm', 'data-pdf-signable' => 'origin'],
             ]);
         }

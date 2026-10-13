@@ -6,6 +6,7 @@ namespace Nowo\PdfSignableBundle\AcroForm\Storage;
 
 use Nowo\PdfSignableBundle\AcroForm\AcroFormOverrides;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -33,7 +34,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
 
     public function get(string $documentKey): ?AcroFormOverrides
     {
-        $session = $this->requestStack->getCurrentRequest()?->getSession();
+        $session = $this->getSession();
         if (!$session instanceof SessionInterface) {
             return null;
         }
@@ -48,7 +49,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
 
     public function set(string $documentKey, AcroFormOverrides $overrides): void
     {
-        $session = $this->requestStack->getCurrentRequest()?->getSession();
+        $session = $this->getSession();
         if (!$session instanceof SessionInterface) {
             return;
         }
@@ -59,12 +60,26 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
 
     public function remove(string $documentKey): void
     {
-        $session = $this->requestStack->getCurrentRequest()?->getSession();
+        $session = $this->getSession();
         if (!$session instanceof SessionInterface) {
             return;
         }
         // @igor-ignore - Not shared worker service state.
         $session->remove(self::SESSION_KEY_PREFIX . $this->sanitizeKey($documentKey));
+    }
+
+    /**
+     * Returns the current request session, or null when there is no request or no session
+     * (stateless requests: Request::getSession() would throw SessionNotFoundException).
+     */
+    private function getSession(): ?SessionInterface
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if (!$request instanceof Request || !$request->hasSession()) {
+            return null;
+        }
+
+        return $request->getSession();
     }
 
     /**

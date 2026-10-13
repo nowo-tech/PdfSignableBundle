@@ -168,9 +168,6 @@ nowo_pdf_signable:
         # Storage for overrides: 'session' or a service id implementing AcroFormOverridesStorageInterface.
         # overrides_storage: 'session'
 
-        # How document_key is obtained: 'request' = client sends document_key only; 'derive_from_url' = allow pdf_url and derive key from allowlisted URL.
-        # document_key_mode: 'request'
-
         # When true, exposes POST /pdf-signable/acroform/apply to return a modified PDF. Requires editor service, event listener, or apply_script.
         # allow_pdf_modify: false
 
@@ -186,6 +183,9 @@ nowo_pdf_signable:
         # Optional path to Python script that extracts AcroForm fields from a PDF. Receives PDF path as first argument; stdout = JSON array of field descriptors.
         # When set, POST /pdf-signable/acroform/fields/extract is available.
         # fields_extractor_script: null
+
+        # Executable used to run the fields_extractor_script (e.g. python3, python, /usr/bin/python3). Used only when fields_extractor_script is set.
+        # fields_extractor_command: 'python3'
 
         # Optional path to Python script that applies AcroForm patches to a PDF. Receives --pdf <path> --patches <path-to-json>; stdout = modified PDF.
         # When set, POST /acroform/apply can return the modified PDF via this script.

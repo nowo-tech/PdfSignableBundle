@@ -149,7 +149,7 @@ final class Configuration implements ConfigurationInterface
                     ->info('AcroForm: platform settings (enabled, scripts, storage) and profiles by name. Default profile is "default".')
                     ->addDefaultsIfNotSet()
                     ->beforeNormalization()
-                        ->always(static fn (?array $v): array => self::normalizeLegacyProfileKeys($v))
+                        ->always(static fn (?array $v): array => self::normalizeLegacyFieldNameKeys(self::normalizeLegacyProfileKeys($v)))
                     ->end()
                     ->children()
                         ->booleanNode('enabled')
@@ -161,8 +161,9 @@ final class Configuration implements ConfigurationInterface
                             ->defaultValue('session')
                         ->end()
                         ->scalarNode('document_key_mode')
-                            ->info("'request' = use document_key from request only; 'derive_from_url' = allow pdf_url and derive key from allowlisted URL.")
+                            ->info("Deprecated and ignored: the AcroForm endpoints always read document_key from the request (query or body). 'derive_from_url' was never implemented.")
                             ->defaultValue('request')
+                            ->setDeprecated('nowo-tech/pdf-signable-bundle', '3.4', 'The "%node%" option at path "%path%" is deprecated and has no effect: document_key is always read from the request. Remove it from your configuration.')
                         ->end()
                         ->booleanNode('allow_pdf_modify')
                             ->info('Enable POST /pdf-signable/acroform/apply to return modified PDF (requires editor service or event listener).')
@@ -183,6 +184,10 @@ final class Configuration implements ConfigurationInterface
                         ->scalarNode('fields_extractor_script')
                             ->info('Optional path to Python script that extracts AcroForm fields from a PDF (e.g. scripts/extract_acroform_fields.py). Receives PDF path as first argument; stdout must be a JSON array of field descriptors. When set, POST /acroform/fields/extract is available.')
                             ->defaultNull()
+                        ->end()
+                        ->scalarNode('fields_extractor_command')
+                            ->info('Executable used to run the fields_extractor_script (e.g. python3, python, or /usr/bin/python3). Used only when fields_extractor_script is set.')
+                            ->defaultValue('python3')
                         ->end()
                         ->scalarNode('apply_script')
                             ->info('Optional path to Python script that applies AcroForm patches to a PDF. Receives --pdf <path> --patches <path-to-json> and outputs modified PDF to stdout. When set, POST /acroform/apply can return the modified PDF via this script.')
@@ -288,6 +293,28 @@ final class Configuration implements ConfigurationInterface
             $v['profiles'] = $v['configs'];
         }
         unset($v['configs']);
+
+        return $v;
+    }
+
+    /**
+     * Copies legacy acroform label_* keys to field_name_* when only the legacy key is configured.
+     *
+     * field_name_* have their own defaults, so the fallback must happen before defaults are applied.
+     *
+     * @param array<string, mixed> $v
+     *
+     * @return array<string, mixed>
+     */
+    private static function normalizeLegacyFieldNameKeys(array $v): array
+    {
+        foreach (['mode', 'choices', 'other_text'] as $suffix) {
+            $legacy  = 'label_' . $suffix;
+            $current = 'field_name_' . $suffix;
+            if (array_key_exists($legacy, $v) && $v[$legacy] !== null && !array_key_exists($current, $v)) {
+                $v[$current] = $v[$legacy];
+            }
+        }
 
         return $v;
     }

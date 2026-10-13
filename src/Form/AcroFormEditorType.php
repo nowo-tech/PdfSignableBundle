@@ -9,6 +9,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -88,13 +90,30 @@ final class AcroFormEditorType extends AbstractType
         $builder->add('pdfUrl', UrlType::class, [
             'label'    => 'page.url_label',
             'required' => false,
-            'data'     => $options['pdf_url'] ?? null,
             'attr'     => [
                 'class'             => 'form-control pdf-url-input',
                 'data-pdf-signable' => 'pdf-url',
                 'placeholder'       => 'https://example.com/document.pdf',
             ],
         ]);
+
+        // pdf_url only pre-fills an empty model: a "data" option on the child would lock it and
+        // overwrite the pdfUrl of an existing model being edited.
+        $pdfUrl = $options['pdf_url'] ?? null;
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($pdfUrl): void {
+            $model = $event->getData();
+            if ($model === null) {
+                $model = new AcroFormPageModel();
+                $event->setData($model);
+            }
+            if ($model instanceof AcroFormPageModel
+                && ($model->getPdfUrl() === null || $model->getPdfUrl() === '')
+                && is_string($pdfUrl)
+                && $pdfUrl !== ''
+            ) {
+                $model->setPdfUrl($pdfUrl);
+            }
+        });
     }
 
     public function buildView(FormView $view, FormInterface $form, array $options): void

@@ -53,6 +53,8 @@ services:
             $processTimeout: '%nowo_pdf_signable.process_timeout%'
             $processScriptTimeout: '%nowo_pdf_signable.process_script_timeout%'
             $logger: '@?Psr\Log\LoggerInterface'
+            $fieldsExtractorCommand: '%nowo_pdf_signable.acroform.fields_extractor_command%'
+            $kernelDebug: '%kernel.debug%'
         tags: ['controller.service_arguments']
         public: true
 
@@ -65,8 +67,7 @@ services:
             $applyScript: '%nowo_pdf_signable.acroform.apply_script%'
             $applyScriptCommand: '%nowo_pdf_signable.acroform.apply_script_command%'
             $processTimeout: '%nowo_pdf_signable.process_timeout%'
-        tags:
-            - { name: kernel.event_listener, event: nowo_pdf_signable.acroform_apply_request, method: __invoke, priority: -100 }
+        # Registered once through #[AsEventListener] (autoconfigure); no explicit kernel.event_listener tag.
 
     # AcroForm storage: SessionAcroFormOverridesStorage discovered here; #[AsAlias] on the class aliases the interface.
     # Extension overrides the alias only when overrides_storage is a custom service id.

@@ -291,6 +291,19 @@ final class DependencyCheckerTest extends TestCase
         self::assertTrue((bool) array_filter($result['failures'], static fn (string $msg): bool => str_contains($msg, 'PHP version must be >=')));
     }
 
+    /** Minimum PHP matches composer.json (>=8.2): PHP 8.1 is reported as a failure. */
+    public function testCheckAddsFailureForPhp81(): void
+    {
+        $params = $this->createMock(ParameterBagInterface::class);
+        $params->method('has')->willReturnCallback(static fn (string $key): bool => $key === 'nowo_pdf_signable.dependency_check_timeout');
+        $kernel = $this->createMock(KernelInterface::class);
+        $kernel->method('getProjectDir')->willReturn(sys_get_temp_dir());
+
+        $result = (new DependencyChecker($params, $kernel, null, '8.1.30'))->check();
+
+        self::assertTrue((bool) array_filter($result['failures'], static fn (string $msg): bool => str_contains($msg, 'PHP version must be >= 8.2.0')));
+    }
+
     public function testCheckAddsFailureWhenRequiredExtensionMissingViaInjectedChecker(): void
     {
         $params = $this->createMock(ParameterBagInterface::class);

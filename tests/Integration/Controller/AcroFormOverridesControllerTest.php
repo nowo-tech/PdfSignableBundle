@@ -32,6 +32,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use function count;
 
 use const JSON_THROW_ON_ERROR;
+use const PHP_BINARY;
 
 /**
  * Unit tests for AcroFormOverridesController: overrides GET/POST/DELETE and apply endpoint.
@@ -115,6 +116,8 @@ final class AcroFormOverridesControllerTest extends TestCase
         ?HttpClientInterface $httpClient = null,
         ?Closure $createTempFile = null,
         ?Closure $writeFile = null,
+        string $fieldsExtractorCommand = 'python3',
+        bool $kernelDebug = false,
     ): AcroFormOverridesController {
         $storage ??= $this->createMock(AcroFormOverridesStorageInterface::class);
         /** @var EventDispatcherInterface&MockObject $dispatcher */
@@ -145,6 +148,8 @@ final class AcroFormOverridesControllerTest extends TestCase
             $httpClient,
             $createTempFile,
             $writeFile,
+            $fieldsExtractorCommand,
+            $kernelDebug,
         );
         $controller->setContainer($this->createContainerWithCsrf());
 
@@ -284,6 +289,39 @@ final class AcroFormOverridesControllerTest extends TestCase
 
         self::assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
         self::assertSame('', $response->getContent());
+    }
+
+    /** DELETE with a JSON body {"document_key": "..."} is accepted (as documented). */
+    public function testRemoveOverridesWithDocumentKeyInJsonBody(): void
+    {
+        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage->expects(self::once())->method('remove')->with('json-key');
+        $controller = $this->createController(storage: $storage);
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE', [], [], [], [
+            'CONTENT_TYPE'      => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+        ], json_encode(['document_key' => 'json-key'], JSON_THROW_ON_ERROR));
+
+        $response = $controller->removeOverrides($request);
+
+        self::assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+    }
+
+    /** DELETE with an invalid JSON body or invalid key in body returns 400. */
+    public function testRemoveOverridesWithInvalidJsonBodyReturns400(): void
+    {
+        $controller = $this->createController();
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'DELETE', [], [], [], [
+            'CONTENT_TYPE'      => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+        ], '{not json');
+        self::assertSame(Response::HTTP_BAD_REQUEST, $controller->removeOverrides($request)->getStatusCode());
+
+        $request = Request::create('/pdf-signable/acroform/overrides', 'DELETE', [], [], [], [
+            'CONTENT_TYPE'      => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+        ], json_encode(['document_key' => '../etc/passwd'], JSON_THROW_ON_ERROR));
+        self::assertSame(Response::HTTP_BAD_REQUEST, $controller->removeOverrides($request)->getStatusCode());
     }
 
     /** removeOverrides can resolve document_key from request bag. */
@@ -1158,8 +1196,7 @@ final class AcroFormOverridesControllerTest extends TestCase
 
             return $event;
         });
-        $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
-        $request    = Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
+        $request = static fn (): Request => Request::create('/pdf-signable/acroform/apply', 'POST', [], [], [], [
             'CONTENT_TYPE'      => 'application/json',
             'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
         ], json_encode([
@@ -1167,12 +1204,116 @@ final class AcroFormOverridesControllerTest extends TestCase
             'patches'     => [['fieldId' => 'f1']],
         ], JSON_THROW_ON_ERROR));
 
-        $response = $controller->apply($request);
-
+        // kernel.debug on: detail exposed.
+        $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher, kernelDebug: true);
+        $response   = $controller->apply($request());
         self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
         $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertSame('Apply failed', $data['error']);
         self::assertSame('stderr output here', $data['detail'] ?? null);
+
+        // kernel.debug off: raw stderr is not returned to the client.
+        $controller = $this->createController(allowPdfModify: true, eventDispatcher: $dispatcher);
+        $response   = $controller->apply($request());
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('Apply failed', $data['error']);
+        self::assertArrayNotHasKey('detail', $data);
+    }
+
+    /** Extractor stderr / output are only returned when kernel.debug is on. */
+    public function testExtractFieldsFailureDetailOnlyInKernelDebug(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_extract_stderr_' . getmypid() . '.py';
+        file_put_contents($script, "import sys\nsys.stderr.write('secret-stderr /srv/app/path')\nsys.exit(1)\n");
+        try {
+            $request = static fn (): Request => Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+                'CONTENT_TYPE'      => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+            ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $response = $this->createController(fieldsExtractorScript: $script)->extractFields($request());
+            self::assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
+            self::assertStringNotContainsString('secret-stderr', (string) $response->getContent());
+
+            $response = $this->createController(fieldsExtractorScript: $script, kernelDebug: true)->extractFields($request());
+            $data     = json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString('secret-stderr', $data['detail']);
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    /** loadOverrides extractor errors hide stderr and script paths unless kernel.debug is on. */
+    public function testLoadOverridesExtractorErrorHidesDetailsWithoutKernelDebug(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_load_stderr_' . getmypid() . '.py';
+        file_put_contents($script, "import sys\nsys.stderr.write('secret-stderr')\nsys.exit(1)\n");
+        $missing = sys_get_temp_dir() . '/pdfsignable_missing_extractor_' . getmypid() . '.py';
+        try {
+            $request = static fn (): Request => Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
+                'CONTENT_TYPE'      => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+            ], json_encode(['document_key' => 'doc1', 'pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $data = json_decode((string) $this->createController(fieldsExtractorScript: $script)->loadOverrides($request())->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringNotContainsString('secret-stderr', $data['fields_extractor_error']);
+            $data = json_decode((string) $this->createController(fieldsExtractorScript: $script, kernelDebug: true)->loadOverrides($request())->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString('secret-stderr', $data['fields_extractor_error']);
+
+            $data = json_decode((string) $this->createController(fieldsExtractorScript: $missing)->loadOverrides($request())->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString('not found', $data['fields_extractor_error']);
+            self::assertStringNotContainsString($missing, $data['fields_extractor_error']);
+            $data = json_decode((string) $this->createController(fieldsExtractorScript: $missing, kernelDebug: true)->loadOverrides($request())->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString($missing, $data['fields_extractor_error']);
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    /** The fields extractor runs with the configured executable (fields_extractor_command), not a hard-coded python3. */
+    public function testExtractFieldsUsesConfiguredCommand(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_extract_php_' . getmypid() . '.php';
+        file_put_contents($script, '<?php echo json_encode([["id" => "php_field"]]);');
+        try {
+            $controller = $this->createController(fieldsExtractorScript: $script, fieldsExtractorCommand: PHP_BINARY);
+            $request    = Request::create('/pdf-signable/acroform/fields/extract', 'POST', [], [], [], [
+                'CONTENT_TYPE'      => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+            ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $response = $controller->extractFields($request);
+
+            self::assertSame(Response::HTTP_OK, $response->getStatusCode(), (string) $response->getContent());
+            $data = json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertSame([['id' => 'php_field']], $data['fields']);
+        } finally {
+            @unlink($script);
+        }
+    }
+
+    /** process failure detail (stderr) only with kernel.debug. */
+    public function testProcessFailureDetailOnlyInKernelDebug(): void
+    {
+        $script = sys_get_temp_dir() . '/pdfsignable_process_stderr_' . getmypid() . '.py';
+        file_put_contents($script, "import sys\nsys.stderr.write('secret-stderr')\nsys.exit(1)\n");
+        try {
+            $request = static fn (): Request => Request::create('/pdf-signable/acroform/process', 'POST', [], [], [], [
+                'CONTENT_TYPE'      => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+            ], json_encode(['pdf_content' => base64_encode('%PDF-1.4')], JSON_THROW_ON_ERROR));
+
+            $response = $this->createController(processScript: $script)->process($request());
+            self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+            self::assertStringNotContainsString('secret-stderr', (string) $response->getContent());
+
+            $response = $this->createController(processScript: $script, kernelDebug: true)->process($request());
+            $data     = json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertStringContainsString('secret-stderr', $data['detail']);
+        } finally {
+            @unlink($script);
+        }
     }
 
     public function testApplyPdfTooLargeReturns400(): void

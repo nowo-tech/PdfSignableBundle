@@ -8,6 +8,7 @@ use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionMethod;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -591,7 +592,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         ]);
         $pdfUrlField = $form->get('pdfUrl');
         self::assertInstanceOf(HiddenType::class, $pdfUrlField->getConfig()->getType()->getInnerType());
-        self::assertSame('https://example.com/fixed.pdf', $pdfUrlField->getConfig()->getData());
+        self::assertSame('https://example.com/fixed.pdf', $pdfUrlField->getData());
     }
 
     /** show_load_pdf_button is passed to view; default true, can be false (e.g. fixed-URL config). */
@@ -630,7 +631,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         ]);
         $unitField = $form->get('unit');
         self::assertInstanceOf(HiddenType::class, $unitField->getConfig()->getType()->getInnerType());
-        self::assertSame(SignatureCoordinatesModel::UNIT_PT, $unitField->getConfig()->getData());
+        self::assertSame(SignatureCoordinatesModel::UNIT_PT, $unitField->getData());
     }
 
     /** When origin_field is false, origin is HiddenType with origin_default. */
@@ -643,7 +644,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         ]);
         $originField = $form->get('origin');
         self::assertInstanceOf(HiddenType::class, $originField->getConfig()->getType()->getInnerType());
-        self::assertSame(SignatureCoordinatesModel::ORIGIN_TOP_LEFT, $originField->getConfig()->getData());
+        self::assertSame(SignatureCoordinatesModel::ORIGIN_TOP_LEFT, $originField->getData());
     }
 
     /** When unit_mode is input, unit field is TextType. */
@@ -677,6 +678,91 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
             'pdf_url' => 'https://example.com/preload.pdf',
         ]);
         self::assertSame('https://example.com/preload.pdf', $model->getPdfUrl());
+    }
+
+    /**
+     * Editing an existing model keeps its pdfUrl, unit and origin (no "data" option overriding the bound model).
+     *
+     * @return iterable<string, array{array<string, mixed>}>
+     */
+    public static function editingOptionsProvider(): iterable
+    {
+        yield 'visible choice fields' => [[
+            'pdf_url'        => 'https://example.com/option.pdf',
+            'unit_default'   => SignatureCoordinatesModel::UNIT_PT,
+            'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+        ]];
+        yield 'input modes' => [[
+            'pdf_url'        => 'https://example.com/option.pdf',
+            'unit_mode'      => SignatureCoordinatesType::UNIT_MODE_INPUT,
+            'origin_mode'    => SignatureCoordinatesType::ORIGIN_MODE_INPUT,
+            'unit_default'   => SignatureCoordinatesModel::UNIT_PT,
+            'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+        ]];
+        yield 'hidden fields' => [[
+            'pdf_url'        => 'https://example.com/option.pdf',
+            'url_field'      => false,
+            'unit_field'     => false,
+            'origin_field'   => false,
+            'unit_default'   => SignatureCoordinatesModel::UNIT_PT,
+            'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+        ]];
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    #[DataProvider('editingOptionsProvider')]
+    public function testEditingExistingModelKeepsPdfUrlUnitAndOrigin(array $options): void
+    {
+        $model = new SignatureCoordinatesModel();
+        $model->setPdfUrl('https://example.com/stored.pdf');
+        $model->setUnit(SignatureCoordinatesModel::UNIT_CM);
+        $model->setOrigin(SignatureCoordinatesModel::ORIGIN_BOTTOM_RIGHT);
+        $box = new SignatureBoxModel();
+        $box->setName('signer_1');
+        $model->addSignatureBox($box);
+
+        $form = $this->factory->create(SignatureCoordinatesType::class, $model, $options);
+
+        self::assertSame('https://example.com/stored.pdf', $form->get('pdfUrl')->getData());
+        self::assertSame(SignatureCoordinatesModel::UNIT_CM, $form->get('unit')->getData());
+        self::assertSame(SignatureCoordinatesModel::ORIGIN_BOTTOM_RIGHT, $form->get('origin')->getData());
+        self::assertSame(SignatureCoordinatesModel::UNIT_CM, $model->getUnit());
+        self::assertSame(SignatureCoordinatesModel::ORIGIN_BOTTOM_RIGHT, $model->getOrigin());
+
+        $view = $form->createView();
+        self::assertSame('https://example.com/stored.pdf', $view['pdfUrl']->vars['value']);
+        self::assertSame(SignatureCoordinatesModel::UNIT_CM, $view['unit']->vars['value']);
+    }
+
+    /** A null data creates a model initialised with pdf_url / unit_default / origin_default. */
+    public function testNullDataCreatesModelWithDefaults(): void
+    {
+        $form = $this->factory->create(SignatureCoordinatesType::class, null, [
+            'pdf_url'        => 'https://example.com/option.pdf',
+            'unit_default'   => SignatureCoordinatesModel::UNIT_PT,
+            'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+        ]);
+        $data = $form->getData();
+        self::assertInstanceOf(SignatureCoordinatesModel::class, $data);
+        self::assertSame('https://example.com/option.pdf', $data->getPdfUrl());
+        self::assertSame(SignatureCoordinatesModel::UNIT_PT, $data->getUnit());
+        self::assertSame(SignatureCoordinatesModel::ORIGIN_TOP_LEFT, $data->getOrigin());
+    }
+
+    /** Hidden unit/origin fall back to the defaults when submitted empty. */
+    public function testHiddenUnitAndOriginUseDefaultsWhenSubmittedEmpty(): void
+    {
+        $form = $this->factory->create(SignatureCoordinatesType::class, new SignatureCoordinatesModel(), [
+            'unit_field'     => false,
+            'origin_field'   => false,
+            'unit_default'   => SignatureCoordinatesModel::UNIT_PT,
+            'origin_default' => SignatureCoordinatesModel::ORIGIN_TOP_LEFT,
+        ]);
+        $form->submit(['pdfUrl' => 'https://example.com/a.pdf', 'unit' => '', 'origin' => '', 'signatureBoxes' => []]);
+        self::assertSame(SignatureCoordinatesModel::UNIT_PT, $form->getData()->getUnit());
+        self::assertSame(SignatureCoordinatesModel::ORIGIN_TOP_LEFT, $form->getData()->getOrigin());
     }
 
     /** When signing_require_consent is true, signingConsent checkbox is added and required. */

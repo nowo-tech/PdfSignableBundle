@@ -6,6 +6,8 @@ namespace Nowo\PdfSignableBundle\Tests\DependencyInjection;
 
 use Nowo\PdfSignableBundle\DependencyInjection\Configuration;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\Definition\ArrayNode;
+use Symfony\Component\Config\Definition\BaseNode;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 
@@ -388,5 +390,69 @@ final class ConfigurationTest extends TestCase
         self::assertSame(['Name', 'Date'], $config['acroform']['label_choices']);
         self::assertSame([8, 10, 12], $config['acroform']['font_sizes']);
         self::assertSame(['Helvetica', 'Arial'], $config['acroform']['font_families']);
+    }
+
+    /** Legacy label_* keys still apply to field_name_* when field_name_* are not configured. */
+    public function testLegacyLabelKeysFallBackToFieldNameKeys(): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [
+            ['acroform' => [
+                'label_mode'       => 'choice',
+                'label_choices'    => ['Name', 'Date'],
+                'label_other_text' => 'Other',
+            ]],
+        ]);
+
+        self::assertSame('choice', $config['acroform']['field_name_mode']);
+        self::assertSame(['Name', 'Date'], $config['acroform']['field_name_choices']);
+        self::assertSame('Other', $config['acroform']['field_name_other_text']);
+    }
+
+    /** Explicit field_name_* keys win over legacy label_* keys; defaults stay when neither is set. */
+    public function testFieldNameKeysWinOverLegacyLabelKeys(): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [
+            ['acroform' => [
+                'label_mode'         => 'choice',
+                'field_name_mode'    => 'input',
+                'label_choices'      => ['Legacy'],
+                'field_name_choices' => ['New'],
+            ]],
+        ]);
+        self::assertSame('input', $config['acroform']['field_name_mode']);
+        self::assertSame(['New'], $config['acroform']['field_name_choices']);
+        self::assertSame('', $config['acroform']['field_name_other_text']);
+
+        $defaults = (new Processor())->processConfiguration(new Configuration(), []);
+        self::assertSame('input', $defaults['acroform']['field_name_mode']);
+        self::assertSame([], $defaults['acroform']['field_name_choices']);
+    }
+
+    /** fields_extractor_command defaults to python3 and can be overridden. */
+    public function testFieldsExtractorCommand(): void
+    {
+        $defaults = (new Processor())->processConfiguration(new Configuration(), []);
+        self::assertSame('python3', $defaults['acroform']['fields_extractor_command']);
+
+        $config = (new Processor())->processConfiguration(new Configuration(), [
+            ['acroform' => ['fields_extractor_command' => '/usr/bin/python3.12']],
+        ]);
+        self::assertSame('/usr/bin/python3.12', $config['acroform']['fields_extractor_command']);
+    }
+
+    /** acroform.document_key_mode is deprecated (deprecation is only triggered when the key is set). */
+    public function testDocumentKeyModeIsDeprecated(): void
+    {
+        $tree = (new Configuration())->getConfigTreeBuilder()->buildTree();
+        self::assertInstanceOf(ArrayNode::class, $tree);
+        $acroform = $tree->getChildren()['acroform'];
+        self::assertInstanceOf(ArrayNode::class, $acroform);
+        $node = $acroform->getChildren()['document_key_mode'];
+        self::assertInstanceOf(BaseNode::class, $node);
+        self::assertTrue($node->isDeprecated());
+        $deprecation = $node->getDeprecation('document_key_mode', 'nowo_pdf_signable.acroform');
+        self::assertSame('nowo-tech/pdf-signable-bundle', $deprecation['package']);
+        self::assertSame('3.4', $deprecation['version']);
+        self::assertStringContainsString('document_key_mode', $deprecation['message']);
     }
 }

@@ -69,12 +69,14 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
         $acroform = $config['acroform'] ?? [];
         $container->setParameter(Configuration::ALIAS . '.acroform.enabled', $acroform['enabled'] ?? false);
         $container->setParameter(Configuration::ALIAS . '.acroform.overrides_storage', $acroform['overrides_storage'] ?? 'session');
+        // Deprecated, no effect (kept so existing references to the parameter keep resolving).
         $container->setParameter(Configuration::ALIAS . '.acroform.document_key_mode', $acroform['document_key_mode'] ?? 'request');
         $container->setParameter(Configuration::ALIAS . '.acroform.allow_pdf_modify', $acroform['allow_pdf_modify'] ?? false);
         $container->setParameter(Configuration::ALIAS . '.acroform.editor_service_id', $acroform['editor_service_id'] ?? null);
         $container->setParameter(Configuration::ALIAS . '.acroform.max_pdf_size', $acroform['max_pdf_size'] ?? 20971520);
         $container->setParameter(Configuration::ALIAS . '.acroform.max_patches', $acroform['max_patches'] ?? 500);
         $container->setParameter(Configuration::ALIAS . '.acroform.fields_extractor_script', $acroform['fields_extractor_script'] ?? null);
+        $container->setParameter(Configuration::ALIAS . '.acroform.fields_extractor_command', $acroform['fields_extractor_command'] ?? 'python3');
         $container->setParameter(Configuration::ALIAS . '.acroform.apply_script', $acroform['apply_script'] ?? null);
         $container->setParameter(Configuration::ALIAS . '.acroform.apply_script_command', $acroform['apply_script_command'] ?? 'python3');
         $container->setParameter(Configuration::ALIAS . '.acroform.process_script', $acroform['process_script'] ?? null);
@@ -91,9 +93,10 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
         $container->setParameter(Configuration::ALIAS . '.acroform.label_mode', $acroform['label_mode'] ?? 'input');
         $container->setParameter(Configuration::ALIAS . '.acroform.label_choices', $acroform['label_choices'] ?? []);
         $container->setParameter(Configuration::ALIAS . '.acroform.label_other_text', $acroform['label_other_text'] ?? '');
-        $container->setParameter(Configuration::ALIAS . '.acroform.field_name_mode', $acroform['field_name_mode'] ?? $acroform['label_mode'] ?? 'input');
-        $container->setParameter(Configuration::ALIAS . '.acroform.field_name_choices', $acroform['field_name_choices'] ?? $acroform['label_choices'] ?? []);
-        $container->setParameter(Configuration::ALIAS . '.acroform.field_name_other_text', $acroform['field_name_other_text'] ?? $acroform['label_other_text'] ?? '');
+        // Legacy label_* values are copied to field_name_* by Configuration when field_name_* are not set.
+        $container->setParameter(Configuration::ALIAS . '.acroform.field_name_mode', $acroform['field_name_mode'] ?? 'input');
+        $container->setParameter(Configuration::ALIAS . '.acroform.field_name_choices', $acroform['field_name_choices'] ?? []);
+        $container->setParameter(Configuration::ALIAS . '.acroform.field_name_other_text', $acroform['field_name_other_text'] ?? '');
         $container->setParameter(Configuration::ALIAS . '.acroform.show_field_rect', $acroform['show_field_rect'] ?? true);
         $container->setParameter(Configuration::ALIAS . '.acroform.font_sizes', $acroform['font_sizes'] ?? []);
         $container->setParameter(Configuration::ALIAS . '.acroform.font_families', $acroform['font_families'] ?? []);
