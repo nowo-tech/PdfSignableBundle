@@ -1,6 +1,6 @@
 # PdfSignable Bundle
 
-[![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![Packagist Version](https://img.shields.io/packagist/v/nowo-tech/pdf-signable-bundle.svg?style=flat)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![Packagist Downloads](https://img.shields.io/packagist/dt/nowo-tech/pdf-signable-bundle.svg)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-7.0%2B%20%7C%208.0%2B-000000?logo=symfony)](https://symfony.com)
+[![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![Packagist Version](https://img.shields.io/packagist/v/nowo-tech/pdf-signable-bundle.svg?style=flat)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![Packagist Downloads](https://img.shields.io/packagist/dt/nowo-tech/pdf-signable-bundle.svg)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-7.4%2B%20%7C%208.0%2B-000000?logo=symfony)](https://symfony.com)
 
 > ⭐ **Found this useful?** [Install from Packagist](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) · Give it a star on [GitHub](https://github.com/nowo-tech/PdfSignableBundle) to help others find it.
 
@@ -21,7 +21,7 @@ This bundle is **FrankenPHP worker mode friendly**.
 - [Tests and coverage](#tests-and-coverage)
 - [License](#license)
 
-**Symfony bundle to define signature box coordinates on PDFs.** Form type with an in-browser PDF.js viewer: users place and resize signature areas by clicking and dragging. Supports units (mm, cm, pt), validation, proxy for external PDFs, and hooks for PKI/timestamp/batch signing. Symfony 7.x, 8.x · PHP 8.2+.
+**Symfony bundle to define signature box coordinates on PDFs.** Form type with an in-browser PDF.js viewer: users place and resize signature areas by clicking and dragging. Supports units (mm, cm, pt), validation, proxy for external PDFs, and hooks for PKI/timestamp/batch signing. Symfony 7.4+, 8.x · PHP 8.2+.
 
 ## What is this?
 
@@ -51,7 +51,7 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 - ✅ **Events** — `PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent`, `BatchSignRequestedEvent`, `PdfSignRequestEvent` for integration (see [EVENTS](docs/EVENTS.md) and [SIGNING_ADVANCED](docs/SIGNING_ADVANCED.md))
 - ✅ **AcroForm editor** — field list/overrides, edit modal, move/resize, add fields, apply Layer 2 (see [ACROFORM](docs/ACROFORM.md))
 - ✅ **CLI** — `nowo:pdf-signable:check-dependencies`
-- ✅ **Compatibility** — Symfony 7.x, 8.x and PHP 8.2+
+- ✅ **Compatibility** — Symfony 7.4+, 8.x and PHP 8.2+
 
 ## Screenshots
 
@@ -104,7 +104,7 @@ Configure `nowo_pdf_signable` (proxy, example URL, optional [named profiles](doc
 ## Requirements
 
 - PHP >= 8.2 (Symfony **8.0** requires PHP **8.4+**; Symfony **8.1+** requires PHP **8.4.1+**)
-- **Symfony >= 7.0** || >= 8.0
+- **Symfony >= 7.4** || >= 8.0
 - PHP extensions required by Symfony (e.g. json, mbstring, ctype, xml, fileinfo). **Optional:** `ext-yaml` for faster YAML config parsing (see `composer suggest`)
 
 ## Configuration
