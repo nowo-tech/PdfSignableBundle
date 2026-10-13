@@ -55,6 +55,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- PDF viewer (`_pdf_viewer_partial.html.twig`, used by `SignatureCoordinatesType` and `AcroFormEditorType`): the PDF URL label is translated again instead of printing the raw key (`SIGNATURE_COORDINATES_TYPE.PDF_URL.LABEL`). It now follows Symfony's `form_label` rules: the field's `translation_domain` (`false` prints the label as is), `label_translation_parameters`, `label: false` hides the label, and an empty label falls back to `page.url_label`; the `<label>` is also linked to the input (`for`).
+- Signing-only `SignatureBoxType` widget: the box name shown from `name_choices` is translated with the field's `choice_translation_domain`, like Symfony's choice widgets.
+
 ## [3.4.1] - 2026-10-13
 
 ### Security

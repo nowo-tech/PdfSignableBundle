@@ -17,7 +17,7 @@
   <div class="signing-only-name mb-2">
     <strong>
       {%- for choice in form.name.vars.choices|default([]) -%}
-        {%- if choice.value == form.name.vars.value -%}{{ choice.label }}{% endif -%}
+        {%- if choice.value == form.name.vars.value -%}{{ form.name.vars.choice_translation_domain is same as(false) ? choice.label : choice.label|trans(choice.labelTranslationParameters|default({}), form.name.vars.choice_translation_domain) }}{% endif -%}
       {%- endfor -%}
       {%- if form.name.vars.choices is empty or form.name.vars.value is empty -%}
         {{ form.name.vars.value|default('') }}

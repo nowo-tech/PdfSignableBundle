@@ -19,7 +19,19 @@
   </div>
   <div class="card-body">
     {% if show_url_row %}
-      <label class="form-label small text-uppercase fw-semibold text-muted mb-2">{{ pdf_url_form.vars.label is defined ? pdf_url_form.vars.label : ('page.url_label'|trans({}, 'NowoPdfSignableBundle')) }}</label>
+      {#- Translate the label like Symfony's form_label: honour label false, translation_domain (false = raw) and label_translation_parameters. -#}
+      {% set _pdf_url_label = pdf_url_form.vars.label ?? null %}
+      {% if _pdf_url_label is not same as(false) %}
+        {% set _pdf_url_domain = pdf_url_form.vars.translation_domain ?? 'NowoPdfSignableBundle' %}
+        {% if _pdf_url_label is empty %}
+          {% set _pdf_url_label_text = 'page.url_label'|trans({}, 'NowoPdfSignableBundle') %}
+        {% elseif _pdf_url_domain is same as(false) %}
+          {% set _pdf_url_label_text = _pdf_url_label %}
+        {% else %}
+          {% set _pdf_url_label_text = _pdf_url_label|trans(pdf_url_form.vars.label_translation_parameters|default({}), _pdf_url_domain) %}
+        {% endif %}
+      <label class="form-label small text-uppercase fw-semibold text-muted mb-2"{% if pdf_url_form.vars.id is defined %} for="{{ pdf_url_form.vars.id }}"{% endif %}>{{ _pdf_url_label_text }}</label>
+      {% endif %}
       <div class="input-group input-group-lg mb-3">
         {{ form_widget(pdf_url_form, { attr: { class: (pdf_url_form.vars.attr.class|default('') ~ (pdf_url_form.vars.errors|length > 0 ? ' is-invalid' : ''))|trim } }) }}
         {% if show_load_btn %}<button type="button" class="btn btn-primary px-4" id="loadPdfBtn">{{ 'page.load'|trans({}, 'NowoPdfSignableBundle') }}</button>{% endif %}
