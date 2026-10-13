@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 // This file is auto-generated and is for apps only. Bundles SHOULD NOT rely on its content.
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
@@ -754,6 +752,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * @psalm-type NowoPdfSignableConfig = array{
  *     proxy_enabled?: bool|Param, // Enable proxy endpoint to fetch external PDFs (avoids CORS) // Default: true
  *     proxy_url_allowlist?: list<scalar|Param|null>,
+ *     proxy_max_pdf_size?: int|Param, // Max size in bytes of a PDF fetched by the proxy endpoint; the download is aborted when exceeded. // Default: 20971520
  *     proxy_url_allowlist_required?: bool|Param, // When true (and proxy_enabled is true), an empty proxy_url_allowlist fails container compilation. Set false for local demos only. // Default: true
  *     example_pdf_url?: scalar|Param|null, // Default PDF URL for demo/preload // Default: "https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/11_07_2019_modelo_orientativo_de_contrato_de_arrendamiento_de_vivienda.pdf"
  *     debug?: bool|Param, // Enable console logging in the browser (PDF viewer and signature boxes) // Default: false
@@ -780,12 +779,13 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     acroform?: array{ // AcroForm: platform settings (enabled, scripts, storage) and profiles by name. Default profile is "default".
  *         enabled?: bool|Param, // Enable overrides storage and acroform endpoints. // Default: false
  *         overrides_storage?: scalar|Param|null, // Storage for overrides: 'session' or service id implementing AcroFormOverridesStorageInterface. // Default: "session"
- *         document_key_mode?: scalar|Param|null, // 'request' = use document_key from request only; 'derive_from_url' = allow pdf_url and derive key from allowlisted URL. // Default: "request"
+ *         document_key_mode?: scalar|Param|null, // Deprecated: The "document_key_mode" option at path "nowo_pdf_signable.acroform.document_key_mode" is deprecated and has no effect: document_key is always read from the request. Remove it from your configuration. // Deprecated and ignored: the AcroForm endpoints always read document_key from the request (query or body). 'derive_from_url' was never implemented. // Default: "request"
  *         allow_pdf_modify?: bool|Param, // Enable POST /pdf-signable/acroform/apply to return modified PDF (requires editor service or event listener). // Default: false
  *         editor_service_id?: scalar|Param|null, // Optional service id implementing PdfAcroFormEditorInterface. // Default: null
- *         max_pdf_size?: int|Param, // Max PDF size in bytes for apply endpoint (base64 decoded). // Default: 20971520
+ *         max_pdf_size?: int|Param, // Max PDF size in bytes for apply/process endpoints (base64 decoded pdf_content or pdf_url download). // Default: 20971520
  *         max_patches?: int|Param, // Max number of patches per apply request. // Default: 500
  *         fields_extractor_script?: scalar|Param|null, // Optional path to Python script that extracts AcroForm fields from a PDF (e.g. scripts/extract_acroform_fields.py). Receives PDF path as first argument; stdout must be a JSON array of field descriptors. When set, POST /acroform/fields/extract is available. // Default: null
+ *         fields_extractor_command?: scalar|Param|null, // Executable used to run the fields_extractor_script (e.g. python3, python, or /usr/bin/python3). Used only when fields_extractor_script is set. // Default: "python3"
  *         apply_script?: scalar|Param|null, // Optional path to Python script that applies AcroForm patches to a PDF. Receives --pdf <path> --patches <path-to-json> and outputs modified PDF to stdout. When set, POST /acroform/apply can return the modified PDF via this script. // Default: null
  *         apply_script_command?: scalar|Param|null, // Executable used to run the apply_script (e.g. python3, python, or /usr/bin/python3). Used only when apply_script is set. // Default: "python3"
  *         process_script?: scalar|Param|null, // Optional path to Python script that processes the modified PDF (e.g. fill, sign). Receives --input <path> [--document-key <key>]; writes result to --output <path>. When set, POST /acroform/process is available; after the script runs, an event is dispatched so the app can save the result. // Default: null

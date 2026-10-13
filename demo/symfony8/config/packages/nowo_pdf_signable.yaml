@@ -9,7 +9,7 @@ nowo_pdf_signable:
     # Production: set proxy_url_allowlist_required: true and a non-empty proxy_url_allowlist.
     proxy_url_allowlist_required: false
 
-    # When non-empty, the proxy only fetches URLs matching one entry. Each entry: substring of URL, or regex if prefixed with # (e.g. #^https://example\.com/#).
+    # When non-empty, the proxy only fetches URLs matching one entry. Each entry: host (exact or subdomain), URL prefix when it has a scheme, or regex if prefixed with # (e.g. #^https://example\.com/#).
     # proxy_url_allowlist: []
 
     # Default PDF URL for form preload / demo. Leave empty to not preload.
