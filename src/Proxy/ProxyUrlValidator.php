@@ -24,8 +24,10 @@ use function preg_match;
 use function rtrim;
 use function str_contains;
 use function str_ends_with;
+use function str_ireplace;
 use function str_starts_with;
 use function strpos;
+use function strrpos;
 use function strtolower;
 use function substr;
 use function trim;
@@ -238,7 +240,40 @@ final class ProxyUrlValidator
             return true;
         }
 
+        // Compare against the path the HTTP client will actually request: Symfony HttpClient decodes %2e and
+        // removes dot segments, so "/pdfs/../admin" (or "/pdfs/%2e%2e/admin") must not match the "/pdfs/" prefix.
+        $path = self::removeDotSegments(str_ireplace('%2e', '.', $path));
+
         return str_starts_with($path === '' ? '/' : $path, $prefix);
+    }
+
+    /**
+     * RFC 3986 section 5.2.4 "remove_dot_segments".
+     */
+    private static function removeDotSegments(string $path): string
+    {
+        $result = '';
+        while ($path !== '' && $path !== '.' && $path !== '..') {
+            if (str_starts_with($path, './')) {
+                $path = substr($path, 2);
+            } elseif (str_starts_with($path, '../')) {
+                $path = substr($path, 3);
+            } elseif (str_starts_with($path, '/./')) {
+                $path = substr($path, 2);
+            } elseif ($path === '/.') {
+                $path = '/';
+            } elseif (str_starts_with($path, '/../') || $path === '/..') {
+                $path   = '/' . substr($path, $path === '/..' ? 3 : 4);
+                $slash  = strrpos($result, '/');
+                $result = $slash === false ? '' : substr($result, 0, $slash);
+            } else {
+                $slash = strpos($path, '/', 1);
+                $result .= $slash === false ? $path : substr($path, 0, $slash);
+                $path = $slash === false ? '' : substr($path, $slash);
+            }
+        }
+
+        return $result;
     }
 
     /**

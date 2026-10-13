@@ -238,6 +238,24 @@ final class ProxyUrlValidatorTest extends TestCase
         self::assertFalse($dotOnly->isAllowedByAllowlist('https://example.com/a.pdf'));
     }
 
+    public function testAllowlistPathPrefixIgnoresDotSegmentTraversal(): void
+    {
+        foreach (['example.com/pdfs/', 'https://example.com/pdfs/'] as $entry) {
+            $validator = new ProxyUrlValidator([$entry]);
+            // HttpClient normalises these to /admin/secret.pdf before sending the request.
+            self::assertFalse($validator->isAllowedByAllowlist('https://example.com/pdfs/../admin/secret.pdf'), $entry);
+            self::assertFalse($validator->isAllowedByAllowlist('https://example.com/pdfs/%2e%2e/admin/secret.pdf'), $entry);
+            self::assertFalse($validator->isAllowedByAllowlist('https://example.com/pdfs/%2E%2E/admin/secret.pdf'), $entry);
+            self::assertFalse($validator->isAllowedByAllowlist('https://example.com/pdfs/sub/../../admin/secret.pdf'), $entry);
+            self::assertFalse($validator->isAllowedByAllowlist('https://example.com/pdfs/..'), $entry);
+            // Dot segments that stay below the prefix are still allowed.
+            self::assertTrue($validator->isAllowedByAllowlist('https://example.com/pdfs/./a.pdf'), $entry);
+            self::assertTrue($validator->isAllowedByAllowlist('https://example.com/pdfs/sub/../a.pdf'), $entry);
+            self::assertTrue($validator->isAllowedByAllowlist('https://example.com/pdfs/sub/.'), $entry);
+            self::assertTrue($validator->isAllowedByAllowlist('https://example.com/pdfs/a/./b/../c.pdf'), $entry);
+        }
+    }
+
     public function testAllowlistUrlWithoutHostIsRejected(): void
     {
         $validator = new ProxyUrlValidator([]);

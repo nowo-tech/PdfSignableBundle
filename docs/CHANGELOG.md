@@ -54,6 +54,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- `proxy_url_allowlist`: path-prefix entries (`example.com/pdfs/`, `https://cdn.example.com/pdfs/`) are matched against the dot-segment-normalised path (`%2e` decoded, `.`/`..` removed), the same path Symfony HttpClient requests. `https://example.com/pdfs/../admin/x.pdf` (or `%2e%2e`) no longer matches `example.com/pdfs/`.
+
 ## [3.4.0] - 2026-10-13
 
 ### Fixed

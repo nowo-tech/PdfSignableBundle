@@ -72,6 +72,8 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Unreleased
 
+- `proxy_url_allowlist` path-prefix entries now compare against the normalised path: URLs whose `..` / `%2e%2e` segments leave the allowed prefix are rejected (403). No configuration change needed.
+
 ## To 3.4.0
 
 From **3.3.0** — fixes - forms keep bound model values, AcroForm endpoints hardened, Symfony >=7.4, direct dependencies declared.
