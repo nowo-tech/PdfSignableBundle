@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { getRotatedAabbSize, boxesOverlap, setupBoxDragResizeRotate } from './box-drag';
 import type { BoxBounds } from './types';
 
@@ -65,6 +65,11 @@ describe('boxesOverlap', () => {
 });
 
 describe('setupBoxDragResizeRotate', () => {
+  // Vitest 4 reuses an existing spy on vi.spyOn: restore window.alert so call counts do not leak between tests.
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   function buildCtx(overrides: Partial<Parameters<typeof setupBoxDragResizeRotate>[0]> = {}) {
     const canvasWrapper = document.createElement('div');
     canvasWrapper.innerHTML = `
