@@ -190,7 +190,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 
 ## Success Criteria
 
-- **SC-001**: 100% of production files in `src/` appear in [`code-inventory.md`](code-inventory.md) with requirement IDs (**93/93** mapped; Vitest `*.test.ts` excluded).
+- **SC-001**: 100% of production files in `src/` appear in [`code-inventory.md`](code-inventory.md) with requirement IDs (**97/97** mapped; 25 co-located Vitest `*.test.ts` and `Resources/assets/README.md` excluded).
 - **SC-002**: Configuration keys in `docs/CONFIGURATION.md` match `Configuration.php`.
 - **SC-003**: PHPUnit, PHPStan, and Vitest pass in CI (`composer qa`).
 - **SC-004**: Proxy rejects disallowed URLs; allowlist regex entries validated at compile time.

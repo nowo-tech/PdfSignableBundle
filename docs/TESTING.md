@@ -1,5 +1,16 @@
 # Tests and code coverage
 
+## Table of contents
+
+- [Running tests](#running-tests)
+- [Test structure](#test-structure)
+- [Code coverage](#code-coverage)
+  - [Typical summary](#typical-summary)
+  - [Well covered (100% lines/methods)](#well-covered-100-linesmethods)
+  - [Partially covered](#partially-covered)
+- [Demo](#demo)
+- [Adding tests](#adding-tests)
+
 ## Running tests
 
 From the bundle root (with Docker):

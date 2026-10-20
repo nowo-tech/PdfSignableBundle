@@ -26,7 +26,7 @@
   - [Example: sorted boxes on submit](#example-sorted-boxes-on-submit)
   - [Example: minimum signature box size](#example-minimum-signature-box-size)
   - [Example: no overlapping boxes](#example-no-overlapping-boxes)
-  - [Export / import coordinates](#export-import-coordinates)
+  - [Export / import coordinates](#export--import-coordinates)
   - [Example: default values per box name](#example-default-values-per-box-name)
   - [Example: custom constraints](#example-custom-constraints)
   - [Example: limited boxes and name as selector](#example-limited-boxes-and-name-as-selector)

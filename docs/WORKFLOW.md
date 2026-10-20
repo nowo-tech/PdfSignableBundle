@@ -2,6 +2,17 @@
 
 This document describes the main flows of the PdfSignable bundle: how the page is built, how the viewer and form stay in sync, and what happens on submit.
 
+## Table of contents
+
+- [High-level architecture](#high-level-architecture)
+- [Page load and script init](#page-load-and-script-init)
+- [Load PDF](#load-pdf)
+- [Add signature box (click on canvas)](#add-signature-box-click-on-canvas)
+- [Drag or resize overlay](#drag-or-resize-overlay)
+- [Coordinate sync (form ↔ overlay)](#coordinate-sync-form--overlay)
+- [Form submit](#form-submit)
+- [References](#references)
+
 ## High-level architecture
 
 ```mermaid

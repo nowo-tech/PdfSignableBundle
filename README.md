@@ -1,8 +1,10 @@
 # PdfSignable Bundle
 
-[![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![Packagist Version](https://img.shields.io/packagist/v/nowo-tech/pdf-signable-bundle.svg?style=flat)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![Packagist Downloads](https://img.shields.io/packagist/dt/nowo-tech/pdf-signable-bundle.svg)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-7.4%2B%20%7C%208.0%2B-000000?logo=symfony)](https://symfony.com)
+[![CI](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/nowo-tech/PdfSignableBundle/actions/workflows/ci.yml) [![Packagist Version](https://img.shields.io/packagist/v/nowo-tech/pdf-signable-bundle.svg?style=flat)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![Packagist Downloads](https://img.shields.io/packagist/dt/nowo-tech/pdf-signable-bundle.svg)](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php)](https://php.net) [![Symfony](https://img.shields.io/badge/Symfony-7.4%2B%20%7C%208.0%2B-000000?logo=symfony)](https://symfony.com) [![GitHub stars](https://img.shields.io/github/stars/nowo-tech/pdf-signable-bundle.svg?style=social&label=Star)](https://github.com/nowo-tech/PdfSignableBundle) [![Coverage](https://img.shields.io/badge/Coverage-99.2%25-brightgreen)](#tests-and-coverage)
 
 > ⭐ **Found this useful?** [Install from Packagist](https://packagist.org/packages/nowo-tech/pdf-signable-bundle) · Give it a star on [GitHub](https://github.com/nowo-tech/PdfSignableBundle) to help others find it.
+
+**Symfony bundle to define signature box coordinates on PDFs.** Form type with an in-browser PDF.js viewer: users place and resize signature areas by clicking and dragging. Supports units (mm, cm, pt), validation, proxy for external PDFs, and hooks for PKI/timestamp/batch signing. Symfony 7.4+, 8.x · PHP 8.2+.
 
 ![FrankenPHP Friendly Worker Mode](docs/images/frankenphp-friendly.png)
 
@@ -20,8 +22,6 @@ This bundle is **FrankenPHP worker mode friendly**.
 - [Documentation](#documentation)
 - [Tests and coverage](#tests-and-coverage)
 - [License](#license)
-
-**Symfony bundle to define signature box coordinates on PDFs.** Form type with an in-browser PDF.js viewer: users place and resize signature areas by clicking and dragging. Supports units (mm, cm, pt), validation, proxy for external PDFs, and hooks for PKI/timestamp/batch signing. Symfony 7.4+, 8.x · PHP 8.2+.
 
 ## What is this?
 
@@ -172,11 +172,8 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 
 ## Documentation
 
-
-- [GitHub Actions CI requirements](docs/GITHUB_CI.md)
 - [Installation](docs/INSTALLATION.md)
 - [Configuration](docs/CONFIGURATION.md)
-- [PSR evaluation (REQ-CS-007)](docs/PSR.md)
 - [Usage](docs/USAGE.md)
 - [Contributing](docs/CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
@@ -191,6 +188,8 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 
 ### Additional documentation
 
+- [GitHub Actions CI requirements](docs/GITHUB_CI.md)
+- [PSR evaluation (REQ-CS-007)](docs/PSR.md)
 - [Demo with FrankenPHP (development and production)](docs/DEMO-FRANKENPHP.md)
 - [FrankenPHP worker audit (kernel reset false)](docs/FRANKENPHP-WORKER-AUDIT.md)
 - [Workflow](docs/WORKFLOW.md)

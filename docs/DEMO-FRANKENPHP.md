@@ -4,11 +4,16 @@ This document describes how the bundle's demo applications run under **FrankenPH
 
 For host-app worker safety (kernel not reset between requests), see [FRANKENPHP-WORKER-AUDIT.md](FRANKENPHP-WORKER-AUDIT.md).
 
-## Contents
+## Table of contents
 
 - [Overview](#overview)
 - [What the demos include](#what-the-demos-include)
 - [Development configuration](#development-configuration)
+  - [1. Caddyfile (development)](#1-caddyfile-development)
+  - [2. PHP configuration (development)](#2-php-configuration-development)
+  - [3. Twig configuration (development)](#3-twig-configuration-development)
+  - [4. Docker Compose (development)](#4-docker-compose-development)
+  - [5. Start the demo (development)](#5-start-the-demo-development)
 - [Production configuration](#production-configuration)
 - [Switching classic vs worker (`FRANKENPHP_MODE`)](#switching-classic-vs-worker-frankenphp_mode)
 - [Reproducing in another bundle](#reproducing-in-another-bundle)

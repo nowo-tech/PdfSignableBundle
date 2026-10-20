@@ -4,6 +4,12 @@ Styles for the PDF viewer live in **`src/Resources/assets/pdf-signable.scss`**, 
 
 **Single inclusion per request:** The form theme uses the Twig function `nowo_pdf_signable_include_assets()` (from `NowoPdfSignableTwigExtension`) so that the CSS link and the PDF.js / pdf-signable.js scripts are output only once per request. If you render multiple `SignatureCoordinatesType` widgets on the same page, the assets are not duplicated.
 
+## Table of contents
+
+- [Aligned with PdfTemplateBundle](#aligned-with-pdftemplatebundle)
+- [Signable-specific (not in PdfTemplate)](#signable-specific-not-in-pdftemplate)
+- [Other views](#other-views)
+
 ## Aligned with PdfTemplateBundle
 
 The following use the **same values** as PdfTemplateBundle so both viewers look consistent. When changing these, update the other bundle’s theme as well.

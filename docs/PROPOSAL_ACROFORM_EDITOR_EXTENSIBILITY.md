@@ -1,5 +1,21 @@
 # Proposal: AcroForm Editor Extensibility
 
+## Table of contents
+
+- [Problem](#problem)
+- [Goal](#goal)
+- [Proposed Changes](#proposed-changes)
+  - [1. AcroForm Field Edit Form Type](#1-acroform-field-edit-form-type)
+  - [2. Twig Templates (overrideable)](#2-twig-templates-overrideable)
+  - [3. Translations Injection](#3-translations-injection)
+  - [4. Config from Bundle](#4-config-from-bundle)
+  - [5. JS Changes](#5-js-changes)
+  - [6. Bundle Template for AcroForm Editor](#6-bundle-template-for-acroform-editor)
+  - [7. Form Type vs. Twig Partial](#7-form-type-vs-twig-partial)
+- [Implementation Order](#implementation-order)
+- [Migration](#migration)
+- [Summary](#summary)
+
 ## Problem
 
 The AcroForm edit-field form, translatable strings and templates are currently:

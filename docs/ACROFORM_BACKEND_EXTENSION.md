@@ -6,6 +6,35 @@ It is split into **two layers**: one that requires no PDF library, and an option
 
 ---
 
+## Table of contents
+
+- [1. Goals](#1-goals)
+- [2. Data model (DTOs)](#2-data-model-dtos)
+  - [2.1 Single-field patch (frontend → backend)](#21-single-field-patch-frontend--backend)
+  - [2.2 Full overrides (storage)](#22-full-overrides-storage)
+- [3. Layer 1: Overrides persistence (no PDF library)](#3-layer-1-overrides-persistence-no-pdf-library)
+  - [3.1 Storage contract](#31-storage-contract)
+  - [3.2 Default implementation: session](#32-default-implementation-session)
+  - [3.3 How `documentKey` is obtained](#33-how-documentkey-is-obtained)
+  - [3.4 Endpoints (Layer 1)](#34-endpoints-layer-1)
+- [4. Layer 2: Modifying the PDF (AcroForm rewrite)](#4-layer-2-modifying-the-pdf-acroform-rewrite)
+  - [4.1 Editor contract](#41-editor-contract)
+  - [4.2 Apply endpoint](#42-apply-endpoint)
+  - [4.3 Event for app-provided implementation](#43-event-for-app-provided-implementation)
+  - [4.4 Optional implementation with SetaPDF](#44-optional-implementation-with-setapdf)
+- [5. Configuration (DependencyInjection)](#5-configuration-dependencyinjection)
+- [6. Security and limits](#6-security-and-limits)
+- [7. Component summary](#7-component-summary)
+- [8. Suggested implementation order](#8-suggested-implementation-order)
+- [9. Apply script (Python) and process endpoint](#9-apply-script-python-and-process-endpoint)
+  - [9.1 Apply script](#91-apply-script)
+  - [9.2 Process script and “Submit / Process”](#92-process-script-and-submit--process)
+  - [9.3 Frontend flow](#93-frontend-flow)
+- [10. Getting the modified PDF in your project and uploading to storage (e.g. Amazon S3)](#10-getting-the-modified-pdf-in-your-project-and-uploading-to-storage-eg-amazon-s3)
+  - [10.1 Option A: Your backend calls the apply endpoint, then uploads the PDF](#101-option-a-your-backend-calls-the-apply-endpoint-then-uploads-the-pdf)
+  - [10.2 Option B: Process endpoint + listener: receive the (processed) PDF and upload to S3](#102-option-b-process-endpoint--listener-receive-the-processed-pdf-and-upload-to-s3)
+- [11. Implementation status](#11-implementation-status)
+
 ## 1. Goals
 
 - **Layer 1 — Overrides:** Save and load a JSON blob of overrides (default value, label, UI control type, rect in our view) per document, so the frontend can apply the same experience on later loads. **Does not modify the PDF.**

@@ -8,6 +8,20 @@
 | Method | Manual review of every file under `src/` (controllers, listeners, form types, Twig extension, storage, checker, command, DI extension, compiler passes, `Resources/config`) |
 | **Verdict** | ✅ **Compatible** — safe under FrankenPHP worker with **kernel not reset** between requests (scenario B). No per-request state in services; W-01 temp-file leak fixed in 3.1.7. Residual Low notes (W-02 peak buffer, W-03 DNS) are ops/hardening, not cross-request state leaks. |
 
+## Table of contents
+
+- [Execution model assumed](#execution-model-assumed)
+- [Summary](#summary)
+- [Services reviewed](#services-reviewed)
+- [Findings](#findings)
+  - [W-01 — Temp file leaked when the second `tempnam()` of a pair fails — **Fixed in 3.1.7**](#w-01--temp-file-leaked-when-the-second-tempnam-of-a-pair-fails--fixed-in-317)
+  - [W-02 — Remote PDF bodies are fully buffered before any size check (Low)](#w-02--remote-pdf-bodies-are-fully-buffered-before-any-size-check-low)
+  - [W-03 — SSRF host resolution has no bundle-level timeout (Low)](#w-03--ssrf-host-resolution-has-no-bundle-level-timeout-low)
+  - [W-04 — `HttpClient::create()` fallback builds a new client per request (Info)](#w-04--httpclientcreate-fallback-builds-a-new-client-per-request-info)
+  - [W-05 — Debug dependency check spawns a Python process on bundle GET pages (Info)](#w-05--debug-dependency-check-spawns-a-python-process-on-bundle-get-pages-info)
+- [Usage recommendations in worker mode](#usage-recommendations-in-worker-mode)
+- [Re-audit triggers](#re-audit-triggers)
+
 ## Execution model assumed
 
 FrankenPHP worker mode boots the Symfony kernel once per worker and serves many requests with the same container. This audit assumes the **strict** variant: the kernel is **not** rebooted between requests, so every shared service, static property and PHP global survives from one request to the next. Two scenarios are evaluated:

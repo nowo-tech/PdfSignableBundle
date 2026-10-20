@@ -4,6 +4,23 @@ This document gives recommendations for making the PdfSignable viewer and form u
 
 ---
 
+## Table of contents
+
+- [Keyboard](#keyboard)
+  - [Built-in shortcuts](#built-in-shortcuts)
+  - [Focus order](#focus-order)
+  - [Recommendations](#recommendations)
+- [Screen readers](#screen-readers)
+  - [What the bundle provides](#what-the-bundle-provides)
+  - [PDF viewer region](#pdf-viewer-region)
+  - [Recommendations](#recommendations-1)
+- [Contrast and visibility](#contrast-and-visibility)
+  - [Overlays and controls](#overlays-and-controls)
+  - [Form controls](#form-controls)
+  - [Recommendations](#recommendations-2)
+- [Touch and pointer](#touch-and-pointer)
+- [See also](#see-also)
+
 ## Keyboard
 
 ### Built-in shortcuts

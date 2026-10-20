@@ -4,6 +4,21 @@ The AcroForm editor lets you **list, edit and reposition** PDF form fields (Acro
 
 ---
 
+## Table of contents
+
+- [1. Overview](#1-overview)
+- [2. Current behaviour (summary)](#2-current-behaviour-summary)
+- [3. Data model (overrides)](#3-data-model-overrides)
+- [4. Editor UI](#4-editor-ui)
+- [5. Modal and editor configuration](#5-modal-and-editor-configuration)
+  - [5.1 Label: free text or list + "Other"](#51-label-free-text-or-list--other)
+  - [5.2 Rect (position and size) visibility](#52-rect-position-and-size-visibility)
+  - [5.3 Font in text and textarea](#53-font-in-text-and-textarea)
+  - [5.4 Checkbox: on/off value and icon](#54-checkbox-onoff-value-and-icon)
+- [6. Form types and recommended usage](#6-form-types-and-recommended-usage)
+- [7. Backend and scripts](#7-backend-and-scripts)
+- [8. Summary](#8-summary)
+
 ## 1. Overview
 
 - **Frontend:** The viewer (PDF.js) renders the fields; the editor panel lets you load/save overrides, edit each field (type, label, default value, position/size) and add new fields. Overrides are applied in memory (`window.__pdfSignableAcroFormOverrides`); the PDF binary is unchanged.

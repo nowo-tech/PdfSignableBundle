@@ -2,6 +2,31 @@
 
 The bundle dispatches events at key moments so you can extend behavior without modifying the bundle.
 
+## Table of contents
+
+- [Event list](#event-list)
+- [SignatureCoordinatesSubmittedEvent](#signaturecoordinatessubmittedevent)
+  - [Payload](#payload)
+  - [Example: persist coordinates](#example-persist-coordinates)
+  - [Using the form in your own controller](#using-the-form-in-your-own-controller)
+- [BatchSignRequestedEvent](#batchsignrequestedevent)
+  - [Payload](#payload-1)
+  - [Example](#example)
+- [PdfSignRequestEvent](#pdfsignrequestevent)
+  - [Payload](#payload-2)
+  - [Example](#example-1)
+- [PdfProxyRequestEvent](#pdfproxyrequestevent)
+  - [Payload](#payload-3)
+  - [Example: serve from cache](#example-serve-from-cache)
+- [PdfProxyResponseEvent](#pdfproxyresponseevent)
+  - [Payload](#payload-4)
+  - [Example: add a header](#example-add-a-header)
+- [AcroFormModifiedPdfProcessedEvent](#acroformmodifiedpdfprocessedevent)
+  - [Payload](#payload-5)
+  - [Example](#example-2)
+- [Frontend (browser) custom events — AcroForm editor ↔ viewer](#frontend-browser-custom-events--acroform-editor--viewer)
+- [Event classes reference](#event-classes-reference)
+
 ## Event list
 
 | Event | When | Use case |

@@ -4,6 +4,21 @@ This document describes **unambiguously** how the AcroForm editor works: archite
 
 ---
 
+## Table of contents
+
+- [1. General architecture](#1-general-architecture)
+- [2. Load overrides](#2-load-overrides)
+- [3. Save overrides](#3-save-overrides)
+- [4. Move / resize a field](#4-move--resize-a-field)
+- [5. Edit field configuration (modal)](#5-edit-field-configuration-modal)
+- [6. Add a new field](#6-add-a-new-field)
+- [7. Apply changes to PDF (Apply)](#7-apply-changes-to-pdf-apply)
+- [8. Send / process PDF (Process)](#8-send--process-pdf-process)
+- [9. Frontend events (editor ↔ viewer)](#9-frontend-events-editor--viewer)
+  - [Global variables (window)](#global-variables-window)
+- [10. Field list order](#10-field-list-order)
+- [11. Quick summary](#11-quick-summary)
+
 ## 1. General architecture
 
 The AcroForm editor is made of **three parts** that communicate via events and global variables in the browser, and via HTTP with the server.

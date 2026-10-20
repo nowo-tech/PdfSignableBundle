@@ -1,5 +1,23 @@
 # Release process
 
+## Table of contents
+
+- [Creating a new version (e.g. v1.5.0)](#creating-a-new-version-eg-v150)
+- [Registering on Packagist](#registering-on-packagist)
+- [After releasing](#after-releasing)
+- [Released v2.0.5 (2026-04-15)](#released-v205-2026-04-15)
+- [Ready for v3.2.1 (2026-10-06)](#ready-for-v321-2026-10-06)
+- [Released v3.0.6 (2026-07-22)](#released-v306-2026-07-22)
+- [Released v3.0.5 (2026-07-18)](#released-v305-2026-07-18)
+- [Released v3.0.4 (2026-07-16)](#released-v304-2026-07-16)
+- [Released v3.0.3 (2026-07-09)](#released-v303-2026-07-09)
+- [Released v3.0.2 (2026-07-01)](#released-v302-2026-07-01)
+- [Released v3.0.1 (2026-07-01)](#released-v301-2026-07-01)
+- [Released v3.0.0 (2026-07-01)](#released-v300-2026-07-01)
+- [Released v2.0.7 (2026-07-01)](#released-v207-2026-07-01)
+- [Released v2.0.6 (2026-05-14)](#released-v206-2026-05-14)
+- [Next release (e.g. v3.2.2)](#next-release-eg-v322)
+
 ## Creating a new version (e.g. v1.5.0)
 
 1. **Ensure everything is ready**

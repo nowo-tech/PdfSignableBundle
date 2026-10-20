@@ -1,5 +1,13 @@
 # Security Policy
 
+## Table of contents
+
+- [Security considerations for integrators](#security-considerations-for-integrators)
+- [Supported Versions](#supported-versions)
+- [Reporting a Vulnerability](#reporting-a-vulnerability)
+- [Release security checklist (12.4.1)](#release-security-checklist-1241)
+- [AI security audit](#ai-security-audit)
+
 ## Security considerations for integrators
 
 - **PDF proxy**

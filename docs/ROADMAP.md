@@ -6,6 +6,18 @@ This document lists **possible improvements** and ideas for future versions of t
 
 ---
 
+## Table of contents
+
+- [PDF signing and legal validity](#pdf-signing-and-legal-validity)
+- [AcroForm (PDF form fields editor)](#acroform-pdf-form-fields-editor)
+- [Form and coordinates functionality](#form-and-coordinates-functionality)
+- [User experience (PDF viewer)](#user-experience-pdf-viewer)
+- [Backend and integration](#backend-and-integration)
+- [Frontend and PDF.js](#frontend-and-pdfjs)
+- [Quality and development](#quality-and-development)
+- [Documentation](#documentation)
+- [Security and performance](#security-and-performance)
+
 ## PDF signing and legal validity
 
 The bundle today focuses on **defining where** signature boxes go (coordinates). The ideas below extend toward **actually signing** inside those boxes, with different levels of legal validity.

@@ -1,5 +1,17 @@
 # Installation
 
+## Table of contents
+
+- [Requirements](#requirements)
+- [Composer](#composer)
+- [Register the bundle](#register-the-bundle)
+- [Routes](#routes)
+- [Assets](#assets)
+- [Verify dependencies](#verify-dependencies)
+- [Base template](#base-template)
+- [See also](#see-also)
+- [Twig Extra Bundle (REQ-TWIG-004)](#twig-extra-bundle-req-twig-004)
+
 ## Requirements
 
 - **PHP** 8.2+

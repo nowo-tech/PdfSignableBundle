@@ -4,6 +4,20 @@ The bundle provides **structures and extension points** for digital signatures (
 
 ---
 
+## Table of contents
+
+- [What the bundle provides (no extra dependencies)](#what-the-bundle-provides-no-extra-dependencies)
+  - [Audit metadata](#audit-metadata)
+  - [Events](#events)
+  - [Batch signing (one-click)](#batch-signing-one-click)
+  - [Config placeholders (for your app)](#config-placeholders-for-your-app)
+- [What you must add (third-party / app)](#what-you-must-add-third-party--app)
+  - [Trusted timestamp (RFC 3161)](#trusted-timestamp-rfc-3161)
+  - [Digital signature (PKI / PAdES)](#digital-signature-pki--pades)
+  - [Qualified / eIDAS-style signatures](#qualified--eidas-style-signatures)
+  - [Batch signing behaviour](#batch-signing-behaviour)
+- [Summary table](#summary-table)
+
 ## What the bundle provides (no extra dependencies)
 
 ### Audit metadata

@@ -2,6 +2,23 @@
 
 **Status:** Implemented (configs in YAML, AcroFormEditorType, AcroFormPageModel, viewer partial, `acroform_editor_widget` block, demo with AcroFormPageType in Symfony 7 and 8).
 
+## Table of contents
+
+- [Goal](#goal)
+- [Current state](#current-state)
+  - [Signature (already done)](#signature-already-done)
+  - [AcroForm (problem)](#acroform-problem)
+- [Design principles](#design-principles)
+- [Proposed solution](#proposed-solution)
+  - [1. Named configs for AcroForm (YAML)](#1-named-configs-for-acroform-yaml)
+  - [2. New form type in the bundle: `AcroFormEditorType`](#2-new-form-type-in-the-bundle-acroformeditortype)
+  - [3. Reusable viewer (Twig partial)](#3-reusable-viewer-twig-partial)
+  - [4. Form theme (block for AcroForm)](#4-form-theme-block-for-acroform)
+  - [5. Usage in the app (controller + page form)](#5-usage-in-the-app-controller--page-form)
+  - [6. Summary of bundle changes](#6-summary-of-bundle-changes)
+  - [7. Per-page config (example)](#7-per-page-config-example)
+- [Benefits](#benefits)
+
 ## Goal
 
 Provide an **AcroForm page type** symmetric to the signature page:

@@ -2,9 +2,9 @@
 
 **Baseline spec**: [`spec.md`](spec.md)  
 **Package**: `nowo-tech/pdf-signable-bundle`  
-**Last audited**: 2026-07-07
+**Last audited**: 2026-10-20
 
-This file proves that **every production source artifact** under `src/` is referenced by the baseline specification. Co-located Vitest files (`*.test.ts`, 22 files) and `Resources/assets/README.md` are test-only or maintainer docs and excluded from the production count.
+This file proves that **every production source artifact** under `src/` is referenced by the baseline specification. Paths are relative to `src/`. Co-located Vitest files (`*.test.ts`, 25 files) and `Resources/assets/README.md` are test-only or maintainer docs and excluded from the production count.
 
 ## PHP classes (`src/**/*.php`)
 
@@ -21,6 +21,8 @@ This file proves that **every production source artifact** under `src/` is refer
 | `Controller/SignatureController.php` | Demo form + PDF proxy | FR-CTRL-001, FR-PROXY-001 |
 | `Controller/AcroFormOverridesController.php` | AcroForm overrides API | FR-ACRO-004, FR-RUNTIME-001 |
 | `Proxy/ProxyUrlValidator.php` | SSRF / allowlist validation | FR-SEC-001, FR-PROXY-001 |
+| `Proxy/RemotePdfFetcher.php` | SSRF-hardened remote PDF fetch (per-hop allowlist re-check, IP pinning) shared by proxy and AcroForm endpoints | FR-PROXY-001, FR-SEC-001, FR-RUNTIME-001 |
+| `Proxy/RemotePdfFetchException.php` | Internal failure of a safe remote PDF fetch | FR-PROXY-001 |
 | `Form/SignatureCoordinatesType.php` | Main signature form type | FR-FORM-001 |
 | `Form/SignatureBoxType.php` | Signature box collection entry | FR-FORM-001 |
 | `Form/Extension/SignatureCoordinatesTypeExtension.php` | Form type extension | FR-FORM-001 |
@@ -82,6 +84,7 @@ This file proves that **every production source artifact** under `src/` is refer
 | `logger.ts` | Browser logger | FR-UI-SHR-006 |
 | `pdf-signable-logger.ts` | Namespaced logger | FR-UI-SHR-006 |
 | `pdfjs-dist.d.ts` | PDF.js type shim | FR-UI-SHR-002 |
+| `scss.d.ts` | TypeScript module declaration for `*.scss` imports | FR-UI-SHR-007, FR-BUILD-001 |
 | `pdf-signable.scss` | Viewer + overlay styles | FR-UI-SHR-007 |
 
 ## Public JavaScript / CSS (`src/Resources/public/js/`)
@@ -134,12 +137,14 @@ This file proves that **every production source artifact** under `src/` is refer
 
 | Category | Files | Mapped |
 | --- | ---: | ---: |
-| PHP classes | 38 | 38 |
-| TypeScript / SCSS production | 29 | 29 |
+| PHP classes | 41 | 41 |
+| TypeScript / SCSS production | 30 | 30 |
 | Public JS / CSS / worker | 4 | 4 |
 | YAML config | 2 | 2 |
 | Translation catalogs | 12 | 12 |
 | Twig views | 8 | 8 |
-| **Total production sources** | **93** | **93** |
+| **Total production sources** | **97** | **97** |
 
-Vitest co-located tests (`*.test.ts`, 22 files) and `Resources/assets/README.md` are documented as out-of-scope test/maintainer artifacts in [`spec.md`](spec.md).
+Vitest co-located tests (`*.test.ts`, 25 files) and `Resources/assets/README.md` are documented as out-of-scope test/maintainer artifacts in [`spec.md`](spec.md).
+
+Audit: `git ls-files src | grep -v '\.test\.ts$' | grep -v 'Resources/assets/README.md$' | wc -l` → **97** (123 tracked files − 25 tests − 1 maintainer README).
