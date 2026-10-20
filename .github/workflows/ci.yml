@@ -74,7 +74,8 @@ jobs:
         run: |
           PLATFORM="${{ matrix.php }}"
           # Symfony 8.1 requires PHP >= 8.4.1; Composer treats platform "8.4" as 8.4.0.
-          if [ "${{ matrix.symfony }}" = "8.1" ] && [ "$PLATFORM" = "8.4" ]; then
+          # The 8.0 cells also resolve to 8.1 (every 8.0.x release has security advisories).
+          if [ "${{ startsWith(matrix.symfony, '8.') }}" = "true" ] && [ "$PLATFORM" = "8.4" ]; then
             PLATFORM="8.4.1"
           fi
           composer config platform.php "$PLATFORM"
