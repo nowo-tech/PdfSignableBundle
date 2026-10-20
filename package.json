@@ -19,12 +19,12 @@
     "pdfjs-dist": "^6.4.299"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.12",
     "jsdom": "^30.1.3",
     "sass": "^1.105.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "pnpm": {
     "overrides": {
