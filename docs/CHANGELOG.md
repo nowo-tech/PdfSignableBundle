@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.4.4] - 2026-10-20](#344---2026-10-20)
 - [[3.4.3] - 2026-10-13](#343---2026-10-13)
 - [[3.4.2] - 2026-10-13](#342---2026-10-13)
 - [[3.4.1] - 2026-10-13](#341---2026-10-13)
@@ -56,6 +57,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-02-09](#100---2026-02-09)
 
 ## [Unreleased]
+
+## [3.4.4] - 2026-10-20
+
+Dependency refresh (bundle and demos), php-cs-fixer ParallelConfig(2). See [UPGRADING](UPGRADING.md#to-344).
 
 ### Changed
 
@@ -900,7 +905,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.4.3...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.4.4...HEAD
+[3.4.4]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.4
 [3.4.3]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.3
 [3.4.2]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.2
 [3.4.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.1
