@@ -57,6 +57,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Dependencies refreshed (Composer and pnpm/npm lock files of the bundle and its demos, campaign 2026-10-19); shipped assets rebuilt.
+- `.php-cs-fixer.dist.php`: `new ParallelConfig(2)` (REQ-CS-001).
+
 ### Documentation
 
 - Documentation: wave-1 REQ compliance — README preamble order (blurb before the TOC), GitHub stars and Coverage badges, documentation list order (GitHub CI and PSR under Additional documentation), per-variable comments in the demo `.env.example`, CONTRIBUTING Cursor Agent settings, TOCs for all long docs, Spec Kit inventory refresh (97/97: RemotePdfFetcher, RemotePdfFetchException, scss.d.ts).
