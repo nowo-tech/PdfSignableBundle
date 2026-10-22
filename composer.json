@@ -22,7 +22,7 @@
     "support": {
         "issues": "https://github.com/nowo-tech/PdfSignableBundle/issues",
         "source": "https://github.com/nowo-tech/PdfSignableBundle",
-        "docs": "https://github.com/nowo-tech/PdfSignableBundle/tree/HEAD/docs"
+        "docs": "https://github.com/nowo-tech/PdfSignableBundle/blob/master/README.md"
     },
     "authors": [
         {

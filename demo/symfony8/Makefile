@@ -3,7 +3,7 @@
 COMPOSE := $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
 SERVICE_PHP := php
 
-.PHONY: help up down shell install setup run ensure-up update-bundle clean logs update-deps test-e2e demo-screenshots
+.PHONY: help up down shell install setup run ensure-up update-bundle clean logs update-deps test-e2e demo-screenshots verify
 
 help:
 	@echo "PdfSignable Demo (Symfony 8) - Docker (FrankenPHP + Caddy)"
@@ -98,6 +98,16 @@ update-bundle: ensure-up
 	$(COMPOSE) exec -T php php bin/console assets:install
 	$(COMPOSE) exec -T php php bin/console cache:clear
 	@echo "✅ Bundle code updated in demo. http://localhost:8002"
+
+# REQ-MAKE-003 / REQ-TEST-011: final check — the demo answers HTTP 200. Caddy serves HTTPS on localhost
+# inside the container (self-signed, the e2e suite uses the same URL), so the probe runs in the php container.
+verify: ensure-up
+	@code=000; for i in 1 2 3 4 5 6 7 8 9 10; do \
+		code=$$($(COMPOSE) exec -T php curl -skL -o /dev/null -w "%{http_code}" https://localhost/ 2>/dev/null || true); \
+		[ "$$code" = "200" ] && break; sleep 3; \
+	done; \
+	if [ "$$code" != "200" ]; then echo "Healthcheck failed (HTTP $$code)"; exit 1; fi; \
+	echo "Healthcheck OK ($$code)"
 
 clean: down
 	rm -rf vendor var/cache var/log

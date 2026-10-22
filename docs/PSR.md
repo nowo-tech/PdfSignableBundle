@@ -26,11 +26,11 @@ Others are **N/A** (or already covered by Symfony) so the decision stays auditab
 | PSR-3 Logger | **Adopted** | Type-hint `Psr\Log\LoggerInterface` on services that log; injectable via Symfony DI. |
 | PSR-6 / PSR-16 Cache | **N/A** | No package-owned cache layer. |
 | PSR-7 / PSR-17 HTTP messages | **N/A** | Symfony HttpFoundation (or no HTTP messages API) is the correct surface; a PSR-7 bridge would not help consumers. |
-| PSR-18 HTTP client | **N/A** | Outbound HTTP uses Symfony `HttpClientInterface` (or a package transport) as the supported SPI instead of PSR-18. |
+| PSR-18 HTTP client | **N/A** | The only outbound HTTP is the PDF proxy: `Proxy\RemotePdfFetcher` wraps Symfony `HttpClientInterface` in `NoPrivateNetworkHttpClient` (SSRF guard, redirect cap, `http_timeout`). A PSR-18 client cannot express those Symfony options, so the Symfony SPI is kept. |
 | PSR-11 Container | **N/A** | No container locator in the public API; constructor injection only. |
 | PSR-14 Event dispatcher | **Already satisfied via Symfony** | Uses Symfony `EventDispatcherInterface` / subscribers (PSR-14 compatible). No separate FIG dependency required. |
 | PSR-15 HTTP middleware | **N/A** | Uses Symfony kernel listeners/subscribers (or has no HTTP middleware pipeline). |
-| PSR-20 Clock | **N/A** | No time-sensitive domain logic requiring a clock SPI. |
+| PSR-20 Clock | **N/A** | Evaluated 2026-10-21: `src/` has no time-dependent logic — no `time()` / `DateTime` calls; AcroForm overrides live in the session (its lifetime is the host session config) and no expiry, TTL or timestamp is computed by the bundle. Re-evaluate if overrides storage gains expiry. |
 
 ## Summary
 
@@ -40,4 +40,4 @@ Others are **N/A** (or already covered by Symfony) so the decision stays auditab
 
 ---
 
-_REQ-CS-007 evaluation date: 2026-08-21._
+_REQ-CS-007 evaluation date: 2026-10-21 (PSR-18 and PSR-20 rows re-evaluated)._

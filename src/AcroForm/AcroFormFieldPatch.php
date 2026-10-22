@@ -20,7 +20,7 @@ use function is_string;
  * patches by fieldId (e.g. "p1-0"), by fieldName (PDF /T, e.g. "NOMBRE Y APELLIDOS"), or by
  * fieldId when it equals the annotation id from the extractor/PDF.js.
  */
-final class AcroFormFieldPatch
+final readonly class AcroFormFieldPatch
 {
     /**
      * @param array<int, float|int>|null $rect
@@ -28,33 +28,33 @@ final class AcroFormFieldPatch
      */
     public function __construct(
         /** Identifier: PDF.js annotation id or PDF field name */
-        public readonly string $fieldId,
+        public string $fieldId,
         /** Rect in PDF points [llx, lly, urx, ury] — optional; for move/resize */
         /** @var array<int, float|int>|null */
-        public readonly ?array $rect = null,
+        public ?array $rect = null,
         /** Default value (PDF /DV or our override) */
-        public readonly ?string $defaultValue = null,
+        public ?string $defaultValue = null,
         /** PDF field type: Tx, Btn, Ch (optional; type change is advanced) */
-        public readonly ?string $fieldType = null,
+        public ?string $fieldType = null,
         /** Display label (overrides only) */
-        public readonly ?string $label = null,
+        public ?string $label = null,
         /** UI control type: text, textarea, checkbox, select (overrides only) */
-        public readonly ?string $controlType = null,
+        public ?string $controlType = null,
         /** Options for select (overrides only); array of { value, label? } */
         /** @var list<array{value: scalar|null, label?: string|null}>|null */
-        public readonly ?array $options = null,
+        public ?array $options = null,
         /** Page 1-based (for rect or field identification) */
-        public readonly ?int $page = null,
+        public ?int $page = null,
         /** When true, hide field in our view (overrides only; apply may exclude from PDF) */
-        public readonly ?bool $hidden = null,
+        public ?bool $hidden = null,
         /** PDF field name (/T) — optional; for apply script */
-        public readonly ?string $fieldName = null,
+        public ?string $fieldName = null,
         /** Max length for text fields (/MaxLen) — optional; for apply script */
-        public readonly ?int $maxLen = null,
+        public ?int $maxLen = null,
         /** Font size in points — optional; for apply script /DA */
-        public readonly ?float $fontSize = null,
+        public ?float $fontSize = null,
         /** Font family name (e.g. Helvetica, Arial) — optional; for apply script /DA */
-        public readonly ?string $fontFamily = null,
+        public ?string $fontFamily = null,
     ) {
     }
 

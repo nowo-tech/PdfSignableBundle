@@ -25,13 +25,13 @@ services:
     # Commands
     Nowo\PdfSignableBundle\Command\:
         resource: '../../Command/*'
-        tags: ['console.command']
+        # #[AsCommand] + autoconfigure register the commands (REQ-SF-003).
 
     # Controllers: SignatureController via resource; AcroFormOverridesController excluded and defined explicitly below.
     Nowo\PdfSignableBundle\Controller\:
         resource: '../../Controller/*'
         exclude: '../../Controller/AcroFormOverridesController.php'
-        tags: ['controller.service_arguments']
+        # #[AsController] + autoconfigure add controller.service_arguments (REQ-SF-003).
 
     Nowo\PdfSignableBundle\Controller\AcroFormOverridesController:
         class: Nowo\PdfSignableBundle\Controller\AcroFormOverridesController
@@ -55,7 +55,6 @@ services:
             $logger: '@?Psr\Log\LoggerInterface'
             $fieldsExtractorCommand: '%nowo_pdf_signable.acroform.fields_extractor_command%'
             $kernelDebug: '%kernel.debug%'
-        tags: ['controller.service_arguments']
         public: true
 
     Nowo\PdfSignableBundle\EventListener\:
@@ -80,11 +79,9 @@ services:
     Nowo\PdfSignableBundle\Form\:
         resource: '../../Form/*'
         exclude: '../../Form/Extension/*'
-        tags: ['form.type']
+        # Tagged form.type by autoconfigure (FormTypeInterface) (REQ-SF-003).
 
-    Nowo\PdfSignableBundle\Form\Extension\SignatureCoordinatesTypeExtension:
-        tags: ['form.type_extension']
+    Nowo\PdfSignableBundle\Form\Extension\SignatureCoordinatesTypeExtension: ~
 
     # Twig
-    Nowo\PdfSignableBundle\Twig\NowoPdfSignableTwigExtension:
-        tags: ['twig.extension']
+    Nowo\PdfSignableBundle\Twig\NowoPdfSignableTwigExtension: ~

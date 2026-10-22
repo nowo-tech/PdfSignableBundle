@@ -44,7 +44,8 @@ def _str_val(obj, reader):
     if isinstance(obj, bytes):
         return obj.decode("utf-8", errors="replace")
     if isinstance(obj, str):
-        return obj
+        # pypdf NameObject subclasses str and keeps the leading slash ("/Widget", "/Tx").
+        return obj[1:] if obj.startswith("/") and type(obj).__name__ == "NameObject" else obj
     s = getattr(obj, "get_object", None)
     if s is not None:
         try:

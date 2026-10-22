@@ -39,7 +39,7 @@ use const JSON_THROW_ON_ERROR;
  * @internal Part of the bundle API
  */
 #[AsEventListener(event: PdfSignableEvents::ACROFORM_APPLY_REQUEST, priority: -100)]
-final class AcroFormApplyScriptListener
+final readonly class AcroFormApplyScriptListener
 {
     /**
      * @param string|null $applyScript Absolute path to the Python script (from acroform.apply_script)
@@ -49,14 +49,14 @@ final class AcroFormApplyScriptListener
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.acroform.apply_script')]
-        private readonly ?string $applyScript,
+        private ?string $applyScript,
         #[Autowire(param: 'nowo_pdf_signable.acroform.apply_script_command')]
-        private readonly string $applyScriptCommand,
-        private readonly ?LoggerInterface $logger = null,
-        private readonly ?Closure $createTempFile = null,
-        private readonly ?Closure $writeFile = null,
+        private string $applyScriptCommand,
+        private ?LoggerInterface $logger = null,
+        private ?Closure $createTempFile = null,
+        private ?Closure $writeFile = null,
         #[Autowire(param: 'nowo_pdf_signable.process_timeout')]
-        private readonly float $processTimeout = 60.0,
+        private float $processTimeout = 60.0,
     ) {
     }
 

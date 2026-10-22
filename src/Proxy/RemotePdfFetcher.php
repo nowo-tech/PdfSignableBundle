@@ -37,16 +37,16 @@ use const PHP_URL_SCHEME;
  *
  * @internal
  */
-final class RemotePdfFetcher
+final readonly class RemotePdfFetcher
 {
     public const MAX_REDIRECTS = 5;
 
-    private readonly HttpClientInterface $client;
+    private HttpClientInterface $client;
 
     public function __construct(
-        private readonly ProxyUrlValidator $validator,
+        private ProxyUrlValidator $validator,
         ?HttpClientInterface $httpClient = null,
-        private readonly float $timeout = 30.0,
+        private float $timeout = 30.0,
     ) {
         $this->client = new NoPrivateNetworkHttpClient($httpClient ?? HttpClient::create());
     }
@@ -93,7 +93,7 @@ final class RemotePdfFetcher
                 if ($hop >= self::MAX_REDIRECTS) {
                     throw new RemotePdfFetchException(RemotePdfFetchException::REASON_UPSTREAM, 'Too many redirects');
                 }
-                $next = self::resolveLocation($url, $respHeaders['location'][0]);
+                $next = $this->resolveLocation($url, $respHeaders['location'][0]);
                 if ($next === null) {
                     throw new RemotePdfFetchException(RemotePdfFetchException::REASON_NOT_ALLOWED, 'Invalid redirect target');
                 }
@@ -146,7 +146,7 @@ final class RemotePdfFetcher
     /**
      * Resolves a Location header against the current URL; only http(s) targets are accepted.
      */
-    private static function resolveLocation(string $base, string $location): ?string
+    private function resolveLocation(string $base, string $location): ?string
     {
         $parts = parse_url(trim($location));
         if (!is_array($parts)) {

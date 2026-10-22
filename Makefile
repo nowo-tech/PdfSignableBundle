@@ -131,10 +131,11 @@ test-python: ensure-up
 		--cov=extract_acroform_fields \
 		--cov=apply_acroform_patches \
 		--cov=process_modified_pdf \
-		--cov-report=term-missing
+		--cov-report=term-missing \
+		--cov-fail-under=90
 
 test-poc: ensure-up
-	$(COMPOSE) exec -T php sh -c 'apt-get update -qq && apt-get install -y -qq python3-pip >/dev/null 2>&1; python3 -m pip install --break-system-packages -q pypdf 2>/dev/null; python3 .scripts/PoC/run_poc.py'
+	$(COMPOSE) exec -T php sh -c 'python3 -m pip install --break-system-packages -q pypdf && python3 .scripts/PoC/run_poc.py'
 
 # Run tests with coverage (no -T so coverage is shown in console with colors)
 test-coverage: ensure-up
@@ -182,7 +183,23 @@ check-twig-extra:
 # Run Igor worker-state audit (REQ-CS-008)
 igor: ensure-up
 	$(COMPOSE) exec -T php composer igor
-release-check: check-no-cursor-coauthor check-open-prs check-twig-extra ensure-up composer-sync cs-fix cs-check rector-dry phpstan igor coverage-check test-ts test-python release-check-demos
+# REQ-MAKE-002: sequential chain, ensure-up first. check-no-raw-html-form is not wired yet: the AcroForm editor
+# partials still render raw <input>/<select>/<textarea> controls (REQ-TWIG-005, scheduled with the Twig wave).
+release-check:
+	@$(MAKE) ensure-up
+	@$(MAKE) check-no-cursor-coauthor
+	@$(MAKE) check-open-prs
+	@$(MAKE) check-twig-extra
+	@$(MAKE) composer-sync
+	@$(MAKE) cs-fix
+	@$(MAKE) cs-check
+	@$(MAKE) rector-dry
+	@$(MAKE) phpstan
+	@$(MAKE) igor
+	@$(MAKE) coverage-check
+	@$(MAKE) test-ts
+	@$(MAKE) test-python
+	@$(MAKE) release-check-demos
 
 coverage-check: test-coverage
 	@chmod +x .scripts/coverage-fail-under.sh

@@ -1,6 +1,18 @@
 # FrankenPHP: HTTP on port 80, runtime worker (canonical for Nowo demos)
 {
 	order mercure after encode
+	# Timeout hierarchy (REQ-RUNTIME-001): bundle http_timeout 30 s / process_timeout 60 s /
+	# process_script_timeout 120 s < PHP max_execution_time 150 s < Caddy write timeout 180 s.
+	servers {
+		timeouts {
+			write 180s
+		}
+	}
+	frankenphp {
+		php_ini max_execution_time 150
+		php_ini max_input_time 150
+		max_wait_time 30s
+	}
 	skip_install_trust
 }
 

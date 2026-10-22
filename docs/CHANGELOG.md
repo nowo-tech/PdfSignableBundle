@@ -58,6 +58,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `extract_acroform_fields.py` returned no fields for real PDFs: pypdf `NameObject` values (`/Widget`, `/Tx`) kept their leading slash, so every widget was skipped as "not a Widget". Names are now normalised; new edge-case tests (REQ-TEST-004).
+- Demo: `make up` failed in the bundle `pnpm install` step (frozen lockfile out of sync with the `vite` override, now scoped to `vite@<6.4.3`); `make test-poc` ran `apt-get` in an Alpine container — it now installs `pypdf` with pip and stops on failure (REQ-MAKE-005).
+- Demo smoke checked the host HTTP port, which only redirects to HTTPS; `verify` / `release-verify` now probe `https://localhost/` inside the container and require a final HTTP 200 (REQ-TEST-011).
+- `.scripts/check-no-cursor-coauthor.sh` also runs inside git worktrees (`.git` file instead of directory).
+
+### Changed
+
+- Python coverage gate: `make test-python` fails below 90% (now 93.04%) (REQ-TEST-003 / REQ-TEST-004).
+- Rector targets the PHP 8.2 floor (`withPhpSets(php82: true)`) and its suggestions are applied (readonly classes/properties) (REQ-CS-003).
+- Services rely on autoconfigure for commands, controllers, form types, the form type extension and the Twig extension (duplicate manual tags removed) (REQ-SF-003).
+- `release-check` runs sequentially from `ensure-up` (REQ-MAKE-002); demo `release-check` refreshes the bundle first (REQ-DEMO-007); demo `verify` target added (REQ-MAKE-003).
+- Demo Caddyfiles set the timeout stack (bundle timeouts ≤ 120 s < PHP 150 s < Caddy write 180 s, `max_wait_time` 30 s) (REQ-RUNTIME-001); README documents `FRANKENPHP_MODE` (REQ-DEMO-008).
+- `docs/PSR.md`: PSR-18 and PSR-20 rows re-evaluated (REQ-CS-007); `composer.json` `support.docs` → README (REQ-PKG-004); new `Demo smoke` workflow.
+
 ## [3.4.4] - 2026-10-20
 
 Dependency refresh (bundle and demos), php-cs-fixer ParallelConfig(2). See [UPGRADING](UPGRADING.md#to-344).

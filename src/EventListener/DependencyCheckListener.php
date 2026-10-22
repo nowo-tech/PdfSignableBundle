@@ -19,14 +19,14 @@ use function is_string;
  * Only runs for GET requests whose route name starts with "nowo_pdf_signable_".
  */
 #[AsEventListener(event: KernelEvents::CONTROLLER, priority: 0)]
-final class DependencyCheckListener
+final readonly class DependencyCheckListener
 {
     private const ROUTE_PREFIX = 'nowo_pdf_signable_';
 
     public function __construct(
-        private readonly DependencyCheckerInterface $checker,
+        private DependencyCheckerInterface $checker,
         #[Autowire(param: 'nowo_pdf_signable.debug')]
-        private readonly bool $debug = false,
+        private bool $debug = false,
     ) {
     }
 

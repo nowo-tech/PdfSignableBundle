@@ -45,7 +45,7 @@ use const PREG_NO_ERROR;
  *
  * When an allowlist entry is a regex (prefix #), invalid patterns are logged and skipped instead of failing silently.
  */
-final class ProxyUrlValidator
+final readonly class ProxyUrlValidator
 {
     /**
      * Non-public ranges blocked in addition to {@see IpUtils::PRIVATE_SUBNETS} and PHP's private/reserved filters.
@@ -85,9 +85,9 @@ final class ProxyUrlValidator
      */
     public function __construct(
         #[Autowire(param: 'nowo_pdf_signable.proxy_url_allowlist')]
-        private readonly array $proxyUrlAllowlist,
-        private readonly ?LoggerInterface $logger = null,
-        private readonly ?Closure $dnsResolver = null,
+        private array $proxyUrlAllowlist,
+        private ?LoggerInterface $logger = null,
+        private ?Closure $dnsResolver = null,
     ) {
     }
 
@@ -184,7 +184,7 @@ final class ProxyUrlValidator
                 }
                 continue;
             }
-            if (self::matchesEntry($pattern, $parts)) {
+            if ($this->matchesEntry($pattern, $parts)) {
                 return true;
             }
         }
@@ -195,7 +195,7 @@ final class ProxyUrlValidator
     /**
      * @param array{scheme?: string, host?: string, port?: int, path?: string} $url Parsed URL
      */
-    private static function matchesEntry(string $entry, array $url): bool
+    private function matchesEntry(string $entry, array $url): bool
     {
         $urlHost = strtolower(rtrim(trim($url['host'] ?? '', '[]'), '.'));
         $urlPath = $url['path'] ?? '';
@@ -210,7 +210,7 @@ final class ProxyUrlValidator
                 return false;
             }
 
-            return self::matchesPathPrefix($e['path'] ?? '', $urlPath);
+            return $this->matchesPathPrefix($e['path'] ?? '', $urlPath);
         }
 
         $slash      = strpos($entry, '/');
@@ -231,10 +231,10 @@ final class ProxyUrlValidator
             $hostMatches = $hostPart !== '' && ($urlHost === $hostPart || str_ends_with($urlHost, '.' . $hostPart));
         }
 
-        return $hostMatches && self::matchesPathPrefix($pathPrefix, $urlPath);
+        return $hostMatches && $this->matchesPathPrefix($pathPrefix, $urlPath);
     }
 
-    private static function matchesPathPrefix(string $prefix, string $path): bool
+    private function matchesPathPrefix(string $prefix, string $path): bool
     {
         if ($prefix === '' || $prefix === '/') {
             return true;
@@ -242,7 +242,7 @@ final class ProxyUrlValidator
 
         // Compare against the path the HTTP client will actually request: Symfony HttpClient decodes %2e and
         // removes dot segments, so "/pdfs/../admin" (or "/pdfs/%2e%2e/admin") must not match the "/pdfs/" prefix.
-        $path = self::removeDotSegments(str_ireplace('%2e', '.', $path));
+        $path = $this->removeDotSegments(str_ireplace('%2e', '.', $path));
 
         return str_starts_with($path === '' ? '/' : $path, $prefix);
     }
@@ -250,10 +250,10 @@ final class ProxyUrlValidator
     /**
      * RFC 3986 section 5.2.4 "remove_dot_segments".
      */
-    private static function removeDotSegments(string $path): string
+    private function removeDotSegments(string $path): string
     {
         $result = '';
-        while ($path !== '' && $path !== '.' && $path !== '..') {
+        while (!in_array($path, ['', '.', '..'], true)) {
             if (str_starts_with($path, './')) {
                 $path = substr($path, 2);
             } elseif (str_starts_with($path, '../')) {

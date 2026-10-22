@@ -20,7 +20,7 @@ use function is_array;
  * The app can override the alias in config with a custom service id.
  */
 #[AsAlias(id: AcroFormOverridesStorageInterface::class, public: false)]
-final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageInterface
+final readonly class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageInterface
 {
     private const SESSION_KEY_PREFIX = 'nowo_pdf_signable.acroform_overrides.';
 
@@ -28,7 +28,7 @@ final class SessionAcroFormOverridesStorage implements AcroFormOverridesStorageI
      * @param RequestStack $requestStack Used to access the current request session
      */
     public function __construct(
-        private readonly RequestStack $requestStack,
+        private RequestStack $requestStack,
     ) {
     }
 

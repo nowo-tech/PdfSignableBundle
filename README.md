@@ -126,7 +126,7 @@ See [CONFIGURATION.md](docs/CONFIGURATION.md) for the full tree (`proxy_url_allo
 
 ## Demos
 
-Dockerized demo (Symfony 8, Bootstrap, Vite, TypeScript) with multiple usage examples. They run with **FrankenPHP** (Caddy + PHP): the **Dockerfile** ships a production Caddyfile with **`php_server` worker**, but with **`APP_ENV=dev`** the container **entrypoint swaps in `Caddyfile.dev`** (no worker, cache-busting headers) so local dev matches [docs/DEMO-FRANKENPHP.md](docs/DEMO-FRANKENPHP.md). Served over **HTTPS** on localhost (self-signed certificate; accept it in the browser). The [screenshots above](#screenshots) show the demo home (configuration cards), the signature coordinates form (PDF viewer + boxes), and an alternate view with thumbnails, zoom and rotation.
+Dockerized demo (Symfony 8, Bootstrap, Vite, TypeScript) with multiple usage examples. They run with **FrankenPHP** (Caddy + PHP): `FRANKENPHP_MODE` in `demo/symfony8/.env` selects the Caddyfile: **`worker`** (default, `php_server` worker — the mode the bundle is audited for) or **`classic`** (`Caddyfile.dev`: one PHP process per request, cache-busting headers); see [docs/DEMO-FRANKENPHP.md](docs/DEMO-FRANKENPHP.md). Served over **HTTPS** on localhost (self-signed certificate; accept it in the browser). The [screenshots above](#screenshots) show the demo home (configuration cards), the signature coordinates form (PDF viewer + boxes), and an alternate view with thumbnails, zoom and rotation.
 
 ```bash
 cd demo
@@ -203,9 +203,9 @@ Or locally: `composer test`, `composer test-coverage`, `composer cs-check`, `com
 ## Tests and coverage
 
 - Tests: PHPUnit (PHP), pytest (Python scripts)
-- PHP: 99.18%
-- TS/JS: 95.05%
-- Python: 21%
+- PHP: 99.13% lines (`make coverage-check`, minimum 99%)
+- TS/JS: 89.93% (Vitest; lowest of statements/branches/functions/lines, i.e. branches)
+- Python: 93.04% lines of the AcroForm scripts (`make test-python`, fails below 90%)
 
 ## License
 

@@ -21,7 +21,7 @@ use const PHP_VERSION;
  * Runs dependency checks for the PdfSignable bundle (PHP, extensions, AcroForm scripts, assets).
  * Used by the console command and by the debug listener when rendering form pages.
  */
-final class DependencyChecker implements DependencyCheckerInterface
+final readonly class DependencyChecker implements DependencyCheckerInterface
 {
     private const MIN_PHP_VERSION = '8.2.0';
 
@@ -32,11 +32,11 @@ final class DependencyChecker implements DependencyCheckerInterface
     private const OPTIONAL_EXTENSIONS = ['yaml'];
 
     public function __construct(
-        private readonly ParameterBagInterface $params,
-        private readonly KernelInterface $kernel,
-        private readonly ?Closure $extensionLoaded = null,
-        private readonly ?string $phpVersion = null,
-        private readonly ?Closure $isPypdfAvailable = null,
+        private ParameterBagInterface $params,
+        private KernelInterface $kernel,
+        private ?Closure $extensionLoaded = null,
+        private ?string $phpVersion = null,
+        private ?Closure $isPypdfAvailable = null,
     ) {
     }
 

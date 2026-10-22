@@ -73,23 +73,15 @@ test-coverage-all:
 	
 release-verify:
 	@for demo in $(DEMOS); do \
-		port=$$(case $$demo in symfony8) echo 8002;; *) echo 8002;; esac); \
-		echo "Release verify: $$demo (port $$port)..."; \
-		$(MAKE) -C $$demo up 2>/dev/null || $(MAKE) -C $$demo run 2>/dev/null || true; \
-		code="000"; \
-		for i in 1 2 3 4 5 6 7 8 9 10; do \
-			sleep 3; \
-			code=$$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:$$port 2>/dev/null || echo "000"); \
-			case "$$code" in 2*|3*) break;; esac; \
-		done; \
+		echo "Release verify: $$demo..."; \
+		$(MAKE) -C $$demo up || exit 1; \
+		if $(MAKE) -C $$demo verify; then ok=1; else ok=0; fi; \
 		$(MAKE) -C $$demo down 2>/dev/null || true; \
-		case "$$code" in \
-			2*|3*) echo "OK $$demo (HTTP $$code)";; \
-			*) echo "$$demo healthcheck failed (HTTP $$code)"; exit 1;; \
-		esac; \
+		[ "$$ok" = "1" ] || { echo "$$demo healthcheck failed"; exit 1; }; \
+		echo "OK $$demo (HTTP 200)"; \
 	done
 	@echo "All demos passed release-verify."
-release-check: test-coverage-all release-verify
+release-check: update-bundle-all test-coverage-all release-verify
 	@echo "All demos passed release-check."
 
 clean-all:

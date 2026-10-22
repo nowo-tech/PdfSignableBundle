@@ -60,7 +60,7 @@ final class SignatureControllerTest extends TestCase
      */
     private function createProxyUrlValidator(array $proxyUrlAllowlist): ProxyUrlValidator
     {
-        return new ProxyUrlValidator($proxyUrlAllowlist, null, self::fakeDns());
+        return new ProxyUrlValidator($proxyUrlAllowlist, null, $this->fakeDns());
     }
 
     /**
@@ -69,7 +69,7 @@ final class SignatureControllerTest extends TestCase
      *
      * @return Closure(string): list<string>
      */
-    private static function fakeDns(): Closure
+    private function fakeDns(): Closure
     {
         return static fn (string $host): array => match (true) {
             str_ends_with($host, '.invalid') => [],

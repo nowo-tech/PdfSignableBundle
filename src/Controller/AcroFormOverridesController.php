@@ -259,9 +259,7 @@ final class AcroFormOverridesController extends AbstractController
             }
             // Include all extracted fields as keys with at least full info (user can add overrides later)
             foreach ($byId as $id => $fieldData) {
-                if (!isset($fullOverrides[$id])) {
-                    $fullOverrides[$id] = $fieldData;
-                }
+                $fullOverrides[$id] ??= $fieldData;
             }
             $out['overrides'] = $fullOverrides;
         }

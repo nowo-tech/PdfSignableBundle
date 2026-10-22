@@ -12,16 +12,16 @@ use function is_array;
  * Map of fieldId → override data (defaultValue, label, controlType, rect, options, page).
  * Optionally stores the list of fields from the PDF (id, rect, fieldType, page, value) so GET can return fields + config.
  */
-final class AcroFormOverrides
+final readonly class AcroFormOverrides
 {
     /**
      * @param array<string, array<string, mixed>> $overrides Map fieldId → override data
      * @param array<int, array<string, mixed>>|null $fields Optional list of PDF field definitions (id, rect, fieldType, page, value?)
      */
     public function __construct(
-        public readonly array $overrides,
-        public readonly ?string $documentKey = null,
-        public readonly ?array $fields = null,
+        public array $overrides,
+        public ?string $documentKey = null,
+        public ?array $fields = null,
     ) {
     }
 
