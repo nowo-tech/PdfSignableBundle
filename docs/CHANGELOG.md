@@ -59,6 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Demo: `signature/acroform_editor.html.twig` keeps the custom `form_widget(form.acroFormEditor)` and then renders the remaining children through the child loop (REQ-TWIG-003 rule 3).
+
 ## [3.4.5] - 2026-10-22
 
 AcroForm extractor fix, Python coverage gate, demo smoke and install fixes, autoconfigured services, Rector PHP 8.2. See [UPGRADING](UPGRADING.md#to-345).

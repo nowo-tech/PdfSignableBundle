@@ -28,7 +28,13 @@
         {% endif %}
       </div>
     {% endif %}
+    {# Custom layout for the editor (widget only, REQ-TWIG-003 rule 3); the loop renders the remaining children. #}
     {{ form_widget(form.acroFormEditor) }}
+    {% for child in form %}
+      {% if not child.rendered %}
+        {{ form_row(child) }}
+      {% endif %}
+    {% endfor %}
     {{ form_end(form) }}
   </div>
 
