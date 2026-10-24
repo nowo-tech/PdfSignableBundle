@@ -165,7 +165,7 @@ phpstan: ensure-up
 
 composer-sync: ensure-up
 	$(COMPOSE) -f docker-compose.yml exec -T php composer validate --strict
-	$(COMPOSE) -f docker-compose.yml exec -T php composer update --no-install
+	$(COMPOSE) -f docker-compose.yml exec -T php composer install --no-interaction --prefer-dist
 
 # Update composer.lock
 update: ensure-up
