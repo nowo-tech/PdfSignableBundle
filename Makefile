@@ -5,7 +5,7 @@ COMPOSE_BIN := $(shell docker compose version >/dev/null 2>&1 && echo "docker co
 COMPOSE     := $(COMPOSE_BIN) -f $(COMPOSE_FILE)
 SERVICE_PHP := php
 
-.PHONY: help up down build shell install assets test test-coverage coverage-check coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan igor release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc update-deps update-deps-demos check-no-cursor-coauthor check-open-prs strip-cursor-coauthor-from-history demo-smoke check-twig-extra
+.PHONY: help up down build shell install assets test test-coverage coverage-check coverage-php-percent cs-check cs-fix qa validate-translations clean ensure-up rector rector-dry phpstan igor release-check release-check-demos composer-sync update validate assets-build assets-test assets-dev assets-watch assets-clean test-ts test-python test-poc update-deps update-deps-demos check-no-cursor-coauthor check-open-prs check-no-raw-html-form strip-cursor-coauthor-from-history demo-smoke check-twig-extra
 
 help:
 	@echo "PdfSignable Bundle - Development Commands"
@@ -183,8 +183,9 @@ check-twig-extra:
 # Run Igor worker-state audit (REQ-CS-008)
 igor: ensure-up
 	$(COMPOSE) exec -T php composer igor
-# REQ-MAKE-002: sequential chain, ensure-up first. check-no-raw-html-form is not wired yet: the AcroForm editor
-# partials still render raw <input>/<select>/<textarea> controls (REQ-TWIG-005, scheduled with the Twig wave).
+
+# REQ-MAKE-002: sequential chain, ensure-up first; coverage-check is the test-coverage step.
+# check-no-raw-html-form (REQ-TWIG-005) is wired once the remaining raw form markup is migrated
 release-check:
 	@$(MAKE) ensure-up
 	@$(MAKE) check-no-cursor-coauthor
@@ -197,13 +198,17 @@ release-check:
 	@$(MAKE) phpstan
 	@$(MAKE) igor
 	@$(MAKE) coverage-check
+	@$(MAKE) release-check-demos
 	@$(MAKE) test-ts
 	@$(MAKE) test-python
-	@$(MAKE) release-check-demos
 
 coverage-check: test-coverage
 	@chmod +x .scripts/coverage-fail-under.sh
 	@./.scripts/coverage-fail-under.sh coverage-php.txt 99
+
+# Fail on raw <form>/<input>/<textarea>/<select> in Twig (REQ-TWIG-005)
+check-no-raw-html-form:
+	@bash .scripts/check-no-raw-html-form.sh
 
 check-open-prs:
 	@chmod +x .scripts/check-open-prs.sh

@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Developer tooling (REQ-MAKE-002):** `make release-check` runs the full REQ-MAKE-002 chain in order; the demo release-check now runs before test-ts and test-python (ensure-up, co-author and open-PR gates, check-twig-extra, composer-sync, cs-fix, cs-check, rector-dry, phpstan, igor, coverage-check, demo release-check, test-ts, test-python). New `make check-no-raw-html-form` target (existing `.scripts/check-no-raw-html-form.sh`, REQ-TWIG-005); it joins the chain once the AcroForm editor partials stop rendering raw controls.
 - Demo: `signature/acroform_editor.html.twig` keeps the custom `form_widget(form.acroFormEditor)` and then renders the remaining children through the child loop (REQ-TWIG-003 rule 3).
 
 ## [3.4.5] - 2026-10-22
