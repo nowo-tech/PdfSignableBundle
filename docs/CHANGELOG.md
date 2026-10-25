@@ -60,6 +60,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `AcroFormEditorPanelType` and Twig functions `nowo_pdf_signable_acroform_panel_form()` / `nowo_pdf_signable_acroform_edit_form()` (`AcroFormFormsTwigExtension`) so the AcroForm editor panel and edit modal always render Symfony Form views (REQ-TWIG-005).
+- `check-no-raw-html-form` now runs in `make release-check`; its allowlist names exactly the `signature_box_widget` theme body (REQ-TWIG-005).
+
+### Changed
+
+- AcroForm editor (REQ-TWIG-005): `editor_root.html.twig` renders the document key / draft JSON controls from `AcroFormEditorPanelType`, and `_edit_modal_body.html.twig` always renders `AcroFormFieldEditType` (passed or built from config) through the child loop instead of the raw HTML fallback; the edit fields are no longer wrapped in a nested form element. Same ids and JS contract; see [UPGRADING](UPGRADING.md#unreleased).
+
 ## [3.4.6] - 2026-10-25
 
 Reproducible JS bundles: the logger prints a build id instead of the build time. See [UPGRADING](UPGRADING.md#to-346).

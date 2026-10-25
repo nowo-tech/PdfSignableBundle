@@ -11,7 +11,8 @@
   - process_url (optional): URL for process PDF
   - debug (optional): bool, default false
   - config (optional): Override bundle config (field_name_mode, field_name_choices, field_name_other_text, show_field_rect, font_sizes, font_families, min_field_width, min_field_height)
-  - acroform_edit_form (optional): FormView from AcroFormFieldEditType. When set, the edit-field modal body is rendered from this form (same IDs for JS). Omit to use the static HTML modal body.
+  - acroform_edit_form (optional): FormView from AcroFormFieldEditType. Omit to build it from config (nowo_pdf_signable_acroform_edit_form).
+  - acroform_panel_form (optional): FormView from AcroFormEditorPanelType. Omit to build it (nowo_pdf_signable_acroform_panel_form).
 
   CSRF: data-csrf-token is set from csrf_token('nowo_pdf_signable_acroform') for mutating AcroForm AJAX.
 #}
@@ -47,10 +48,13 @@
      data-min-field-width="{{ _config.min_field_width|default(12) }}"
      data-min-field-height="{{ _config.min_field_height|default(12) }}">
   <p class="small text-muted mb-2">{{ 'acroform_editor.draft_intro'|trans({}, 'NowoPdfSignableBundle')|raw }}</p>
+  {# REQ-TWIG-005: panel controls come from AcroFormEditorPanelType (ids kept for acroform-editor.js); rendered with
+     form_label / form_widget only because this partial is embedded in the host page form (no nested form element). #}
+  {% set _panel_form = acroform_panel_form|default(null) ?? nowo_pdf_signable_acroform_panel_form(_document_key) %}
   {% if show_document_key_row|default(true) %}
   <div class="mb-2">
-    <label for="acroform-document-key" class="form-label small">{{ 'acroform_editor.document_key_label'|trans({}, 'NowoPdfSignableBundle') }}</label>
-    <input type="text" id="acroform-document-key" class="form-control form-control-sm" value="{{ _document_key|e('html_attr') }}" placeholder="{{ 'acroform_editor.document_key_placeholder'|trans({}, 'NowoPdfSignableBundle')|e('html_attr') }}">
+    {{ form_label(_panel_form.documentKey) }}
+    {{ form_widget(_panel_form.documentKey) }}
   </div>
   {% endif %}
   <div class="mb-2" id="acroform-fields-section" style="display: none;">
@@ -62,8 +66,8 @@
     <div id="acroform-fields-list" class="small overflow-auto border rounded p-2 bg-light" style="max-height: 12rem;"></div>
   </div>
   <div id="acroform-json-section" class="mb-2">
-    <label for="acroform-overrides-json" class="form-label small">{{ 'acroform_editor.draft_label'|trans({}, 'NowoPdfSignableBundle') }}</label>
-    <textarea id="acroform-overrides-json" class="form-control font-monospace small" rows="6" placeholder="{{ 'acroform_editor.draft_placeholder'|trans({}, 'NowoPdfSignableBundle')|e('html_attr') }}" title="{{ 'acroform_editor.draft_title'|trans({}, 'NowoPdfSignableBundle')|e('html_attr') }}"></textarea>
+    {{ form_label(_panel_form.overridesJson) }}
+    {{ form_widget(_panel_form.overridesJson) }}
   </div>
   <div id="acroform-overrides-message" class="small mb-2" role="alert"></div>
   <div class="d-flex flex-wrap gap-1">

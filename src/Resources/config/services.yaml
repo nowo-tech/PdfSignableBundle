@@ -85,3 +85,5 @@ services:
 
     # Twig
     Nowo\PdfSignableBundle\Twig\NowoPdfSignableTwigExtension: ~
+    # REQ-TWIG-005: Form views for the AcroForm editor panel / edit modal.
+    Nowo\PdfSignableBundle\Twig\AcroFormFormsTwigExtension: ~

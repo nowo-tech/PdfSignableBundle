@@ -10,6 +10,8 @@
   - .signature-pad-container (canvas + clear), .signature-upload-input (optional)
   When overriding: keep these data attributes on the same inputs so the JS can sync coordinates. Classes can be changed for styling.
   Override: {% block signature_box_widget %} ... {% endblock %} in form theme.
+  REQ-TWIG-005 form-theme exception: this file is the body of the signature_box_widget theme block; the client-side
+  image picker (file input without name) belongs to the widget and is allowlisted in .scripts/check-no-raw-html-form.sh.
 #}
 {% if form.vars.signing_only|default(false) %}
 {# Signing only: show name as label and signature capture; hide coordinate fields (still submitted) #}
