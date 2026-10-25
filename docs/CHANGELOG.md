@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Assets:** `pdf-signable.js` and `acroform-editor.js` are now reproducible. Instead of the build time, the bundle logger prints a build id: a hash of `src/Resources/assets` and `pnpm-lock.yaml`. Rebuilding unchanged sources (`make assets`, `make release-check`) no longer rewrites the committed scripts. The console line changes from `script loaded, build time: <ISO date>` to `script loaded, build: <id>`.
 - **Developer tooling (REQ-MAKE-002):** `make release-check` runs the full REQ-MAKE-002 chain in order; the demo release-check now runs before test-ts and test-python (ensure-up, co-author and open-PR gates, check-twig-extra, composer-sync, cs-fix, cs-check, rector-dry, phpstan, igor, coverage-check, demo release-check, test-ts, test-python). New `make check-no-raw-html-form` target (existing `.scripts/check-no-raw-html-form.sh`, REQ-TWIG-005); it joins the chain once the AcroForm editor partials stop rendering raw controls.
 - Demo: `signature/acroform_editor.html.twig` keeps the custom `form_widget(form.acroFormEditor)` and then renders the remaining children through the child loop (REQ-TWIG-003 rule 3).
 

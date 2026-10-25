@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
-import { copyFileSync, existsSync, mkdirSync } from 'fs';
+import { createHash } from 'crypto';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -38,9 +39,27 @@ function copyPdfWorker(outDir: string): void {
   console.warn('[vite] PDF.js worker not found in', buildDir, '- run pnpm install');
 }
 
+/**
+ * Deterministic build id: a hash of the TypeScript/CSS sources and pnpm-lock.yaml. It only changes when the code or
+ * the dependencies change, so rebuilding unchanged sources (e.g. in `make release-check`) leaves the committed bundle
+ * byte-identical (the former wall-clock stamp rewrote it on every build).
+ */
+function sourceBuildId(dir: string): string {
+  const hash = createHash('sha256');
+  const files = (readdirSync(dir, { recursive: true }) as string[])
+    .filter((file) => !file.includes('.test.') && statSync(join(dir, file)).isFile())
+    .sort();
+  for (const file of files) {
+    hash.update(file).update(readFileSync(join(dir, file)));
+  }
+  hash.update(readFileSync(join(__dirname, 'pnpm-lock.yaml')));
+
+  return hash.digest('hex').slice(0, 12);
+}
+
 export default defineConfig({
   define: {
-    __PDF_SIGNABLE_BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    __PDF_SIGNABLE_BUILD_TIME__: JSON.stringify(sourceBuildId(join(__dirname, 'src', 'Resources', 'assets'))),
   },
   build: {
     outDir: 'src/Resources/public/js',

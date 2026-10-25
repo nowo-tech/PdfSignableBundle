@@ -15,7 +15,7 @@ describe('assets/logger', () => {
 
     expect(logSpy).toHaveBeenCalledTimes(2);
     expect(String(logSpy.mock.calls[0][0])).toContain('script loaded');
-    expect(String(logSpy.mock.calls[1][0])).toContain('build time');
+    expect(String(logSpy.mock.calls[1][0])).toContain('build: ');
   });
 
   it('respeta setDebug para debug/info/warn/error', () => {
@@ -51,7 +51,7 @@ describe('assets/logger', () => {
     createBundleLogger('bundle-empty', { buildTime: '' }).scriptLoaded();
     expect(logSpy).toHaveBeenCalledTimes(1);
     expect(String(logSpy.mock.calls[0][0])).toContain('script loaded');
-    expect(String(logSpy.mock.calls[0][0])).not.toContain('build time');
+    expect(String(logSpy.mock.calls[0][0])).not.toContain('build: ');
   });
 
   it('logs empty-arg debug/info/warn/error when debug is enabled', () => {
