@@ -50,7 +50,7 @@
   <p class="small text-muted mb-2">{{ 'acroform_editor.draft_intro'|trans({}, 'NowoPdfSignableBundle')|raw }}</p>
   {# REQ-TWIG-005: panel controls come from AcroFormEditorPanelType (ids kept for acroform-editor.js); rendered with
      form_label / form_widget only because this partial is embedded in the host page form (no nested form element). #}
-  {% set _panel_form = acroform_panel_form|default(null) ?? nowo_pdf_signable_acroform_panel_form(_document_key) %}
+  {% set _panel_form = acroform_panel_form ?? nowo_pdf_signable_acroform_panel_form(_document_key) %}
   {% if show_document_key_row|default(true) %}
   <div class="mb-2">
     {{ form_label(_panel_form.documentKey) }}
