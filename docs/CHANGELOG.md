@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.5.0] - 2026-10-26](#350---2026-10-26)
 - [[3.4.6] - 2026-10-25](#346---2026-10-25)
 - [[3.4.5] - 2026-10-22](#345---2026-10-22)
 - [[3.4.4] - 2026-10-20](#344---2026-10-20)
@@ -59,6 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-02-09](#100---2026-02-09)
 
 ## [Unreleased]
+
+## [3.5.0] - 2026-10-26
+
+Forms in the bundle views are Symfony Form Types rendered with form_start / child loop / form_end, no raw form controls (REQ-TWIG-005). See [UPGRADING](UPGRADING.md#to-350).
 
 ### Added
 
@@ -946,7 +951,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.4.6...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.5.0...HEAD
+[3.5.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.5.0
 [3.4.6]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.6
 [3.4.5]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.5
 [3.4.4]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.4

@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.5.0](#to-350)
 - [To 3.4.6](#to-346)
 - [To 3.4.5](#to-345)
 - [To 3.4.4](#to-344)
@@ -77,6 +78,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.5.0
+
+From **3.4.6**:
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 - **Template overrides (REQ-TWIG-005):** `acroform/_edit_modal_body.html.twig` no longer ships the static HTML fallback: when `acroform_edit_form` is not passed, the modal renders `AcroFormFieldEditType` built from the editor config (`nowo_pdf_signable_acroform_edit_form()`), with the same `acroform-edit-*` ids. The form is no longer wrapped in its own form element (`#acroform-edit-form` is now a `div`), which fixes the nested form element inside the editor widget. `acroform/editor_root.html.twig` renders the document key and draft JSON from `AcroFormEditorPanelType` (new optional `acroform_panel_form` variable, built automatically otherwise). Same ids for `acroform-editor.js`. If you override those templates, use the Form views as documented in [ACROFORM.md](ACROFORM.md).
 
