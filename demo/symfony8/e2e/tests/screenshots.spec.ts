@@ -37,13 +37,6 @@ async function hideDevChrome(page: Page): Promise<void> {
 }
 
 test.describe('feature screenshots', () => {
-  test('demo home — catalogue of signature-area and signing demos', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Define signature areas' })).toBeVisible();
-    await hideDevChrome(page);
-    await content(page).screenshot({ path: resolve(outDir, 'demo-home.png') });
-  });
-
   test('signature coordinates form — rotated box saved', async ({ page }) => {
     await page.goto('/demo-signature/rotation');
     await waitForPdf(page);

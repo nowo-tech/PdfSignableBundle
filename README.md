@@ -55,17 +55,20 @@ Looking for: **PDF signature coordinates**, **signature box placement**, **PDF.j
 
 ## Screenshots
 
-**Demo index** — Each card shows a different way to configure `SignatureCoordinatesType` (named profiles, URL options, box validation, model prefill):
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/images/demo/demo-signature-form.webp" alt="Signature coordinates form: PDF viewer, rotated signature box, units and saved coordinates" />
+      <br /><sub>Define signature areas — rotated box, units / origin, saved coordinates</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/images/demo/demo-signature-form-2.webp" alt="Signing form: predefined boxes for two signers with a drawn signature" />
+      <br /><sub>Sign predefined boxes — draw or upload, shown live on the PDF</sub>
+    </td>
+  </tr>
+</table>
 
-![Demo home — configuration overview](docs/images/demo/demo-home.webp)
-
-**Signature coordinates form** — Rotation demo (`enable_rotation`): PDF viewer with thumbnails and zoom toolbar, a rotated signature box, the unit/origin selectors and box list on the right, and the saved coordinates:
-
-![Signature coordinates form — rotated box and saved coordinates](docs/images/demo/demo-signature-form.webp)
-
-**Signing (predefined boxes, sign only)** — Boxes already placed for two signers; each signer draws or uploads a signature, shown live inside its box on the PDF:
-
-![Signing form — predefined boxes with a drawn signature](docs/images/demo/demo-signature-form-2.webp)
+The demo index (`/`) lists more configurations of `SignatureCoordinatesType` (named profiles, URL options, box validation, model prefill).
 
 Regenerate with `make -C demo/symfony8 demo-screenshots` (Playwright in Docker, saved as WebP under `docs/images/demo/`).
 
