@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.6.0] - 2026-10-28](#360---2026-10-28)
 - [[3.5.0] - 2026-10-26](#350---2026-10-26)
 - [[3.4.6] - 2026-10-25](#346---2026-10-25)
 - [[3.4.5] - 2026-10-22](#345---2026-10-22)
@@ -60,6 +61,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-02-09](#100---2026-02-09)
 
 ## [Unreleased]
+
+## [3.6.0] - 2026-10-28
+
+Security: AcroForm endpoints and the PDF proxy require access (security.access_roles, deny by default). See [UPGRADING](UPGRADING.md#to-360).
 
 ### Security
 
@@ -961,7 +966,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.5.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.6.0...HEAD
+[3.6.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.6.0
 [3.5.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.5.0
 [3.4.6]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.6
 [3.4.5]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.5

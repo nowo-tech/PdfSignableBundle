@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.6.0](#to-360)
 - [To 3.5.0](#to-350)
 - [To 3.4.6](#to-346)
 - [To 3.4.5](#to-345)
@@ -78,6 +79,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.6.0
+
+From **3.5.0**:
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 **The AcroForm endpoints and the PDF proxy now require access.** New configuration (defaults shown):
 
