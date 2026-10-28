@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 
+use function array_values;
 use function dirname;
 
 /**
@@ -36,6 +37,10 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
     {
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
 
+        $security = $config['security'];
+        $container->setParameter(Configuration::ALIAS . '.security.access_roles', array_values($security['access_roles']));
+        $container->setParameter(Configuration::ALIAS . '.security.access_checker', $security['access_checker']);
+        $container->setParameter(Configuration::ALIAS . '.security.allow_unauthenticated', $security['allow_unauthenticated']);
         $container->setParameter(Configuration::ALIAS . '.proxy_enabled', $config['proxy_enabled'] ?? true);
         $container->setParameter(Configuration::ALIAS . '.proxy_url_allowlist', $config['proxy_url_allowlist'] ?? []);
         $container->setParameter(Configuration::ALIAS . '.proxy_max_pdf_size', $config['proxy_max_pdf_size'] ?? 20971520);

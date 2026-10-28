@@ -21,9 +21,9 @@
   - Proxy error responses do not expose exception messages to the client (no internal paths or server details).
 
 - **AcroForm JSON routes**
-  - When `acroform.enabled` is true, `/pdf-signable/acroform/*` endpoints mutate session (or custom storage) and may run Process scripts. The bundle does **not** attach `IsGranted` by default (form/API surface for the host app).
+  - When `acroform.enabled` is true, `/pdf-signable/acroform/*` endpoints mutate session (or custom storage) and may run Process scripts. Access is checked by the bundle (see below); the routes are still part of the host's form / API surface.
   - **CSRF (REQ-SEC-005):** All mutating AcroForm actions (`POST` load/save/extract/apply/process, `DELETE` overrides) validate a CSRF token with id `nowo_pdf_signable_acroform` (`AcroFormOverridesController::CSRF_TOKEN_ID`). Clients must send the token as the `X-CSRF-Token` header or as `_token` in the JSON/form body. The bundled editor panel sets `data-csrf-token="{{ csrf_token('nowo_pdf_signable_acroform') }}"` and sends `X-CSRF-Token` on every mutating `fetch`.
-  - **Host must** still protect these routes with firewall `access_control` / authentication appropriate for your threat model.
+  - The bundle guards them with `PdfSignableAccessCheckerInterface` (default: `security.access_roles`, `[ROLE_USER]`; an empty list denies; no SecurityBundle → the container does not compile). Keep host `access_control` / authentication appropriate for your threat model on top; `security.allow_unauthenticated` is for local demos only.
   - Keep `allow_pdf_modify: false` unless you need PDF rewrite; set script timeouts via `process_timeout` / `process_script_timeout`.
 
 - **Form and viewer**

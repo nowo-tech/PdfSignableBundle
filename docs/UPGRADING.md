@@ -79,6 +79,23 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Unreleased
 
+**The AcroForm endpoints and the PDF proxy now require access.** New configuration (defaults shown):
+
+```yaml
+nowo_pdf_signable:
+    security:
+        access_roles: [ROLE_USER]   # any one of them; [] denies everybody
+        access_checker: null        # or your PdfSignableAccessCheckerInterface service id
+        allow_unauthenticated: false # true = everybody (local demos only)
+```
+
+- With the defaults, SecurityBundle is required (`composer require symfony/security-bundle`); otherwise the container
+  refuses to compile.
+- Signing pages that let anonymous visitors use the AcroForm editor or the proxy must set `access_roles` to a role
+  those visitors have, provide an `access_checker`, or (demos only) `allow_unauthenticated: true`. Denied requests
+  answer 403.
+- The signature form page itself is not affected.
+
 ## To 3.5.0
 
 From **3.4.6**:

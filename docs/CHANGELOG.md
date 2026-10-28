@@ -61,6 +61,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **AcroForm endpoints and PDF proxy require access (deny by default).** The bundle applied no authorization of its
+  own: load / save / remove overrides, field extraction, apply and process (which run Python on client-supplied PDFs)
+  and the proxy (which fetches remote PDFs) relied entirely on the host's `access_control`. They are now guarded by
+  `PdfSignableAccessCheckerInterface`: by default the user needs one of `security.access_roles` (`[ROLE_USER]`; an
+  empty list denies), which needs SecurityBundle — without it the container refuses to compile. Replace the check
+  with `security.access_checker` or, for local demos only, `security.allow_unauthenticated: true`.
+  **Breaking for hosts that used these endpoints anonymously** — see [UPGRADING](UPGRADING.md#unreleased).
+
 ## [3.5.0] - 2026-10-26
 
 Forms in the bundle views are Symfony Form Types rendered with form_start / child loop / form_end, no raw form controls (REQ-TWIG-005). See [UPGRADING](UPGRADING.md#to-350).

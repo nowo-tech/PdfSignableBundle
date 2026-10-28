@@ -87,3 +87,6 @@ services:
     Nowo\PdfSignableBundle\Twig\NowoPdfSignableTwigExtension: ~
     # REQ-TWIG-005: Form views for the AcroForm editor panel / edit modal.
     Nowo\PdfSignableBundle\Twig\AcroFormFormsTwigExtension: ~
+
+    # Access to the AcroForm endpoints and the PDF proxy (PdfSignableAccessCheckerInterface is aliased by SecurityPass).
+    Nowo\PdfSignableBundle\EventSubscriber\PdfSignableAccessSubscriber: ~

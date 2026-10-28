@@ -4,6 +4,11 @@
 # All bundle options are listed below. Active values are set; the rest are commented with explanations.
 
 nowo_pdf_signable:
+    # Access to the AcroForm endpoints and the proxy (default: security.access_roles [ROLE_USER], needs SecurityBundle).
+    # The demo has no login: it opens them explicitly (local demos only — never in production).
+    security:
+        allow_unauthenticated: true
+
     # Enable the proxy endpoint so the browser can load external PDFs without CORS.
     proxy_enabled: true
     # Production: set proxy_url_allowlist_required: true and a non-empty proxy_url_allowlist.

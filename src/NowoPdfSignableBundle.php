@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle;
 
+use Nowo\PdfSignableBundle\DependencyInjection\Compiler\SecurityPass;
 use Nowo\PdfSignableBundle\DependencyInjection\Compiler\TwigPathsPass;
 use Nowo\PdfSignableBundle\DependencyInjection\PdfSignableExtension;
 use Nowo\PdfSignableBundle\DependencyInjection\ProxyUrlAllowlistValidationPass;
@@ -25,6 +26,7 @@ final class NowoPdfSignableBundle extends Bundle
     {
         $container->addCompilerPass(new TwigPathsPass());
         $container->addCompilerPass(new ProxyUrlAllowlistValidationPass());
+        $container->addCompilerPass(new SecurityPass());
     }
 
     /**
