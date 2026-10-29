@@ -208,6 +208,28 @@ def extract_fields(pdf_path: str | Path) -> list[dict]:
     return fields_out
 
 
+
+def limit_memory() -> None:
+    """Cap the address space (PDF_SIGNABLE_MAX_MEMORY_MB, default 1024; 0 disables): crafted PDFs must not OOM the host."""
+    import os
+
+    try:
+        import resource
+    except ImportError:  # pragma: no cover - not POSIX
+        return
+    try:
+        megabytes = int(os.environ.get("PDF_SIGNABLE_MAX_MEMORY_MB", "1024"))
+    except ValueError:
+        megabytes = 1024
+    if megabytes <= 0:
+        return
+    limit = megabytes * 1024 * 1024
+    try:
+        resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
+    except (ValueError, OSError):  # pragma: no cover - hard limit already lower
+        pass
+
+
 def main() -> None:
     """Entry point: parse args, load PDF (file or base64 from stdin), print JSON array to stdout."""
     if len(sys.argv) < 2:
@@ -242,4 +264,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    limit_memory()
     main()

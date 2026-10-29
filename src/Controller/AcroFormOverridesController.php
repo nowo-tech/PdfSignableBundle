@@ -37,6 +37,7 @@ use function count;
 use function is_array;
 use function is_file;
 use function is_string;
+use function str_contains;
 use function strlen;
 
 use const FILTER_VALIDATE_URL;
@@ -620,8 +621,7 @@ final class AcroFormOverridesController extends AbstractController
 
             $procArgs = [$this->processScriptCommand, $script, '--input', $tmpInput, '--output', $tmpOutput];
             if ($documentKey !== null) {
-                $procArgs[] = '--document-key';
-                $procArgs[] = $documentKey;
+                $procArgs[] = '--document-key=' . $documentKey;
             }
             $proc    = new Process($procArgs, null, PythonProcessEnv::build());
             $timeout = max(0.1, $this->processScriptTimeout);
@@ -833,7 +833,8 @@ final class AcroFormOverridesController extends AbstractController
             return false;
         }
 
-        return (bool) preg_match('/^[a-zA-Z0-9_.\-]+$/', $documentKey);
+        // No leading '.' / '-' (hidden names, option injection in argv) and no '..' (path traversal in host storages).
+        return preg_match('/^[A-Za-z0-9_][A-Za-z0-9_.\-]*$/', $documentKey) === 1 && !str_contains($documentKey, '..');
     }
 
     /**

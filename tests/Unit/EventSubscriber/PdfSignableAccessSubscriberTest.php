@@ -27,7 +27,7 @@ final class PdfSignableAccessSubscriberTest extends TestCase
     {
         $subscriber = new PdfSignableAccessSubscriber($this->checker(false));
 
-        foreach ([[AcroFormOverridesController::class, 'process'], [SignatureController::class, 'proxyPdf']] as [$class, $method]) {
+        foreach ([[AcroFormOverridesController::class, 'process'], [SignatureController::class, 'proxyPdf'], [SignatureController::class, 'index']] as [$class, $method]) {
             try {
                 $subscriber->onKernelController($this->event($class, $method));
                 self::fail($class . '::' . $method . ' must be guarded');
@@ -44,7 +44,6 @@ final class PdfSignableAccessSubscriberTest extends TestCase
         $never = $this->createMock(PdfSignableAccessCheckerInterface::class);
         $never->expects(self::never())->method('canAccess');
         $subscriber = new PdfSignableAccessSubscriber($never);
-        $subscriber->onKernelController($this->event(SignatureController::class, 'index'));
         $subscriber->onKernelController(new ControllerEvent($this->createStub(HttpKernelInterface::class), static fn (): null => null, new Request(), HttpKernelInterface::MAIN_REQUEST));
     }
 

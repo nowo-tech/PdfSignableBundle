@@ -13,6 +13,7 @@ use Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface;
 use Nowo\PdfSignableBundle\Controller\AcroFormOverridesController;
 use Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent;
 use Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -235,6 +236,31 @@ final class AcroFormOverridesControllerTest extends TestCase
         self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
         $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertStringContainsString('document_key', $data['error']);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function unsafeDocumentKeys(): iterable
+    {
+        yield 'parent directory' => ['..'];
+        yield 'dot segment inside' => ['a..b'];
+        yield 'hidden name' => ['.env'];
+        yield 'option injection' => ['--output'];
+    }
+
+    #[DataProvider('unsafeDocumentKeys')]
+    public function testSaveOverridesRejectsUnsafeDocumentKeys(string $documentKey): void
+    {
+        $storage = $this->createMock(AcroFormOverridesStorageInterface::class);
+        $storage->expects(self::never())->method('set');
+        $controller = $this->createController(storage: $storage);
+        $request    = Request::create('/pdf-signable/acroform/overrides', 'POST', [], [], [], [
+            'CONTENT_TYPE'      => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => self::VALID_CSRF_TOKEN,
+        ], json_encode(['document_key' => $documentKey, 'overrides' => []], JSON_THROW_ON_ERROR));
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $controller->saveOverrides($request)->getStatusCode());
     }
 
     public function testSaveOverridesValidCallsStorageAndReturns200(): void

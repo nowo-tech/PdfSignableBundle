@@ -80,6 +80,13 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Unreleased
 
+- The signature form page (`nowo_pdf_signable_index`) now requires `security.access_roles` like the proxy and the
+  AcroForm endpoints. Public signing pages can set `security.access_roles: [PUBLIC_ACCESS]` (granted to everyone by Symfony),
+  a custom `access_checker`, or `allow_unauthenticated` (dev only).
+- Absolute `pdfUrl` values submitted through the form must match `proxy_url_allowlist` and resolve to public addresses.
+- `document_key` values starting with `.` / `-` or containing `..` are rejected (400).
+- Reinstall the Python requirements (`pypdf>=6.1`); set `PDF_SIGNABLE_MAX_MEMORY_MB` if 1024 MB is too low for your PDFs.
+
 ## To 3.6.0
 
 From **3.5.0**:

@@ -730,4 +730,31 @@ final class SignatureControllerTest extends TestCase
         $response = $controller->proxyPdf(Request::create('/pdf-signable/proxy', 'GET', ['url' => 'https://example.com/doc.pdf']));
         self::assertSame(502, $response->getStatusCode());
     }
+
+    public function testIndexPostWithInternalPdfUrlIsRejectedWithoutDispatchingEvents(): void
+    {
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->expects(self::never())->method('dispatch');
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+        $controller = new SignatureController($dispatcher, $translator, true, $this->createProxyUrlValidator([]), '', true, $this->createMock(LoggerInterface::class));
+        $session    = new Session(new MockArraySessionStorage());
+        $request    = Request::create('/pdf-signable', 'POST', [
+            'signature_coordinates' => [
+                'pdfUrl'         => 'http://127.0.0.1/admin.pdf',
+                'unit'           => SignatureCoordinatesModel::UNIT_MM,
+                'origin'         => SignatureCoordinatesModel::ORIGIN_BOTTOM_LEFT,
+                'signatureBoxes' => [
+                    0 => ['name' => 'signer_1', 'page' => 1, 'width' => 150.0, 'height' => 40.0, 'x' => 50.0, 'y' => 100.0],
+                ],
+            ],
+        ]);
+        $request->setSession($session);
+        $controller->setContainer($this->createContainerForIndex($request, $session));
+
+        $response = $controller->index($request);
+
+        self::assertNotInstanceOf(RedirectResponse::class, $response);
+        self::assertSame([], $session->getFlashBag()->get('success'));
+    }
 }

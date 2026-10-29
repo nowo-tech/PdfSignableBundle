@@ -1000,3 +1000,25 @@ class TestPython3Available:
 
         assert PdfReader is not None
         assert PdfWriter is not None
+
+
+@pytest.mark.parametrize("module_name", ["extract_acroform_fields", "apply_acroform_patches", "process_modified_pdf"])
+def test_limit_memory_caps_address_space(module_name: str) -> None:
+    """Each script caps RLIMIT_AS from PDF_SIGNABLE_MAX_MEMORY_MB (checked in a child so the test runner is untouched)."""
+    code = (
+        "import importlib, resource, sys; "
+        f"sys.path.insert(0, {str(SCRIPTS_DIR)!r}); "
+        f"m = importlib.import_module({module_name!r}); m.limit_memory(); "
+        "print(resource.getrlimit(resource.RLIMIT_AS)[0])"
+    )
+    capped = subprocess.run([sys.executable, "-c", code], env={"PDF_SIGNABLE_MAX_MEMORY_MB": "512"}, capture_output=True, text=True, check=True)
+    assert int(capped.stdout.strip()) == 512 * 1024 * 1024
+    default = subprocess.run([sys.executable, "-c", code], env={}, capture_output=True, text=True, check=True)
+    assert int(default.stdout.strip()) == 1024 * 1024 * 1024
+    import resource
+
+    inherited = resource.getrlimit(resource.RLIMIT_AS)[0]
+    disabled = subprocess.run([sys.executable, "-c", code], env={"PDF_SIGNABLE_MAX_MEMORY_MB": "0"}, capture_output=True, text=True, check=True)
+    assert int(disabled.stdout.strip()) == inherited  # 0 disables: the child keeps the limit it inherited
+    invalid = subprocess.run([sys.executable, "-c", code], env={"PDF_SIGNABLE_MAX_MEMORY_MB": "not-a-number"}, capture_output=True, text=True, check=True)
+    assert int(invalid.stdout.strip()) == 1024 * 1024 * 1024

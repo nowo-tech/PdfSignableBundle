@@ -19,6 +19,8 @@ use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +29,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
+
+use function is_string;
 
 use const FILTER_VALIDATE_URL;
 
@@ -73,6 +77,24 @@ final class SignatureController extends AbstractController
     }
 
     /**
+     * Relative URLs (same origin) pass; absolute ones must be allowlisted and resolve to public addresses only.
+     *
+     * @param FormInterface<mixed> $form
+     */
+    private function isSubmittedPdfUrlAllowed(FormInterface $form): bool
+    {
+        if (!$form->has('pdfUrl')) {
+            return true;
+        }
+        $url = $form->get('pdfUrl')->getData();
+        if (!is_string($url) || $url === '' || (str_starts_with($url, '/') && !str_starts_with($url, '//'))) {
+            return true;
+        }
+
+        return $this->proxyUrlValidator->isAllowedByAllowlist($url) && !$this->proxyUrlValidator->isBlockedForSsrf($url);
+    }
+
+    /**
      * Renders the signature coordinates form (and handles submit).
      *
      * @param Request $request The HTTP request (GET for display, POST for submit)
@@ -88,6 +110,11 @@ final class SignatureController extends AbstractController
         }
         $form = $this->createForm(SignatureCoordinatesType::class, $model);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid() && !$this->isSubmittedPdfUrlAllowed($form)) {
+            // Listeners may fetch getPdfUrl() server-side: same allowlist + SSRF rules as the proxy.
+            $form->get('pdfUrl')->addError(new FormError($this->translator->trans('proxy.url_not_allowed', [], 'NowoPdfSignableBundle')));
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $model = $form->getData();

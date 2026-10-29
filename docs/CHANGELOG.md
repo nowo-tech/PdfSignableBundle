@@ -62,6 +62,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security (SEC-004 re-audit 2026-10-29, Low)
+
+- **Signature form page behind the access checker; submitted `pdfUrl` validated.** `nowo_pdf_signable_index` was
+  reachable anonymously and dispatched `SIGNATURE_COORDINATES_SUBMITTED` / `BATCH_SIGN_REQUESTED` with any
+  `pdfUrl`; a host listener fetching it server-side was an SSRF. The page now goes through
+  `PdfSignableAccessChecker` like the proxy and AcroForm endpoints, and an absolute `pdfUrl` must pass the proxy
+  allowlist and the public-address check (form error otherwise; relative same-origin URLs still pass).
+- **Stricter `document_key`.** Keys may no longer start with `.` / `-` or contain `..` (path traversal in host storages,
+  option injection in the script argv); the process script receives `--document-key=<key>`. Keys are client input:
+  host storages and listeners must authorise them against the current user.
+- **Python scripts: `pypdf>=6.1` and a memory cap.** The requirements allowed pypdf versions with known DoS bugs; the
+  scripts now cap their address space (`PDF_SIGNABLE_MAX_MEMORY_MB`, default 1024, `0` disables) so a crafted PDF cannot
+  exhaust the host's memory.
+
 ## [3.6.0] - 2026-10-28
 
 Security: AcroForm endpoints and the PDF proxy require access (security.access_roles, deny by default). See [UPGRADING](UPGRADING.md#to-360).

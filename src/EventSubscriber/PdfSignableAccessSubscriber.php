@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 
+use function in_array;
 use function is_array;
 
 /**
@@ -38,8 +39,9 @@ final readonly class PdfSignableAccessSubscriber implements EventSubscriberInter
         }
 
         [$object, $method] = $controller;
-        $guarded           = $object instanceof AcroFormOverridesController
-            || ($object instanceof SignatureController && $method === 'proxyPdf');
+        // The signature form page dispatches host events with the submitted pdfUrl: same gate as the proxy (3.7.0).
+        $guarded = $object instanceof AcroFormOverridesController
+            || ($object instanceof SignatureController && in_array($method, ['proxyPdf', 'index'], true));
 
         if ($guarded && !$this->accessChecker->canAccess()) {
             throw new AccessDeniedHttpException('Access to the PDF signable endpoints is denied.');
