@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.7.0](#to-370)
 - [To 3.6.0](#to-360)
 - [To 3.5.0](#to-350)
 - [To 3.4.6](#to-346)
@@ -79,6 +80,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.7.0
+
+From **3.6.0**:
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 - The signature form page (`nowo_pdf_signable_index`) now requires `security.access_roles` like the proxy and the
   AcroForm endpoints. Public signing pages can set `security.access_roles: [PUBLIC_ACCESS]` (granted to everyone by Symfony),

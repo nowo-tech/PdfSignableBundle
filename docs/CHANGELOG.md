@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.7.0] - 2026-10-29](#370---2026-10-29)
 - [[3.6.0] - 2026-10-28](#360---2026-10-28)
 - [[3.5.0] - 2026-10-26](#350---2026-10-26)
 - [[3.4.6] - 2026-10-25](#346---2026-10-25)
@@ -61,6 +62,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-02-09](#100---2026-02-09)
 
 ## [Unreleased]
+
+## [3.7.0] - 2026-10-29
+
+PdfSignable: form page behind the access checker, pdfUrl SSRF check, stricter document_key, pypdf>=6.1 + memory cap. See [UPGRADING](UPGRADING.md#to-370).
 
 ### Security (SEC-004 re-audit 2026-10-29, Low)
 
@@ -980,7 +985,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.6.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.7.0...HEAD
+[3.7.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.7.0
 [3.6.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.6.0
 [3.5.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.5.0
 [3.4.6]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.4.6
