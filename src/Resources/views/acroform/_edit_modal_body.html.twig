@@ -18,7 +18,6 @@
    the form is built from config. Children are rendered without form_start/form_end because this modal sits inside the
    editor widget of the host page form (a nested form element is invalid HTML); the editor JS reads the fields by id. #}
 {% set _edit_form = acroform_edit_form ?? nowo_pdf_signable_acroform_edit_form(config ?? {}) %}
-{% form_theme _edit_form '@NowoPdfSignableBundle/form/theme.html.twig' %}
 <div id="acroform-edit-form" class="acroform-edit-form">
   {# required: false — the modal is filled by JS and must never block the submit of the surrounding page form. #}
   {% for child in _edit_form %}

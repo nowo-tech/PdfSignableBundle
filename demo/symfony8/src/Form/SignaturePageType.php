@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Form;
 
 use App\Model\SignaturePageModel;
+use Nowo\FormKitBundle\Attribute\FormKitConfig;
+use Nowo\FormKitBundle\Form\FormOptionsTrait;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -16,8 +18,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  * Accepts optional "signature_options" to customize the signature block per page
  * (e.g. fixed URL, URL as choice, limited boxes, predefined boxes).
  */
+#[FormKitConfig('pdf_signable')]
 final class SignaturePageType extends AbstractType
 {
+    use FormOptionsTrait;
+
     /**
      * @param string|null $examplePdfUrl Default PDF URL from config (used when not overridden by signature_options)
      */
@@ -44,7 +49,7 @@ final class SignaturePageType extends AbstractType
             $baseOptions['pdf_url'] = $this->examplePdfUrl;
         }
         $signatureOptions = array_merge($baseOptions, $options['signature_options'] ?? []);
-        $builder->add('signatureCoordinates', SignatureCoordinatesType::class, $signatureOptions);
+        $this->addWithDefaults($builder, 'signatureCoordinates', SignatureCoordinatesType::class, $signatureOptions);
     }
 
     /**

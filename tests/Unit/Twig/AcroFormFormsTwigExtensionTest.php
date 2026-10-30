@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Nowo\PdfSignableBundle\Tests\Twig;
 
 use Nowo\PdfSignableBundle\Form\AcroFormFieldEditType;
+use Nowo\PdfSignableBundle\Tests\Support\FormKitTestSupport;
 use Nowo\PdfSignableBundle\Twig\AcroFormFormsTwigExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Forms;
-use Symfony\Component\Form\PreloadedExtension;
 use Twig\TwigFunction;
 
 /**
@@ -19,7 +19,7 @@ final class AcroFormFormsTwigExtensionTest extends TestCase
     private function extension(): AcroFormFormsTwigExtension
     {
         $factory = Forms::createFormFactoryBuilder()
-            ->addExtension(new PreloadedExtension([new AcroFormFieldEditType(fontSizes: [10, 12])], []))
+            ->addExtension(FormKitTestSupport::extension([new AcroFormFieldEditType(fontSizes: [10, 12])]))
             ->getFormFactory();
 
         return new AcroFormFormsTwigExtension($factory);

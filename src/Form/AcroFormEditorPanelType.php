@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Form;
 
+use Nowo\FormKitBundle\Attribute\FormKitConfig;
+use Nowo\FormKitBundle\Form\FormOptionsTrait;
+use Nowo\PdfSignableBundle\NowoPdfSignableBundle;
 use Override;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -25,8 +28,12 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  * @author Héctor Franco Aceituno <hectorfranco@nowo.tech>
  * @copyright 2026 Nowo.tech
  */
+#[FormKitConfig(NowoPdfSignableBundle::FORM_KIT_PROFILE)]
 final class AcroFormEditorPanelType extends AbstractType
 {
+    use FormKitFieldTrait;
+    use FormOptionsTrait;
+
     /** HTML ids acroform-editor.js relies on. */
     public const FIELD_IDS = [
         'documentKey'   => 'acroform-document-key',
@@ -40,30 +47,29 @@ final class AcroFormEditorPanelType extends AbstractType
     #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            ->add('documentKey', TextType::class, [
-                'mapped'     => false,
-                'required'   => false,
-                'data'       => (string) $options['document_key'],
-                'label'      => 'acroform_editor.document_key_label',
-                'label_attr' => ['class' => 'form-label small'],
-                'attr'       => [
-                    'class'       => 'form-control form-control-sm',
-                    'placeholder' => 'acroform_editor.document_key_placeholder',
-                ],
-            ])
-            ->add('overridesJson', TextareaType::class, [
-                'mapped'     => false,
-                'required'   => false,
-                'label'      => 'acroform_editor.draft_label',
-                'label_attr' => ['class' => 'form-label small'],
-                'attr'       => [
-                    'class'       => 'form-control font-monospace small',
-                    'rows'        => 6,
-                    'placeholder' => 'acroform_editor.draft_placeholder',
-                    'title'       => 'acroform_editor.draft_title',
-                ],
-            ]);
+        $this->addKitField($builder, 'documentKey', TextType::class, [
+            'mapped'     => false,
+            'required'   => false,
+            'data'       => (string) $options['document_key'],
+            'label'      => 'acroform_editor.document_key_label',
+            'label_attr' => ['class' => 'form-label small'],
+            'attr'       => [
+                'class'       => 'form-control form-control-sm',
+                'placeholder' => 'acroform_editor.document_key_placeholder',
+            ],
+        ]);
+        $this->addKitField($builder, 'overridesJson', TextareaType::class, [
+            'mapped'     => false,
+            'required'   => false,
+            'label'      => 'acroform_editor.draft_label',
+            'label_attr' => ['class' => 'form-label small'],
+            'attr'       => [
+                'class'       => 'form-control font-monospace small',
+                'rows'        => 6,
+                'placeholder' => 'acroform_editor.draft_placeholder',
+                'title'       => 'acroform_editor.draft_title',
+            ],
+        ]);
     }
 
     /**

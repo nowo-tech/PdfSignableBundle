@@ -65,6 +65,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Forms are FormKit Types (REQ-TWIG-005 rule 11):** `nowo-tech/form-kit-bundle` (`^2.16`) is now a required dependency. `SignatureCoordinatesType`, `SignatureBoxType`, `AcroFormEditorType`, `AcroFormEditorPanelType` and `AcroFormFieldEditType` carry `#[FormKitConfig('pdf_signable')]` + `FormOptionsTrait` and add their fields through FormKit, themed by the FormKit profile `nowo_form_kit.profiles.pdf_signable` the bundle prepends (translation domain `NowoPdfSignableBundle`, no auto help / placeholder keys, Bootstrap field classes). Host override: define `nowo_form_kit.profiles.pdf_signable` yourself. The AcroForm edit modal now labels every field with the bundle translations (`acroform_editor.modal_*`, all 12 locales) instead of humanized field names, and `_edit_modal_body.html.twig` no longer sets an inline `form_theme` (the bundle theme stays registered globally).
+
 ## [3.8.1] - 2026-10-30
 
 Bundle routes are opt-in again: controllers are no longer autoconfigured, so a host's routing.controllers import does not expose them (REQ-SF-004 rule 7). See [UPGRADING](UPGRADING.md#to-381).

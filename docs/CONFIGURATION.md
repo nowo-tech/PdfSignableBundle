@@ -6,6 +6,7 @@
   - [Signature](#signature)
   - [AcroForm](#acroform)
   - [Proxy URL allowlist](#proxy-url-allowlist)
+- [FormKit profile](#formkit-profile)
 - [Complete configuration reference](#complete-configuration-reference)
 - [Bundle config files (maintainers)](#bundle-config-files-maintainers)
 
@@ -142,6 +143,36 @@ Non-regex entries are matched against the **parsed host** (never as a substring 
 **502 Bad Gateway:** If the proxy returns 502, the server could not fetch the external PDF (timeout, connection refused, upstream 4xx/5xx, or SSL/DNS from the app server). Check your server logs for the exact reason (the bundle logs a warning with the URL and exception message). Ensure the app (e.g. PHP/Docker) can reach the PDF URL over HTTPS; if the default `example_pdf_url` is unreachable, set `example_pdf_url: ''` and use another PDF URL or a local file served by your app.
 
 ---
+
+## FormKit profile
+
+The bundle form types (`SignatureCoordinatesType`, `SignatureBoxType`, `AcroFormEditorType`, `AcroFormEditorPanelType`, `AcroFormFieldEditType`) are FormKit Types (`#[FormKitConfig('pdf_signable')]`, REQ-TWIG-005 rule 11). Their field defaults come from the FormKit profile **`nowo_form_kit.profiles.pdf_signable`**, which the bundle prepends when you do not define it:
+
+```yaml
+# config/packages/nowo_form_kit.yaml — define the profile to override the bundle default (the bundle then prepends nothing)
+nowo_form_kit:
+    profiles:
+        pdf_signable:
+            alias: pdf_signable
+            translation_domain: NowoPdfSignableBundle
+            auto_help: false
+            auto_placeholder: false
+            defaults:
+                attr: {}
+                row_attr: {}
+            field_types:
+                text: { attr: { class: form-control } }
+                url: { attr: { class: form-control } }
+                number: { attr: { class: form-control } }
+                integer: { attr: { class: form-control } }
+                textarea: { attr: { class: form-control } }
+                choice: { attr: { class: form-select } }
+                checkbox: { attr: { class: form-check-input }, row_attr: { class: form-check } }
+```
+
+- Options a type sets itself (`form-control-sm` classes, the `acroform-edit-*` ids the editor JS reads, explicit labels) win over the profile; the profile fills what the types leave unset.
+- Keep `translation_domain: NowoPdfSignableBundle` unless you ship your own translations for the `signature_*` / `acroform_editor.*` label keys.
+- The profile does not change your `nowo_form_kit.default_profile`. The bundle widget theme `@NowoPdfSignableBundle/form/theme.html.twig` is still registered in `twig.form_themes` (it implements the `signature_coordinates` / `signature_box` / `acroform_editor` widgets).
 
 ## Complete configuration reference
 

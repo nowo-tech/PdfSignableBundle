@@ -7,6 +7,7 @@ namespace Nowo\PdfSignableBundle\Tests\Unit\Twig;
 use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
+use Nowo\PdfSignableBundle\Tests\Support\FormKitTestSupport;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Symfony\Bridge\Twig\Extension\FormExtension;
@@ -19,7 +20,6 @@ use Symfony\Component\Form\FormFactoryBuilder;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormRenderer;
 use Symfony\Component\Form\FormView;
-use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Symfony\Component\Translation\Translator;
@@ -128,7 +128,7 @@ final class PdfViewerPartialLabelTranslationTest extends TestCase
     private function formFactory(): FormFactoryInterface
     {
         return (new FormFactoryBuilder())
-            ->addExtension(new PreloadedExtension([new SignatureBoxType(), new SignatureCoordinatesType('', [])], []))
+            ->addExtension(FormKitTestSupport::extension([new SignatureBoxType(), new SignatureCoordinatesType('', [])]))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
     }

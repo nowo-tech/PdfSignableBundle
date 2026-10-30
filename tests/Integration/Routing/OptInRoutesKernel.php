@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Tests\Integration\Routing;
 
+use Nowo\FormKitBundle\NowoFormKitBundle;
 use Nowo\PdfSignableBundle\NowoPdfSignableBundle;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -35,6 +36,7 @@ final class OptInRoutesKernel extends Kernel
         yield new FrameworkBundle();
         yield new TwigBundle();
         yield new TwigExtraBundle();
+        yield new NowoFormKitBundle();
         yield new NowoPdfSignableBundle();
     }
 

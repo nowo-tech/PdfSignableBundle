@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Form;
 
+use Nowo\FormKitBundle\Attribute\FormKitConfig;
+use Nowo\FormKitBundle\Form\FormOptionsTrait;
 use Nowo\PdfSignableBundle\Model\AcroFormPageModel;
+use Nowo\PdfSignableBundle\NowoPdfSignableBundle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
@@ -27,8 +30,12 @@ use function is_string;
  *
  * @extends AbstractType<AcroFormPageModel>
  */
+#[FormKitConfig(NowoPdfSignableBundle::FORM_KIT_PROFILE)]
 final class AcroFormEditorType extends AbstractType
 {
+    use FormKitFieldTrait;
+    use FormOptionsTrait;
+
     /**
      * @param string $examplePdfUrl Fallback PDF URL when pdf_url option is not set
      * @param array<string, array<string, mixed>> $acroformConfigs Profiles by name from nowo_pdf_signable.acroform.profiles
@@ -87,7 +94,7 @@ final class AcroFormEditorType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('pdfUrl', UrlType::class, [
+        $this->addKitField($builder, 'pdfUrl', UrlType::class, [
             'label'    => 'page.url_label',
             'required' => false,
             'attr'     => [

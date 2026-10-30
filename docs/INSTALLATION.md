@@ -48,9 +48,12 @@ With Symfony Flex the bundle is registered automatically. Otherwise, add to `con
 ```php
 return [
     // ...
+    Nowo\FormKitBundle\NowoFormKitBundle::class => ['all' => true],
     Nowo\PdfSignableBundle\NowoPdfSignableBundle::class => ['all' => true],
 ];
 ```
+
+`nowo-tech/form-kit-bundle` is installed as a dependency: the bundle form types are FormKit Types themed by the `nowo_form_kit.profiles.pdf_signable` profile ([CONFIGURATION](CONFIGURATION.md#formkit-profile)).
 
 ## Routes
 

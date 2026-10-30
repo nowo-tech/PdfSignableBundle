@@ -55,6 +55,8 @@ The bundle provides a **Form Type** (`SignatureCoordinatesType`) that:
 
 The models (`SignatureCoordinatesModel`, `SignatureBoxModel`) define the fields; the Type and form theme handle the view and binding.
 
+**Forms are FormKit Types.** Every bundle form type (`SignatureCoordinatesType`, `SignatureBoxType`, `AcroFormEditorType`, `AcroFormEditorPanelType`, `AcroFormFieldEditType`) is a FormKit Type themed by the profile `nowo_form_kit.profiles.pdf_signable` ([CONFIGURATION](CONFIGURATION.md#formkit-profile)); `nowo-tech/form-kit-bundle` is a required dependency and `NowoFormKitBundle` must be registered. Bundle and demo Twig render them only with `form_start` / `form_widget` / the `{% for child in form %}{% if not child.rendered %}{{ form_row(child) }}{% endif %}{% endfor %}` loop / `form_end` — hosts and overrides must not reintroduce raw `<form>` / `<input>` (REQ-TWIG-005).
+
 ## Demo page
 
 The bundle exposes a page at the configured route (default `/pdf-signable`) with:
