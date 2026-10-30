@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.8.1] - 2026-10-30](#381---2026-10-30)
 - [[3.8.0] - 2026-10-30](#380---2026-10-30)
 - [[3.7.0] - 2026-10-29](#370---2026-10-29)
 - [[3.6.0] - 2026-10-28](#360---2026-10-28)
@@ -63,6 +64,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-02-09](#100---2026-02-09)
 
 ## [Unreleased]
+
+## [3.8.1] - 2026-10-30
+
+Bundle routes are opt-in again: controllers are no longer autoconfigured, so a host's routing.controllers import does not expose them (REQ-SF-004 rule 7). See [UPGRADING](UPGRADING.md#to-381).
 
 ### Fixed
 
@@ -1003,7 +1008,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.8.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.8.1...HEAD
+[3.8.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.8.1
 [3.8.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.8.0
 [3.7.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.7.0
 [3.6.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.6.0

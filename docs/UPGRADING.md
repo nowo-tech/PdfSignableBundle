@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.8.1](#to-381)
 - [To 3.8.0](#to-380)
 - [To 3.7.0](#to-370)
 - [To 3.6.0](#to-360)
@@ -81,6 +82,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.8.1
+
+From **3.8.0**:
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 No action needed when you import `@NowoPdfSignableBundle/Resources/config/routes.yaml` (as documented). If the bundle routes only appeared through Symfony's default `controllers: { resource: routing.controllers }` (Symfony >= 7.3, without prefix), import `routes.yaml` with your prefix: the bundle controllers are no longer registered there (REQ-SF-004 rule 7).
 
