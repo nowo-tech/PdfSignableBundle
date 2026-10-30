@@ -64,6 +64,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Routes registered without being imported (REQ-SF-004 rule 7):** on Symfony >= 7.3 `#[AsController]` + autoconfiguration gave `SignatureController` and `AcroFormOverridesController` the `routing.controller` tag, so a host with the default `controllers: { resource: routing.controllers }` got every `nowo_pdf_signable_*` route without importing `@NowoPdfSignableBundle/Resources/config/routes.yaml` and without its prefix (the signature form on `/`, the proxy on `/proxy`, the AcroForm endpoints on `/acroform/*`; still behind the `security.*` access checker). The controllers are no longer autoconfigured and no longer carry `#[AsController]` (explicit `controller.service_arguments` + `container.service_subscriber` tags); the routes exist only where the host imports them. Regression test with a kernel that only loads `routing.controllers`.
+
 ## [3.8.0] - 2026-10-30
 
 Native dialog AcroForm edit modal (UiKit contract), runtime Python scripts in src/Resources/scripts (old paths remapped, deprecated), dist no longer ships dev tooling See [UPGRADING](UPGRADING.md#to-380).

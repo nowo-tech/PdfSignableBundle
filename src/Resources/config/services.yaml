@@ -1,5 +1,5 @@
 # NowoPdfSignableBundle services.
-# - Controllers: SignatureController (resource + autowire), AcroFormOverridesController (explicit below).
+# - Controllers: SignatureController (resource + autowire), AcroFormOverridesController (explicit below); not autoconfigured.
 # - Form types: SignatureCoordinatesType, SignatureBoxType; extension SignatureCoordinatesTypeExtension.
 # - Twig: NowoPdfSignableTwigExtension.
 # - Commands: CheckDependenciesCommand (autowire).
@@ -28,13 +28,19 @@ services:
         # #[AsCommand] + autoconfigure register the commands (REQ-SF-003).
 
     # Controllers: SignatureController via resource; AcroFormOverridesController excluded and defined explicitly below.
+    # autoconfigure: false (REQ-SF-004 rule 7): on Symfony >= 7.3 a #[Route] class is autoconfigured with the
+    # routing.controller tag, and the host's default `routing.controllers` resource would then expose the bundle routes
+    # without the host importing routes.yaml (no prefix). The tags autoconfiguration gave them are explicit instead.
     Nowo\PdfSignableBundle\Controller\:
         resource: '../../Controller/*'
         exclude: '../../Controller/AcroFormOverridesController.php'
-        # #[AsController] + autoconfigure add controller.service_arguments (REQ-SF-003).
+        autoconfigure: false
+        tags: ['controller.service_arguments', 'container.service_subscriber']
 
     Nowo\PdfSignableBundle\Controller\AcroFormOverridesController:
         class: Nowo\PdfSignableBundle\Controller\AcroFormOverridesController
+        autoconfigure: false
+        tags: ['controller.service_arguments', 'container.service_subscriber']
         arguments:
             $enabled: '%nowo_pdf_signable.acroform.enabled%'
             $storage: '@Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface'
