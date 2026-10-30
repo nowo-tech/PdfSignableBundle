@@ -15,6 +15,8 @@ use Symfony\Component\DependencyInjection\Reference;
 
 use function array_values;
 use function dirname;
+use function is_string;
+use function preg_replace;
 
 /**
  * Loads bundle configuration and services, and prepends Twig and Framework translator paths.
@@ -80,11 +82,11 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
         $container->setParameter(Configuration::ALIAS . '.acroform.editor_service_id', $acroform['editor_service_id'] ?? null);
         $container->setParameter(Configuration::ALIAS . '.acroform.max_pdf_size', $acroform['max_pdf_size'] ?? 20971520);
         $container->setParameter(Configuration::ALIAS . '.acroform.max_patches', $acroform['max_patches'] ?? 500);
-        $container->setParameter(Configuration::ALIAS . '.acroform.fields_extractor_script', $acroform['fields_extractor_script'] ?? null);
+        $container->setParameter(Configuration::ALIAS . '.acroform.fields_extractor_script', $this->bundledScriptPath($acroform['fields_extractor_script'] ?? null));
         $container->setParameter(Configuration::ALIAS . '.acroform.fields_extractor_command', $acroform['fields_extractor_command'] ?? 'python3');
-        $container->setParameter(Configuration::ALIAS . '.acroform.apply_script', $acroform['apply_script'] ?? null);
+        $container->setParameter(Configuration::ALIAS . '.acroform.apply_script', $this->bundledScriptPath($acroform['apply_script'] ?? null));
         $container->setParameter(Configuration::ALIAS . '.acroform.apply_script_command', $acroform['apply_script_command'] ?? 'python3');
-        $container->setParameter(Configuration::ALIAS . '.acroform.process_script', $acroform['process_script'] ?? null);
+        $container->setParameter(Configuration::ALIAS . '.acroform.process_script', $this->bundledScriptPath($acroform['process_script'] ?? null));
         $container->setParameter(Configuration::ALIAS . '.acroform.process_script_command', $acroform['process_script_command'] ?? 'python3');
         $acroformDefault  = $acroform['default_profile'] ?? 'default';
         $acroformProfiles = $acroform['profiles'] ?? [];
@@ -163,5 +165,24 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
                 ],
             ]);
         }
+    }
+
+    /**
+     * Maps the pre-move location of the bundled AcroForm scripts (`vendor/nowo-tech/pdf-signable-bundle/.scripts/*.py`)
+     * to their runtime location `src/Resources/scripts/` (REQ-PKG-004: `.scripts/` holds development tooling only and
+     * is not shipped). Any other path (host scripts, the new location) is returned unchanged. The old paths are
+     * deprecated and remapped for BC only; the remap will be removed in 4.0.
+     */
+    private function bundledScriptPath(mixed $path): mixed
+    {
+        if (!is_string($path)) {
+            return $path;
+        }
+
+        return preg_replace(
+            '#(pdf-signable-bundle|PdfSignableBundle)([/\\\\])\.scripts[/\\\\](extract_acroform_fields|apply_acroform_patches|process_modified_pdf)\.py$#i',
+            '$1$2src$2Resources$2scripts$2$3.py',
+            $path,
+        ) ?? $path;
     }
 }

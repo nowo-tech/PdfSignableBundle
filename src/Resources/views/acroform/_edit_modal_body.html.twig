@@ -1,5 +1,5 @@
 {#
-  AcroForm edit-field modal body. Override via templates/bundles/NowoPdfSignableBundle/acroform/_edit_modal_body.html.twig.
+  AcroForm edit-field modal body: the header / content / actions regions of the <dialog> (REQ-UI-001). Override via templates/bundles/NowoPdfSignableBundle/acroform/_edit_modal_body.html.twig.
   Renders acroform_edit_form (FormView from AcroFormFieldEditType) or, when omitted, the same form built from config by
   nowo_pdf_signable_acroform_edit_form(). Required IDs: acroform-edit-modal-title, acroform-edit-field-id,
   acroform-edit-field-name or acroform-edit-field-name-select (and acroform-edit-field-name-other if field_name_other_text set),
@@ -9,11 +9,11 @@
   acroform-edit-font-auto-size, acroform-edit-cancel, acroform-edit-save.
 #}
 {% block acroform_edit_modal_body %}
-<div class="modal-header py-2">
+<div class="nowo-ui-modal__header modal-header py-2">
   <h6 class="modal-title" id="acroform-edit-modal-title">{{ 'acroform_editor.modal_edit_title'|trans({}, 'NowoPdfSignableBundle') }}</h6>
   <button type="button" class="btn-close btn-close-sm" id="acroform-edit-close" aria-label="{{ 'acroform_editor.modal_cancel'|trans({}, 'NowoPdfSignableBundle') }}"></button>
 </div>
-<div class="modal-body">
+<div class="nowo-ui-modal__content modal-body">
 {# REQ-TWIG-005: always a Symfony Form (AcroFormFieldEditType, acroform-edit-* ids for the JS). Without acroform_edit_form,
    the form is built from config. Children are rendered without form_start/form_end because this modal sits inside the
    editor widget of the host page form (a nested form element is invalid HTML); the editor JS reads the fields by id. #}
@@ -28,7 +28,7 @@
   {% endfor %}
 </div>
 </div>
-<div class="modal-footer py-2">
+<div class="nowo-ui-modal__actions modal-footer py-2">
   <button type="button" class="btn btn-sm btn-outline-secondary" id="acroform-edit-cancel">{{ 'acroform_editor.modal_cancel'|trans({}, 'NowoPdfSignableBundle') }}</button>
   <button type="button" class="btn btn-sm btn-primary" id="acroform-edit-save">{{ 'acroform_editor.modal_save'|trans({}, 'NowoPdfSignableBundle') }}</button>
 </div>

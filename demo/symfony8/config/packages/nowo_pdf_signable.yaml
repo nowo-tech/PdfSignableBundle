@@ -52,11 +52,11 @@ nowo_pdf_signable:
     # AcroForm: platform settings (enabled, scripts, storage) and profiles by name. Default profile is "default".
     acroform:
         enabled: true
-        fields_extractor_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/.scripts/extract_acroform_fields.py'
+        fields_extractor_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/extract_acroform_fields.py'
         allow_pdf_modify: true
-        apply_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/.scripts/apply_acroform_patches.py'
+        apply_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/apply_acroform_patches.py'
         apply_script_command: '/usr/bin/python3'
-        process_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/.scripts/process_modified_pdf.py'
+        process_script: '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/process_modified_pdf.py'
         process_script_command: '/usr/bin/python3'
     #     default_profile: default
     #     label_mode: input

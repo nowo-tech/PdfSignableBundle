@@ -19,6 +19,7 @@ use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\EventDispatcher\DependencyInjection\RegisterListenersPass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
+use function dirname;
 use function in_array;
 
 /**
@@ -140,6 +141,50 @@ final class PdfSignableExtensionTest extends TestCase
         self::assertSame('/usr/bin/python3.12', $container2->getParameter('nowo_pdf_signable.acroform.process_script_command'));
         self::assertSame(25.0, $container2->getParameter('nowo_pdf_signable.acroform.min_field_width'));
         self::assertSame(18.0, $container2->getParameter('nowo_pdf_signable.acroform.min_field_height'));
+    }
+
+    /**
+     * The bundled scripts moved from .scripts/ (dev tooling, not shipped) to src/Resources/scripts/ (REQ-PKG-004):
+     * pre-move vendor paths are remapped, other paths are kept as configured.
+     */
+    public function testLoadRemapsPreMoveBundledScriptPaths(): void
+    {
+        $container = new ContainerBuilder();
+        (new PdfSignableExtension())->load([
+            [
+                'acroform' => [
+                    'fields_extractor_script' => '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/.scripts/extract_acroform_fields.py',
+                    'apply_script'            => 'C:\\app\\vendor\\nowo-tech\\pdf-signable-bundle\\.scripts\\apply_acroform_patches.py',
+                    'process_script'          => '/var/www/PdfSignableBundle/.scripts/process_modified_pdf.py',
+                ],
+            ],
+        ], $container);
+
+        self::assertSame('%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/extract_acroform_fields.py', $container->getParameter('nowo_pdf_signable.acroform.fields_extractor_script'));
+        self::assertSame('C:\\app\\vendor\\nowo-tech\\pdf-signable-bundle\\src\\Resources\\scripts\\apply_acroform_patches.py', $container->getParameter('nowo_pdf_signable.acroform.apply_script'));
+        self::assertSame('/var/www/PdfSignableBundle/src/Resources/scripts/process_modified_pdf.py', $container->getParameter('nowo_pdf_signable.acroform.process_script'));
+
+        $kept = new ContainerBuilder();
+        (new PdfSignableExtension())->load([
+            [
+                'acroform' => [
+                    'fields_extractor_script' => '%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/extract_acroform_fields.py',
+                    'apply_script'            => '/srv/app/.scripts/apply_acroform_patches.py',
+                ],
+            ],
+        ], $kept);
+
+        self::assertSame('%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/extract_acroform_fields.py', $kept->getParameter('nowo_pdf_signable.acroform.fields_extractor_script'));
+        self::assertSame('/srv/app/.scripts/apply_acroform_patches.py', $kept->getParameter('nowo_pdf_signable.acroform.apply_script'));
+        self::assertNull($kept->getParameter('nowo_pdf_signable.acroform.process_script'));
+    }
+
+    /** The bundled runtime scripts ship under src/Resources/scripts/. */
+    public function testBundledScriptsShipUnderResources(): void
+    {
+        foreach (['extract_acroform_fields', 'apply_acroform_patches', 'process_modified_pdf'] as $script) {
+            self::assertFileExists(dirname(__DIR__, 3) . '/src/Resources/scripts/' . $script . '.py');
+        }
     }
 
     /**

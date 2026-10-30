@@ -1,4 +1,4 @@
-# Dependencies for AcroForm Python scripts (extract, apply, process)
-# Install with: pip install -r scripts/requirements.txt
+# Development dependencies for the AcroForm Python script tests (.scripts/test)
+# Install with: pip install -r .scripts/requirements.txt
 pypdf>=6.1
 pytest>=8.0

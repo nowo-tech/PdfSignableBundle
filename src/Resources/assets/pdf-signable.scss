@@ -417,3 +417,35 @@
     touch-action: none;
   }
 }
+
+/* AcroForm edit-field modal (REQ-UI-001): native <dialog>; the panel keeps the host's Bootstrap .modal-content look. */
+dialog.acroform-edit-modal {
+  width: min(500px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+
+  &::backdrop {
+    background: rgb(0 0 0 / 50%);
+  }
+
+  .nowo-ui-modal__panel {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 2rem);
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid var(--bs-border-color-translucent, rgb(0 0 0 / 17.5%));
+    border-radius: var(--bs-border-radius-lg, 0.5rem);
+  }
+
+  .nowo-ui-modal__header,
+  .nowo-ui-modal__actions {
+    flex-shrink: 0;
+  }
+
+  .nowo-ui-modal__content {
+    overflow-y: auto;
+  }
+}

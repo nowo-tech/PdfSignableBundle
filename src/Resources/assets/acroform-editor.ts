@@ -116,12 +116,19 @@ function initAcroFormEditor(root: HTMLElement): void {
     });
   }
 
-  // Modal markup is rendered by Twig (@NowoPdfSignableBundle/acroform/_edit_modal.html.twig + _edit_modal_body.html.twig).
-  // Include editor_root.html.twig so #acroform-edit-modal and .acroform-edit-modal-backdrop exist in the DOM.
+  // Modal markup is rendered by Twig (@NowoPdfSignableBundle/acroform/_edit_modal.html.twig + _edit_modal_body.html.twig):
+  // a native <dialog id="acroform-edit-modal"> (REQ-UI-001) opened with showModal(). Host overrides that still ship the
+  // legacy Bootstrap div.modal + .acroform-edit-modal-backdrop keep working (show class / display fallback).
   const modal = root.querySelector<HTMLElement>('#acroform-edit-modal');
   const backdrop = root.querySelector<HTMLElement>('.acroform-edit-modal-backdrop');
   if (modal) {
     backdrop?.addEventListener('click', closeEditModal);
+    if (isDialog(modal)) {
+      // Click on the ::backdrop area (the dialog element itself, outside its panel) closes it, like the legacy backdrop.
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeEditModal();
+      });
+    }
     modal.querySelector('#acroform-edit-close')?.addEventListener('click', closeEditModal);
     modal.querySelector('#acroform-edit-cancel')?.addEventListener('click', closeEditModal);
     modal.querySelector('#acroform-edit-save')?.addEventListener('click', saveEditModal);
@@ -190,11 +197,18 @@ function initAcroFormEditor(root: HTMLElement): void {
     if (controlType === 'text' || controlType === 'textarea') updateFontSizeDisabledState();
   }
 
+  /** True when the modal root is a native <dialog> (default markup; legacy host overrides may still use a div.modal). */
+  function isDialog(el: HTMLElement): el is HTMLDialogElement {
+    return typeof (el as HTMLDialogElement).showModal === 'function';
+  }
+
   /** Hides the edit modal and its backdrop. */
   function closeEditModal(): void {
     const modal = root.querySelector<HTMLElement>('#acroform-edit-modal');
     const backdrop = root.querySelector<HTMLElement>('.acroform-edit-modal-backdrop');
-    if (modal) {
+    if (modal && isDialog(modal)) {
+      if (modal.open) modal.close();
+    } else if (modal) {
       modal.classList.remove('show');
       modal.style.display = 'none';
       modal.setAttribute('aria-hidden', 'true');
@@ -634,6 +648,11 @@ function initAcroFormEditor(root: HTMLElement): void {
     updateModalVisibility(controlType);
     updateFontSizeDisabledState();
     stripNpAutofillFromFieldName(modal);
+    if (isDialog(modal)) {
+      if (!modal.open) modal.showModal();
+      requestAnimationFrame(() => stripNpAutofillFromFieldName(modal));
+      return;
+    }
     modal.classList.add('show');
     modal.style.display = 'block';
     modal.setAttribute('aria-hidden', 'false');
