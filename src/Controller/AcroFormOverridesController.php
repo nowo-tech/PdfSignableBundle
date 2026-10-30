@@ -26,7 +26,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -59,7 +58,6 @@ use const FILTER_VALIDATE_URL;
  *
  * @internal Part of the bundle API
  */
-#[AsController]
 final class AcroFormOverridesController extends AbstractController
 {
     /** Maximum allowed length for document_key. */

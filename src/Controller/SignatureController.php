@@ -24,7 +24,6 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -43,7 +42,6 @@ use const FILTER_VALIDATE_URL;
  *
  * @internal this class is part of the bundle API; instantiation is handled by the container
  */
-#[AsController]
 final class SignatureController extends AbstractController
 {
     /**
