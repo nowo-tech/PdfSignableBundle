@@ -15,7 +15,7 @@ import pytest
 from pypdf import PdfReader, PdfWriter
 
 BUNDLE_ROOT = Path(__file__).resolve().parent.parent.parent
-SCRIPTS_DIR = BUNDLE_ROOT / ".scripts"
+SCRIPTS_DIR = BUNDLE_ROOT / "src" / "Resources" / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 
@@ -134,7 +134,7 @@ class TestParseFontSizeFromDa:
 
 
 class TestExtractAcroformFields:
-    """Tests for .scripts/extract_acroform_fields.py."""
+    """Tests for src/Resources/scripts/extract_acroform_fields.py."""
 
     def test_extract_fields_minimal_pdf_returns_list(self, minimal_pdf: Path) -> None:
         """extract_fields on a minimal PDF returns a list (possibly empty)."""
@@ -146,7 +146,7 @@ class TestExtractAcroformFields:
     def test_extract_fields_valid_json_output(self, minimal_pdf: Path) -> None:
         """CLI output is valid JSON array."""
         result = subprocess.run(
-            ["python3", str(BUNDLE_ROOT / ".scripts" / "extract_acroform_fields.py"), str(minimal_pdf)],
+            ["python3", str(SCRIPTS_DIR / "extract_acroform_fields.py"), str(minimal_pdf)],
             capture_output=True,
             text=True,
             cwd=BUNDLE_ROOT,
@@ -160,7 +160,7 @@ class TestExtractAcroformFields:
         pdf_bytes = minimal_pdf.read_bytes()
         b64 = base64.b64encode(pdf_bytes).decode("ascii")
         result = subprocess.run(
-            ["python3", str(BUNDLE_ROOT / ".scripts" / "extract_acroform_fields.py"), "--stdin"],
+            ["python3", str(SCRIPTS_DIR / "extract_acroform_fields.py"), "--stdin"],
             input=b64,
             capture_output=True,
             text=True,
@@ -173,7 +173,7 @@ class TestExtractAcroformFields:
     def test_extract_fields_missing_file_exits_nonzero(self) -> None:
         """CLI with non-existent file exits with non-zero."""
         result = subprocess.run(
-            ["python3", str(BUNDLE_ROOT / ".scripts" / "extract_acroform_fields.py"), "/nonexistent.pdf"],
+            ["python3", str(SCRIPTS_DIR / "extract_acroform_fields.py"), "/nonexistent.pdf"],
             capture_output=True,
             cwd=BUNDLE_ROOT,
         )
@@ -182,7 +182,7 @@ class TestExtractAcroformFields:
     def test_extract_fields_stdin_invalid_base64_exits_nonzero(self) -> None:
         """CLI --stdin with invalid base64 exits non-zero."""
         result = subprocess.run(
-            ["python3", str(BUNDLE_ROOT / ".scripts" / "extract_acroform_fields.py"), "--stdin"],
+            ["python3", str(SCRIPTS_DIR / "extract_acroform_fields.py"), "--stdin"],
             input="not-valid-base64!!!",
             capture_output=True,
             text=True,
@@ -192,7 +192,7 @@ class TestExtractAcroformFields:
 
 
 class TestApplyAcroformPatches:
-    """Tests for .scripts/apply_acroform_patches.py."""
+    """Tests for src/Resources/scripts/apply_acroform_patches.py."""
 
     def test_apply_patches_minimal_output_valid_pdf(
         self, minimal_pdf: Path, tmp_path: Path
@@ -215,7 +215,7 @@ class TestApplyAcroformPatches:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "apply_acroform_patches.py"),
+                str(SCRIPTS_DIR / "apply_acroform_patches.py"),
                 "--pdf",
                 str(minimal_pdf),
                 "--patches",
@@ -261,7 +261,7 @@ class TestApplyAcroformPatches:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "apply_acroform_patches.py"),
+                str(SCRIPTS_DIR / "apply_acroform_patches.py"),
                 "--pdf",
                 "/nonexistent.pdf",
                 "--patches",
@@ -281,7 +281,7 @@ class TestApplyAcroformPatches:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "apply_acroform_patches.py"),
+                str(SCRIPTS_DIR / "apply_acroform_patches.py"),
                 "--pdf",
                 str(minimal_pdf),
                 "--patches",
@@ -320,7 +320,7 @@ class TestApplyAcroformPatches:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "apply_acroform_patches.py"),
+                str(SCRIPTS_DIR / "apply_acroform_patches.py"),
                 "--pdf",
                 str(minimal_pdf),
                 "--patches",
@@ -402,7 +402,7 @@ class TestRealFormCoverage:
 
 
 class TestProcessModifiedPdf:
-    """Tests for .scripts/process_modified_pdf.py (stub)."""
+    """Tests for src/Resources/scripts/process_modified_pdf.py (stub)."""
 
     def test_process_copies_input_to_output(
         self, minimal_pdf: Path, tmp_path: Path
@@ -412,7 +412,7 @@ class TestProcessModifiedPdf:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "process_modified_pdf.py"),
+                str(SCRIPTS_DIR / "process_modified_pdf.py"),
                 "--input",
                 str(minimal_pdf),
                 "--output",
@@ -433,7 +433,7 @@ class TestProcessModifiedPdf:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "process_modified_pdf.py"),
+                str(SCRIPTS_DIR / "process_modified_pdf.py"),
                 "--input",
                 str(minimal_pdf),
                 "--output",
@@ -453,7 +453,7 @@ class TestProcessModifiedPdf:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "process_modified_pdf.py"),
+                str(SCRIPTS_DIR / "process_modified_pdf.py"),
                 "--output",
                 str(out_path),
             ],
@@ -467,7 +467,7 @@ class TestProcessModifiedPdf:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "process_modified_pdf.py"),
+                str(SCRIPTS_DIR / "process_modified_pdf.py"),
                 "--input",
                 str(minimal_pdf),
             ],
@@ -482,7 +482,7 @@ class TestProcessModifiedPdf:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "process_modified_pdf.py"),
+                str(SCRIPTS_DIR / "process_modified_pdf.py"),
                 "--input",
                 str(minimal_pdf),
                 "--output",
@@ -520,7 +520,7 @@ class TestProcessModifiedPdfEdgeCases:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "process_modified_pdf.py"),
+                str(SCRIPTS_DIR / "process_modified_pdf.py"),
                 "--input",
                 str(tmp_path),
                 "--output",
@@ -537,7 +537,7 @@ class TestProcessModifiedPdfEdgeCases:
         result = subprocess.run(
             [
                 "python3",
-                str(BUNDLE_ROOT / ".scripts" / "process_modified_pdf.py"),
+                str(SCRIPTS_DIR / "process_modified_pdf.py"),
                 "--input",
                 str(minimal_pdf),
                 "--output",

@@ -28,6 +28,36 @@ test.describe('PdfSignable demo happy path', () => {
     await expect(page.locator('.alert-success')).toContainText('angle=90');
   });
 
+  test('AcroForm editor: Edit opens the native <dialog> edit modal (REQ-UI-001)', async ({ page }) => {
+    await page.goto('/demo-signature/acroform-editor');
+    const firstPage = page.locator('#pdf-canvas-wrapper .pdf-page-wrapper canvas').first();
+    await expect(firstPage).toBeVisible({ timeout: 60_000 });
+
+    const dialog = page.locator('dialog#acroform-edit-modal');
+    await expect(dialog).toHaveCount(1);
+    await expect(dialog).not.toHaveAttribute('open');
+
+    // Place a new field through the viewer → editor event contract (what a click in "Add field" mode dispatches).
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent('pdf-signable-acroform-add-field-place', {
+          detail: { page: 1, llx: 72, lly: 700, width: 100, height: 20 },
+        }),
+      );
+    });
+    // The new field appears in the editor list; its Edit button opens the modal.
+    const newRow = page.locator('#acroform-fields-list .acroform-list-row[data-field-id^="new-"]');
+    await expect(newRow).toHaveCount(1);
+    await newRow.locator('.acroform-btn-edit').click();
+    await expect(dialog).toHaveAttribute('open', '');
+    await expect(dialog.locator('.nowo-ui-modal__header')).toBeVisible();
+    await expect(dialog.locator('.nowo-ui-modal__content #acroform-edit-control-type')).toBeVisible();
+    await expect(dialog.locator('.nowo-ui-modal__actions #acroform-edit-save')).toBeVisible();
+
+    await dialog.locator('#acroform-edit-cancel').click();
+    await expect(dialog).not.toHaveAttribute('open');
+  });
+
   test('predefined boxes signing demo shows both signers', async ({ page }) => {
     await page.goto('/demo-signing/predefined-boxes');
     await expect(page.locator('#pdf-canvas-wrapper .pdf-page-wrapper canvas').first()).toBeVisible({ timeout: 60_000 });

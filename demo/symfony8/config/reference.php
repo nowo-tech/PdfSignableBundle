@@ -762,6 +762,11 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     process_timeout?: float|Param, // Symfony Process timeout (and idle timeout) in seconds for AcroForm extract/apply scripts. Keep below PHP max_execution_time / FrankenPHP write timeout. // Default: 60.0
  *     process_script_timeout?: float|Param, // Symfony Process timeout (and idle timeout) in seconds for acroform.process_script. Keep below PHP max_execution_time / FrankenPHP write timeout. // Default: 120.0
  *     dependency_check_timeout?: float|Param, // Symfony Process timeout in seconds for optional pypdf probe during dependency checks. // Default: 5.0
+ *     security?: array{ // Access to the AcroForm endpoints and the PDF proxy (they read client PDFs, run Python, fetch remote PDFs).
+ *         access_roles?: list<scalar|Param|null>,
+ *         access_checker?: scalar|Param|null, // Service id implementing PdfSignableAccessCheckerInterface (replaces the role check). // Default: null
+ *         allow_unauthenticated?: bool|Param, // Let everybody use the endpoints (local demos only; never in production). // Default: false
+ *     },
  *     signature?: array{ // Signature: global defaults (box dimensions, lock) and profiles by name. Default profile is "default".
  *         default_profile?: scalar|Param|null, // Default profile when form option config is not set (e.g. "default"). Resolved from signature.profiles[name]. Legacy key: default_config_alias. // Default: "default"
  *         default_box_width?: float|Param, // Default width for new signature boxes (in form unit). Global default; overridable per profile. // Default: null
@@ -786,7 +791,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         editor_service_id?: scalar|Param|null, // Optional service id implementing PdfAcroFormEditorInterface. // Default: null
  *         max_pdf_size?: int|Param, // Max PDF size in bytes for apply/process endpoints (base64 decoded pdf_content or pdf_url download). // Default: 20971520
  *         max_patches?: int|Param, // Max number of patches per apply request. // Default: 500
- *         fields_extractor_script?: scalar|Param|null, // Optional path to Python script that extracts AcroForm fields from a PDF (e.g. scripts/extract_acroform_fields.py). Receives PDF path as first argument; stdout must be a JSON array of field descriptors. When set, POST /acroform/fields/extract is available. // Default: null
+ *         fields_extractor_script?: scalar|Param|null, // Optional path to Python script that extracts AcroForm fields from a PDF (e.g. %kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/extract_acroform_fields.py). Receives PDF path as first argument; stdout must be a JSON array of field descriptors. When set, POST /acroform/fields/extract is available. // Default: null
  *         fields_extractor_command?: scalar|Param|null, // Executable used to run the fields_extractor_script (e.g. python3, python, or /usr/bin/python3). Used only when fields_extractor_script is set. // Default: "python3"
  *         apply_script?: scalar|Param|null, // Optional path to Python script that applies AcroForm patches to a PDF. Receives --pdf <path> --patches <path-to-json> and outputs modified PDF to stdout. When set, POST /acroform/apply can return the modified PDF via this script. // Default: null
  *         apply_script_command?: scalar|Param|null, // Executable used to run the apply_script (e.g. python3, python, or /usr/bin/python3). Used only when apply_script is set. // Default: "python3"

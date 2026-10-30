@@ -201,7 +201,7 @@ final class Configuration implements ConfigurationInterface
                             ->defaultValue(500)
                         ->end()
                         ->scalarNode('fields_extractor_script')
-                            ->info('Optional path to Python script that extracts AcroForm fields from a PDF (e.g. scripts/extract_acroform_fields.py). Receives PDF path as first argument; stdout must be a JSON array of field descriptors. When set, POST /acroform/fields/extract is available.')
+                            ->info('Optional path to Python script that extracts AcroForm fields from a PDF (e.g. %kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/extract_acroform_fields.py). Receives PDF path as first argument; stdout must be a JSON array of field descriptors. When set, POST /acroform/fields/extract is available.')
                             ->defaultNull()
                         ->end()
                         ->scalarNode('fields_extractor_command')

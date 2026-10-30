@@ -1,0 +1,3 @@
+# Runtime dependencies of the bundled AcroForm Python scripts (extract, apply, process)
+# Install with: pip install -r vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/requirements.txt
+pypdf>=6.1

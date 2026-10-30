@@ -63,6 +63,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **AcroForm edit modal (REQ-UI-001):** `acroform/_edit_modal.html.twig` renders a native `<dialog id="acroform-edit-modal" class="nowo-ui-modal acroform-edit-modal">` (opened with `showModal()`, closed with `close()`, Escape and a click on the backdrop) instead of the Bootstrap `div.modal` + `.acroform-edit-modal-backdrop`. `_edit_modal_body.html.twig` exposes the header / content / actions regions (`nowo-ui-modal__header` / `__content` / `__actions`, Bootstrap `modal-header` / `modal-body` / `modal-footer` classes kept for styling). Element ids are unchanged. Host overrides that still render the old `div.modal` keep working (the editor JS falls back to the show class / display toggle).
+- **Runtime Python scripts (REQ-PKG-004):** `extract_acroform_fields.py`, `apply_acroform_patches.py` and `process_modified_pdf.py` moved from `.scripts/` (development tooling) to `src/Resources/scripts/` (with `requirements.txt`, runtime `pypdf` only). Config paths that still point at `…/pdf-signable-bundle/.scripts/<script>.py` are remapped by the extension (deprecated, removal in 4.0). The demo config uses the new paths.
+
+### Fixed
+
+- **Package archive:** `.gitattributes` export-ignored a non-existent `/scripts` directory, so `.scripts/` (CI helpers, PoC, pytest suite) shipped in the dist; it now export-ignores `/.scripts` and `pytest.ini`. `pytest.ini` pointed at `scripts/test` (now `.scripts/test`).
+
 ## [3.7.0] - 2026-10-29
 
 PdfSignable: form page behind the access checker, pdfUrl SSRF check, stricter document_key, pypdf>=6.1 + memory cap. See [UPGRADING](UPGRADING.md#to-370).
