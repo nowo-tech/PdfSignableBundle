@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.8.0](#to-380)
 - [To 3.7.0](#to-370)
 - [To 3.6.0](#to-360)
 - [To 3.5.0](#to-350)
@@ -80,6 +81,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.8.0
+
+From **3.7.0**:
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 - **AcroForm Python scripts moved:** point `acroform.fields_extractor_script`, `acroform.apply_script` and `acroform.process_script` at `%kernel.project_dir%/vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/<script>.py` (was `…/pdf-signable-bundle/.scripts/<script>.py`). The old paths are still remapped automatically, but `.scripts/` is no longer shipped and the remap will be removed in 4.0. Runtime Python deps: `pip install -r vendor/nowo-tech/pdf-signable-bundle/src/Resources/scripts/requirements.txt`.
 - **AcroForm edit modal is a native `<dialog>`:** if you override `@NowoPdfSignableBundle/acroform/_edit_modal.html.twig`, keep `id="acroform-edit-modal"` on a `<dialog>` root (the legacy Bootstrap `div.modal` override still works through a JS fallback, but REQ-UI-001 requires `<dialog>`). If you override `_edit_modal_body.html.twig`, keep the element ids; adding the `nowo-ui-modal__header` / `__content` / `__actions` classes is recommended. Host CSS that targeted `#acroform-edit-modal.show` or `.acroform-edit-modal-backdrop` should target `#acroform-edit-modal[open]` / `#acroform-edit-modal::backdrop`.
