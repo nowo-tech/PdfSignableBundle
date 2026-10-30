@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nowo\PdfSignableBundle\Tests\Form;
 
 use Nowo\PdfSignableBundle\Form\AcroFormEditorPanelType;
+use Nowo\PdfSignableBundle\Tests\Support\FormKitTestSupport;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Forms;
 
@@ -15,7 +16,7 @@ final class AcroFormEditorPanelTypeTest extends TestCase
 {
     public function testKeepsIdsAndDocumentKey(): void
     {
-        $form = Forms::createFormFactory()->create(AcroFormEditorPanelType::class, null, ['document_key' => 'doc-1']);
+        $form = Forms::createFormFactoryBuilder()->addExtension(FormKitTestSupport::extension())->getFormFactory()->create(AcroFormEditorPanelType::class, null, ['document_key' => 'doc-1']);
         $view = $form->createView();
 
         self::assertSame('acroform_editor_panel', (new AcroFormEditorPanelType())->getBlockPrefix());
@@ -30,7 +31,7 @@ final class AcroFormEditorPanelTypeTest extends TestCase
 
     public function testNullDocumentKeyIsEmpty(): void
     {
-        $view = Forms::createFormFactory()->create(AcroFormEditorPanelType::class, null, ['document_key' => null])->createView();
+        $view = Forms::createFormFactoryBuilder()->addExtension(FormKitTestSupport::extension())->getFormFactory()->create(AcroFormEditorPanelType::class, null, ['document_key' => null])->createView();
 
         self::assertSame('', $view->children['documentKey']->vars['value']);
     }

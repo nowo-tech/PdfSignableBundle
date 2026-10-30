@@ -6,6 +6,7 @@ namespace Nowo\PdfSignableBundle\Tests\Form;
 
 use Nowo\PdfSignableBundle\Form\AcroFormEditorType;
 use Nowo\PdfSignableBundle\Model\AcroFormPageModel;
+use Nowo\PdfSignableBundle\Tests\Support\FormKitTestSupport;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\PreloadedExtension;
@@ -51,7 +52,7 @@ final class AcroFormEditorTypeTest extends TypeTestCase
         $validator = Validation::createValidator();
 
         return [
-            new PreloadedExtension([$type], []),
+            FormKitTestSupport::extension([$type]),
             new ValidatorExtension($validator),
         ];
     }

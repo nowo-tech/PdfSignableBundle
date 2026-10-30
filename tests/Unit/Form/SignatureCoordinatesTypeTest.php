@@ -8,6 +8,7 @@ use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use Nowo\PdfSignableBundle\Tests\Support\FormKitTestSupport;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionMethod;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -17,7 +18,6 @@ use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormExtensionInterface;
 use Symfony\Component\Form\FormFactoryBuilder;
-use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\Constraints\Callback;
@@ -55,10 +55,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $validator = Validation::createValidator();
 
         return [
-            new PreloadedExtension(
-                [$signatureBoxType, $signatureCoordinatesType],
-                [],
-            ),
+            FormKitTestSupport::extension([$signatureBoxType, $signatureCoordinatesType]),
             new ValidatorExtension($validator),
         ];
     }
@@ -97,7 +94,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $typeWithExample = new SignatureCoordinatesType($exampleUrl, []);
         $factory         = (new FormFactoryBuilder())
             ->addExtension(new HttpFoundationExtension())
-            ->addExtension(new PreloadedExtension([new SignatureBoxType(), $typeWithExample], []))
+            ->addExtension(FormKitTestSupport::extension([new SignatureBoxType(), $typeWithExample]))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
         $model = new SignatureCoordinatesModel();
@@ -993,7 +990,7 @@ final class SignatureCoordinatesTypeTest extends TypeTestCase
         $exampleUrl      = 'https://example.com/fallback.pdf';
         $typeWithExample = new SignatureCoordinatesType($exampleUrl, []);
         $factory         = (new FormFactoryBuilder())
-            ->addExtension(new PreloadedExtension([new SignatureBoxType(), $typeWithExample], []))
+            ->addExtension(FormKitTestSupport::extension([new SignatureBoxType(), $typeWithExample]))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
         $form = $factory->create(SignatureCoordinatesType::class, new SignatureCoordinatesModel(), []);

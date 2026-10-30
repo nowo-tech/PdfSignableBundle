@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Form;
 
+use Nowo\FormKitBundle\Attribute\FormKitConfig;
+use Nowo\FormKitBundle\Form\FormOptionsTrait;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
+use Nowo\PdfSignableBundle\NowoPdfSignableBundle;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -33,8 +36,12 @@ use function is_string;
  *
  * @extends AbstractType<SignatureBoxModel>
  */
+#[FormKitConfig(NowoPdfSignableBundle::FORM_KIT_PROFILE)]
 final class SignatureBoxType extends AbstractType
 {
+    use FormKitFieldTrait;
+    use FormOptionsTrait;
+
     /** Box name is a free-text input. */
     public const NAME_MODE_INPUT = 'input';
 
@@ -59,7 +66,7 @@ final class SignatureBoxType extends AbstractType
                 }
             });
             // No empty option: required choice with no "Select role" / placeholder (first real choice must be selected)
-            $builder->add('name', ChoiceType::class, [
+            $this->addKitField($builder, 'name', ChoiceType::class, [
                 'label'       => $options['name_label'],
                 'choices'     => $options['name_choices'],
                 'required'    => true,
@@ -74,7 +81,7 @@ final class SignatureBoxType extends AbstractType
                 'row_attr' => ['class' => 'col-8 col-md-9 col-lg-10 mb-2'],
             ]);
         } else {
-            $builder->add('name', TextType::class, [
+            $this->addKitField($builder, 'name', TextType::class, [
                 'label'       => $options['name_label'],
                 'required'    => true,
                 'empty_data'  => '',
@@ -94,7 +101,7 @@ final class SignatureBoxType extends AbstractType
             $allowedPages = array_map(intval(...), array_values($allowedPages));
             $allowedPages = array_values(array_unique(array_filter($allowedPages, static fn (int $p): bool => $p >= 1)));
             $pageChoices  = array_combine($allowedPages, $allowedPages);
-            $builder->add('page', ChoiceType::class, [
+            $this->addKitField($builder, 'page', ChoiceType::class, [
                 'label'       => 'signature_box_type.page.label',
                 'choices'     => $pageChoices,
                 'required'    => true,
@@ -103,7 +110,7 @@ final class SignatureBoxType extends AbstractType
                 'row_attr'    => ['class' => 'col-4 col-md-3 col-lg-2 mb-2'],
             ]);
         } else {
-            $builder->add('page', IntegerType::class, [
+            $this->addKitField($builder, 'page', IntegerType::class, [
                 'label'    => 'signature_box_type.page.label',
                 'attr'     => ['min' => 1, 'step' => 1, 'class' => 'signature-box-page form-control form-control-sm', 'data-pdf-signable' => 'page'],
                 'required' => true,
@@ -135,31 +142,30 @@ final class SignatureBoxType extends AbstractType
             }
         });
 
-        $builder
-            ->add('width', NumberType::class, [
-                'label'      => 'signature_box_type.width.label',
-                'empty_data' => $defaultWidth,
-                'attr'       => ['min' => $minWidth, 'step' => '0.01', 'class' => 'signature-box-width form-control form-control-sm', 'data-pdf-signable' => 'width'],
-                'row_attr'   => ['class' => 'col mb-2'],
-            ])
-            ->add('height', NumberType::class, [
-                'label'      => 'signature_box_type.height.label',
-                'empty_data' => $defaultHeight,
-                'attr'       => ['min' => $minHeight, 'step' => '0.01', 'class' => 'signature-box-height form-control form-control-sm', 'data-pdf-signable' => 'height'],
-                'row_attr'   => ['class' => 'col mb-2'],
-            ])
-            ->add('x', NumberType::class, [
-                'label'    => 'signature_box_type.x.label',
-                'attr'     => ['min' => 0, 'step' => '0.01', 'class' => 'signature-box-x form-control form-control-sm', 'data-pdf-signable' => 'x'],
-                'row_attr' => ['class' => 'col mb-2'],
-            ])
-            ->add('y', NumberType::class, [
-                'label'    => 'signature_box_type.y.label',
-                'attr'     => ['min' => 0, 'step' => '0.01', 'class' => 'signature-box-y form-control form-control-sm', 'data-pdf-signable' => 'y'],
-                'row_attr' => ['class' => 'col mb-2'],
-            ]);
+        $this->addKitField($builder, 'width', NumberType::class, [
+            'label'      => 'signature_box_type.width.label',
+            'empty_data' => $defaultWidth,
+            'attr'       => ['min' => $minWidth, 'step' => '0.01', 'class' => 'signature-box-width form-control form-control-sm', 'data-pdf-signable' => 'width'],
+            'row_attr'   => ['class' => 'col mb-2'],
+        ]);
+        $this->addKitField($builder, 'height', NumberType::class, [
+            'label'      => 'signature_box_type.height.label',
+            'empty_data' => $defaultHeight,
+            'attr'       => ['min' => $minHeight, 'step' => '0.01', 'class' => 'signature-box-height form-control form-control-sm', 'data-pdf-signable' => 'height'],
+            'row_attr'   => ['class' => 'col mb-2'],
+        ]);
+        $this->addKitField($builder, 'x', NumberType::class, [
+            'label'    => 'signature_box_type.x.label',
+            'attr'     => ['min' => 0, 'step' => '0.01', 'class' => 'signature-box-x form-control form-control-sm', 'data-pdf-signable' => 'x'],
+            'row_attr' => ['class' => 'col mb-2'],
+        ]);
+        $this->addKitField($builder, 'y', NumberType::class, [
+            'label'    => 'signature_box_type.y.label',
+            'attr'     => ['min' => 0, 'step' => '0.01', 'class' => 'signature-box-y form-control form-control-sm', 'data-pdf-signable' => 'y'],
+            'row_attr' => ['class' => 'col mb-2'],
+        ]);
         if ($options['angle_enabled']) {
-            $builder->add('angle', NumberType::class, [
+            $this->addKitField($builder, 'angle', NumberType::class, [
                 'label'      => 'signature_box_type.angle.label',
                 'empty_data' => 0,
                 'attr'       => ['min' => -180, 'max' => 180, 'step' => '0.1', 'class' => 'signature-box-angle form-control form-control-sm', 'data-pdf-signable' => 'angle'],
@@ -167,11 +173,11 @@ final class SignatureBoxType extends AbstractType
             ]);
         }
         if ($options['enable_signature_capture'] || $options['enable_signature_upload']) {
-            $builder->add('signatureData', HiddenType::class, [
+            $this->addKitField($builder, 'signatureData', HiddenType::class, [
                 'required' => false,
                 'attr'     => ['class' => 'signature-box-signature-data', 'data-pdf-signable' => 'signature-data'],
             ]);
-            $builder->add('signedAt', HiddenType::class, [
+            $this->addKitField($builder, 'signedAt', HiddenType::class, [
                 'required' => false,
                 'attr'     => ['class' => 'signature-box-signed-at', 'data-pdf-signable' => 'signed-at'],
             ]);

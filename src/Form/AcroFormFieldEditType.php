@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Form;
 
+use Nowo\FormKitBundle\Attribute\FormKitConfig;
+use Nowo\FormKitBundle\Form\FormOptionsTrait;
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldEdit;
+use Nowo\PdfSignableBundle\NowoPdfSignableBundle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -42,8 +45,12 @@ use function is_string;
  *
  * @extends AbstractType<AcroFormFieldEdit>
  */
+#[FormKitConfig(NowoPdfSignableBundle::FORM_KIT_PROFILE)]
 final class AcroFormFieldEditType extends AbstractType
 {
+    use FormKitFieldTrait;
+    use FormOptionsTrait;
+
     /**
      * @param array<int|string, array{value: scalar|null, label?: scalar|null}|scalar> $fieldNameChoices
      * @param array<int, int> $fontSizes
@@ -85,22 +92,22 @@ final class AcroFormFieldEditType extends AbstractType
         $rowCheckboxOpts    = ['row_attr' => ['class' => 'mb-2 acroform-edit-group acroform-edit-group-checkbox-options', 'style' => 'display:none;']];
         $rowFont            = ['row_attr' => ['class' => 'mb-2 acroform-edit-group acroform-edit-group-font', 'style' => 'display:none;']];
 
-        $builder
-            ->add('fieldId', HiddenType::class, ['attr' => ['id' => 'acroform-edit-field-id']])
-            ->add('page', HiddenType::class, ['attr' => ['id' => 'acroform-edit-page'], 'required' => false])
-            ->add('fieldName', $this->getFieldNameFieldType($fieldNameMode, $fieldNameChoices), array_merge($this->getFieldNameFieldOptions($fieldNameMode, $fieldNameChoices, $fieldNameOtherText), $rowFieldName));
+        $this->addKitField($builder, 'fieldId', HiddenType::class, ['label' => false, 'attr' => ['id' => 'acroform-edit-field-id']]);
+        $this->addKitField($builder, 'page', HiddenType::class, ['label' => false, 'attr' => ['id' => 'acroform-edit-page'], 'required' => false]);
+        $this->addKitField($builder, 'fieldName', $this->getFieldNameFieldType($fieldNameMode, $fieldNameChoices), array_merge($this->getFieldNameFieldOptions($fieldNameMode, $fieldNameChoices, $fieldNameOtherText), $rowFieldName));
 
         if ($fieldNameMode === 'choice' && $fieldNameChoices !== [] && $fieldNameOtherText !== '') {
-            $builder->add('fieldNameOther', TextType::class, array_merge([
+            $this->addKitField($builder, 'fieldNameOther', TextType::class, array_merge([
                 'mapped'     => false,
                 'required'   => false,
+                'label'      => 'acroform_editor.modal_field_name_placeholder',
                 'attr'       => ['id' => 'acroform-edit-field-name-other', 'class' => 'form-control form-control-sm', 'autocomplete' => 'off'],
                 'label_attr' => ['class' => 'form-label small'],
             ], $rowFieldName));
         }
 
-        $builder
-        ->add('controlType', ChoiceType::class, array_merge([
+        $this->addKitField($builder, 'controlType', ChoiceType::class, array_merge([
+            'label'   => 'acroform_editor.modal_control_type',
             'choices' => [
                 'text'     => 'text',
                 'textarea' => 'textarea',
@@ -108,99 +115,116 @@ final class AcroFormFieldEditType extends AbstractType
                 'select'   => 'select',
                 'choice'   => 'choice',
             ],
-            'attr'       => ['id' => 'acroform-edit-control-type', 'class' => 'form-select form-select-sm'],
-            'label_attr' => ['class' => 'form-label small'],
+            'choice_translation_domain' => false,
+            'attr'                      => ['id' => 'acroform-edit-control-type', 'class' => 'form-select form-select-sm'],
+            'label_attr'                => ['class' => 'form-label small'],
         ], $rowControlType));
 
         if ($showFieldRect) {
-            $builder->add('rect', TextType::class, array_merge([
+            $this->addKitField($builder, 'rect', TextType::class, array_merge([
                 'required'   => false,
-                'attr'       => ['id' => 'acroform-edit-rect', 'class' => 'form-control form-control-sm', 'placeholder' => '0, 0, 100, 20'],
+                'label'      => 'acroform_editor.modal_rect_label',
+                'attr'       => ['id' => 'acroform-edit-rect', 'class' => 'form-control form-control-sm', 'placeholder' => 'acroform_editor.modal_rect_placeholder'],
                 'label_attr' => ['class' => 'form-label small'],
             ], $rowRect));
         }
 
-        $builder->add('maxLen', IntegerType::class, array_merge([
+        $this->addKitField($builder, 'maxLen', IntegerType::class, array_merge([
             'required'   => false,
-            'attr'       => ['id' => 'acroform-edit-max-len', 'class' => 'form-control form-control-sm', 'min' => 0, 'placeholder' => ''],
+            'label'      => 'acroform_editor.modal_max_len',
+            'attr'       => ['id' => 'acroform-edit-max-len', 'class' => 'form-control form-control-sm', 'min' => 0, 'placeholder' => 'acroform_editor.modal_max_len_placeholder'],
             'label_attr' => ['class' => 'form-label small'],
-        ], $rowMaxLen))
-            ->add('hidden', CheckboxType::class, array_merge([
-                'required'   => false,
-                'label_attr' => ['class' => 'form-check-label small'],
-                'attr'       => ['id' => 'acroform-edit-hidden', 'class' => 'form-check-input'],
-            ], $rowFlags))
-            ->add('createIfMissing', CheckboxType::class, array_merge([
-                'required'   => false,
-                'label_attr' => ['class' => 'form-check-label small'],
-                'attr'       => ['id' => 'acroform-edit-create-if-missing', 'class' => 'form-check-input'],
-            ], $rowFlags))
-            ->add('options', TextareaType::class, array_merge([
-                'required'   => false,
-                'attr'       => ['id' => 'acroform-edit-options', 'class' => 'form-control form-control-sm', 'rows' => 3],
-                'label_attr' => ['class' => 'form-label small'],
-            ], $rowOptions))
-            ->add('defaultValue', TextType::class, array_merge([
-                'required'   => false,
-                'attr'       => ['id' => 'acroform-edit-default-value', 'class' => 'form-control form-control-sm'],
-                'label_attr' => ['class' => 'form-label small'],
-            ], $rowDefaultText))
-            ->add('defaultChecked', CheckboxType::class, array_merge([
-                'required'   => false,
-                'label_attr' => ['class' => 'form-check-label small'],
-                'attr'       => ['id' => 'acroform-edit-default-checked', 'class' => 'form-check-input'],
-            ], $rowDefaultCheckbox))
-            ->add('checkboxValueOn', TextType::class, array_merge([
-                'required'   => false,
-                'attr'       => ['id' => 'acroform-edit-checkbox-value-on', 'class' => 'form-control form-control-sm', 'placeholder' => '1'],
-                'label_attr' => ['class' => 'form-label small'],
-            ], $rowCheckboxOpts))
-            ->add('checkboxValueOff', TextType::class, array_merge([
-                'required'   => false,
-                'attr'       => ['id' => 'acroform-edit-checkbox-value-off', 'class' => 'form-control form-control-sm', 'placeholder' => '0'],
-                'label_attr' => ['class' => 'form-label small'],
-            ], $rowCheckboxOpts))
-            ->add('checkboxIcon', ChoiceType::class, array_merge([
-                'choices' => [
-                    'check' => 'check',
-                    'cross' => 'cross',
-                    'dot'   => 'dot',
-                ],
-                'attr'       => ['id' => 'acroform-edit-checkbox-icon', 'class' => 'form-select form-select-sm'],
-                'label_attr' => ['class' => 'form-label small'],
-            ], $rowCheckboxOpts));
+        ], $rowMaxLen));
+        $this->addKitField($builder, 'hidden', CheckboxType::class, array_merge([
+            'required'   => false,
+            'label'      => 'acroform_editor.modal_hidden',
+            'label_attr' => ['class' => 'form-check-label small'],
+            'attr'       => ['id' => 'acroform-edit-hidden', 'class' => 'form-check-input'],
+        ], $rowFlags));
+        $this->addKitField($builder, 'createIfMissing', CheckboxType::class, array_merge([
+            'required'   => false,
+            'label'      => 'acroform_editor.modal_create_if_missing',
+            'label_attr' => ['class' => 'form-check-label small'],
+            'attr'       => ['id' => 'acroform-edit-create-if-missing', 'class' => 'form-check-input'],
+        ], $rowFlags));
+        $this->addKitField($builder, 'options', TextareaType::class, array_merge([
+            'required'   => false,
+            'label'      => 'acroform_editor.modal_options_label',
+            'attr'       => ['id' => 'acroform-edit-options', 'class' => 'form-control form-control-sm', 'rows' => 3],
+            'label_attr' => ['class' => 'form-label small'],
+        ], $rowOptions));
+        $this->addKitField($builder, 'defaultValue', TextType::class, array_merge([
+            'required'   => false,
+            'label'      => 'acroform_editor.modal_default_value',
+            'attr'       => ['id' => 'acroform-edit-default-value', 'class' => 'form-control form-control-sm'],
+            'label_attr' => ['class' => 'form-label small'],
+        ], $rowDefaultText));
+        $this->addKitField($builder, 'defaultChecked', CheckboxType::class, array_merge([
+            'required'   => false,
+            'label'      => 'acroform_editor.modal_default_checked',
+            'label_attr' => ['class' => 'form-check-label small'],
+            'attr'       => ['id' => 'acroform-edit-default-checked', 'class' => 'form-check-input'],
+        ], $rowDefaultCheckbox));
+        $this->addKitField($builder, 'checkboxValueOn', TextType::class, array_merge([
+            'required'   => false,
+            'label'      => 'acroform_editor.modal_checkbox_value_on',
+            'attr'       => ['id' => 'acroform-edit-checkbox-value-on', 'class' => 'form-control form-control-sm', 'placeholder' => '1'],
+            'label_attr' => ['class' => 'form-label small'],
+        ], $rowCheckboxOpts));
+        $this->addKitField($builder, 'checkboxValueOff', TextType::class, array_merge([
+            'required'   => false,
+            'label'      => 'acroform_editor.modal_checkbox_value_off',
+            'attr'       => ['id' => 'acroform-edit-checkbox-value-off', 'class' => 'form-control form-control-sm', 'placeholder' => '0'],
+            'label_attr' => ['class' => 'form-label small'],
+        ], $rowCheckboxOpts));
+        $this->addKitField($builder, 'checkboxIcon', ChoiceType::class, array_merge([
+            'label'   => 'acroform_editor.modal_checkbox_icon',
+            'choices' => [
+                'acroform_editor.modal_checkbox_icon_check' => 'check',
+                'acroform_editor.modal_checkbox_icon_cross' => 'cross',
+                'acroform_editor.modal_checkbox_icon_dot'   => 'dot',
+            ],
+            'attr'       => ['id' => 'acroform-edit-checkbox-icon', 'class' => 'form-select form-select-sm'],
+            'label_attr' => ['class' => 'form-label small'],
+        ], $rowCheckboxOpts));
 
         $fontSizeOptions = [
             'required'   => false,
+            'label'      => 'acroform_editor.modal_font_size',
             'attr'       => ['id' => 'acroform-edit-font-size', 'class' => 'form-control form-control-sm', 'min' => 1, 'max' => 72],
             'label_attr' => ['class' => 'form-label small mb-0'],
         ];
         if ($fontSizes !== []) {
-            $builder->add('fontSize', ChoiceType::class, array_merge($fontSizeOptions, $rowFont, [
-                'choices' => array_combine($fontSizes, $fontSizes),
-                'attr'    => ['id' => 'acroform-edit-font-size', 'class' => 'form-select form-select-sm', 'required' => true],
+            $this->addKitField($builder, 'fontSize', ChoiceType::class, array_merge($fontSizeOptions, $rowFont, [
+                'choices'                   => array_combine($fontSizes, $fontSizes),
+                'choice_translation_domain' => false,
+                'attr'                      => ['id' => 'acroform-edit-font-size', 'class' => 'form-select form-select-sm', 'required' => true],
             ]));
         } else {
-            $builder->add('fontSize', IntegerType::class, array_merge($fontSizeOptions, $rowFont));
+            $this->addKitField($builder, 'fontSize', IntegerType::class, array_merge($fontSizeOptions, $rowFont));
         }
 
         $fontFamilyChoices = $this->normalizeFontFamilies($fontFamilies);
-        $builder->add('fontFamily', ChoiceType::class, array_merge([
-            'choices'    => $fontFamilyChoices,
-            'attr'       => ['id' => 'acroform-edit-font-family', 'class' => 'form-select form-select-sm'],
-            'label_attr' => ['class' => 'form-label small mb-0'],
-        ], $rowFont))
-            ->add('fontAutoSize', CheckboxType::class, array_merge([
-                'required'   => false,
-                'label_attr' => ['class' => 'form-check-label small'],
-                'attr'       => ['id' => 'acroform-edit-font-auto-size', 'class' => 'form-check-input'],
-            ], $rowFont));
+        $this->addKitField($builder, 'fontFamily', ChoiceType::class, array_merge([
+            'label'                     => 'acroform_editor.modal_font_family',
+            'choices'                   => $fontFamilyChoices,
+            'choice_translation_domain' => false,
+            'attr'                      => ['id' => 'acroform-edit-font-family', 'class' => 'form-select form-select-sm'],
+            'label_attr'                => ['class' => 'form-label small mb-0'],
+        ], $rowFont));
+        $this->addKitField($builder, 'fontAutoSize', CheckboxType::class, array_merge([
+            'required'   => false,
+            'label'      => 'acroform_editor.modal_font_auto_size',
+            'label_attr' => ['class' => 'form-check-label small'],
+            'attr'       => ['id' => 'acroform-edit-font-auto-size', 'class' => 'form-check-input'],
+        ], $rowFont));
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class'            => AcroFormFieldEdit::class,
+            'translation_domain'    => 'NowoPdfSignableBundle',
             'csrf_protection'       => false,
             'field_name_mode'       => $this->fieldNameMode,
             'field_name_choices'    => $this->fieldNameChoices,
@@ -296,7 +320,7 @@ final class AcroFormFieldEditType extends AbstractType
         return [
             'required'   => false,
             'label'      => 'acroform_editor.modal_field_name',
-            'attr'       => ['id' => 'acroform-edit-field-name', 'class' => 'form-control form-control-sm', 'placeholder' => 'PDF field name (/T)', 'autocomplete' => 'off'],
+            'attr'       => ['id' => 'acroform-edit-field-name', 'class' => 'form-control form-control-sm', 'placeholder' => 'acroform_editor.modal_field_name_placeholder', 'autocomplete' => 'off'],
             'label_attr' => ['class' => 'form-label small'],
         ];
     }

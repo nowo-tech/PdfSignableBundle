@@ -6,6 +6,7 @@ namespace Nowo\PdfSignableBundle\DependencyInjection;
 
 use Nowo\PdfSignableBundle\AcroForm\Storage\AcroFormOverridesStorageInterface;
 use Nowo\PdfSignableBundle\Controller\AcroFormOverridesController;
+use Nowo\PdfSignableBundle\NowoPdfSignableBundle;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -13,8 +14,10 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 
+use function array_key_exists;
 use function array_values;
 use function dirname;
+use function is_array;
 use function is_string;
 use function preg_replace;
 
@@ -137,7 +140,7 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
     }
 
     /**
-     * Prepends Twig paths and form theme, and Framework translator paths for the bundle.
+     * Prepends Twig paths and form theme, Framework translator paths and the FormKit profile for the bundle.
      *
      * @param ContainerBuilder $container The container builder
      */
@@ -165,6 +168,68 @@ final class PdfSignableExtension extends Extension implements PrependExtensionIn
                 ],
             ]);
         }
+
+        $this->prependFormKitProfile($container);
+    }
+
+    /**
+     * Registers the FormKit profile {@see NowoPdfSignableBundle::FORM_KIT_PROFILE} used by every bundle form type
+     * (#[FormKitConfig]): translation domain, no auto help / placeholder convention keys, Bootstrap 5 field classes.
+     * A host overrides it by defining `nowo_form_kit.profiles.pdf_signable` itself (the bundle then prepends nothing).
+     * Does not change the host `default_profile`.
+     */
+    private function prependFormKitProfile(ContainerBuilder $container): void
+    {
+        if (!$container->hasExtension('nowo_form_kit')) {
+            return;
+        }
+
+        foreach ($container->getExtensionConfig('nowo_form_kit') as $config) {
+            $profiles = $config['profiles'] ?? null;
+            if (is_array($profiles) && array_key_exists(NowoPdfSignableBundle::FORM_KIT_PROFILE, $profiles)) {
+                return;
+            }
+        }
+
+        $container->prependExtensionConfig('nowo_form_kit', [
+            'profiles' => [
+                NowoPdfSignableBundle::FORM_KIT_PROFILE => self::formKitProfile(),
+            ],
+        ]);
+    }
+
+    /**
+     * Default FormKit profile of the bundle. Field types set their own widget classes (`form-control-sm`, ids for the JS);
+     * these defaults only apply to options a type leaves unset.
+     *
+     * @return array<string, mixed>
+     */
+    public static function formKitProfile(): array
+    {
+        $input = ['attr' => ['class' => 'form-control']];
+
+        return [
+            'alias'              => NowoPdfSignableBundle::FORM_KIT_PROFILE,
+            'translation_domain' => NowoPdfSignableBundle::TRANSLATION_DOMAIN,
+            'auto_help'          => false,
+            'auto_placeholder'   => false,
+            'defaults'           => [
+                'attr'     => [],
+                'row_attr' => [],
+            ],
+            'field_types' => [
+                'text'     => $input,
+                'url'      => $input,
+                'number'   => $input,
+                'integer'  => $input,
+                'textarea' => $input,
+                'choice'   => ['attr' => ['class' => 'form-select']],
+                'checkbox' => [
+                    'attr'     => ['class' => 'form-check-input'],
+                    'row_attr' => ['class' => 'form-check'],
+                ],
+            ],
+        ];
     }
 
     /**

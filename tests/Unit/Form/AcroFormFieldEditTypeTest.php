@@ -6,6 +6,7 @@ namespace Nowo\PdfSignableBundle\Tests\Form;
 
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldEdit;
 use Nowo\PdfSignableBundle\Form\AcroFormFieldEditType;
+use Nowo\PdfSignableBundle\Tests\Support\FormKitTestSupport;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -35,7 +36,7 @@ final class AcroFormFieldEditTypeTest extends TypeTestCase
         $validator = Validation::createValidator();
 
         return [
-            new PreloadedExtension([$type], []),
+            FormKitTestSupport::extension([$type]),
             new ValidatorExtension($validator),
         ];
     }

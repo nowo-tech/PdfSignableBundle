@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Form;
 
+use Nowo\FormKitBundle\Attribute\FormKitConfig;
+use Nowo\FormKitBundle\Form\FormOptionsTrait;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
+use Nowo\PdfSignableBundle\NowoPdfSignableBundle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -41,8 +44,12 @@ use function is_string;
  *
  * @extends AbstractType<SignatureCoordinatesModel>
  */
+#[FormKitConfig(NowoPdfSignableBundle::FORM_KIT_PROFILE)]
 final class SignatureCoordinatesType extends AbstractType
 {
+    use FormKitFieldTrait;
+    use FormOptionsTrait;
+
     /**
      * @param string $examplePdfUrl Fallback PDF URL when pdf_url option is not set
      * @param array<string, array<string, mixed>> $namedConfigs Profiles by name from nowo_pdf_signable.signature.profiles
@@ -161,12 +168,12 @@ final class SignatureCoordinatesType extends AbstractType
 
         // --- PDF URL ---
         if ($options['url_field'] === false && $pdfUrl !== null && $pdfUrl !== '') {
-            $builder->add('pdfUrl', HiddenType::class, [
+            $this->addKitField($builder, 'pdfUrl', HiddenType::class, [
                 'empty_data' => $pdfUrl,
                 'attr'       => ['class' => 'pdf-url-input', 'data-pdf-signable' => 'pdf-url'],
             ]);
         } elseif ($options['url_mode'] === self::URL_MODE_CHOICE && $options['url_choices'] !== []) {
-            $builder->add('pdfUrl', ChoiceType::class, [
+            $this->addKitField($builder, 'pdfUrl', ChoiceType::class, [
                 'label'       => $options['url_label'],
                 'choices'     => $options['url_choices'],
                 'required'    => true,
@@ -174,7 +181,7 @@ final class SignatureCoordinatesType extends AbstractType
                 'placeholder' => $options['url_placeholder'],
             ]);
         } else {
-            $builder->add('pdfUrl', UrlType::class, [
+            $this->addKitField($builder, 'pdfUrl', UrlType::class, [
                 'label'    => $options['url_label'],
                 'required' => true,
                 'attr'     => [
@@ -187,17 +194,17 @@ final class SignatureCoordinatesType extends AbstractType
 
         // --- Unit ---
         if (!$options['unit_field']) {
-            $builder->add('unit', HiddenType::class, [
+            $this->addKitField($builder, 'unit', HiddenType::class, [
                 'empty_data' => (string) $options['unit_default'],
             ]);
         } elseif ($options['unit_mode'] === self::UNIT_MODE_INPUT) {
-            $builder->add('unit', TextType::class, [
+            $this->addKitField($builder, 'unit', TextType::class, [
                 'label'       => $options['unit_label'],
                 'attr'        => ['class' => 'unit-selector form-control form-control-sm', 'data-pdf-signable' => 'unit'],
                 'constraints' => [new Choice(choices: $units)],
             ]);
         } else {
-            $builder->add('unit', ChoiceType::class, [
+            $this->addKitField($builder, 'unit', ChoiceType::class, [
                 'label'   => $options['unit_label'],
                 'choices' => $unitChoices,
                 'attr'    => ['class' => 'unit-selector form-select form-select-sm', 'data-pdf-signable' => 'unit'],
@@ -206,17 +213,17 @@ final class SignatureCoordinatesType extends AbstractType
 
         // --- Origin ---
         if (!$options['origin_field']) {
-            $builder->add('origin', HiddenType::class, [
+            $this->addKitField($builder, 'origin', HiddenType::class, [
                 'empty_data' => (string) $options['origin_default'],
             ]);
         } elseif ($options['origin_mode'] === self::ORIGIN_MODE_INPUT) {
-            $builder->add('origin', TextType::class, [
+            $this->addKitField($builder, 'origin', TextType::class, [
                 'label'       => $options['origin_label'],
                 'attr'        => ['class' => 'origin-selector form-control form-control-sm', 'data-pdf-signable' => 'origin'],
                 'constraints' => [new Choice(choices: $origins)],
             ]);
         } else {
-            $builder->add('origin', ChoiceType::class, [
+            $this->addKitField($builder, 'origin', ChoiceType::class, [
                 'label'   => $options['origin_label'],
                 'choices' => $originChoices,
                 'attr'    => ['class' => 'origin-selector form-select form-select-sm', 'data-pdf-signable' => 'origin'],
@@ -387,10 +394,10 @@ final class SignatureCoordinatesType extends AbstractType
             $collectionConstraints,
             $options['collection_constraints'] ?? [],
         );
-        $builder->add('signatureBoxes', CollectionType::class, $collectionOptions);
+        $this->addKitField($builder, 'signatureBoxes', CollectionType::class, $collectionOptions);
 
         if ($options['signing_require_consent']) {
-            $builder->add('signingConsent', CheckboxType::class, [
+            $this->addKitField($builder, 'signingConsent', CheckboxType::class, [
                 'label'       => $options['signing_consent_label'],
                 'required'    => true,
                 'constraints' => [new IsTrue(message: 'signing.consent_required')],

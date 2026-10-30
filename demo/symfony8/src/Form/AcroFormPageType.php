@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Form;
 
+use Nowo\FormKitBundle\Attribute\FormKitConfig;
+use Nowo\FormKitBundle\Form\FormOptionsTrait;
 use Nowo\PdfSignableBundle\Form\AcroFormEditorType;
 use Nowo\PdfSignableBundle\Model\AcroFormPageModel;
 use Symfony\Component\Form\AbstractType;
@@ -21,12 +23,15 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  * Accepts optional "acroform_options" to customize the AcroForm block per page
  * (e.g. config: 'with_fonts', document_key, label_mode, font_sizes).
  */
+#[FormKitConfig('pdf_signable')]
 final class AcroFormPageType extends AbstractType
 {
+    use FormOptionsTrait;
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $acroformOptions = array_merge([], $options['acroform_options'] ?? []);
-        $builder->add('acroFormEditor', AcroFormEditorType::class, array_merge([
+        $this->addWithDefaults($builder, 'acroFormEditor', AcroFormEditorType::class, array_merge([
             'label'  => false,
             'mapped' => false,
         ], $acroformOptions));

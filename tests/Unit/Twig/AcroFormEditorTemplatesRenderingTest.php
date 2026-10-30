@@ -6,6 +6,7 @@ namespace Nowo\PdfSignableBundle\Tests\Unit\Twig;
 
 use Nowo\PdfSignableBundle\AcroForm\AcroFormFieldEdit;
 use Nowo\PdfSignableBundle\Form\AcroFormFieldEditType;
+use Nowo\PdfSignableBundle\Tests\Support\FormKitTestSupport;
 use Nowo\PdfSignableBundle\Twig\AcroFormFormsTwigExtension;
 use Nowo\PdfSignableBundle\Twig\NowoPdfSignableTwigExtension;
 use PHPUnit\Framework\TestCase;
@@ -16,7 +17,6 @@ use Symfony\Bridge\Twig\Form\TwigRendererEngine;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormRenderer;
 use Symfony\Component\Form\Forms;
-use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
@@ -64,7 +64,7 @@ final class AcroFormEditorTemplatesRenderingTest extends TestCase
     private function formFactory(): FormFactoryInterface
     {
         return Forms::createFormFactoryBuilder()
-            ->addExtension(new PreloadedExtension([new AcroFormFieldEditType()], []))
+            ->addExtension(FormKitTestSupport::extension([new AcroFormFieldEditType()]))
             ->getFormFactory();
     }
 

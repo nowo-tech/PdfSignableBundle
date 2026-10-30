@@ -6,11 +6,11 @@ namespace Nowo\PdfSignableBundle\Tests\Form;
 
 use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Model\SignatureBoxModel;
+use Nowo\PdfSignableBundle\Tests\Support\FormKitTestSupport;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormExtensionInterface;
-use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\Constraints\Choice;
@@ -33,7 +33,7 @@ final class SignatureBoxTypeTest extends TypeTestCase
         $validator = Validation::createValidator();
 
         return [
-            new PreloadedExtension([$type], []),
+            FormKitTestSupport::extension([$type]),
             new ValidatorExtension($validator),
         ];
     }

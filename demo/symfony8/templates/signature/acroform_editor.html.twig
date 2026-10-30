@@ -16,7 +16,6 @@
   {% endif %}
 
   <div class="container-fluid">
-    {% form_theme form '@NowoPdfSignableBundle/form/theme.html.twig' %}
     {{ form_start(form, { attr: { id: 'acroformPageForm' } }) }}
     {% if form.vars.submitted and not form.vars.valid %}
       <div class="alert alert-danger alert-dismissible fade show" role="alert">

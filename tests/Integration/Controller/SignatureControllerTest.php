@@ -14,6 +14,7 @@ use Nowo\PdfSignableBundle\Form\SignatureBoxType;
 use Nowo\PdfSignableBundle\Form\SignatureCoordinatesType;
 use Nowo\PdfSignableBundle\Model\SignatureCoordinatesModel;
 use Nowo\PdfSignableBundle\Proxy\ProxyUrlValidator;
+use Nowo\PdfSignableBundle\Tests\Support\FormKitTestSupport;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -22,7 +23,6 @@ use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryBuilder;
 use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -110,10 +110,7 @@ final class SignatureControllerTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder())
             ->addExtension(new HttpFoundationExtension())
-            ->addExtension(new PreloadedExtension(
-                [new SignatureBoxType(), new SignatureCoordinatesType('', [])],
-                [],
-            ))
+            ->addExtension(FormKitTestSupport::extension([new SignatureBoxType(), new SignatureCoordinatesType('', [])]))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
 

@@ -22,6 +22,12 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 final class NowoPdfSignableBundle extends Bundle
 {
+    /** FormKit profile (nowo_form_kit.profiles.pdf_signable) used by every bundle form type (REQ-TWIG-005 rule 11). */
+    public const FORM_KIT_PROFILE = 'pdf_signable';
+
+    /** Translation domain of the bundle (labels, help, form errors). */
+    public const TRANSLATION_DOMAIN = 'NowoPdfSignableBundle';
+
     public function build(ContainerBuilder $container): void
     {
         $container->addCompilerPass(new TwigPathsPass());
