@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.9.0](#to-390)
 - [To 3.8.1](#to-381)
 - [To 3.8.0](#to-380)
 - [To 3.7.0](#to-370)
@@ -82,6 +83,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.9.0
+
+From **3.8.1**:
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 - **New required dependency `nowo-tech/form-kit-bundle` (`^2.16`, REQ-TWIG-005 rule 11):** register `Nowo\FormKitBundle\NowoFormKitBundle::class => ['all' => true]` in `config/bundles.php` (Symfony Flex does it on `composer update`). The bundle form types get their field options from FormKit; without the FormKit bundle registered they fail with an uninitialized `FormOptionsMerger`.
 - **Form theme through the FormKit profile:** field classes / translation domain of the bundle forms come from `nowo_form_kit.profiles.pdf_signable` (prepended by the bundle; see [CONFIGURATION](CONFIGURATION.md#formkit-profile)). To change them, define that profile in `config/packages/nowo_form_kit.yaml` instead of overriding the field options. Classes set by the types themselves (`form-control-sm`, the `acroform-edit-*` ids the JS reads) are unchanged. `@NowoPdfSignableBundle/form/theme.html.twig` stays registered in `twig.form_themes`; an `acroform/_edit_modal_body.html.twig` override no longer needs `{% form_theme %}`.
