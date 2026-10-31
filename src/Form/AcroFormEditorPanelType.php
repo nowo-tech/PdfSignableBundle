@@ -31,7 +31,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 #[FormKitConfig(NowoPdfSignableBundle::FORM_KIT_PROFILE)]
 final class AcroFormEditorPanelType extends AbstractType
 {
-    use FormKitFieldTrait;
     use FormOptionsTrait;
 
     /** HTML ids acroform-editor.js relies on. */
@@ -47,7 +46,7 @@ final class AcroFormEditorPanelType extends AbstractType
     #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $this->addKitField($builder, 'documentKey', TextType::class, [
+        $this->addWithDefaults($builder, 'documentKey', TextType::class, [
             'mapped'     => false,
             'required'   => false,
             'data'       => (string) $options['document_key'],
@@ -58,7 +57,7 @@ final class AcroFormEditorPanelType extends AbstractType
                 'placeholder' => 'acroform_editor.document_key_placeholder',
             ],
         ]);
-        $this->addKitField($builder, 'overridesJson', TextareaType::class, [
+        $this->addWithDefaults($builder, 'overridesJson', TextareaType::class, [
             'mapped'     => false,
             'required'   => false,
             'label'      => 'acroform_editor.draft_label',

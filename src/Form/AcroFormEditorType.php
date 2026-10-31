@@ -33,7 +33,6 @@ use function is_string;
 #[FormKitConfig(NowoPdfSignableBundle::FORM_KIT_PROFILE)]
 final class AcroFormEditorType extends AbstractType
 {
-    use FormKitFieldTrait;
     use FormOptionsTrait;
 
     /**
@@ -94,7 +93,7 @@ final class AcroFormEditorType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $this->addKitField($builder, 'pdfUrl', UrlType::class, [
+        $this->addWithDefaults($builder, 'pdfUrl', UrlType::class, [
             'label'    => 'page.url_label',
             'required' => false,
             'attr'     => [

@@ -4,7 +4,7 @@
     "type": "project",
     "license": "MIT",
     "require": {
-        "nowo-tech/form-kit-bundle": "^2.16",
+        "nowo-tech/form-kit-bundle": "^2.17",
         "nowo-tech/pdf-signable-bundle": "*@dev",
         "php": ">=8.2",
         "symfony/asset": "^8.0",

@@ -84,6 +84,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## Unreleased
 
+`nowo-tech/form-kit-bundle` is now required at `^2.17` (was `^2.16`); update both packages together:
+
+```bash
+composer update nowo-tech/pdf-signable-bundle nowo-tech/form-kit-bundle
+```
+
+No configuration or template change: the rendered forms are the same. `FormKitFieldTrait` (an internal helper of the bundle form types) is removed; it was never part of the public API.
+
 ## To 3.9.0
 
 From **3.8.1**:
