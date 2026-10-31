@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.9.1](#to-391)
 - [To 3.9.0](#to-390)
 - [To 3.8.1](#to-381)
 - [To 3.8.0](#to-380)
@@ -83,6 +84,14 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.9.1
+
+From **3.9.0**:
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
 
 `nowo-tech/form-kit-bundle` is now required at `^2.17` (was `^2.16`); update both packages together:
 

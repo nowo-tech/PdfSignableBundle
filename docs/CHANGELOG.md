@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.9.1] - 2026-10-31](#391---2026-10-31)
 - [[3.9.0] - 2026-10-30](#390---2026-10-30)
 - [[3.8.1] - 2026-10-30](#381---2026-10-30)
 - [[3.8.0] - 2026-10-30](#380---2026-10-30)
@@ -65,6 +66,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-02-09](#100---2026-02-09)
 
 ## [Unreleased]
+
+## [3.9.1] - 2026-10-31
+
+Requires FormKit ^2.17; local label:false workaround removed (forms render identically). See [UPGRADING](UPGRADING.md#to-391).
 
 ### Changed
 
@@ -1021,7 +1026,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.9.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.9.1...HEAD
+[3.9.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.9.1
 [3.9.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.9.0
 [3.8.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.8.1
 [3.8.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.8.0
