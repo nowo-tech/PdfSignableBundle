@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.9.2] - 2026-11-09](#392---2026-11-09)
 - [[3.9.1] - 2026-10-31](#391---2026-10-31)
 - [[3.9.0] - 2026-10-30](#390---2026-10-30)
 - [[3.8.1] - 2026-10-30](#381---2026-10-30)
@@ -66,6 +67,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-02-09](#100---2026-02-09)
 
 ## [Unreleased]
+
+## [3.9.2] - 2026-11-09
+
+Patch: bundled pdf.js 6.5.438, assets rebuilt.
+
+### Changed
+
+- **Dependencies:** the bundled `pdfjs-dist` goes from 6.4.299 to 6.5.438, including `pdf.worker.min.js` (built with vite 8.3.6 and sass 1.108.0); `src/Resources/public/js` is rebuilt and now matches a clean build (the 3.9.1 assets were slightly behind). Dev-only: Symfony security lock update and phpstan. No API or configuration change.
 
 ## [3.9.1] - 2026-10-31
 
@@ -134,7 +143,7 @@ Security: AcroForm endpoints and the PDF proxy require access (security.access_r
   `PdfSignableAccessCheckerInterface`: by default the user needs one of `security.access_roles` (`[ROLE_USER]`; an
   empty list denies), which needs SecurityBundle — without it the container refuses to compile. Replace the check
   with `security.access_checker` or, for local demos only, `security.allow_unauthenticated: true`.
-  **Breaking for hosts that used these endpoints anonymously** — see [UPGRADING](UPGRADING.md#unreleased).
+  **Breaking for hosts that used these endpoints anonymously** — see [UPGRADING](UPGRADING.md#to-392).
 
 ## [3.5.0] - 2026-10-26
 
@@ -147,7 +156,7 @@ Forms in the bundle views are Symfony Form Types rendered with form_start / chil
 
 ### Changed
 
-- AcroForm editor (REQ-TWIG-005): `editor_root.html.twig` renders the document key / draft JSON controls from `AcroFormEditorPanelType`, and `_edit_modal_body.html.twig` always renders `AcroFormFieldEditType` (passed or built from config) through the child loop instead of the raw HTML fallback; the edit fields are no longer wrapped in a nested form element. Same ids and JS contract; see [UPGRADING](UPGRADING.md#unreleased).
+- AcroForm editor (REQ-TWIG-005): `editor_root.html.twig` renders the document key / draft JSON controls from `AcroFormEditorPanelType`, and `_edit_modal_body.html.twig` always renders `AcroFormFieldEditType` (passed or built from config) through the child loop instead of the raw HTML fallback; the edit fields are no longer wrapped in a nested form element. Same ids and JS contract; see [UPGRADING](UPGRADING.md#to-392).
 
 ## [3.4.6] - 2026-10-25
 
@@ -1026,7 +1035,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.9.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.9.2...HEAD
+[3.9.2]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.9.2
 [3.9.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.9.1
 [3.9.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.9.0
 [3.8.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.8.1

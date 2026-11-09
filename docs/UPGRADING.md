@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.9.2](#to-392)
 - [To 3.9.1](#to-391)
 - [To 3.9.0](#to-390)
 - [To 3.8.1](#to-381)
@@ -84,6 +85,16 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.9.2
+
+From **3.9.1**:
+
+```bash
+composer update nowo-tech/pdf-signable-bundle
+```
+
+No configuration or API change. The shipped assets were rebuilt with the updated front-end dependencies; clear the asset cache (`assets:install`) after updating.
 
 ## To 3.9.1
 
