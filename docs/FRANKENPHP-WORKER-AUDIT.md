@@ -3,8 +3,8 @@
 | Field | Value |
 |-------|-------|
 | Package | `nowo-tech/pdf-signable-bundle` (`symfony-bundle`) |
-| Audited revision | `v3.1.7` (W-01 fix on top of `v3.1.6` / `749abc9`) |
-| Audit date | 2026-09-24 |
+| Audited revision | **3.10.1**: re-review of `src/` after 3.10 (framework-free event accessors, `SensitiveValues`) + kept-alive kernel worker test; earlier full review `v3.1.7` (W-01 fix on top of `v3.1.6` / `749abc9`) |
+| Audit date | 2026-11-12 (3.10.1 re-review and worker test); 2026-09-24 (full review) |
 | Method | Manual review of every file under `src/` (controllers, listeners, form types, Twig extension, storage, checker, command, DI extension, compiler passes, `Resources/config`) |
 | **Verdict** | ✅ **Compatible** — safe under FrankenPHP worker with **kernel not reset** between requests (scenario B). No per-request state in services; W-01 temp-file leak fixed in 3.1.7. Residual Low notes (W-02 peak buffer, W-03 DNS) are ops/hardening, not cross-request state leaks. |
 
@@ -19,6 +19,7 @@
   - [W-03 — SSRF host resolution has no bundle-level timeout (Low)](#w-03--ssrf-host-resolution-has-no-bundle-level-timeout-low)
   - [W-04 — `HttpClient::create()` fallback builds a new client per request (Info)](#w-04--httpclientcreate-fallback-builds-a-new-client-per-request-info)
   - [W-05 — Debug dependency check spawns a Python process on bundle GET pages (Info)](#w-05--debug-dependency-check-spawns-a-python-process-on-bundle-get-pages-info)
+- [Worker test](#worker-test)
 - [Usage recommendations in worker mode](#usage-recommendations-in-worker-mode)
 - [Re-audit triggers](#re-audit-triggers)
 
@@ -30,6 +31,11 @@ FrankenPHP worker mode boots the Symfony kernel once per worker and serves many 
 - **B — no reset at all:** nothing is reset; any per-request state kept in a service leaks into the next request.
 
 A bundle that is safe under **B** is safe under **A** and under classic mode / PHP-FPM.
+
+With the stock Symfony kernel, `FRANKENPHP_RESET_KERNEL=false` alone is scenario **A** (`Kernel::handle()` still runs
+`services_resetter` before every request after the first). Scenario **B** is a host that removes, replaces or bypasses
+the resetter (or drives `http_kernel` directly), a Messenger consumer started with `--no-reset`, or a long-running
+console command. The bundle is checked against **B** (REQ-RUNTIME-002).
 
 ## Summary
 
@@ -98,6 +104,26 @@ Models and events (`SignatureCoordinatesModel`, `SignatureBoxModel`, `AcroFormOv
 - **Recommendation:** keep `debug: false` in production.
 
 No other findings. AcroForm overrides live in the current user's session, resolved on every call, so there is no cross-user leak path in the bundle.
+
+## Worker test
+
+`tests/Integration/Worker/KeptAliveKernelWorkerTest.php` (3.10.1) boots **one** kernel (`WorkerHostKernel`: the
+bundle defaults with the ROLE_USER check through symfony/security-bundle, two in-memory users over stateless HTTP
+Basic, the proxy on with an allowlist, a `MockHttpClient` upstream and a deterministic DNS for the SSRF check) and
+drives `http_kernel` handle / terminate directly, so `services_resetter` never runs (scenario **B**). It runs **500**
+iterations alternating `alice` and `bob`, each a signature form POST (JSON answer) and a proxy GET, so **1,000**
+requests through the real `SignatureController`:
+
+- the JSON answer holds only that request's box, signer name and coordinates;
+- the `SIGNATURE_COORDINATES_SUBMITTED` event, read by a host listener through the framework-free accessors, carries
+  only that request's PDF URL, signer, client IP, audit IP and user agent (exactly one event per request);
+- the proxy answers with that user's document (`%PDF-1.4 <user>.example/doc-<i>.pdf`) after the role check, the
+  allowlist and the SSRF check;
+- memory after `gc_collect_cycles()` stays within **4 MiB** of the value after a 50-iteration warm-up.
+
+The bundle has no Doctrine entity manager (rule 4 does not apply). A host that disables the services resetter must
+still clear its own entity managers and Symfony's own per-request services (for example the security token storage)
+at every boundary (REQ-RUNTIME-002 rule 7).
 
 ## Usage recommendations in worker mode
 
