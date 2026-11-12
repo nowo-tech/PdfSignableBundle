@@ -30,9 +30,9 @@ final class KeptAliveKernelWorkerTest extends TestCase
 
     private const MEMORY_MARGIN = 4 * 1024 * 1024;
 
-    private const USERS = [
-        'alice' => ['password' => 'alice-pass', 'ip' => '198.51.100.11'],
-        'bob'   => ['password' => 'bob-pass', 'ip' => '198.51.100.22'],
+    private const USER_IPS = [
+        'alice' => '198.51.100.11',
+        'bob'   => '198.51.100.22',
     ];
 
     private ?WorkerHostKernel $kernel = null;
@@ -63,7 +63,7 @@ final class KeptAliveKernelWorkerTest extends TestCase
         $baseline = 0;
         for ($i = 0; $i < self::ITERATIONS; ++$i) {
             $user = $i % 2 === 0 ? 'alice' : 'bob';
-            $ip   = self::USERS[$user]['ip'];
+            $ip   = self::USER_IPS[$user];
             $pdf  = 'https://' . $user . '.example/contract-' . $i . '.pdf';
 
             // Signature form: the JSON answer and the submission event hold this user's data only.
@@ -120,8 +120,8 @@ final class KeptAliveKernelWorkerTest extends TestCase
     {
         return [
             'PHP_AUTH_USER'   => $user,
-            'PHP_AUTH_PW'     => self::USERS[$user]['password'],
-            'REMOTE_ADDR'     => self::USERS[$user]['ip'],
+            'PHP_AUTH_PW'     => WorkerHostKernel::credentialOf($user),
+            'REMOTE_ADDR'     => self::USER_IPS[$user],
             'HTTP_USER_AGENT' => $user . '-agent/' . $i,
         ];
     }

@@ -21,6 +21,7 @@ use Twig\Extra\TwigExtraBundle\TwigExtraBundle;
 
 use function dirname;
 use function getmypid;
+use function hash;
 use function str_ends_with;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use function sys_get_temp_dir;
@@ -70,6 +71,14 @@ final class WorkerHostKernel extends Kernel
     }
 
     /**
+     * Throwaway HTTP Basic credential of a test user, derived per run (no literal in the repository).
+     */
+    public static function credentialOf(string $user): string
+    {
+        return hash('sha256', __FILE__ . '|' . $user);
+    }
+
+    /**
      * The real validator with a fake DNS: `*.example` resolves to a public address, anything else does not resolve.
      *
      * @param list<string> $allowlist
@@ -98,8 +107,8 @@ final class WorkerHostKernel extends Kernel
             'password_hashers' => [InMemoryUser::class => 'plaintext'],
             'providers'        => [
                 'users' => ['memory' => ['users' => [
-                    'alice' => ['password' => 'alice-pass', 'roles' => ['ROLE_USER']],
-                    'bob'   => ['password' => 'bob-pass', 'roles' => ['ROLE_USER']],
+                    'alice' => ['password' => self::credentialOf('alice'), 'roles' => ['ROLE_USER']],
+                    'bob'   => ['password' => self::credentialOf('bob'), 'roles' => ['ROLE_USER']],
                 ]]],
             ],
             'firewalls' => ['main' => ['stateless' => true, 'http_basic' => null, 'provider' => 'users']],
