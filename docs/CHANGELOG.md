@@ -68,6 +68,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Framework-free event accessors (REQ-ARCH-001 rules 1 and 3).** Immutable `Submission\SignatureSubmission` (PDF
+  URL, unit, origin, `SignatureBox` boxes, consent, audit metadata; `fromModel()`, `toArray()` equal to the model's,
+  `toModel()`) and `Submission\PdfRequestContext` (method, path, locale, client IP, user agent).
+  `SignatureCoordinatesSubmittedEvent` / `BatchSignRequestedEvent`: `getSubmission()`, `getRequestContext()`.
+  `PdfSignRequestEvent`: built from a model or a submission, request optional, `getSubmission()`, `getRequestContext()`,
+  `hasRequest()`, `setResult()` / `getResult()`. `PdfProxyRequestEvent`: `getRequestContext()`, `respondWith()`.
+  `PdfProxyResponseEvent`: `getRequestContext()`, `getContent()`, `setContent()`, `getStatusCode()`, `setHeader()`.
+  `AcroFormModifiedPdfProcessedEvent`: `getRequestContext()`.
+- Audit metadata, signature images, client IP and user agent live in an internal `WeakMap`, not in VO properties:
+  VarDumper, `var_export()`, `print_r()`, `json_encode()` and `(array)` casts do not show them; the VOs cannot be
+  cloned or serialized.
+- USAGE "Standard Symfony host and DDD / hexagonal host"; EVENTS and UPGRADING updated.
+- Tests: model versus submission equivalence (exact `toArray()`, gapped box keys, signature data, audit), old versus
+  new accessors on every event, `respondWith()` versus `setResponse()`, and a DDD host kernel where a framework-free
+  listener and a standard listener see the same submission through the real controller (JSON response unchanged).
+
+### Deprecated
+
+- `getCoordinates()` and `getRequest()` on the submission and sign-request events, `getRequest()` on the proxy and
+  AcroForm process events, `setResponse()` / `getResponse()` on `PdfSignRequestEvent`, `setResponse()` on
+  `PdfProxyRequestEvent`, `getResponse()` / `setResponse()` on `PdfProxyResponseEvent`. Removed in 4.0.
+
+Signature data, audit metadata and the controller flow (validation, SSRF checks, events, JSON / redirect) are
+unchanged. REQ-RUNTIME-002: no new service state (Igor 54/54 OK).
+
 ## [3.9.2] - 2026-11-09
 
 Patch: bundled pdf.js 6.5.438, assets rebuilt.

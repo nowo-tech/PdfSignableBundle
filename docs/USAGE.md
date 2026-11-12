@@ -43,6 +43,9 @@
   - [Overriding the layout](#overriding-the-layout)
 - [Form submit behavior](#form-submit-behavior)
 - [PDF proxy](#pdf-proxy)
+- [Standard Symfony host and DDD / hexagonal host](#standard-symfony-host-and-ddd--hexagonal-host)
+  - [Standard Symfony host (default)](#standard-symfony-host-default)
+  - [DDD / hexagonal host (opt-in)](#ddd--hexagonal-host-opt-in)
 
 For a high-level description of how the form, viewer and script interact (with diagrams), see [WORKFLOW](WORKFLOW.md).
 
@@ -708,3 +711,60 @@ The bundle’s JavaScript runs on submit to re-index the collection field names 
 The route `GET /pdf-signable/proxy?url=<encoded_url>` returns the PDF content at the given URL. Useful to avoid CORS when the PDF is on another domain. If you disable the proxy (`proxy_enabled: false`), that route returns 403.
 
 When **proxy_url_allowlist** is set in the bundle configuration, the proxy only fetches URLs that match one of the entries (host, URL prefix, or regex). See [Configuration](CONFIGURATION.md).
+
+## Standard Symfony host and DDD / hexagonal host
+
+The bundle is a presentation bundle: form types, the viewer, the PDF proxy and AcroForm endpoints. It has no Doctrine
+mapping and stores nothing; your listeners decide what to persist. Both kinds of host are supported (REQ-ARCH-001).
+
+### Standard Symfony host (default)
+
+Import the routes, render `SignatureCoordinatesType` (or use the bundle controller) and listen to the events. Up to
+3.9 listeners read the mutable `SignatureCoordinatesModel` (`getCoordinates()`) and the HttpFoundation request
+(`getRequest()`); both still work in 3.x and are deprecated since 3.10 (removed in 4.0).
+
+### DDD / hexagonal host (opt-in)
+
+Since 3.10 every event has framework-free accessors, so a domain listener needs no mapper of its own:
+
+| Need | Accessor | Type |
+|---|---|---|
+| Submitted coordinates, boxes, consent, audit | `getSubmission()` | `Submission\SignatureSubmission` (immutable; boxes are `Submission\SignatureBox`) |
+| Method, path, locale, client IP, user agent | `getRequestContext()` | `Submission\PdfRequestContext` |
+| Sign request outcome | `PdfSignRequestEvent::setResult()` / `getResult()` | `?string` |
+| Proxy short-circuit / response changes | `respondWith()`; `getContent()`, `setContent()`, `setHeader()` | scalars |
+
+```php
+use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
+use Nowo\PdfSignableBundle\Event\SignatureCoordinatesSubmittedEvent;
+use Nowo\PdfSignableBundle\Submission\SignatureBox;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+
+#[AsEventListener(event: PdfSignableEvents::SIGNATURE_COORDINATES_SUBMITTED)]
+final readonly class RequestSignaturesOnSubmit   // infrastructure adapter
+{
+    public function __construct(private RequestSignatures $useCase) {}   // your application service
+
+    public function __invoke(SignatureCoordinatesSubmittedEvent $event): void
+    {
+        $submission = $event->getSubmission();
+        $this->useCase->handle(
+            document: $submission->pdfUrl,
+            signers: array_map(static fn (SignatureBox $box): string => $box->name, array_values($submission->boxes)),
+            clientIp: $event->getRequestContext()->getClientIp(),
+        );
+    }
+}
+```
+
+- In your own controller, map the valid form data with `SignatureSubmission::fromModel($form->getData())` and call
+  your use case directly; no event is needed.
+- To request a PKI signature outside HTTP, dispatch `new PdfSignRequestEvent($submission, options: [...])` and read
+  `getResult()`.
+- `SignatureSubmission::toArray()` is the same array as `SignatureCoordinatesModel::toArray()`; `toModel()` gives the
+  mutable model back for code that still needs it.
+- The audit metadata, the signature images and the client IP / user agent are kept outside the VOs' properties: a
+  dump, `var_export()` or `(array)` cast (logs, error pages) does not show them. The VOs cannot be cloned or serialized;
+  export with `toArray()` on purpose.
+- The bundle keeps no request state in services (FrankenPHP worker mode with kernel reset off, see
+  [FRANKENPHP-WORKER-AUDIT](FRANKENPHP-WORKER-AUDIT.md)).

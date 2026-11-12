@@ -1826,7 +1826,7 @@ final class AcroFormOverridesControllerTest extends TestCase
         try {
             $controller = $this->createController(
                 fieldsExtractorScript: $script,
-                createTempFile: static fn (string $prefix) => throw new RuntimeException('temp failure'),
+                createTempFile: static fn (string $prefix): never => throw new RuntimeException('temp failure'),
             );
             $request = Request::create('/pdf-signable/acroform/overrides/load', 'POST', [], [], [], [
                 'CONTENT_TYPE'      => 'application/json',

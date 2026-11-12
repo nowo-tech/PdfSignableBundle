@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Nowo\PdfSignableBundle\Event;
 
+use Nowo\PdfSignableBundle\Submission\PdfRequestContext;
+use Nowo\PdfSignableBundle\Submission\PdfRequestContextFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\Event;
 
@@ -43,9 +45,19 @@ final class AcroFormModifiedPdfProcessedEvent extends Event
      * Returns the HTTP request that triggered the process endpoint.
      *
      * @return Request The POST request with pdf_content and optional document_key
+     *
+     * @deprecated since 3.10, use {@see getRequestContext()}; removed in 4.0
      */
     public function getRequest(): Request
     {
         return $this->request;
+    }
+
+    /**
+     * Method, path, locale, client IP and user agent of the process request (3.10, REQ-ARCH-001 rule 3).
+     */
+    public function getRequestContext(): PdfRequestContext
+    {
+        return PdfRequestContextFactory::fromRequest($this->request);
     }
 }
