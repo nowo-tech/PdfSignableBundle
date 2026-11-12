@@ -49,8 +49,13 @@ Dispatched when the signature coordinates form is submitted and valid (bundle co
 
 ### Payload
 
+- `getSubmission(): SignatureSubmission` (3.10) — immutable snapshot: `pdfUrl`, `unit`, `origin`, `boxes`
+  (`SignatureBox`: `name`, `page`, `x`, `y`, `width`, `height`, `angle`, `signedAt`, `getSignatureData()`),
+  `signingConsent`, `getAuditMetadata()` / `getAuditValue()`, `toArray()` (same array as the model's).
+- `getRequestContext(): PdfRequestContext` (3.10) — `method`, `path`, `locale`, `getClientIp()`, `getUserAgent()`.
 - `getCoordinates(): SignatureCoordinatesModel` — the submitted model (pdfUrl, unit, origin, signatureBoxes).
-- `getRequest(): Request` — the current request.
+  **Deprecated since 3.10** (use `getSubmission()`), removed in 4.0.
+- `getRequest(): Request` — the current request. **Deprecated since 3.10** (use `getRequestContext()`), removed in 4.0.
 
 ### Example: persist coordinates
 
@@ -64,8 +69,8 @@ class PersistSignatureCoordinatesListener
 {
     public function __invoke(SignatureCoordinatesSubmittedEvent $event): void
     {
-        $model = $event->getCoordinates();
-        // Persist $model->getPdfUrl(), $model->getSignatureBoxes(), etc.
+        $submission = $event->getSubmission();
+        // Persist $submission->pdfUrl, $submission->boxes (name, page, x, y, …), $submission->getAuditMetadata(), etc.
     }
 }
 ```
@@ -84,6 +89,8 @@ if ($form->isSubmitted() && $form->isValid()) {
         new SignatureCoordinatesSubmittedEvent($model, $request),
         PdfSignableEvents::SIGNATURE_COORDINATES_SUBMITTED
     );
+    // Or, in a DDD host, map it and call your own use case:
+    // $this->signDocument->handle(SignatureSubmission::fromModel($model));
     // redirect or return JSON
 }
 ```
@@ -98,8 +105,9 @@ Dispatched when the form is submitted with the **Sign all** button (`batch_sign=
 
 ### Payload
 
-- `getCoordinates(): SignatureCoordinatesModel` — the submitted model (all boxes).
-- `getRequest(): Request` — the POST request.
+- `getSubmission(): SignatureSubmission`, `getRequestContext(): PdfRequestContext` (3.10) — as above.
+- `getCoordinates(): SignatureCoordinatesModel` — the submitted model (all boxes). **Deprecated since 3.10.**
+- `getRequest(): Request` — the POST request. **Deprecated since 3.10.**
 - `getBoxTarget(): ?array` — `null` = all boxes, or list of indices/names to sign.
 
 ### Example
@@ -116,15 +124,17 @@ Dispatched when your application requests a digital (PKI/PAdES) signature. The b
 
 ### Payload
 
-- `getCoordinates(): SignatureCoordinatesModel` — coordinates and boxes.
-- `getRequest(): Request` — current request.
+- Constructor (3.10): `new PdfSignRequestEvent(SignatureCoordinatesModel|SignatureSubmission $coordinates, ?Request $request = null, array $options = [])` — create it from a `SignatureSubmission` without a request (command handler, Messenger message).
+- `getSubmission(): SignatureSubmission`, `getRequestContext(): ?PdfRequestContext` (null without a request), `hasRequest(): bool` (3.10).
+- `setResult(?string)` / `getResult(): ?string` (3.10) — the signing outcome (signed PDF bytes or a storage reference).
+- `getCoordinates(): SignatureCoordinatesModel` — coordinates and boxes. **Deprecated since 3.10.**
+- `getRequest(): Request` — current request (throws without one). **Deprecated since 3.10.**
 - `getOptions(): array` — optional (e.g. signing_profile, box_indices).
-- `setResponse(?Response): void` — set a response to return (e.g. redirect to certificate picker).
-- `getResponse(): ?Response` — response set by a listener.
+- `setResponse(?Response): void` / `getResponse(): ?Response` — a response to return. **Deprecated since 3.10** (use `setResult()` and build the response in your controller).
 
 ### Example
 
-Dispatch from your code when the user clicks "Sign with certificate", then in the listener call your signing service and optionally `$event->setResponse($response)`.
+Dispatch from your code when the user clicks "Sign with certificate", then in the listener call your signing service and `$event->setResult($signedPdfPath)`.
 
 ---
 
@@ -137,8 +147,10 @@ Dispatched before the proxy fetches the PDF from the given URL.
 ### Payload
 
 - `getUrl(): string` / `setUrl(string): void` — URL to fetch (you can change it).
-- `getRequest(): Request` — the request to the proxy.
-- `setResponse(Response): void` — set a custom response to skip the HTTP fetch (e.g. serve from cache).
+- `getRequestContext(): PdfRequestContext` (3.10) — method, path, locale, client IP, user agent.
+- `respondWith(int $status, string $body = '', array $headers = []): void` (3.10) — skip the HTTP fetch and answer with this (e.g. serve from cache).
+- `getRequest(): Request` — the request to the proxy. **Deprecated since 3.10.**
+- `setResponse(Response): void` — set a custom response to skip the HTTP fetch. **Deprecated since 3.10** (use `respondWith()`).
 - `hasResponse(): bool` — whether a custom response was set.
 
 ### Example: serve from cache
@@ -147,7 +159,6 @@ Dispatched before the proxy fetches the PDF from the given URL.
 use Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent;
 use Nowo\PdfSignableBundle\Event\PdfSignableEvents;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
-use Symfony\Component\HttpFoundation\Response;
 
 #[AsEventListener(event: PdfSignableEvents::PDF_PROXY_REQUEST)]
 class PdfProxyCacheListener
@@ -156,7 +167,7 @@ class PdfProxyCacheListener
     {
         $url = $event->getUrl();
         // If you have cached content for $url:
-        // $event->setResponse(new Response($cachedContent, 200, ['Content-Type' => 'application/pdf']));
+        // $event->respondWith(200, $cachedContent, ['Content-Type' => 'application/pdf']);
     }
 }
 ```
@@ -172,8 +183,10 @@ Dispatched after the proxy successfully fetches the PDF. You can replace or wrap
 ### Payload
 
 - `getUrl(): string` — URL that was fetched.
-- `getRequest(): Request` — the request to the proxy.
-- `getResponse(): Response` / `setResponse(Response): void` — the response (you can replace it).
+- `getRequestContext(): PdfRequestContext` (3.10).
+- `getContent(): string` / `setContent(string): void`, `getStatusCode(): int`, `setHeader(string, string): void` (3.10) — read or change the PDF that is sent.
+- `getRequest(): Request` — the request to the proxy. **Deprecated since 3.10.**
+- `getResponse(): Response` / `setResponse(Response): void` — the response (you can replace it). **Deprecated since 3.10.**
 
 ### Example: add a header
 
@@ -187,9 +200,7 @@ class PdfProxyHeaderListener
 {
     public function __invoke(PdfProxyResponseEvent $event): void
     {
-        $response = $event->getResponse();
-        $response->headers->set('X-Pdf-Source', $event->getUrl());
-        $event->setResponse($response);
+        $event->setHeader('X-Pdf-Source', $event->getUrl());
     }
 }
 ```
@@ -206,7 +217,8 @@ Dispatched after the AcroForm process script (config `acroform.process_script`) 
 
 - `getProcessedPdfContents(): string` — the processed PDF bytes (script output).
 - `getDocumentKey(): ?string` — document key from the request, if provided.
-- `getRequest(): Request` — the current request.
+- `getRequestContext(): PdfRequestContext` (3.10).
+- `getRequest(): Request` — the current request. **Deprecated since 3.10.**
 
 ### Example
 
@@ -243,6 +255,6 @@ The AcroForm editor (panel) and the PDF viewer coordinate via **CustomEvent** on
 - `Nowo\PdfSignableBundle\Event\PdfProxyRequestEvent`
 - `Nowo\PdfSignableBundle\Event\PdfProxyResponseEvent`
 - `Nowo\PdfSignableBundle\Event\AcroFormApplyRequestEvent` — `ACROFORM_APPLY_REQUEST`; set `setModifiedPdf()` or `setError()` to respond.
-- `Nowo\PdfSignableBundle\Event\AcroFormModifiedPdfProcessedEvent` — `ACROFORM_MODIFIED_PDF_PROCESSED`; payload: `getProcessedPdfContents()`, `getDocumentKey()`, `getRequest()`.
+- `Nowo\PdfSignableBundle\Event\AcroFormModifiedPdfProcessedEvent` — `ACROFORM_MODIFIED_PDF_PROCESSED`; payload: `getProcessedPdfContents()`, `getDocumentKey()`, `getRequestContext()` (`getRequest()` deprecated).
 
 Listeners can be registered as services with the `kernel.event_listener` tag or using the `#[AsEventListener]` attribute (Symfony 6.3+).

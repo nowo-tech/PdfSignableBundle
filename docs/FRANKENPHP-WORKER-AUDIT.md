@@ -36,7 +36,7 @@ A bundle that is safe under **B** is safe under **A** and under classic mode / P
 | Area | Status | Notes |
 |------|--------|-------|
 | Mutable state in shared services | ✅ | Every service has only `private readonly` constructor properties (config values, collaborators, optional test closures) |
-| Static properties / `static` locals | ✅ | None. Static methods (`PythonProcessEnv::build()`, `*::fromArray()`, `SignatureCoordinatesType::getAllUnits()`) are pure |
+| Static properties / `static` locals | ✅ | None that crosses requests. Static methods (`PythonProcessEnv::build()`, `*::fromArray()`, `SignatureCoordinatesType::getAllUnits()`) are pure. 3.10: `Submission\SensitiveValues` holds the VOs' audit / signature / request values in a static `WeakMap` keyed by each per-request VO, so every entry is collected with its VO (Igor 54/54 OK) |
 | `ResetInterface` / `kernel.reset` coverage | ✅ N/A | Nothing to reset |
 | Request / user / locale captured in services | ✅ | `SessionAcroFormOverridesStorage` and the Twig extension read `RequestStack::getCurrentRequest()` on every call; per-request flags live in request attributes |
 | Superglobals, `$_ENV`, `putenv`, `ini_set`, `setlocale`, timezone | ✅ | None written. `PythonProcessEnv::build()` only reads `getenv()` to build a child-process env array |

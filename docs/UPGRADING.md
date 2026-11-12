@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.10.0](#to-3100)
 - [To 3.9.2](#to-392)
 - [To 3.9.1](#to-391)
 - [To 3.9.0](#to-390)
@@ -85,6 +86,32 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.10.0
+
+From **3.9.x**: no configuration change. Additive (REQ-ARCH-001 rules 1 and 3); the deprecated accessors keep working
+until 4.0.
+
+```bash
+composer require nowo-tech/pdf-signable-bundle:^3.10
+```
+
+| Event | Deprecated (removed in 4.0) | Use instead |
+|---|---|---|
+| `SignatureCoordinatesSubmittedEvent`, `BatchSignRequestedEvent` | `getCoordinates()`, `getRequest()` | `getSubmission()` (immutable `SignatureSubmission`), `getRequestContext()` |
+| `PdfSignRequestEvent` | `getCoordinates()`, `getRequest()`, `setResponse()`, `getResponse()` | `getSubmission()`, `getRequestContext()`, `setResult()` / `getResult()` |
+| `PdfProxyRequestEvent` | `getRequest()`, `setResponse()` | `getRequestContext()`, `respondWith()` |
+| `PdfProxyResponseEvent` | `getRequest()`, `getResponse()`, `setResponse()` | `getRequestContext()`, `getContent()` / `setContent()`, `getStatusCode()`, `setHeader()` |
+| `AcroFormModifiedPdfProcessedEvent` | `getRequest()` | `getRequestContext()` |
+
+- `getSubmission()` is a snapshot of the model when called: `toArray()` returns the same array as
+  `getCoordinates()->toArray()` (box keys included). It is read-only: a listener that changed the model to alter the
+  JSON response of the bundle controller still has to do so through `getCoordinates()` until 4.0.
+- `PdfSignRequestEvent` can now be created without a request (`new PdfSignRequestEvent($submission, options: [...])`);
+  `getRequest()` then throws a `LogicException` (`hasRequest()` tells).
+- The new VOs keep audit metadata, signature images, client IP and user agent outside their properties (no leak in
+  dumps); they cannot be cloned or serialized. Use `toArray()` to export.
+- Signature data, audit metadata, the JSON response and the order of the events are unchanged.
 
 ## To 3.9.2
 
