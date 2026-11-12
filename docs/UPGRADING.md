@@ -16,7 +16,6 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 - [Unreleased](#unreleased)
 - [To 3.11.0](#to-3110)
-- [To 3.11.0](#to-3110-1)
 - [To 3.10.0](#to-3100)
 - [To 3.9.2](#to-392)
 - [To 3.9.1](#to-391)
@@ -88,14 +87,6 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
-
-## To 3.11.0
-
-From **3.10.0**:
-
-```bash
-composer update nowo-tech/pdf-signable-bundle
-```
 
 ## To 3.11.0
 
