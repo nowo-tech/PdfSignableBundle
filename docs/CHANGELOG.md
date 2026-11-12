@@ -85,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- `docs/FRANKENPHP-WORKER-AUDIT.md` header at 3.10.1, resetter precondition and worker test section; `docs/EVENTS.md`
+- `docs/FRANKENPHP-WORKER-AUDIT.md` header at 3.11.0, resetter precondition and worker test section; `docs/EVENTS.md`
   lists the new readers.
 
 ## [3.10.0] - 2026-11-12

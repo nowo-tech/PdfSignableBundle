@@ -3,8 +3,8 @@
 | Field | Value |
 |-------|-------|
 | Package | `nowo-tech/pdf-signable-bundle` (`symfony-bundle`) |
-| Audited revision | **3.10.1**: re-review of `src/` after 3.10 (framework-free event accessors, `SensitiveValues`) + kept-alive kernel worker test; earlier full review `v3.1.7` (W-01 fix on top of `v3.1.6` / `749abc9`) |
-| Audit date | 2026-11-12 (3.10.1 re-review and worker test); 2026-09-24 (full review) |
+| Audited revision | **3.11.0**: re-review of `src/` after 3.10 (framework-free event accessors, `SensitiveValues`) + kept-alive kernel worker test; earlier full review `v3.1.7` (W-01 fix on top of `v3.1.6` / `749abc9`) |
+| Audit date | 2026-11-12 (3.11.0 re-review and worker test); 2026-09-24 (full review) |
 | Method | Manual review of every file under `src/` (controllers, listeners, form types, Twig extension, storage, checker, command, DI extension, compiler passes, `Resources/config`) |
 | **Verdict** | ✅ **Compatible** — safe under FrankenPHP worker with **kernel not reset** between requests (scenario B). No per-request state in services; W-01 temp-file leak fixed in 3.1.7. Residual Low notes (W-02 peak buffer, W-03 DNS) are ops/hardening, not cross-request state leaks. |
 
@@ -107,7 +107,7 @@ No other findings. AcroForm overrides live in the current user's session, resolv
 
 ## Worker test
 
-`tests/Integration/Worker/KeptAliveKernelWorkerTest.php` (3.10.1) boots **one** kernel (`WorkerHostKernel`: the
+`tests/Integration/Worker/KeptAliveKernelWorkerTest.php` (3.11.0) boots **one** kernel (`WorkerHostKernel`: the
 bundle defaults with the ROLE_USER check through symfony/security-bundle, two in-memory users over stateless HTTP
 Basic, the proxy on with an allowlist, a `MockHttpClient` upstream and a deterministic DNS for the SSRF check) and
 drives `http_kernel` handle / terminate directly, so `services_resetter` never runs (scenario **B**). It runs **500**

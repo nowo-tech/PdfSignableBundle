@@ -27,7 +27,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use function sys_get_temp_dir;
 
 /**
- * Host kernel of the REQ-RUNTIME-002 worker test (3.10.1): the bundle with its default role check
+ * Host kernel of the REQ-RUNTIME-002 worker test (3.11.0): the bundle with its default role check
  * (`security.access_roles: [ROLE_USER]`), two in-memory users over stateless HTTP Basic, the PDF proxy enabled with an
  * allowlist, a MockHttpClient upstream and a deterministic DNS resolver for the SSRF check.
  */

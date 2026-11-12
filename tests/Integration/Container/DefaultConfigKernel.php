@@ -21,7 +21,7 @@ use function sys_get_temp_dir;
 
 /**
  * Standard host with the bundle defaults (role check on ROLE_USER through symfony/security-bundle, proxy on, AcroForm
- * off) plus the one required value, a proxy allowlist, and the documented route import (3.10.1 `lint:container` test).
+ * off) plus the one required value, a proxy allowlist, and the documented route import (3.11.0 `lint:container` test).
  */
 final class DefaultConfigKernel extends Kernel
 {

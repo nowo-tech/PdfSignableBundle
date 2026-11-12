@@ -17,7 +17,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  * to skip the HTTP fetch (e.g. serve from cache or local file).
  *
  * 3.10 (REQ-ARCH-001 rule 3): {@see getRequestContext()} and {@see respondWith()} replace the HttpFoundation request
- * and response for listeners that keep framework types out of their code; 3.10.1 adds {@see getResponseStatusCode()},
+ * and response for listeners that keep framework types out of their code; 3.11.0 adds {@see getResponseStatusCode()},
  * {@see getResponseContent()} and {@see getResponseHeader()} to read what an earlier listener set.
  */
 final class PdfProxyRequestEvent extends Event
@@ -104,7 +104,7 @@ final class PdfProxyRequestEvent extends Event
      *
      * @return Response|null Custom response or null to perform the fetch
      *
-     * @deprecated since 3.10.1, use {@see hasResponse()}, {@see getResponseStatusCode()}, {@see getResponseContent()}
+     * @deprecated since 3.11.0, use {@see hasResponse()}, {@see getResponseStatusCode()}, {@see getResponseContent()}
      *             and {@see getResponseHeader()}; removed in 4.0 (the bundle's proxy controller still reads it)
      */
     public function getResponse(): ?Response
@@ -113,7 +113,7 @@ final class PdfProxyRequestEvent extends Event
     }
 
     /**
-     * Status code of the response a listener set, or null when the proxy will fetch the URL (3.10.1).
+     * Status code of the response a listener set, or null when the proxy will fetch the URL (3.11.0).
      */
     public function getResponseStatusCode(): ?int
     {
@@ -121,7 +121,7 @@ final class PdfProxyRequestEvent extends Event
     }
 
     /**
-     * Body of the response a listener set (3.10.1). Null when none was set, or when the deprecated
+     * Body of the response a listener set (3.11.0). Null when none was set, or when the deprecated
      * {@see setResponse()} received a streamed or binary-file response whose body is not a string.
      */
     public function getResponseContent(): ?string
@@ -132,7 +132,7 @@ final class PdfProxyRequestEvent extends Event
     }
 
     /**
-     * First value of a header of the response a listener set, or null (3.10.1).
+     * First value of a header of the response a listener set, or null (3.11.0).
      */
     public function getResponseHeader(string $name): ?string
     {

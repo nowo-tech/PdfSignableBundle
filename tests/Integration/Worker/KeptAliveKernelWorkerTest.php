@@ -18,7 +18,7 @@ use function memory_get_usage;
 use const JSON_THROW_ON_ERROR;
 
 /**
- * REQ-RUNTIME-002 (3.10.1): ONE kept-alive kernel, the services resetter never called (`http_kernel` driven directly,
+ * REQ-RUNTIME-002 (3.11.0): ONE kept-alive kernel, the services resetter never called (`http_kernel` driven directly,
  * as a FrankenPHP worker host without the resetter does). Two users alternate over the real controllers: the
  * signature form (POST, JSON answer, submission event with audit metadata) and the PDF proxy (MockHttpClient
  * upstream). Each response and each event carries only that request's user data, and memory stays flat.

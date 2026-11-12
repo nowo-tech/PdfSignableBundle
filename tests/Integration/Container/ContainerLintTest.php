@@ -12,7 +12,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
- * REQ-ARCH-001 (3.10.1): `lint:container` passes (argument types of every service definition checked against the
+ * REQ-ARCH-001 (3.11.0): `lint:container` passes (argument types of every service definition checked against the
  * constructors) for the standard host with the default configuration and for the DDD host configuration.
  */
 final class ContainerLintTest extends TestCase
