@@ -90,15 +90,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 
 ## To 3.10.0
 
-From **3.9.2**:
-
-```bash
-composer update nowo-tech/pdf-signable-bundle
-```
-
-## To 3.10.0
-
-From **3.9.x**: no configuration change. Additive (REQ-ARCH-001 rules 1 and 3); the deprecated accessors keep working
+From **3.9.2** (`composer update nowo-tech/pdf-signable-bundle`): no configuration change. Additive (REQ-ARCH-001 rules 1 and 3); the deprecated accessors keep working
 until 4.0.
 
 ```bash
