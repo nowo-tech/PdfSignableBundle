@@ -17,6 +17,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * 3.10 (REQ-ARCH-001 rule 3): every event has a framework-free accessor that gives the same data as the deprecated
@@ -107,6 +108,29 @@ final class FrameworkFreeAccessorsTest extends TestCase
         self::assertSame($old->getResponse()?->headers->get('Content-Type'), $new->getResponse()?->headers->get('Content-Type'));
         self::assertSame('203.0.113.5', $new->getRequestContext()->getClientIp());
         self::assertSame($new->getRequest()->getPathInfo(), $new->getRequestContext()->path);
+    }
+
+    public function testProxyRequestResponseReadersMatchTheDeprecatedGetResponse(): void
+    {
+        $event = new PdfProxyRequestEvent('https://example.com/a.pdf', $this->request());
+        self::assertNull($event->getResponseStatusCode());
+        self::assertNull($event->getResponseContent());
+        self::assertNull($event->getResponseHeader('Content-Type'));
+
+        $event->respondWith(203, '%PDF-cached', ['Content-Type' => 'application/pdf', 'X-Cache' => 'HIT']);
+        self::assertSame($event->getResponse()?->getStatusCode(), $event->getResponseStatusCode());
+        self::assertSame(203, $event->getResponseStatusCode());
+        self::assertSame('%PDF-cached', $event->getResponseContent());
+        self::assertSame('HIT', $event->getResponseHeader('X-Cache'));
+        self::assertSame('application/pdf', $event->getResponseHeader('content-type'));
+        self::assertNull($event->getResponseHeader('X-Missing'));
+
+        // A streamed response (deprecated setResponse()) has no string body.
+        $event->setResponse(new StreamedResponse(static function (): void {
+        }, 200));
+        self::assertTrue($event->hasResponse());
+        self::assertSame(200, $event->getResponseStatusCode());
+        self::assertNull($event->getResponseContent());
     }
 
     public function testProxyResponseContentAndHeaders(): void

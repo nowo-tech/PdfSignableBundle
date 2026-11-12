@@ -15,6 +15,7 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 3.11.0](#to-3110)
 - [To 3.10.0](#to-3100)
 - [To 3.9.2](#to-392)
 - [To 3.9.1](#to-391)
@@ -86,6 +87,23 @@ Version **2.0.0** is a **breaking** release for configuration: the YAML structur
 - [See also](#see-also)
 
 ## Unreleased
+
+## To 3.11.0
+
+From **3.10.0**: no configuration change, nothing to migrate now.
+
+```bash
+composer require nowo-tech/pdf-signable-bundle:^3.11
+```
+
+| Event | Deprecated (removed in 4.0) | Use instead |
+|---|---|---|
+| `PdfProxyRequestEvent` | `getResponse()` | `hasResponse()`, `getResponseStatusCode()`, `getResponseContent()`, `getResponseHeader()` |
+
+- `getResponse()` keeps working until 4.0 (the bundle's proxy controller still uses it to return the response a
+  listener set). A listener that only needs to know whether an earlier listener answered calls `hasResponse()`.
+- `getResponseContent()` returns `null` for a streamed or binary-file response set through the deprecated
+  `setResponse()`.
 
 ## To 3.10.0
 

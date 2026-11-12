@@ -69,6 +69,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Deprecated
+
+- `PdfProxyRequestEvent::getResponse()` (REQ-ARCH-001 rule 3), removed in 4.0, consistent with `setResponse()`. Use
+  `hasResponse()` and the new framework-free readers `getResponseStatusCode()`, `getResponseContent()` and
+  `getResponseHeader()`.
+
+### Tests
+
+- `lint:container` kernel test for the default configuration (with symfony/security-bundle, now a dev dependency)
+  and for the DDD host configuration (REQ-ARCH-001).
+- Kept-alive kernel worker test without the services resetter (REQ-RUNTIME-002): 1,000 requests through the real
+  signature and proxy controllers alternating two authenticated users (MockHttpClient upstream); no user data crosses
+  requests and memory stays within 4 MiB.
+
+### Documentation
+
+- `docs/FRANKENPHP-WORKER-AUDIT.md` header at 3.11.0, resetter precondition and worker test section; `docs/EVENTS.md`
+  lists the new readers.
+
 ## [3.10.0] - 2026-11-12
 
 ### Added

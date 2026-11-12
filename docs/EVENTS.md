@@ -151,7 +151,12 @@ Dispatched before the proxy fetches the PDF from the given URL.
 - `respondWith(int $status, string $body = '', array $headers = []): void` (3.10) — skip the HTTP fetch and answer with this (e.g. serve from cache).
 - `getRequest(): Request` — the request to the proxy. **Deprecated since 3.10.**
 - `setResponse(Response): void` — set a custom response to skip the HTTP fetch. **Deprecated since 3.10** (use `respondWith()`).
+- `getResponse(): ?Response` — the custom response. **Deprecated since 3.11.0** (use the readers below).
 - `hasResponse(): bool` — whether a custom response was set.
+- `getResponseStatusCode(): ?int`, `getResponseContent(): ?string`, `getResponseHeader(string): ?string` (3.11.0) —
+  what an earlier listener set, without HttpFoundation types (`getResponseContent()` is `null` for a streamed response).
+  `getResponseHeader()` reads the response's header bag, so it also returns the headers Symfony adds by itself (for
+  example `Cache-Control` and `Date`), not only the ones the listener passed to `respondWith()`.
 
 ### Example: serve from cache
 
