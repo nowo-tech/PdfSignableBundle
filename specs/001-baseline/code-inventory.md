@@ -2,7 +2,7 @@
 
 **Baseline spec**: [`spec.md`](spec.md)  
 **Package**: `nowo-tech/pdf-signable-bundle`  
-**Last audited**: 2026-10-20
+**Last audited**: 2026-11-16
 
 This file proves that **every production source artifact** under `src/` is referenced by the baseline specification. Paths are relative to `src/`. Co-located Vitest files (`*.test.ts`, 25 files) and `Resources/assets/README.md` are test-only or maintainer docs and excluded from the production count.
 
@@ -14,6 +14,7 @@ This file proves that **every production source artifact** under `src/` is refer
 | `DependencyInjection/Configuration.php` | Config tree | FR-CFG-001, FR-SEC-004 |
 | `DependencyInjection/PdfSignableExtension.php` | DI extension | FR-CFG-002 |
 | `DependencyInjection/Compiler/TwigPathsPass.php` | Twig namespace paths | FR-BUNDLE-001 |
+| `DependencyInjection/Compiler/SecurityPass.php` | Wires the access checker (host service, allow-all only with `security.allow_unauthenticated`, or role checker); fails closed without SecurityBundle | FR-SEC-005 |
 | `DependencyInjection/ProxyUrlAllowlistValidationPass.php` | Allowlist compile-time validation | FR-SEC-001, FR-SEC-004 |
 | `Checker/DependencyChecker.php` | Optional dependency probe | FR-CLI-001 |
 | `Checker/DependencyCheckerInterface.php` | Dependency probe contract | FR-CLI-001 |
@@ -28,6 +29,7 @@ This file proves that **every production source artifact** under `src/` is refer
 | `Form/Extension/SignatureCoordinatesTypeExtension.php` | Form type extension | FR-FORM-001 |
 | `Form/AcroFormEditorType.php` | AcroForm editor form | FR-ACRO-004 |
 | `Form/AcroFormFieldEditType.php` | Single field edit sub-form | FR-ACRO-004 |
+| `Form/AcroFormEditorPanelType.php` | Client-side controls of the AcroForm editor panel (never submitted on its own) | FR-ACRO-004, FR-TWIG-005 |
 | `Model/SignatureCoordinatesModel.php` | Signature coordinates DTO | FR-MDL-001 |
 | `Model/SignatureBoxModel.php` | Single box DTO | FR-MDL-001 |
 | `Model/AuditMetadata.php` | Audit trail metadata | FR-MDL-002 |
@@ -40,6 +42,15 @@ This file proves that **every production source artifact** under `src/` is refer
 | `Event/PdfSignRequestEvent.php` | Per-box sign hook | FR-EVT-001 |
 | `Event/AcroFormApplyRequestEvent.php` | AcroForm apply hook | FR-EVT-002 |
 | `Event/AcroFormModifiedPdfProcessedEvent.php` | AcroForm PDF processed hook | FR-EVT-002 |
+| `EventSubscriber/PdfSignableAccessSubscriber.php` | Guards the AcroForm endpoints and the PDF proxy with the access checker | FR-SEC-005 |
+| `Security/PdfSignableAccessCheckerInterface.php` | Access checker contract (replaceable via `security.access_checker`) | FR-SEC-005 |
+| `Security/ConfigurablePdfSignableAccessChecker.php` | Default role checker (`security.access_roles`; empty list grants nothing) | FR-SEC-005 |
+| `Security/AllowAllPdfSignableAccessChecker.php` | Allow-all checker for `security.allow_unauthenticated: true` (demos, local dev) | FR-SEC-005 |
+| `Submission/SignatureSubmission.php` | Framework-free immutable VO of the submitted coordinates (REQ-ARCH-001) | FR-EVT-003 |
+| `Submission/SignatureBox.php` | Framework-free immutable VO of one signature box | FR-EVT-003 |
+| `Submission/PdfRequestContext.php` | Framework-free view of the HTTP request behind an event | FR-EVT-003 |
+| `Submission/PdfRequestContextFactory.php` | Builds `PdfRequestContext` at the HTTP edge | FR-EVT-003 |
+| `Submission/SensitiveValues.php` | Keeps request-derived and signature values outside the VOs (no dump leak) | FR-EVT-003, FR-RUNTIME-001 |
 | `EventListener/DependencyCheckListener.php` | Dev dependency banner | FR-CLI-001 |
 | `EventListener/AcroFormApplyScriptListener.php` | Python AcroForm apply | FR-ACRO-003, FR-RUNTIME-001 |
 | `AcroForm/AcroFormOverrides.php` | Overrides value object | FR-ACRO-001 |
@@ -51,6 +62,7 @@ This file proves that **every production source artifact** under `src/` is refer
 | `AcroForm/Storage/AcroFormOverridesStorageInterface.php` | Overrides storage contract | FR-ACRO-001 |
 | `AcroForm/Storage/SessionAcroFormOverridesStorage.php` | Session-backed storage | FR-ACRO-001 |
 | `Twig/NowoPdfSignableTwigExtension.php` | Twig helpers | FR-TWIG-001 |
+| `Twig/AcroFormFormsTwigExtension.php` | Builds the Symfony Form views of the AcroForm editor panel (no raw HTML controls) | FR-TWIG-005 |
 
 ## TypeScript production (`src/Resources/assets/`)
 
@@ -96,6 +108,15 @@ This file proves that **every production source artifact** under `src/` is refer
 | `acroform-editor.js` | Built acroform bundle | FR-BUILD-001 |
 | `pdf.worker.min.js` | PDF.js worker | FR-BUILD-001, FR-UI-SHR-002 |
 
+## Python scripts (`src/Resources/scripts/`)
+
+| Source file | Spec section | Requirement IDs |
+| --- | --- | --- |
+| `extract_acroform_fields.py` | Extract AcroForm field metadata as JSON | FR-ACRO-005 |
+| `apply_acroform_patches.py` | Apply AcroForm patches and write the modified PDF | FR-ACRO-005 |
+| `process_modified_pdf.py` | Post-processing stub (copies input to output; host-replaceable) | FR-ACRO-005 |
+| `requirements.txt` | Runtime dependency pin of the scripts (`pypdf`) | FR-ACRO-005 |
+
 ## Symfony config (`src/Resources/config/`)
 
 | Source file | Spec section | Requirement IDs |
@@ -137,14 +158,15 @@ This file proves that **every production source artifact** under `src/` is refer
 
 | Category | Files | Mapped |
 | --- | ---: | ---: |
-| PHP classes | 41 | 41 |
+| PHP classes | 53 | 53 |
+| Python scripts | 4 | 4 |
 | TypeScript / SCSS production | 30 | 30 |
 | Public JS / CSS / worker | 4 | 4 |
 | YAML config | 2 | 2 |
 | Translation catalogs | 12 | 12 |
 | Twig views | 8 | 8 |
-| **Total production sources** | **97** | **97** |
+| **Total production sources** | **113** | **113** |
 
 Vitest co-located tests (`*.test.ts`, 25 files) and `Resources/assets/README.md` are documented as out-of-scope test/maintainer artifacts in [`spec.md`](spec.md).
 
-Audit: `git ls-files src | grep -v '\.test\.ts$' | grep -v 'Resources/assets/README.md$' | wc -l` → **97** (123 tracked files − 25 tests − 1 maintainer README).
+Audit: `git ls-files src | grep -v '\.test\.ts$' | grep -v 'Resources/assets/README.md$' | wc -l` → **113** (139 tracked files − 25 tests − 1 maintainer README).

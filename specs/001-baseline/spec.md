@@ -107,6 +107,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 ### Security & proxy
 
 - **FR-SEC-001**: `ProxyUrlValidator` and `ProxyUrlAllowlistValidationPass` MUST block private IPs, invalid schemes, and URLs outside the configured allowlist when non-empty.
+- **FR-SEC-005**: The AcroForm endpoints (load / save / remove overrides, extract, apply, process) and the PDF proxy MUST be guarded by `PdfSignableAccessCheckerInterface` (`PdfSignableAccessSubscriber`), whatever the route names: a host `security.access_checker`, the allow-all checker only with `security.allow_unauthenticated: true`, or the role checker (`security.access_roles`, empty list = deny). Without SecurityBundle the container build fails (fail closed, `SecurityPass`).
 - **FR-SEC-004**: `proxy_url_allowlist_required` MUST default to `true` so an empty allowlist fails container compilation when the proxy is enabled. The Flex recipe MAY copy `false` for local installs and MUST force `true` under `when@prod` (`docs/SECURITY.md`).
 - **FR-PROXY-001**: `SignatureController::proxy` MUST honor `proxy_enabled`, validate URL, dispatch proxy events, and stream PDF bytes with appropriate cache/content headers.
 
@@ -125,6 +126,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 
 - **FR-EVT-001**: Signing lifecycle events (`PdfProxyRequestEvent`, `PdfProxyResponseEvent`, `SignatureCoordinatesSubmittedEvent`, `BatchSignRequestedEvent`, `PdfSignRequestEvent`) MUST use constants from `PdfSignableEvents`.
 - **FR-EVT-002**: AcroForm events (`AcroFormApplyRequestEvent`, `AcroFormModifiedPdfProcessedEvent`) MUST fire around apply/processing hooks.
+- **FR-EVT-003**: Events MUST also expose framework-free immutable value objects (`SignatureSubmission`, `SignatureBox`, `PdfRequestContext` built by `PdfRequestContextFactory`); request-derived and signature values live in `SensitiveValues`, outside the objects, so dumps and casts of a VO never reveal them.
 
 ### AcroForm backend
 
@@ -132,6 +134,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 - **FR-ACRO-002**: `AcroFormFieldEdit` and `AcroFormFieldPatch` MUST model editable field geometry and properties.
 - **FR-ACRO-003**: `PdfAcroFormEditorInterface`, `PythonProcessEnv`, and `AcroFormApplyScriptListener` MUST invoke external Python tooling and surface `AcroFormEditorException` on failure.
 - **FR-ACRO-004**: `AcroFormOverridesController`, `AcroFormEditorType`, and `AcroFormFieldEditType` MUST expose HTTP/form APIs for override management.
+- **FR-ACRO-005**: The bundle MUST ship the Python scripts used by the AcroForm backend under `Resources/scripts/` (`extract_acroform_fields.py`, `apply_acroform_patches.py`, the replaceable `process_modified_pdf.py` stub) with their runtime requirements (`requirements.txt`, `pypdf`).
 - **FR-RUNTIME-001**: Shared services MUST remain safe under FrankenPHP worker mode with kernel not reset between requests: no mutable per-request properties; temp files created for AcroForm apply/process MUST be unlinked in `finally` even when a later `tempnam()` fails (see `docs/FRANKENPHP-WORKER-AUDIT.md`).
 
 ### CLI & dependencies
@@ -144,6 +147,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 - **FR-TWIG-002**: Form theme templates MUST render PDF viewer partial, box widgets, and Encore/vite asset tags for signable JS/CSS.
 - **FR-TWIG-003**: Demo templates MUST render the index page and optional dependency debug alert.
 - **FR-TWIG-004**: AcroForm templates MUST render editor root and edit modal partials.
+- **FR-TWIG-005**: `AcroFormFormsTwigExtension` (with `AcroFormEditorPanelType`) MUST build the Symfony Form views of the AcroForm editor panel, so the AcroForm templates never fall back to raw HTML controls (REQ-TWIG-005).
 
 ### Frontend — signable editor
 
@@ -190,7 +194,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 
 ## Success Criteria
 
-- **SC-001**: 100% of production files in `src/` appear in [`code-inventory.md`](code-inventory.md) with requirement IDs (**97/97** mapped; 25 co-located Vitest `*.test.ts` and `Resources/assets/README.md` excluded).
+- **SC-001**: 100% of production files in `src/` appear in [`code-inventory.md`](code-inventory.md) with requirement IDs (**113/113** mapped; 25 co-located Vitest `*.test.ts` and `Resources/assets/README.md` excluded).
 - **SC-002**: Configuration keys in `docs/CONFIGURATION.md` match `Configuration.php`.
 - **SC-003**: PHPUnit, PHPStan, and Vitest pass in CI (`composer qa`).
 - **SC-004**: Proxy rejects disallowed URLs; allowlist regex entries validated at compile time.
