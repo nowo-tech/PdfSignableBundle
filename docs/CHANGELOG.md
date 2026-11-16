@@ -70,6 +70,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Spec Kit: `specs/001-baseline/code-inventory.md` maps the access checker (3.6), the framework-free submission VOs (3.10), the AcroForm panel form/Twig extension and the bundled Python scripts (113/113 production files); `spec.md` gains FR-SEC-005, FR-EVT-003, FR-ACRO-005 and FR-TWIG-005 for that existing behaviour (REQ-SPECKIT-001/003)
+- CI: Dependabot npm updates for `demo/symfony8` and `demo/symfony8/e2e` (REQ-GH-002)
+
 ## [3.11.0] - 2026-11-12
 
 ### Deprecated
