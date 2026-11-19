@@ -25,6 +25,13 @@
     .signature-box-overlay .resize-handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
     .signature-box-item { border: 1px solid #dee2e6; padding: 1rem; margin-bottom: 0.75rem; border-radius: 0.375rem; background: #fff; }
     #signature-boxes-list { max-height: 50vh; overflow-y: auto; }
+    /* Scrollbars: thin bar matching UiKit; restyle only through the --nowo-ui-scrollbar-* tokens. */
+    #pdf-viewer-container::-webkit-scrollbar, #signature-boxes-list::-webkit-scrollbar { width: var(--nowo-ui-scrollbar-size, 6px); height: var(--nowo-ui-scrollbar-size, 6px); }
+    #pdf-viewer-container::-webkit-scrollbar-track, #signature-boxes-list::-webkit-scrollbar-track { background: var(--nowo-ui-scrollbar-track, transparent); }
+    #pdf-viewer-container::-webkit-scrollbar-thumb, #signature-boxes-list::-webkit-scrollbar-thumb { background: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent)); border-radius: 999px; }
+    #pdf-viewer-container::-webkit-scrollbar-thumb:hover, #signature-boxes-list::-webkit-scrollbar-thumb:hover { background: var(--nowo-ui-scrollbar-thumb-hover, color-mix(in srgb, currentColor 45%, transparent)); }
+    #pdf-viewer-container::-webkit-scrollbar-button, #signature-boxes-list::-webkit-scrollbar-button { display: none; }
+    @supports not selector(::-webkit-scrollbar) { #pdf-viewer-container, #signature-boxes-list { scrollbar-width: thin; scrollbar-color: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent)) var(--nowo-ui-scrollbar-track, transparent); } }
   </style>
 {% endblock %}
 

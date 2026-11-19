@@ -2,6 +2,10 @@
  * PdfSignable widget styles.
  * Scoped under .nowo-pdf-signable-widget. Built to pdf-signable.css by Vite.
  */
+/**
+ * Scrollbars: thin bar matching UiKit. Hosts restyle only through the --nowo-ui-scrollbar-* tokens
+ * (size, thumb, thumb-hover, track); every token has a fallback so the widget works without UiKit.
+ */
 .nowo-pdf-signable-widget .pdf-viewer-outer {
   display: flex;
   flex-direction: column;
@@ -29,6 +33,29 @@
   padding: 0.25rem;
   background: #e9ecef;
 }
+.nowo-pdf-signable-widget #pdf-thumbnails-strip::-webkit-scrollbar {
+  width: var(--nowo-ui-scrollbar-size, 6px);
+  height: var(--nowo-ui-scrollbar-size, 6px);
+}
+.nowo-pdf-signable-widget #pdf-thumbnails-strip::-webkit-scrollbar-track {
+  background: var(--nowo-ui-scrollbar-track, transparent);
+}
+.nowo-pdf-signable-widget #pdf-thumbnails-strip::-webkit-scrollbar-thumb {
+  background: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent));
+  border-radius: 999px;
+}
+.nowo-pdf-signable-widget #pdf-thumbnails-strip::-webkit-scrollbar-thumb:hover {
+  background: var(--nowo-ui-scrollbar-thumb-hover, color-mix(in srgb, currentColor 45%, transparent));
+}
+.nowo-pdf-signable-widget #pdf-thumbnails-strip::-webkit-scrollbar-button {
+  display: none;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .nowo-pdf-signable-widget #pdf-thumbnails-strip {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent)) var(--nowo-ui-scrollbar-track, transparent);
+  }
+}
 .nowo-pdf-signable-widget #pdf-thumbnails-strip .pdf-thumb {
   display: block;
   width: 100%;
@@ -49,19 +76,6 @@
   width: 100%;
   height: auto;
 }
-.nowo-pdf-signable-widget #pdf-thumbnails-strip::-webkit-scrollbar {
-  width: 6px;
-}
-.nowo-pdf-signable-widget #pdf-thumbnails-strip::-webkit-scrollbar-thumb {
-  background: #adb5bd;
-  border-radius: 3px;
-}
-.nowo-pdf-signable-widget #pdf-thumbnails-strip::-webkit-scrollbar-thumb:hover {
-  background: #868e96;
-}
-.nowo-pdf-signable-widget #pdf-thumbnails-strip::-webkit-scrollbar-track {
-  background: transparent;
-}
 .nowo-pdf-signable-widget .pdf-viewer-scroll {
   flex: 1;
   min-width: 0;
@@ -70,25 +84,34 @@
   overflow: auto;
   box-sizing: border-box;
 }
+.nowo-pdf-signable-widget .pdf-viewer-scroll::-webkit-scrollbar {
+  width: var(--nowo-ui-scrollbar-size, 6px);
+  height: var(--nowo-ui-scrollbar-size, 6px);
+}
+.nowo-pdf-signable-widget .pdf-viewer-scroll::-webkit-scrollbar-track {
+  background: var(--nowo-ui-scrollbar-track, transparent);
+}
+.nowo-pdf-signable-widget .pdf-viewer-scroll::-webkit-scrollbar-thumb {
+  background: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent));
+  border-radius: 999px;
+}
+.nowo-pdf-signable-widget .pdf-viewer-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--nowo-ui-scrollbar-thumb-hover, color-mix(in srgb, currentColor 45%, transparent));
+}
+.nowo-pdf-signable-widget .pdf-viewer-scroll::-webkit-scrollbar-button {
+  display: none;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .nowo-pdf-signable-widget .pdf-viewer-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent)) var(--nowo-ui-scrollbar-track, transparent);
+  }
+}
 .nowo-pdf-signable-widget .pdf-viewer-scroll > .pdf-zoom-toolbar {
   flex-shrink: 0;
   position: sticky;
   top: 0;
   z-index: 10;
-}
-.nowo-pdf-signable-widget .pdf-viewer-scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.nowo-pdf-signable-widget .pdf-viewer-scroll::-webkit-scrollbar-thumb {
-  background: #adb5bd;
-  border-radius: 3px;
-}
-.nowo-pdf-signable-widget .pdf-viewer-scroll::-webkit-scrollbar-thumb:hover {
-  background: #868e96;
-}
-.nowo-pdf-signable-widget .pdf-viewer-scroll::-webkit-scrollbar-track {
-  background: transparent;
 }
 .nowo-pdf-signable-widget #pdf-canvas-wrapper {
   position: relative;
@@ -361,6 +384,29 @@
   max-height: 50vh;
   overflow-y: auto;
 }
+.nowo-pdf-signable-widget #signature-boxes-list::-webkit-scrollbar {
+  width: var(--nowo-ui-scrollbar-size, 6px);
+  height: var(--nowo-ui-scrollbar-size, 6px);
+}
+.nowo-pdf-signable-widget #signature-boxes-list::-webkit-scrollbar-track {
+  background: var(--nowo-ui-scrollbar-track, transparent);
+}
+.nowo-pdf-signable-widget #signature-boxes-list::-webkit-scrollbar-thumb {
+  background: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent));
+  border-radius: 999px;
+}
+.nowo-pdf-signable-widget #signature-boxes-list::-webkit-scrollbar-thumb:hover {
+  background: var(--nowo-ui-scrollbar-thumb-hover, color-mix(in srgb, currentColor 45%, transparent));
+}
+.nowo-pdf-signable-widget #signature-boxes-list::-webkit-scrollbar-button {
+  display: none;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .nowo-pdf-signable-widget #signature-boxes-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent)) var(--nowo-ui-scrollbar-track, transparent);
+  }
+}
 .nowo-pdf-signable-widget .signature-capture-row {
   width: 100%;
 }
@@ -404,4 +450,27 @@ dialog.acroform-edit-modal .nowo-ui-modal__actions {
 }
 dialog.acroform-edit-modal .nowo-ui-modal__content {
   overflow-y: auto;
+}
+dialog.acroform-edit-modal .nowo-ui-modal__content::-webkit-scrollbar {
+  width: var(--nowo-ui-scrollbar-size, 6px);
+  height: var(--nowo-ui-scrollbar-size, 6px);
+}
+dialog.acroform-edit-modal .nowo-ui-modal__content::-webkit-scrollbar-track {
+  background: var(--nowo-ui-scrollbar-track, transparent);
+}
+dialog.acroform-edit-modal .nowo-ui-modal__content::-webkit-scrollbar-thumb {
+  background: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent));
+  border-radius: 999px;
+}
+dialog.acroform-edit-modal .nowo-ui-modal__content::-webkit-scrollbar-thumb:hover {
+  background: var(--nowo-ui-scrollbar-thumb-hover, color-mix(in srgb, currentColor 45%, transparent));
+}
+dialog.acroform-edit-modal .nowo-ui-modal__content::-webkit-scrollbar-button {
+  display: none;
+}
+@supports not selector(::-webkit-scrollbar) {
+  dialog.acroform-edit-modal .nowo-ui-modal__content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent)) var(--nowo-ui-scrollbar-track, transparent);
+  }
 }
