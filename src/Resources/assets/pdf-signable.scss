@@ -3,6 +3,34 @@
  * Scoped under .nowo-pdf-signable-widget. Built to pdf-signable.css by Vite.
  */
 
+/**
+ * Scrollbars: thin bar matching UiKit. Hosts restyle only through the --nowo-ui-scrollbar-* tokens
+ * (size, thumb, thumb-hover, track); every token has a fallback so the widget works without UiKit.
+ */
+@mixin nowo-scrollbar {
+  &::-webkit-scrollbar {
+    width: var(--nowo-ui-scrollbar-size, 6px);
+    height: var(--nowo-ui-scrollbar-size, 6px);
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--nowo-ui-scrollbar-track, transparent);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent));
+    border-radius: 999px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--nowo-ui-scrollbar-thumb-hover, color-mix(in srgb, currentColor 45%, transparent));
+  }
+  &::-webkit-scrollbar-button {
+    display: none;
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nowo-ui-scrollbar-thumb, color-mix(in srgb, currentColor 28%, transparent)) var(--nowo-ui-scrollbar-track, transparent);
+  }
+}
+
 .nowo-pdf-signable-widget {
   .pdf-viewer-outer {
     display: flex;
@@ -32,6 +60,7 @@
     overflow-y: auto;
     padding: 0.25rem;
     background: #e9ecef;
+    @include nowo-scrollbar;
 
     .pdf-thumb {
       display: block;
@@ -57,19 +86,6 @@
       }
     }
 
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #adb5bd;
-      border-radius: 3px;
-    }
-    &::-webkit-scrollbar-thumb:hover {
-      background: #868e96;
-    }
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
   }
 
   .pdf-viewer-scroll {
@@ -79,6 +95,7 @@
     flex-direction: column;
     overflow: auto;
     box-sizing: border-box;
+    @include nowo-scrollbar;
 
     > .pdf-zoom-toolbar {
       flex-shrink: 0;
@@ -87,20 +104,6 @@
       z-index: 10;
     }
 
-    &::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #adb5bd;
-      border-radius: 3px;
-    }
-    &::-webkit-scrollbar-thumb:hover {
-      background: #868e96;
-    }
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
   }
 
   #pdf-canvas-wrapper {
@@ -396,6 +399,7 @@
   #signature-boxes-list {
     max-height: 50vh;
     overflow-y: auto;
+    @include nowo-scrollbar;
   }
 
   .signature-capture-row {
@@ -447,5 +451,6 @@ dialog.acroform-edit-modal {
 
   .nowo-ui-modal__content {
     overflow-y: auto;
+    @include nowo-scrollbar;
   }
 }

@@ -9,6 +9,7 @@ Styles for the PDF viewer live in **`src/Resources/assets/pdf-signable.scss`**, 
 - [Aligned with PdfTemplateBundle](#aligned-with-pdftemplatebundle)
 - [Signable-specific (not in PdfTemplate)](#signable-specific-not-in-pdftemplate)
 - [Other views](#other-views)
+- [Scrollbars](#scrollbars)
 
 ## Aligned with PdfTemplateBundle
 
@@ -42,3 +43,12 @@ The following use the **same values** as PdfTemplateBundle so both viewers look 
 ## Other views
 
 - `signature/index.html.twig` (and demo copies): minimal viewer styles for the signing page; same `#pdf-viewer-container`, `#pdf-canvas-wrapper`, `.pdf-page-wrapper` intent.
+
+## Scrollbars
+
+Scrollable areas of this bundle (the thumbnail strip, the viewer scroll area, the signature box list and the AcroForm edit dialog) use the same thin scrollbar as UiKit: 6px wide, thumb in the text colour at
+28 % (45 % on hover), transparent track, no arrow buttons. Hosts restyle them **only** through the shared tokens
+`--nowo-ui-scrollbar-size`, `--nowo-ui-scrollbar-thumb`, `--nowo-ui-scrollbar-thumb-hover` and
+`--nowo-ui-scrollbar-track`; each has a fallback, so nothing is needed without UiKit. Do not set `scrollbar-width` or
+`scrollbar-color` on these elements: on Chromium 121+ they disable the `::-webkit-scrollbar` rules (the standard
+properties are only applied by the bundle where `::-webkit-scrollbar` is unsupported).
