@@ -1,0 +1,14 @@
+# NowoPdfSignableBundle (nl): constraint messages of the signature forms (validators domain).
+signature_box_type:
+  name:
+    required: De vaknaam is verplicht.
+  page:
+    not_allowed: Deze pagina is niet toegestaan. Kies een van de toegestane pagina's.
+signature_coordinates_type:
+  signature_boxes:
+    min_message: Minimaal {{ limit }} handtekeningvak(ken) vereist.
+    max_message: Maximaal {{ limit }} handtekeningvak(ken) toegestaan.
+    unique_names_message: Dubbele vaknaam. Elk handtekeningvak moet een unieke naam hebben.
+    no_overlap_message: Handtekeningvakken op dezelfde pagina mogen niet overlappen. Verplaats of vergroot/verklein dit vak.
+signing:
+  consent_required: U moet de juridische gevolgen van de handtekening aanvaarden om door te gaan.

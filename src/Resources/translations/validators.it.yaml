@@ -1,0 +1,14 @@
+# NowoPdfSignableBundle (it): constraint messages of the signature forms (validators domain).
+signature_box_type:
+  name:
+    required: Il nome del campo è obbligatorio.
+  page:
+    not_allowed: Questa pagina non è consentita. Scegli una delle pagine consentite.
+signature_coordinates_type:
+  signature_boxes:
+    min_message: Almeno {{ limit }} campo/i firma richiesto/i.
+    max_message: Al massimo {{ limit }} campo/i firma consentito/i.
+    unique_names_message: Nome campo duplicato. Ogni campo firma deve avere un nome univoco.
+    no_overlap_message: I campi firma sulla stessa pagina non possono sovrapporsi. Spostare o ridimensionare questo campo.
+signing:
+  consent_required: È necessario accettare l'effetto legale della firma per continuare.

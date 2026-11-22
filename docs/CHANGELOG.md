@@ -71,6 +71,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Constraint messages:** the signature forms showed raw keys instead of text when a rule failed: `signature_box_type.name.required`, `signature_box_type.page.not_allowed`, the box count limits (`min_message`, `max_message`), the duplicate-name and overlap messages, and `signing.consent_required` on the legal-effect checkbox. Symfony translates constraint messages in the `validators` domain and the bundle shipped none, so the text only existed in the bundle's own domain. `validators.<locale>.yaml` now carries these seven messages in all twelve locales.
+
+### Tests
+
+- A regression test checks that every dotted constraint message used by a form type exists in the validators catalogue of every shipped locale.
+
 ## [3.12.0] - 2026-11-19
 
 ### Changed

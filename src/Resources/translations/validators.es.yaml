@@ -1,0 +1,14 @@
+# NowoPdfSignableBundle (es): constraint messages of the signature forms (validators domain).
+signature_box_type:
+  name:
+    required: El nombre de la caja es obligatorio.
+  page:
+    not_allowed: Esta página no está permitida. Elija una de las páginas permitidas.
+signature_coordinates_type:
+  signature_boxes:
+    min_message: Se requiere al menos {{ limit }} caja(s) de firma.
+    max_message: Se permite como máximo {{ limit }} caja(s) de firma.
+    unique_names_message: Nombre de caja duplicado. Cada caja de firma debe tener un nombre único.
+    no_overlap_message: Las cajas de firma en la misma página no pueden solaparse. Mueva o redimensione esta caja.
+signing:
+  consent_required: Debe aceptar el efecto legal de la firma para continuar.

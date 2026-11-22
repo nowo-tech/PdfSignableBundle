@@ -1,0 +1,14 @@
+# NowoPdfSignableBundle (tr): constraint messages of the signature forms (validators domain).
+signature_box_type:
+  name:
+    required: Kutu adı zorunludur.
+  page:
+    not_allowed: Bu sayfa izin verilenler arasında değil. İzin verilen sayfalardan birini seçin.
+signature_coordinates_type:
+  signature_boxes:
+    min_message: En az {{ limit }} imza kutusu gerekli.
+    max_message: En fazla {{ limit }} imza kutusuna izin verilir.
+    unique_names_message: Yinelenen kutu adı. Her imza kutusunun benzersiz bir adı olmalıdır.
+    no_overlap_message: Aynı sayfadaki imza kutuları çakışamaz. Bu kutuyu taşıyın veya yeniden boyutlandırın.
+signing:
+  consent_required: Devam etmek için imzanın hukuki sonucunu kabul etmeniz gerekir.

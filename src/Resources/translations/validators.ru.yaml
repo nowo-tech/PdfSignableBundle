@@ -1,0 +1,14 @@
+# NowoPdfSignableBundle (ru): constraint messages of the signature forms (validators domain).
+signature_box_type:
+  name:
+    required: Имя поля обязательно.
+  page:
+    not_allowed: Эта страница не разрешена. Выберите одну из разрешённых страниц.
+signature_coordinates_type:
+  signature_boxes:
+    min_message: Требуется не менее {{ limit }} поля(ей) подписи.
+    max_message: Допускается не более {{ limit }} поля(ей) подписи.
+    unique_names_message: Дублирующееся имя поля. Каждое поле подписи должно иметь уникальное имя.
+    no_overlap_message: Поля подписи на одной странице не должны пересекаться. Переместите или измените размер этого поля.
+signing:
+  consent_required: Для продолжения необходимо принять правовые последствия подписи.
