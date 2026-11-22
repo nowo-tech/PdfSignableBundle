@@ -60,27 +60,28 @@ function flattenKeys(array $arr, string $prefix = ''): array
     return $out;
 }
 
-$refFile = $dir . '/NowoPdfSignableBundle.en.yaml';
-if (!isset($parsed[$refFile])) {
-    echo "WARN: Reference file (en) not found, skipping key comparison.\n";
-} else {
+// Every domain (NowoPdfSignableBundle, validators, ...) is compared with its own English file.
+foreach ($parsed as $path => $data) {
+    if (preg_match('/^(.+)\.([a-z]{2}(?:_[A-Z]{2})?)\.ya?ml$/', basename($path), $m) !== 1 || $m[2] === 'en') {
+        continue;
+    }
+    $refFile = $dir . '/' . $m[1] . '.en.yaml';
+    if (!isset($parsed[$refFile])) {
+        echo 'WARN: Reference file (en) not found for ' . basename($path) . ", skipping key comparison.\n";
+        continue;
+    }
     $refKeys = flattenKeys($parsed[$refFile]);
     sort($refKeys);
-    foreach ($parsed as $path => $data) {
-        if ($path === $refFile) {
-            continue;
-        }
-        $langKeys = flattenKeys($data);
-        sort($langKeys);
-        $missing = array_diff($refKeys, $langKeys);
-        $extra   = array_diff($langKeys, $refKeys);
-        if ($missing !== []) {
-            echo 'ERROR: ' . basename($path) . ' missing keys: ' . implode(', ', $missing) . "\n";
-            ++$failed;
-        }
-        if ($extra !== []) {
-            echo 'WARN: ' . basename($path) . ' extra keys (not in en): ' . implode(', ', $extra) . "\n";
-        }
+    $langKeys = flattenKeys($data);
+    sort($langKeys);
+    $missing = array_diff($refKeys, $langKeys);
+    $extra   = array_diff($langKeys, $refKeys);
+    if ($missing !== []) {
+        echo 'ERROR: ' . basename($path) . ' missing keys: ' . implode(', ', $missing) . "\n";
+        ++$failed;
+    }
+    if ($extra !== []) {
+        echo 'WARN: ' . basename($path) . ' extra keys (not in en): ' . implode(', ', $extra) . "\n";
     }
 }
 

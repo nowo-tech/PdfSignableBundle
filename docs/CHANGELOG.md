@@ -78,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - A regression test checks that every dotted constraint message used by a form type exists in the validators catalogue of every shipped locale.
+- `.scripts/validate-translations-yaml.php` (CI step "Validate translation YAML files") compares each translation domain with its own English file; it compared every file with `NowoPdfSignableBundle.en.yaml`, which a second domain (validators) would fail.
 
 ## [3.12.0] - 2026-11-19
 
