@@ -1,0 +1,14 @@
+# NowoPdfSignableBundle (fr): constraint messages of the signature forms (validators domain).
+signature_box_type:
+  name:
+    required: Le nom de la zone est obligatoire.
+  page:
+    not_allowed: Cette page n’est pas autorisée. Choisissez l’une des pages autorisées.
+signature_coordinates_type:
+  signature_boxes:
+    min_message: Au moins {{ limit }} zone(s) de signature requise(s).
+    max_message: Au maximum {{ limit }} zone(s) de signature autorisée(s).
+    unique_names_message: Nom de zone en double. Chaque zone de signature doit avoir un nom unique.
+    no_overlap_message: Les zones de signature sur la même page ne peuvent pas se chevaucher. Déplacez ou redimensionnez cette zone.
+signing:
+  consent_required: Vous devez accepter l'effet juridique de la signature pour continuer.

@@ -1,0 +1,14 @@
+# NowoPdfSignableBundle (ca): constraint messages of the signature forms (validators domain).
+signature_box_type:
+  name:
+    required: El nom de la caixa és obligatori.
+  page:
+    not_allowed: Aquesta pàgina no està permitida. Trieu una de les pàgines permitides.
+signature_coordinates_type:
+  signature_boxes:
+    min_message: Es requereix almenys {{ limit }} caixa(es) de signatura.
+    max_message: Es permet com a màxim {{ limit }} caixa(es) de signatura.
+    unique_names_message: Nom de caixa duplicat. Cada caixa de signatura ha de tenir un nom únic.
+    no_overlap_message: Les caixes de signatura a la mateixa pàgina no poden solapar-se. Moveu o redimensionau aquesta caixa.
+signing:
+  consent_required: Heu d'acceptar l'efecte legal de la signatura per continuar.
