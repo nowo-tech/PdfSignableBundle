@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[3.13.0] - 2026-11-23](#3130---2026-11-23)
 - [[3.12.1] - 2026-11-22](#3121---2026-11-22)
 - [[3.12.0] - 2026-11-19](#3120---2026-11-19)
 - [[3.11.0] - 2026-11-12](#3110---2026-11-12)
@@ -71,6 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-02-09](#100---2026-02-09)
 
 ## [Unreleased]
+
+## [3.13.0] - 2026-11-23
 
 ### Changed
 
@@ -1117,7 +1120,8 @@ First stable release.
 
 ---
 
-[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.12.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/PdfSignableBundle/compare/v3.13.0...HEAD
+[3.13.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.13.0
 [3.12.1]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.12.1
 [3.12.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.12.0
 [3.11.0]: https://github.com/nowo-tech/PdfSignableBundle/releases/tag/v3.11.0
