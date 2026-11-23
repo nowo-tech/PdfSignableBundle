@@ -21,6 +21,7 @@ final class AcroFormModifiedPdfProcessedEvent extends Event
         private readonly string $processedPdfContents,
         /** Document key from the request (optional) */
         private readonly ?string $documentKey,
+        // @igor-ignore - Per-dispatch event built with new by AcroFormOverridesController for one request; never a shared service.
         private readonly Request $request,
     ) {
     }

@@ -44,6 +44,7 @@ final class PdfSignRequestEvent extends Event
      */
     public function __construct(
         SignatureCoordinatesModel|SignatureSubmission $coordinates,
+        // @igor-ignore - Per-dispatch event the host builds with new for one signing request; never a shared service.
         private readonly ?Request $request = null,
         private readonly array $options = [],
     ) {

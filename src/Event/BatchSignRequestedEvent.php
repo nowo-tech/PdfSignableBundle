@@ -31,6 +31,7 @@ final class BatchSignRequestedEvent extends Event
      */
     public function __construct(
         private readonly SignatureCoordinatesModel $coordinates,
+        // @igor-ignore - Per-dispatch event built with new by SignatureController for one request; never a shared service.
         private readonly Request $request,
         private readonly ?array $boxTarget = null,
     ) {

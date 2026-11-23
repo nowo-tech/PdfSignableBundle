@@ -29,7 +29,7 @@ final class PdfProxyRequestEvent extends Event
      * @param string $url The URL the proxy is about to fetch
      * @param Request $request The HTTP request to the proxy endpoint
      */
-    public function __construct(private string $url, private readonly Request $request)
+    public function __construct(private string $url, private readonly Request $request) // @igor-ignore - Per-dispatch event built with new by SignatureController for one request; never a shared service.
     {
     }
 
