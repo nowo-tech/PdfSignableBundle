@@ -75,6 +75,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Dev: Igor 0.11 (REQ-CS-008) — the `Request` kept by six per-dispatch events (`AcroFormModifiedPdfProcessedEvent`, `BatchSignRequestedEvent`, `SignatureCoordinatesSubmittedEvent`, `PdfProxyRequestEvent`, `PdfSignRequestEvent`, `PdfProxyResponseEvent`) is never held by a shared service; documented `@igor-ignore` (false positives). `igor-php/igor-php` accepts `^0.11.0` (supersedes #135).
+- **Console**: the script-loaded line of `pdf-signable.js` and `acroform-editor.js` now reads `📦 [pdf-signable] script loaded, build: 2026-11-23 14:05 UTC`: a readable UTC build time instead of the opaque source hash. The time comes from the committed `build-info.json` (`{sourceHash, builtAt}`): the source hash stays the change detector, `builtAt` is reused while the sources are unchanged and renewed only when they change, so rebuilding unchanged sources never rewrites the committed assets (no wall-clock stamp, no git date).
+
+### Added
+
+- **Console**: quiet switch for the script-loaded line: `<html data-nowo-console="quiet">` or `globalThis.NOWO_CONSOLE = 'quiet'` prints nothing. The default is unchanged.
 
 ## [3.12.1] - 2026-11-22
 

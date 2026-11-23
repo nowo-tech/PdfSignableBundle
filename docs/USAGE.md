@@ -46,6 +46,7 @@
 - [Standard Symfony host and DDD / hexagonal host](#standard-symfony-host-and-ddd--hexagonal-host)
   - [Standard Symfony host (default)](#standard-symfony-host-default)
   - [DDD / hexagonal host (opt-in)](#ddd--hexagonal-host-opt-in)
+- [Browser console](#browser-console)
 
 For a high-level description of how the form, viewer and script interact (with diagrams), see [WORKFLOW](WORKFLOW.md).
 
@@ -768,3 +769,7 @@ final readonly class RequestSignaturesOnSubmit   // infrastructure adapter
   export with `toArray()` on purpose.
 - The bundle keeps no request state in services (FrankenPHP worker mode with kernel reset off, see
   [FRANKENPHP-WORKER-AUDIT](FRANKENPHP-WORKER-AUDIT.md)).
+
+## Browser console
+
+The bundle's script logs one line when it loads (`📦 [pdf-signable] script loaded, build: 2026-11-23 14:05 UTC`) so a developer can tell which build a page runs. To silence it, set `<html data-nowo-console="quiet">` or `globalThis.NOWO_CONSOLE = 'quiet'` before the script loads; nothing is printed then. The default is unchanged.
