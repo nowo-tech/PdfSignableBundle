@@ -180,6 +180,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 ### Internationalization
 
 - **FR-I18N-001**: Translation catalogs under `Resources/translations/NowoPdfSignableBundle.*.yaml` MUST cover form labels, validation messages, and viewer strings referenced from PHP/JS.
+- **FR-I18N-002**: The `validators` domain catalogues `Resources/translations/validators.*.yaml` (the same twelve locales) MUST carry every dotted constraint message the form types use (`signature_box_type.*`, `signature_coordinates_type.*`), so a failed rule shows text and never a raw key; a regression test checks every message exists in every locale.
 
 ---
 
@@ -194,7 +195,7 @@ As an admin integrator with AcroForm enabled, I edit existing PDF form fields in
 
 ## Success Criteria
 
-- **SC-001**: 100% of production files in `src/` appear in [`code-inventory.md`](code-inventory.md) with requirement IDs (**113/113** mapped; 25 co-located Vitest `*.test.ts` and `Resources/assets/README.md` excluded).
+- **SC-001**: 100% of production files in `src/` appear in [`code-inventory.md`](code-inventory.md) with requirement IDs (**125/125** mapped; 26 co-located Vitest `*.test.ts` and `Resources/assets/README.md` excluded).
 - **SC-002**: Configuration keys in `docs/CONFIGURATION.md` match `Configuration.php`.
 - **SC-003**: PHPUnit, PHPStan, and Vitest pass in CI (`composer qa`).
 - **SC-004**: Proxy rejects disallowed URLs; allowlist regex entries validated at compile time.
