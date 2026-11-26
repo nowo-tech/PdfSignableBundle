@@ -2,9 +2,9 @@
 
 **Baseline spec**: [`spec.md`](spec.md)  
 **Package**: `nowo-tech/pdf-signable-bundle`  
-**Last audited**: 2026-11-16
+**Last audited**: 2026-11-26
 
-This file proves that **every production source artifact** under `src/` is referenced by the baseline specification. Paths are relative to `src/`. Co-located Vitest files (`*.test.ts`, 25 files) and `Resources/assets/README.md` are test-only or maintainer docs and excluded from the production count.
+This file proves that **every production source artifact** under `src/` is referenced by the baseline specification. Paths are relative to `src/`. Co-located Vitest files (`*.test.ts`, 26 files) and `Resources/assets/README.md` are test-only or maintainer docs and excluded from the production count.
 
 ## PHP classes (`src/**/*.php`)
 
@@ -140,6 +140,18 @@ This file proves that **every production source artifact** under `src/` is refer
 | `NowoPdfSignableBundle.pt.yaml` | Portuguese catalog | FR-I18N-001 |
 | `NowoPdfSignableBundle.ru.yaml` | Russian catalog | FR-I18N-001 |
 | `NowoPdfSignableBundle.tr.yaml` | Turkish catalog | FR-I18N-001 |
+| `validators.en.yaml` | English constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.es.yaml` | Spanish constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.ca.yaml` | Catalan constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.cs.yaml` | Czech constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.de.yaml` | German constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.fr.yaml` | French constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.it.yaml` | Italian constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.nl.yaml` | Dutch constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.pl.yaml` | Polish constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.pt.yaml` | Portuguese constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.ru.yaml` | Russian constraint messages (`validators` domain) | FR-I18N-002 |
+| `validators.tr.yaml` | Turkish constraint messages (`validators` domain) | FR-I18N-002 |
 
 ## Twig views (`src/Resources/views/`)
 
@@ -163,10 +175,10 @@ This file proves that **every production source artifact** under `src/` is refer
 | TypeScript / SCSS production | 30 | 30 |
 | Public JS / CSS / worker | 4 | 4 |
 | YAML config | 2 | 2 |
-| Translation catalogs | 12 | 12 |
+| Translation catalogs | 24 | 24 |
 | Twig views | 8 | 8 |
-| **Total production sources** | **113** | **113** |
+| **Total production sources** | **125** | **125** |
 
-Vitest co-located tests (`*.test.ts`, 25 files) and `Resources/assets/README.md` are documented as out-of-scope test/maintainer artifacts in [`spec.md`](spec.md).
+Vitest co-located tests (`*.test.ts`, 26 files) and `Resources/assets/README.md` are documented as out-of-scope test/maintainer artifacts in [`spec.md`](spec.md).
 
-Audit: `git ls-files src | grep -v '\.test\.ts$' | grep -v 'Resources/assets/README.md$' | wc -l` → **113** (139 tracked files − 25 tests − 1 maintainer README).
+Audit: `git ls-files src | grep -v '\.test\.ts$' | grep -v 'Resources/assets/README.md$' | wc -l` → **125** (152 tracked files − 26 tests − 1 maintainer README).
