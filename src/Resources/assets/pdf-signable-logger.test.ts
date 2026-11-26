@@ -1,7 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createBundleLogger } from './logger';
 import { ATTR_DEBUG, getLogger, setBundleLogger } from './pdf-signable-logger';
+
+// REQ-ASSETS-005: every test starts with an empty once-guard registry.
+beforeEach(() => {
+  delete (globalThis as { __nowoScriptBannerNames?: unknown }).__nowoScriptBannerNames;
+});
 
 describe('pdf-signable-logger', () => {
   it('exports ATTR_DEBUG for the debug data attribute', () => {
